@@ -1,5 +1,5 @@
-import { AppLayout } from "@/components/layout/AppLayout";
-import { CalculatorForm } from "@/components/ui/CalculatorForm";
+import { AppLayout } from "@/shared/components/layout/AppLayout";
+import { CalculatorForm } from "@/shared/components/ui/CalculatorForm";
 
 const Calculator = () => {
   return (

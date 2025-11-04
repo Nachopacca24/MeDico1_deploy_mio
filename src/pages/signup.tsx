@@ -2,12 +2,12 @@ import type React from "react";
 
 import { useState } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
-import { fine } from "@/lib/fine";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { fine } from "@/shared/lib/fine";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { useToast } from "@/shared/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 export default function SignupForm() {

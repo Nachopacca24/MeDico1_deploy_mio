@@ -1,7 +1,7 @@
 "use client"
 
 import { Navigate } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { fine } from "@/shared/lib/fine";
 
 export const ProtectedRoute = ({ Component }: { Component: () => JSX.Element }) => {
     const { 

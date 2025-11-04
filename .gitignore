@@ -1,24 +1,273 @@
-# Logs
-logs
+# ============================================
+# .gitignore - MéDico1 Project
+# ============================================
+# Django + React + Vite + PostgreSQL
+# Última actualización: 2025-11-04
+# ============================================
+
+# ============================================
+# ARCHIVOS SENSIBLES Y SECRETOS (¡CRÍTICO!)
+# ============================================
+# Variables de entorno
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Credenciales y claves
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.asc
+id_rsa
+id_rsa.pub
+authorized_keys
+credentials
+credentials.json
+secrets/
+*.secret
+
+# ============================================
+# PYTHON / DJANGO
+# ============================================
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv/
+.pyenv/
+virtualenv/
+
+# Python compilado
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+wheels/
+
+# Django
 *.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+/staticfiles/
+/static/
+local_settings.py
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Coverage y testing
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.pytest_cache/
+.hypothesis/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Migraciones locales (opcional - descomenta si no quieres versionar)
+# **/migrations/*.py
+# !**/migrations/__init__.py
+
+# ============================================
+# NODE.JS / REACT / VITE
+# ============================================
+# Dependencias
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
+.pnp
+.pnp.js
 
-node_modules
-dist
-dist-ssr
-*.local
+# Build
+dist/
+dist-ssr/
+build/
+.vite/
+.cache/
+.next/
+out/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Logs de Vite
+vite.log
+
+# Testing
+coverage/
+
+# ============================================
+# SISTEMAS OPERATIVOS
+# ============================================
+# macOS
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.AppleDouble
+.LSOverride
+._*
+Icon?
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.nfs*
+
+# ============================================
+# IDEs Y EDITORES
+# ============================================
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# JetBrains (PyCharm, WebStorm, IntelliJ)
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Eclipse
+.project
+.metadata
+.recommenders
+.settings/
+
+# Vim
+*.swp
+*.swo
+*.swn
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================
+# BASES DE DATOS
+# ============================================
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+*.DB
+
+# PostgreSQL
+*.sql
+*.dump
+*.pgsql
+*.backup
+
+# MySQL
+*.sql.gz
+
+# ============================================
+# DOCKER Y CONTENEDORES
+# ============================================
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+.docker/
+.dockerignore
+
+# ============================================
+# LOGS Y REPORTES
+# ============================================
+logs/
+*.log
+*.log.*
+vite.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ============================================
+# TESTING Y COBERTURA
+# ============================================
+coverage/
+.nyc_output/
+lcov-report/
+.jest/
+reports/
+
+# ============================================
+# TEMPORALES Y CACHÉ
+# ============================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.cache
+.cache/
+.parcel-cache/
+
+# ============================================
+# ARCHIVOS ESPECÍFICOS DEL PROYECTO
+# ============================================
+# Archivos de backup
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archivos de patch
+*.patch
+*.rej
+*.diff
+
+# ============================================
+# ARCHIVOS A VERSIONAR (IMPORTANTES)
+# ============================================
+# Estos archivos SÍ deben estar en el repositorio:
+# - .env.example (plantilla de variables)
+# - package-lock.json (versión exacta de dependencias)
+# - requirements.txt (dependencias Python)
+# - public/surgeries/**/*.csv (datos de cirugías)
+# - README.md, SETUP.md (documentación)
+# - manage.py (Django CLI)
+
+# ============================================
+# NOTAS IMPORTANTES
+# ============================================
+# 1. El archivo .env NUNCA debe subirse (contiene secretos)
+# 2. .env.example SÍ debe subirse (es la plantilla)
+# 3. Los CSVs en public/surgeries/ SÍ deben subirse (son datos de la app)
+# 4. node_modules/ NUNCA debe subirse (se regenera con npm install)
+# 5. venv/ NUNCA debe subirse (se regenera con python -m venv venv)
+
+# Fin del .gitignore

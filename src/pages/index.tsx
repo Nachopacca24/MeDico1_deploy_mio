@@ -1,8 +1,8 @@
-import { AppLayout } from "@/components/layout/AppLayout";
-import { DashboardStats } from "@/components/ui/DashboardStats";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { fine } from "@/lib/fine";
+import { AppLayout } from "@/shared/components/layout/AppLayout";
+import { DashboardStats } from "@/shared/components/ui/DashboardStats";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { fine } from "@/shared/lib/fine";
 import { Calculator, ListChecks, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 

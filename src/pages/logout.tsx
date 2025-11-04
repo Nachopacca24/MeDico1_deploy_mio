@@ -1,4 +1,4 @@
-import { fine } from "@/lib/fine";
+import { fine } from "@/shared/lib/fine";
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 

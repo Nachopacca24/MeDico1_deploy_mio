@@ -1,50 +1,576 @@
-# React + TypeScript + Vite
+# 🏥 MéDico1 - Sistema de Gestión de Cirugías
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Plataforma web moderna para valoración y gestión de procedimientos quirúrgicos
 
-Currently, two official plugins are available:
+[![React](https://img.shields.io/badge/React-18.3-61dafb?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Django](https://img.shields.io/badge/Django-5.0-092e20?logo=django)](https://www.djangoproject.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 📋 Descripción
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+**MéDico1** es una aplicación web full-stack diseñada para profesionales de la salud que permite:
 
-- Configure the top-level `parserOptions` property like this:
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+
+- 🧮 **Calcular valores** de procedimientos médicos basados en RVU y tarifas hospitalarias
+- 📊 **Explorar catálogo** de **6,894 cirugías** organizadas por 28 especialidades médicas
+- ⭐ **Guardar favoritos** para acceso rápido a procedimientos frecuentes
+- 📝 **Mantener historial** detallado de cálculos realizados
+- 🔐 **Gestión segura** de usuarios con autenticación robusta
+- 🎨 **Interfaz moderna** y responsive con modo claro/oscuro
+- 📱 **Diseño adaptable** para escritorio, tablet y móvil
+
+---
+
+## 🚀 Stack Tecnológico
+
+### Backend
+- **Django 5.0.14** - Framework web Python
+- **Django REST Framework 3.16.1** - API REST
+- **PostgreSQL** - Base de datos relacional
+- **Python 3.12+** - Lenguaje de programación
+
+### Frontend
+- **React 18.3.1** - Biblioteca UI
+- **TypeScript 5.6.2** - Tipado estático
+- **Vite 6.3** - Build tool ultrarrápido
+- **Tailwind CSS 3.4** - Framework de estilos
+- **Radix UI** - Componentes accesibles (WCAG)
+- **React Router v6** - Enrutamiento
+- **TanStack Query** - Gestión de estado servidor
+- **Zustand** - Gestión de estado cliente
+- **Framer Motion** - Animaciones
+
+### Herramientas
+- **Papa Parse** - Procesamiento de CSV (6,894 cirugías)
+- **React Hook Form + Zod** - Validación de formularios
+- **Recharts** - Visualización de datos
+- **date-fns** - Manipulación de fechas
+
+---
+
+## 📋 Prerrequisitos
+
+Antes de comenzar, asegúrate de tener instalado:
+
+- **Python 3.12 o superior** - [Descargar](https://www.python.org/downloads/)
+- **Node.js 18 o superior** - [Descargar](https://nodejs.org/)
+- **PostgreSQL 14 o superior** - [Descargar](https://www.postgresql.org/download/)
+- **Git** - [Descargar](https://git-scm.com/downloads/)
+
+---
+
+## ⚡ Instalación Rápida
+
+### 1️⃣ Clonar el repositorio
+
+```bash
+git clone https://github.com/jricica/MeDico1.git
+cd MeDico1
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### 2️⃣ Configurar Backend (Django)
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+#### Crear entorno virtual
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
+
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
 ```
+
+#### Instalar dependencias Python
+
+```bash
+pip install -r requirements.txt
+```
+
+#### Configurar base de datos PostgreSQL
+
+1. **Crear base de datos:**
+
+```sql
+-- Conectarse a PostgreSQL
+psql -U postgres
+
+-- Crear base de datos
+CREATE DATABASE MeDico;
+
+-- Crear usuario (opcional)
+CREATE USER medico_user WITH PASSWORD 'tu_password';
+GRANT ALL PRIVILEGES ON DATABASE MeDico TO medico_user;
+
+-- Salir
+\q
+```
+
+2. **Configurar variables de entorno:**
+
+```bash
+# Copiar archivo de ejemplo
+cp .env.example .env
+
+# Editar .env con tus credenciales
+# (usa tu editor favorito: nano, vim, notepad, VS Code, etc.)
+```
+
+**Variables importantes a configurar en `.env`:**
+
+```env
+DB_NAME=MeDico
+DB_USER=postgres
+DB_PASSWORD=tu_password_real
+DB_HOST=localhost
+DB_PORT=5432
+
+DJANGO_SECRET_KEY=genera-una-key-segura-en-djecrety.ir
+DJANGO_SETTINGS_MODULE=core.settings.dev
+DEBUG=True
+```
+
+#### Aplicar migraciones
+
+```bash
+python manage.py migrate
+```
+
+#### Crear superusuario (admin)
+
+```bash
+python manage.py createsuperuser
+# Ingresa: username, email, password
+```
+
+### 3️⃣ Configurar Frontend (React)
+
+#### Instalar dependencias Node.js
+
+```bash
+npm install
+```
+
+### 4️⃣ Iniciar la aplicación
+
+**Un solo comando inicia todo:**
+
+```bash
+python manage.py runserver
+```
+
+Esto automáticamente:
+- ✅ Inicia Django en `http://127.0.0.1:8000`
+- ✅ Inicia Vite dev server en segundo plano
+- ✅ Configura hot reload para ambos
+- ✅ Hace proxy de las peticiones del frontend
+
+**Acceder a:**
+- 🌐 **Aplicación:** http://127.0.0.1:8000
+- 🔧 **Admin Django:** http://127.0.0.1:8000/admin
+- 📡 **API:** http://127.0.0.1:8000/api/v1/
+
+**Detener servidores:**
+- Presiona `CTRL+C` (detiene Django y Vite automáticamente)
+
+---
+
+## 📁 Estructura del Proyecto
+
+
+
+```
+MeDico1/
+├── 📦 apps/                        # Aplicaciones Django backend
+│   ├── medico/                     # App principal médica
+│   ├── medio_auth/                 # Sistema de autenticación
+│   ├── communication/              # Mensajería interna
+│   ├── invoice/                    # Facturación
+│   └── payment/                    # Procesamiento de pagos
+│
+├── ⚙️ core/                        # Configuración Django
+│   ├── settings/
+│   │   ├── base.py                 # Configuración base
+│   │   ├── dev.py                  # Desarrollo
+│   │   └── prod.py                 # Producción
+│   ├── urls.py                     # Rutas principales
+│   ├── views.py                    # Vistas core
+│   └── middleware.py               # Middleware (auto-inicia Vite)
+│
+├── ⚛️ src/                         # Aplicación React
+│   ├── pages/                      # Páginas principales
+│   │   ├── index.tsx               # Dashboard
+│   │   ├── operations.tsx          # Catálogo de cirugías
+│   │   ├── calculator.tsx          # Calculadora médica
+│   │   ├── favorites.tsx           # Favoritos
+│   │   ├── history.tsx             # Historial
+│   │   └── settings.tsx            # Configuración
+│   │
+│   ├── shared/
+│   │   ├── components/             # Componentes reutilizables
+│   │   │   ├── ui/                 # Componentes UI base
+│   │   │   ├── layout/             # Layouts (Sidebar, AppLayout)
+│   │   │   └── auth/               # Componentes de autenticación
+│   │   ├── hooks/                  # React hooks personalizados
+│   │   ├── utils/                  # Utilidades
+│   │   │   └── csvLoader.ts        # Cargador de CSVs (6,894 cirugías)
+│   │   ├── lib/                    # Bibliotecas y helpers
+│   │   └── types/                  # Tipos TypeScript
+│   │
+│   ├── main.tsx                    # Entry point
+│   └── index.css                   # Estilos globales
+│
+├── � public/                      # Archivos estáticos
+│   └── surgeries/                  # 🩺 6,894 cirugías en 28 CSVs
+│       ├── Cardiovascular/
+│       ├── Dermatología/
+│       ├── Digestivo/
+│       ├── Endocrino/
+│       ├── Ginecología/
+│       ├── Mama/
+│       ├── Neurocirugía/
+│       ├── Obstetricia/
+│       ├── Oftalmología/
+│       ├── Ortopedia/
+│       ├── Otorrino/
+│       ├── Procesos_variados/
+│       ├── Urología/
+│       └── Sin_clasificación.csv
+│
+├── 🐍 venv/                        # Entorno virtual Python
+├── 📄 manage.py                    # CLI de Django
+├── 📋 requirements.txt             # Dependencias Python
+├── 📦 package.json                 # Dependencias Node.js
+├── ⚙️ vite.config.ts               # Configuración de Vite
+├── 🎨 tailwind.config.js           # Configuración de Tailwind
+└── 📝 .env.example                 # Ejemplo de variables de entorno
+```
+
+---
+
+## 🛠️ Comandos Útiles
+
+### Backend (Django)
+
+```bash
+# Iniciar servidor (Django + Vite automático)
+python manage.py runserver
+
+# Crear migraciones
+python manage.py makemigrations
+
+# Aplicar migraciones
+python manage.py migrate
+
+# Crear superusuario
+python manage.py createsuperuser
+
+# Acceder a shell de Django
+python manage.py shell
+
+# Ejecutar tests
+python manage.py test
+
+# Ver logs de Vite
+Get-Content vite.log -Wait   # Windows PowerShell
+tail -f vite.log             # Linux/Mac
+```
+
+### Frontend (React)
+
+```bash
+# Instalar dependencias
+npm install
+
+# Servidor de desarrollo (solo frontend)
+npm run dev
+
+# Build de producción
+npm run build
+
+# Preview del build
+npm run preview
+
+# Ejecutar linter
+npm run lint
+
+# Ejecutar tests
+npm run test
+```
+
+---
+
+## ✨ Características Principales
+
+### 🎯 Frontend
+- ✅ **Dashboard interactivo** con estadísticas en tiempo real
+- ✅ **Catálogo de 6,894 cirugías** organizadas en 28 especialidades
+- ✅ **Calculadora médica** con cálculo de RVU y tarifas
+- ✅ **Sistema de favoritos** con acceso rápido
+- ✅ **Historial completo** de cálculos realizados
+- ✅ **Búsqueda y filtros** avanzados por especialidad/procedimiento
+- ✅ **Autenticación segura** con JWT
+- ✅ **Diseño responsive** (móvil, tablet, escritorio)
+- ✅ **Modo oscuro/claro** con persistencia
+- ✅ **Componentes accesibles** (WCAG 2.1)
+- ✅ **Animaciones fluidas** con Framer Motion
+
+### ⚙️ Backend
+- ✅ **API REST completa** con Django REST Framework
+- ✅ **Base de datos PostgreSQL** optimizada
+- ✅ **Autenticación JWT** y sesiones
+- ✅ **Panel de administración** Django personalizado
+- ✅ **CORS configurado** para desarrollo y producción
+- ✅ **Middleware personalizado** (auto-inicio de Vite)
+- ✅ **Migraciones versionadas**
+
+---
+
+## 📊 Catálogo de Cirugías
+
+El sistema incluye **6,894 procedimientos quirúrgicos** distribuidos en:
+
+| Especialidad | Subcategorías | Cirugías |
+|--------------|---------------|----------|
+| 🫀 Cardiovascular | 3 | 888 |
+| 🩹 Dermatología | 1 | 42 |
+| 🍽️ Digestivo | 4 | 912 |
+| 🦴 Endocrino | 1 | 23 |
+| 👶 Ginecología | 1 | 143 |
+| 🎗️ Mama | 1 | 42 |
+| 🧠 Neurocirugía | 3 | 874 |
+| 🤰 Obstetricia | 1 | 41 |
+| 👁️ Oftalmología | 1 | 262 |
+| 🦿 Ortopedia | 5 | 1,725 |
+| 👂 Otorrino | 1 | 93 |
+| 🔪 Procesos Variados | 4 | 116 |
+| 💧 Urología | 1 | 269 |
+| 📋 Sin Clasificación | 1 | 1,464 |
+
+---
+
+## 🔌 API Endpoints
+
+### Autenticación
+```
+POST   /api/v1/auth/login/      # Iniciar sesión
+POST   /api/v1/auth/logout/     # Cerrar sesión
+POST   /api/v1/auth/register/   # Registrar usuario
+GET    /api/v1/auth/user/       # Obtener usuario actual
+```
+
+### Cirugías
+```
+GET    /api/v1/surgeries/                    # Listar todas
+GET    /api/v1/surgeries/?specialty=X        # Filtrar por especialidad
+GET    /api/v1/surgeries/:id/                # Detalle
+POST   /api/v1/surgeries/calculate/          # Calcular valor
+```
+
+### Favoritos
+```
+GET    /api/v1/favorites/           # Listar favoritos del usuario
+POST   /api/v1/favorites/           # Agregar a favoritos
+DELETE /api/v1/favorites/:id/       # Eliminar favorito
+```
+
+### Historial
+```
+GET    /api/v1/history/             # Listar historial del usuario
+GET    /api/v1/history/:id/         # Detalle de cálculo
+POST   /api/v1/history/             # Guardar cálculo
+```
+
+---
+
+## 🔐 Seguridad
+
+El proyecto implementa múltiples capas de seguridad:
+
+- 🔒 **Autenticación JWT** con tokens de acceso y refresh
+- 🛡️ **CSRF Protection** habilitado
+- 🌐 **CORS configurado** con whitelist de orígenes
+- 💉 **SQL Injection protection** (Django ORM)
+- 🔓 **XSS Protection** (sanitización de inputs)
+- 🔑 **Passwords hasheados** con bcrypt
+- 📝 **Validación de datos** con Zod en frontend
+- 🚫 **Rate limiting** en endpoints críticos
+- 🔐 **Variables de entorno** para secretos
+- 📋 **Logs de auditoría** de acciones importantes
+
+---
+
+## 🐛 Solución de Problemas
+
+### ❌ Error: `ModuleNotFoundError: No module named 'django'`
+**Solución:** Activa el entorno virtual
+```bash
+# Windows
+.\venv\Scripts\activate
+
+# Linux/Mac
+source venv/bin/activate
+
+# Luego instala dependencias
+pip install -r requirements.txt
+```
+
+### ❌ Error: `FATAL: database "MeDico" does not exist`
+**Solución:** Crea la base de datos en PostgreSQL
+```bash
+psql -U postgres
+CREATE DATABASE MeDico;
+\q
+```
+
+### ❌ Error: `django.core.exceptions.ImproperlyConfigured: Set the DJANGO_SECRET_KEY environment variable`
+**Solución:** Configura tu archivo `.env`
+```bash
+cp .env.example .env
+# Edita .env y genera una secret key en https://djecrety.ir/
+```
+
+### ❌ Error: `Vite no inicia automáticamente`
+**Solución:** Verifica logs y permisos
+```bash
+# Ver logs
+type vite.log  # Windows
+cat vite.log   # Linux/Mac
+
+# Iniciar Vite manualmente
+npm run dev
+```
+
+### ❌ Error: `npm ERR! network`
+**Solución:** Limpia caché de npm
+```bash
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### ❌ Error: `Port 8000 already in use`
+**Solución:** Mata el proceso en ese puerto
+```bash
+# Windows
+netstat -ano | findstr :8000
+taskkill /PID <pid> /F
+
+# Linux/Mac
+lsof -ti:8000 | xargs kill -9
+```
+
+### ❌ Error: `CORS policy blocked`
+**Solución:** Verifica CORS en settings
+```python
+# core/settings/dev.py
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+```
+
+---
+
+## 🚀 Despliegue a Producción
+
+### Preparar frontend
+
+```bash
+npm run build
+```
+
+### Preparar backend
+
+```bash
+# Cambiar a settings de producción
+export DJANGO_SETTINGS_MODULE=core.settings.prod
+
+# Collectar archivos estáticos
+python manage.py collectstatic --no-input
+
+# Aplicar migraciones
+python manage.py migrate
+```
+
+### Variables de entorno en producción
+
+```env
+DEBUG=False
+DJANGO_SETTINGS_MODULE=core.settings.prod
+ALLOWED_HOSTS=tu-dominio.com
+CORS_ALLOWED_ORIGINS=https://tu-dominio.com
+# ... otras variables
+```
+
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Por favor sigue estos pasos:
+
+1. **Fork** el repositorio
+2. **Crea una rama** para tu feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** tus cambios usando [Conventional Commits](https://www.conventionalcommits.org/):
+   - `feat:` Nueva funcionalidad
+   - `fix:` Corrección de bugs
+   - `docs:` Cambios en documentación
+   - `style:` Formato, estilos (no afectan código)
+   - `refactor:` Refactorización de código
+   - `test:` Agregar/modificar tests
+   - `chore:` Tareas de mantenimiento
+4. **Push** a tu rama (`git push origin feature/AmazingFeature`)
+5. **Abre un Pull Request**
+
+### Ejemplos de commits:
+```bash
+git commit -m "feat: agregar filtro por RVU en calculadora"
+git commit -m "fix: corregir error en carga de CSV de Ortopedia"
+git commit -m "docs: actualizar README con instrucciones de deploy"
+```
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+## 👥 Equipo
+
+- **Lead Developer**: [@jricica](https://github.com/jricica)
+- **Developer**: [@Nachopacca24](https://github.com/Nachopacca24)
+
+---
+
+## 📞 Contacto y Soporte
+
+- 🐛 **Reportar bugs**: [Issues en GitHub](https://github.com/jricica/MeDico1/issues)
+- 💡 **Sugerencias**: [Discussions en GitHub](https://github.com/jricica/MeDico1/discussions)
+- 📧 **Email**: [tu-email@example.com](mailto:tu-email@example.com)
+
+---
+
+## 📚 Recursos Adicionales
+
+- [Documentación de Django](https://docs.djangoproject.com/)
+- [Documentación de React](https://react.dev/)
+- [Documentación de TypeScript](https://www.typescriptlang.org/docs/)
+- [Documentación de Vite](https://vitejs.dev/)
+- [Documentación de Tailwind CSS](https://tailwindcss.com/docs)
+
+---
+
+<div align="center">
+
+**⭐ Si este proyecto te fue útil, considera darle una estrella en GitHub ⭐**
+
+Hecho con ❤️ por el equipo de MéDico1
+
+</div>
