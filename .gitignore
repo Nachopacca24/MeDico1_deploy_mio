@@ -1,194 +1,151 @@
-# .gitignore - Archivo para excluir archivos/dir que no deben ir al repositorio
-# Uso: colocado en la raíz del repo (p. ej. /c:/MeDico/MeDico1/.gitignore)
+# ============================================
+# .gitignore - MéDico1 Project
+# ============================================
+# Django + React + Vite + PostgreSQL
+# Última actualización: 2025-11-04
+# ============================================
 
-# -----------------------
-# Sistemas operativos
-# -----------------------
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
+# ============================================
+# ARCHIVOS SENSIBLES Y SECRETOS (¡CRÍTICO!)
+# ============================================
+# Variables de entorno
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Thumbnails
-._*
+# Credenciales y claves
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.asc
+id_rsa
+id_rsa.pub
+authorized_keys
+credentials
+credentials.json
+secrets/
+*.secret
 
-# Icon?
-Icon?
+# ============================================
+# PYTHON / DJANGO
+# ============================================
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv/
+.pyenv/
+virtualenv/
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.lnk
-
-# Linux
-*~              # archivos temporales de editores
-.*.swp
-*.swp
-.nfs*
-
-# -----------------------
-# Archivos de build / binarios / artefactos compilados
-# -----------------------
-# General
-/build/
-dist/
-tmp/
-temp/
-out/
-release/
-public/build/
-target/
-generated/
-*.o
-*.obj
-*.so
-*.dll
-*.exe
-*.class
-*.jar
-*.war
-*.ear
+# Python compilado
 *.pyc
 *.pyo
 *.pyd
 __pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+wheels/
+
+# Django
 *.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+/staticfiles/
+/static/
+local_settings.py
 
-# .NET
-bin/
-obj/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-*.vcxproj.user
-TestResults/
-*.nupkg
-*.snk
+# Celery
+celerybeat-schedule
+celerybeat.pid
 
-# Java / Maven / Gradle
-*.class
-*.war
-*.ear
-*.jar
-*.iml
-/.mvn/
-target/
-.build/
-.gradle/
-.gradle-cache/
-!gradle/wrapper/gradle-wrapper.jar
+# Coverage y testing
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.pytest_cache/
+.hypothesis/
+nosetests.xml
+coverage.xml
+*.cover
 
-# Node.js / frontend
+# Migraciones locales (opcional - descomenta si no quieres versionar)
+# **/migrations/*.py
+# !**/migrations/__init__.py
+
+# ============================================
+# NODE.JS / REACT / VITE
+# ============================================
+# Dependencias
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-.pnp/
+.pnp
 .pnp.js
+
+# Build
+dist/
+dist-ssr/
+build/
+.vite/
+.cache/
 .next/
 out/
-build/
-dist/
-.cache/
-.svelte-kit/
-.vite
-.esbuild
-*.tgz
 
-# Python
-venv/
-ENV/
-env/
-.env/
-.venv/
-pip-wheel-metadata/
-wheels/
-share/python-wheels/
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.pytest_cache/
-mypy_cache/
-dmypy.json
-.pyre/
-celerybeat-schedule
-*.db
-*.sqlite3
+# Logs de Vite
+vite.log
 
-# Ruby
-*.gem
-*.rbc
-/.bundle/
-/vendor/bundle
-/log/
-/tmp/
-.byebug_history
+# Testing
+coverage/
 
-# Go
-bin/
-pkg/
-*.exe
-*.test
-*.out
+# ============================================
+# SISTEMAS OPERATIVOS
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Icon?
 
-# Rust
-target/
-**/*.rs.bk
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
 
-# PHP / Composer
-/vendor/
-composer.phar
-composer.lock? # usualmente se versiona en aplicaciones, quitar si se necesita
+# Linux
+*~
+.nfs*
 
-# Composer: si es librería, mantener composer.lock fuera; si app, comentar línea anterior.
-
-# Swift / Xcode
-*.xcworkspace
-*.xcuserstate
-*.xcuserdatad
-DerivedData/
-build/
-*.hmap
-*.ipa
-*.dSYM
-
-# Android
-.gradle/
-build/
-local.properties
-*.keystore
-captures/
-.externalNativeBuild/
-
-# iOS
-Pods/
-Podfile.lock
-
-# -----------------------
-# IDEs y editores
-# -----------------------
+# ============================================
+# IDEs Y EDITORES
+# ============================================
 # Visual Studio Code
 .vscode/
-.history/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 *.code-workspace
+.history/
 
-# Visual Studio
-.vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# JetBrains (IntelliJ, PhpStorm, PyCharm, Rider, WebStorm)
+# JetBrains (PyCharm, WebStorm, IntelliJ)
 .idea/
 *.iws
 *.iml
@@ -204,140 +161,113 @@ out/
 .metadata
 .recommenders
 .settings/
-.bin/
-
-# NetBeans
-nbproject/private/
-build/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-
-# Emacs
-*~
-\#*\#
 
 # Vim
 *.swp
 *.swo
 *.swn
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
 
-# -----------------------
-# Contenedores / Infra
-# -----------------------
-# Docker
-docker-compose.override.yml
-docker-compose.*.yml
-**/docker-compose.override.yml
-**/docker-compose.*.yml
-.env
-.env.local
-.env.*.local
-*.env
-docker-compose.override.yml
-docker-sync.yml
-.docker/
-tmp/
+# Emacs
+*~
+\#*\#
+.\#*
 
-# Kubernetes / Helm
-*.kubeconfig
-helm-debug.yaml
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-crash.log
-override.tf
-override.tf.json
-*.tfvars
-*.tfvars.json
-.terraform.lock.hcl
-
-# Ansible
-.inventory
-vault/
-
-# -----------------------
-# Archivos de configuración y secretos
-# -----------------------
-# Variables de entorno
-.env
-.env.* 
-.env.local
-secrets/
-*.pem
-*.key
-*.crt
-*.p12
-*.jks
-*.asc
-credentials
-credentials.json
-id_rsa
-id_rsa.pub
-authorized_keys
-
-# Archivos de configuración temporales
-settings.local.json
-local.settings.json
-
-# -----------------------
-# Logs, reportes, cobertura, caches
-# -----------------------
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-coverage/
-coverage.*
-lcov-report/
-reports/
-jest-cache/
-jest-*.json
-
-# -----------------------
-# Bases de datos locales, artefactos de datos
-# -----------------------
+# ============================================
+# BASES DE DATOS
+# ============================================
+# SQLite
 *.sqlite
 *.sqlite3
 *.db
 *.DB
+
+# PostgreSQL
+*.sql
 *.dump
-*.sql.gz
-*.bak
+*.pgsql
 *.backup
 
-# -----------------------
-# Otros comunes
-# -----------------------
-.idea/
-.vscode/
-*.orig
-*.patch
-*.rej
-*.bak
-*.swp
-*.swo
+# MySQL
+*.sql.gz
+
+# ============================================
+# DOCKER Y CONTENEDORES
+# ============================================
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+.docker/
+.dockerignore
+
+# ============================================
+# LOGS Y REPORTES
+# ============================================
+logs/
+*.log
+*.log.*
+vite.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ============================================
+# TESTING Y COBERTURA
+# ============================================
+coverage/
+.nyc_output/
+lcov-report/
+.jest/
+reports/
+
+# ============================================
+# TEMPORALES Y CACHÉ
+# ============================================
+tmp/
+temp/
 *.tmp
 *.temp
 *.cache
+.cache/
+.parcel-cache/
 
-# Lockfiles (normalmente se versionan; descomentar si desea ignorarlos)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-# Pipfile.lock
-# composer.lock
+# ============================================
+# ARCHIVOS ESPECÍFICOS DEL PROYECTO
+# ============================================
+# Archivos de backup
+*.bak
+*.backup
+*.old
+*.orig
 
-# -----------------------
-# Plantilla: archivos locales específicos del proyecto
-# -----------------------
-# Añade aquí otros archivos/directorios locales que no quieres trackear, ejemplo:
-# /secrets/
-# /local-credentials.json
-# /tmp_local_build/
+# Archivos de patch
+*.patch
+*.rej
+*.diff
+
+# ============================================
+# ARCHIVOS A VERSIONAR (IMPORTANTES)
+# ============================================
+# Estos archivos SÍ deben estar en el repositorio:
+# - .env.example (plantilla de variables)
+# - package-lock.json (versión exacta de dependencias)
+# - requirements.txt (dependencias Python)
+# - public/surgeries/**/*.csv (datos de cirugías)
+# - README.md, SETUP.md (documentación)
+# - manage.py (Django CLI)
+
+# ============================================
+# NOTAS IMPORTANTES
+# ============================================
+# 1. El archivo .env NUNCA debe subirse (contiene secretos)
+# 2. .env.example SÍ debe subirse (es la plantilla)
+# 3. Los CSVs en public/surgeries/ SÍ deben subirse (son datos de la app)
+# 4. node_modules/ NUNCA debe subirse (se regenera con npm install)
+# 5. venv/ NUNCA debe subirse (se regenera con python -m venv venv)
 
 # Fin del .gitignore
