@@ -49,85 +49,47 @@ Sistema web completo para gestión médica con calculadoras de procedimientos qu
 ```- 🧮 **Calcular valores** de procedimientos médicos basados en tarifas hospitalarias
 
 MeDico1/
-
-├── apps/                       # Aplicaciones Django- 📊 **Explorar catálogo** completo de cirugías organizadas por especialidades- Configure the top-level `parserOptions` property like this:
-
+├── apps/                       # Aplicaciones Django- 📊 **Explorar catálogo** completo de cirugías organizadas por especialidades-
 │   ├── medico/                # App principal
-
 │   ├── medio_auth/            # Autenticación- ⭐ **Guardar favoritos** para acceso rápido a procedimientos frecuentes
-
 │   ├── communication/         # Mensajería
-
 │   ├── invoice/               # Facturación- 📝 **Mantener historial** de cálculos realizados```js
-
 │   └── payment/               # Pagos
-
 ├── core/                      # Configuración Django- 🔐 **Gestión segura** de usuarios con autenticación robustaexport default tseslint.config({
-
 │   ├── settings/              # Settings por ambiente
-
 │   │   ├── base.py           # Configuración base- 🎨 **Interfaz moderna** con modo claro/oscuro  languageOptions: {
-
 │   │   ├── dev.py            # Desarrollo
-
 │   │   └── prod.py           # Producción    // other options...
-
 │   ├── urls.py               # Rutas principales
-
 │   ├── views.py              # Vistas core## 🚀 Quick Start    parserOptions: {
-
 │   └── middleware.py         # Middleware (auto-inicia Vite)
-
 ├── src/                       # Aplicación React      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-
 │   ├── features/             # Funcionalidades por módulo
-
 │   │   ├── auth/             # Autenticación```bash      tsconfigRootDir: import.meta.dirname,
-
 │   │   ├── dashboard/        # Dashboard
-
 │   │   ├── calculator/       # Calculadora médica# Clonar repositorio    },
-
 │   │   ├── operations/       # Operaciones
-
 │   │   ├── favorites/        # Favoritosgit clone https://github.com/jricica/MeDico1.git  },
-
 │   │   ├── history/          # Historial
-
 │   │   └── settings/         # Configuracióncd MeDico1})
-
 │   ├── shared/               # Código compartido
-
 │   │   ├── components/       # Componentes reutilizables```
-
 │   │   ├── hooks/            # React hooks
-
 │   │   ├── lib/              # Utilidades# Instalar dependencias
-
 │   │   ├── types/            # Tipos TypeScript
-
 │   │   └── constants/        # Constantesnpm install- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-
 │   ├── core/                 # Core del frontend
-
 │   │   └── router/           # Configuración de rutas- Optionally add `...tseslint.configs.stylisticTypeChecked`
-
 │   └── pages/                # Páginas principales
-
 ├── public/                    # Archivos estáticos# Configurar variables de entorno- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
 │   └── App_cirugias_excel/   # CSVs de cirugías
-
 ├── venv/                      # Entorno virtual Pythoncp .env.example .env
-
 ├── manage.py                  # CLI de Django
-
 ├── requirements.txt           # Dependencias Python# Editar .env con tus credenciales```js
-
 └── package.json              # Dependencias Node.js
 
 ```// eslint.config.js
-
+```
 
 
 ## 🔧 Instalación# Iniciar servidor de desarrolloimport react from 'eslint-plugin-react'
@@ -138,7 +100,7 @@ MeDico1/
 
 
 
-- Python 3.12+```export default tseslint.config({
+- Python 3.12+ export default tseslint.config({
 
 - Node.js 18+
 
@@ -215,7 +177,6 @@ MeDico1/
 CREATE DATABASE MeDico;│   ├── core/              # Núcleo de la aplicación
 
 ```│   └── main.tsx           # Entry point
-
 ├── backend/               # Datos y migraciones
 
 2. Configurar variables de entorno (crear archivo `.env`):├── docs/                  # Documentación
@@ -281,6 +242,7 @@ python manage.py createsuperuser- `docs:` Cambios en documentación
 #### Instalar dependencias
 
 - **Desarrollador Principal**: [@jricica](https://github.com/jricica)
+- **Desarrollador Principal**: [@Nachopacca24](https://github.com/Nachopacca24)
 
 ```bash
 
@@ -299,8 +261,6 @@ npm install## 📞 Contacto
 
 
 **Un solo comando inicia todo:**<div align="center">
-
-  <strong>Hecho con ❤️ para profesionales de la salud</strong>
 
 ```bash</div>
 
@@ -504,15 +464,3 @@ Get-Service postgresql*
 python manage.py migrate --fake
 python manage.py migrate
 ```
-
-## 📄 Licencia
-
-[Especificar licencia]
-
-## 👥 Equipo
-
-[Especificar equipo/autores]
-
-## 📞 Contacto
-
-[Especificar información de contacto]
