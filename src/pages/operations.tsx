@@ -15,8 +15,8 @@ interface CSVOperation {
 
 const folderStructure = {
   Cardiovascular: {
-    "Corazón": "Cardiovascular/Corazón.csv",
     "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
+    "Corazón": "Cardiovascular/Corazón.csv",
     "Vasos Periféricos": "Cardiovascular/Vasos_periféricos.csv",
   },
   Dermatología: {
@@ -66,6 +66,9 @@ const folderStructure = {
   },
   Urología: {
     "Urología": "Urología/Urología.csv",
+  },
+  "Sin Clasificación": {
+    "Sin Clasificación": "Sin_clasificación.csv",
   },
 };
 
