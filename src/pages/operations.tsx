@@ -70,6 +70,64 @@ const folderStructure = {
   "Sin Clasificación": {
     "Sin Clasificación": "Sin_clasificación.csv",
   },
+  Demartología: {
+    Demartología: "Dermatologia/Dermatología.csv",
+  },
+  Digestivo: {
+    "Estómago e Intestino": "Digestivo/Estómagp_e_intestino.csv",
+    "Peritoneo y Hernias": "Digestivo/Peritoneo_y_hernias.csv",
+    "Hígado & Páncreas": "Digestivo/Hígado_Páncreas.csv",
+  },
+  Endocrino: {
+    Endocrino: "Endocrino/Endocrino.csv",
+  },
+  Ginecologia: {
+    Ginecología: "Ginecología/Ginecología.csv",
+  },
+
+  Mama: {
+    Mama: "Mama/Mama.csv",
+  },
+  Neurocirugía: {
+    "Columna vertebral": "Neurocirugía/Columna_vertebral.csv",
+    "Cráneo y Columna": "Neurocirugía/Cráneo_y_columna.csv",
+  },
+  Obstetricia: {
+    Obstetricia: "Obstercia/Obstetricia.csv",
+  },
+  Oftalmología: {
+    Oftalmología: "Oftamología/Oftalmología.csv",
+  },
+
+  Ortopedia: {
+    Cadera: "Ortopedia/Cadera.csv",
+    Hombro: "Ortopedia/Hombro.csv",
+    "Muñeca y Mano": "Ortopedia/Muñeca_y_mano.csv",
+    Pie: "Ortopedia/Pie.csv",
+  },
+
+  Otorrino: {
+    Otorrino: "Otorrino/Otorrino.csv",
+  },
+
+  "Procesos variados": {
+    "Cirugía general": "Procesos_variados/Cirugía_General.csv",
+    "Drenajes e incisiones": "Procesos_variados/Drenajes_incisiones.csv",
+    "Reparaciones y suturas": "Procesos_varaidos/Reparaciones_(suturas).csv",
+    "Uñas y piel": "Procesos_varaidos/Uñas___piel.csv",
+  },
+
+  Urologia: {
+    Urología: "Urologia/Urología.csv",
+  },
+  "Sin clasificación": {
+    "Sin clasificación": "Sin_clasificacion/Sin_clasificación.csv",
+  },
+
+
+
+
+  
 };
 
 // Tarjeta de operación

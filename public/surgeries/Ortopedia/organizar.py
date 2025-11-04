@@ -1,39 +1,37 @@
 import pandas as pd
 import os
 
-# Nombre de la especialidad que vas a procesar
+# Nombre de la especialidad y archivo de entrada
 especialidad = "Ortopedia"
+archivo_excel = r"C:\Users\nacho\OneDrive\Documentos\GitHub\MeDico1\public\App_cirugias_excel\TABLA DE CALIFORNIA.xlsx"
 
-archivo_especialidad = r"C:\Users\nacho\OneDrive\Documentos\GitHub\MeDico\App_cirugias_excel\Ortopedia\Ortopedia.csv"
+# Leer el archivo Excel
+df = pd.read_excel(archivo_excel)
 
-# Leer el archivo correspondiente a la especialidad
-df = pd.read_csv(archivo_especialidad)
+# Mostrar columnas disponibles (opcional)
+print("Columnas encontradas:")
+print(df.columns)
 
-# Eliminar duplicados exactos
-df = df.drop_duplicates()
+# Convertir la columna CPT a numérica (por si hay texto o espacios)
+df["CPT"] = pd.to_numeric(df["CPT"], errors="coerce")
 
-# Limpiar espacios y estandarizar grupos
-df['grupo'] = df['grupo'].astype(str).str.strip()
+# Filtrar filas con códigos entre 26000 y 26992
+df_filtrado = df[df["CPT"].between(26000, 26992)]
 
-# Crear carpeta si no existe
-carpeta_salida = os.path.dirname(archivo_especialidad)
+# Seleccionar solo las columnas que te interesan: A (CPT), C (DESCRIPTION) y D (RVU)
+df_filtrado = df_filtrado[["CPT", "DESCRIPTION", "RVU"]]
+
+# Eliminar duplicados (por seguridad)
+df_filtrado = df_filtrado.drop_duplicates()
+
+# Crear la ruta de salida (mismo lugar del Excel)
+carpeta_salida = os.path.dirname(archivo_excel)
 os.makedirs(carpeta_salida, exist_ok=True)
 
-# Verificación antes
-total_original = len(df)
-print(f"Total original: {total_original}")
+# Nombre del archivo final
+archivo_salida = os.path.join(carpeta_salida, f"{especialidad}.csv")
 
-# Crear un CSV por cada grupo (área)
-total_generado = 0
-grupos = df['grupo'].unique()
+# Guardar en CSV
+df_filtrado.to_csv(archivo_salida, index=False, encoding="utf-8-sig")
 
-for grupo in grupos:
-    df_grupo = df[df['grupo'] == grupo]
-    total_generado += len(df_grupo)
-
-    nombre_archivo = grupo.replace(" ", "_").replace("/", "_") + ".csv"
-    ruta_archivo = os.path.join(carpeta_salida, nombre_archivo)
-    df_grupo.to_csv(ruta_archivo, index=False, encoding='utf-8-sig')
-
-print(f"Total en archivos generados: {total_generado}")
-print(f"Diferencia: {total_generado - total_original}")
+print(f"\n✅ Archivo '{archivo_salida}' generado con {len(df_filtrado)} registros.")
