@@ -510,26 +510,10 @@ CORS_ALLOWED_ORIGINS=https://tu-dominio.com
 
 ---
 
-## 🤝 Contribuir
-
-¡Las contribuciones son bienvenidas! Por favor sigue estos pasos:
-
-1. **Fork** el repositorio
-2. **Crea una rama** para tu feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** tus cambios usando [Conventional Commits](https://www.conventionalcommits.org/):
-   - `feat:` Nueva funcionalidad
-   - `fix:` Corrección de bugs
-   - `docs:` Cambios en documentación
-   - `style:` Formato, estilos (no afectan código)
-   - `refactor:` Refactorización de código
-   - `test:` Agregar/modificar tests
-   - `chore:` Tareas de mantenimiento
-4. **Push** a tu rama (`git push origin feature/AmazingFeature`)
-5. **Abre un Pull Request**
 
 ### Ejemplos de commits:
 ```bash
-git commit -m "feat: agregar filtro por RVU en calculadora"
+git commit -m "feat/feature: agregar filtro por RVU en calculadora"
 git commit -m "fix: corregir error en carga de CSV de Ortopedia"
 git commit -m "docs: actualizar README con instrucciones de deploy"
 ```
@@ -544,7 +528,7 @@ Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para m�
 
 ## 👥 Equipo
 
-- **Lead Developer**: [@jricica](https://github.com/jricica)
+- **Developer**: [@jricica](https://github.com/jricica)
 - **Developer**: [@Nachopacca24](https://github.com/Nachopacca24)
 
 ---
@@ -553,8 +537,7 @@ Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para m�
 
 - 🐛 **Reportar bugs**: [Issues en GitHub](https://github.com/jricica/MeDico1/issues)
 - 💡 **Sugerencias**: [Discussions en GitHub](https://github.com/jricica/MeDico1/discussions)
-- 📧 **Email**: [tu-email@example.com](mailto:tu-email@example.com)
-
+- 📧 **Email**:
 ---
 
 ## 📚 Recursos Adicionales
@@ -567,10 +550,3 @@ Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para m�
 
 ---
 
-<div align="center">
-
-**⭐ Si este proyecto te fue útil, considera darle una estrella en GitHub ⭐**
-
-Hecho con ❤️ por el equipo de MéDico1
-
-</div>
