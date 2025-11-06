@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { Button } from "@/shared/components/ui/button";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { 
@@ -24,7 +24,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
 
   const navItems = [
     { name: "Dashboard", path: "/", icon: Home },
@@ -89,15 +89,15 @@ export function AppLayout({ children }: AppLayoutProps) {
           </ul>
         </nav>
 
-        {session?.user && (
+        {user && (
           <div className="border-t border-primary-foreground/10 p-4 mt-4">
             <div className="flex items-center justify-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground text-primary text-lg font-bold">
-                {session.user.name?.charAt(0) || "U"}
+                {user.name?.charAt(0) || user.first_name?.charAt(0) || "U"}
               </div>
               <div className="ml-3 text-left">
-                <p className="text-sm font-medium">{session.user.name}</p>
-                <p className="text-xs opacity-70">{session.user.email}</p>
+                <p className="text-sm font-medium">{user.name || user.full_name}</p>
+                <p className="text-xs opacity-70">{user.email}</p>
               </div>
             </div>
           </div>

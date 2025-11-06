@@ -8,7 +8,6 @@ import {
 } from "@/shared/components/ui/popover";
 import { Input } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/utils";
-import { fine } from "@/shared/lib/fine";
 import type { Schema } from "@/shared/lib/db-types";
 
 interface HospitalSelectorProps {
@@ -26,9 +25,9 @@ export function HospitalSelector({ onSelect, selectedId }: HospitalSelectorProps
   useEffect(() => {
     const fetchHospitals = async () => {
       try {
-        const data = await fine.table("hospitals").select();
-        setHospitals(data || []);
-        setFilteredHospitals(data || []);
+        // TODO: Implementar fetch de hospitales desde Django API
+        setHospitals([]);
+        setFilteredHospitals([]);
       } catch (error) {
         console.error("Failed to fetch hospitals:", error);
       } finally {

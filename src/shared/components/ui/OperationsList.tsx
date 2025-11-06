@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { OperationCard } from "@/shared/components/ui/OperationCard";
 import { SearchBar } from "@/shared/components/ui/SearchBar";
 import { SpecialtyFilter } from "@/shared/components/ui/SpecialtyFilter";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import type { Schema } from "@/shared/lib/db-types";
 
@@ -19,53 +19,29 @@ export function OperationsList({ favoritesOnly = false, csvOperations }: Operati
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<number | null>(null);
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1️⃣ Datos de la DB
-        const operationsData = await fine.table("operations").select("*");
-        const specialties = await fine.table("specialties").select("id, name");
-
-        const dbMapped = operationsData.map(op => {
-          const specialty = specialties?.find(s => s.id === op.specialtyId);
-          return {
-            ...op,
-            specialtyName: specialty?.name || "Unknown Specialty",
-          };
-        });
-
-        // 2️⃣ Datos del CSV mapeados al mismo tipo
+        // TODO: Implementar fetch de operaciones desde Django API
+        // Por ahora, solo usar datos del CSV si están disponibles
         const csvMapped = csvOperations?.map((c, index) => ({
-          id: -(index + 1),       // id negativo para evitar choque con DB
-          name: c.cirugia,         // <-- ahora usa la columna correcta
-          code: c.codigo,          // <-- si quieres
-          specialtyId: 0,          // obligatorio (puedes asignar 0)
-          basePoints: parseFloat(c.rvu) || 0,  // si quieres usar rvu
-          description: "",         // obligatorio
-          complexity: 0,           // obligatorio
+          id: -(index + 1),
+          name: c.cirugia,
+          code: c.codigo,
+          specialty_id: 0,
+          base_points: parseFloat(c.rvu) || 0,
+          description: "",
+          complexity: 0,
           specialtyName: c.especialidad,
-          price: undefined          // opcional
+          price: undefined
         })) || [];
 
-
-        // 3️⃣ Combinar DB + CSV
-        const allOperations = [...dbMapped, ...csvMapped];
-        setOperations(allOperations);
-        setFilteredOperations(allOperations);
-
-        // 4️⃣ Favoritos
-        if (session?.user?.id) {
-          const favoritesData = await fine.table("favorites")
-            .select("operationId")
-            .eq("userId", session.user.id);
-
-          if (favoritesData) {
-            setFavorites(favoritesData.map(f => f.operationId));
-          }
-        }
+        setOperations(csvMapped);
+        setFilteredOperations(csvMapped);
+        setFavorites([]);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -74,14 +50,14 @@ export function OperationsList({ favoritesOnly = false, csvOperations }: Operati
     };
 
     fetchData();
-  }, [csvOperations, session?.user?.id]);
+  }, [csvOperations, user?.id]);
 
   useEffect(() => {
     // Aplicar filtros
     let filtered = operations;
 
     if (favoritesOnly) filtered = filtered.filter(op => favorites.includes(op.id!));
-    if (selectedSpecialty !== null) filtered = filtered.filter(op => op.specialtyId === selectedSpecialty);
+    if (selectedSpecialty !== null) filtered = filtered.filter(op => op.specialty_id === selectedSpecialty);
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(op =>
@@ -95,12 +71,9 @@ export function OperationsList({ favoritesOnly = false, csvOperations }: Operati
   }, [operations, favorites, selectedSpecialty, searchQuery, favoritesOnly]);
 
   const handleFavoriteToggle = async () => {
-    if (session?.user?.id) {
-      const favoritesData = await fine.table("favorites")
-        .select("operationId")
-        .eq("userId", session.user.id);
-
-      if (favoritesData) setFavorites(favoritesData.map(f => f.operationId));
+    // TODO: Implementar recarga de favoritos desde Django API
+    if (user?.id) {
+      setFavorites([]);
     }
   };
 

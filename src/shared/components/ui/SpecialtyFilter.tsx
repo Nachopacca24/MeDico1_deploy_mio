@@ -8,7 +8,6 @@ import {
 } from "@/shared/components/ui/popover";
 import { Input } from "@/shared/components/ui/input";
 import { cn } from "@/shared/lib/utils";
-import { fine } from "@/shared/lib/fine";
 import type { Schema } from "@/shared/lib/db-types";
 
 interface SpecialtyFilterProps {
@@ -26,9 +25,9 @@ export function SpecialtyFilter({ onSelect, selectedId }: SpecialtyFilterProps) 
   useEffect(() => {
     const fetchSpecialties = async () => {
       try {
-        const data = await fine.table("specialties").select();
-        setSpecialties(data || []);
-        setFilteredSpecialties(data || []);
+        // TODO: Implementar fetch de especialidades desde Django API
+        setSpecialties([]);
+        setFilteredSpecialties([]);
       } catch (error) {
         console.error("Failed to fetch specialties:", error);
       } finally {

@@ -1,14 +1,27 @@
-import { fine } from "@/shared/lib/fine";
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
 export default function Logout() {
-  if (!fine) return <Navigate to='/' />;
+  const { logout, isAuthenticated, loading } = useAuth();
 
-  const { isPending, data } = fine.auth.useSession();
   useEffect(() => {
-    if (!isPending && data) fine.auth.signOut();
-  }, [data]);
+    if (isAuthenticated && !loading) {
+      logout();
+    }
+  }, [isAuthenticated, loading, logout]);
 
-  return !isPending && !data ? <Navigate to='/login' /> : null;
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">Cerrando sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return !isAuthenticated ? <Navigate to='/login' replace /> : null;
 }

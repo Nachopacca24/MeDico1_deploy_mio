@@ -7,14 +7,14 @@ import { Label } from "@/shared/components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { useToast } from "@/shared/hooks/use-toast";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
 
   const [settings, setSettings] = useState({
     name: "",
@@ -26,14 +26,14 @@ const Settings = () => {
   });
 
   useEffect(() => {
-    if (session?.user) {
+    if (user) {
       setSettings(prev => ({
         ...prev,
-        name: session.user.name || "",
-        email: session.user.email || "",
+        name: user.name || user.full_name || "",
+        email: user.email || "",
       }));
     }
-  }, [session]);
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

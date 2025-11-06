@@ -2,12 +2,12 @@ import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { DashboardStats } from "@/shared/components/ui/DashboardStats";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { Calculator, ListChecks, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
 
   return (
     <AppLayout>
@@ -22,7 +22,7 @@ const Index = () => {
             contentEditable={false}
           />
           <p className="text-muted-foreground">
-            Welcome back, {session?.user?.name || "Doctor"}! Manage your medical operation valuations.
+            Welcome back, {user?.name || user?.full_name || "Doctor"}! Manage your medical operation valuations.
           </p>
         </div>
 

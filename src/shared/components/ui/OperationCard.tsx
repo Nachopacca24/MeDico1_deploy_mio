@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/shared/c
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { useToast } from "@/shared/hooks/use-toast";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/shared/lib/utils";
 import type { Schema } from "@/shared/lib/db-types";
@@ -23,36 +23,19 @@ export function OperationCard({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
 
   const handleFavoriteToggle = async () => {
-    if (!session?.user?.id) return;
+    if (!user?.id) return;
     
     setLoading(true);
     try {
-      if (isFavorite) {
-        // Remove from favorites
-        await fine.table("favorites")
-          .delete()
-          .eq("userId", session.user.id)
-          .eq("operationId", operation.id!);
-        
-        toast({
-          title: "Removed from favorites",
-          description: `${operation.name} has been removed from your favorites.`
-        });
-      } else {
-        // Add to favorites
-        await fine.table("favorites").insert({
-          userId: session.user.id,
-          operationId: operation.id!
-        });
-        
-        toast({
-          title: "Added to favorites",
-          description: `${operation.name} has been added to your favorites.`
-        });
-      }
+      // TODO: Implementar API de favoritos en Django
+      toast({
+        title: "Coming Soon",
+        description: "Favorites feature will be available soon.",
+        variant: "default"
+      });
       
       if (onFavoriteToggle) {
         onFavoriteToggle();
@@ -104,7 +87,7 @@ export function OperationCard({
         )}
         <div className="mt-3 flex items-center gap-2">
           <Badge variant="secondary">
-            {operation.basePoints} points
+            {operation.base_points} points
           </Badge>
           {operation.specialtyName && (
             <Badge variant="outline" className="bg-primary/10">

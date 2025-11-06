@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { SearchBar } from "@/shared/components/ui/SearchBar";
 import { Loader2, Calculator, Trash2 } from "lucide-react";
 import { useToast } from "@/shared/hooks/use-toast";
@@ -34,52 +34,17 @@ const History = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchCalculations = async () => {
-      if (!session?.user?.id) return;
+      if (!user?.id) return;
       
       setLoading(true);
       try {
-        // Get calculation history
-        const historyData = await fine.table("calculationHistory")
-          .select("*")
-          .eq("userId", session.user.id)
-          .order("calculatedAt", { ascending: false });
-        
-        if (historyData && historyData.length > 0) {
-          // Get operations
-          const operationIds = historyData.map(h => h.operationId);
-          const operations = await fine.table("operations")
-            .select("id, name, code")
-            .in("id", operationIds);
-          
-          // Get hospitals
-          const hospitalIds = historyData.map(h => h.hospitalId);
-          const hospitals = await fine.table("hospitals")
-            .select("id, name")
-            .in("id", hospitalIds);
-          
-          // Map the data
-          const mappedData = historyData.map(calc => {
-            const operation = operations?.find(o => o.id === calc.operationId);
-            const hospital = hospitals?.find(h => h.id === calc.hospitalId);
-            
-            return {
-              ...calc,
-              operationName: operation?.name || "Unknown Operation",
-              operationCode: operation?.code || null,
-              hospitalName: hospital?.name || "Unknown Hospital"
-            };
-          });
-          
-          setCalculations(mappedData);
-          setFilteredCalculations(mappedData);
-        } else {
-          setCalculations([]);
-          setFilteredCalculations([]);
-        }
+        // TODO: Implementar fetch de historial desde Django API
+        setCalculations([]);
+        setFilteredCalculations([]);
       } catch (error) {
         console.error("Failed to fetch calculation history:", error);
         toast({
@@ -93,7 +58,7 @@ const History = () => {
     };
 
     fetchCalculations();
-  }, [session?.user?.id, toast]);
+  }, [user?.id, toast]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -112,13 +77,12 @@ const History = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await fine.table("calculationHistory").delete().eq("id", id);
-      
+      // TODO: Implementar eliminación desde Django API
       setCalculations(prev => prev.filter(calc => calc.id !== id));
       
       toast({
-        title: "Deleted",
-        description: "Calculation record has been removed from history.",
+        title: "Coming Soon",
+        description: "Delete functionality will be available soon.",
       });
     } catch (error) {
       toast({

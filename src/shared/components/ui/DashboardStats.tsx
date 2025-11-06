@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Loader2 } from "lucide-react";
 
@@ -8,91 +8,20 @@ export function DashboardStats() {
   const [recentCalculations, setRecentCalculations] = useState<any[]>([]);
   const [specialtyStats, setSpecialtyStats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!session?.user?.id) return;
+      if (!user?.id) return;
       
       setLoading(true);
       try {
-        // Fetch recent calculations
-        const historyData = await fine.table("calculationHistory")
-          .select("*")
-          .eq("userId", session.user.id)
-          .order("calculatedAt", { ascending: false })
-          .limit(5);
-        
-        if (historyData && historyData.length > 0) {
-          // Fetch operation names
-          const operationIds = historyData.map(h => h.operationId);
-          const operations = await fine.table("operations")
-            .select("id, name")
-            .in("id", operationIds);
-          
-          // Fetch hospital names
-          const hospitalIds = historyData.map(h => h.hospitalId);
-          const hospitals = await fine.table("hospitals")
-            .select("id, name")
-            .in("id", hospitalIds);
-          
-          // Map the data
-          const mappedData = historyData.map(calc => {
-            const operation = operations?.find(o => o.id === calc.operationId);
-            const hospital = hospitals?.find(h => h.id === calc.hospitalId);
-            
-            return {
-              ...calc,
-              operationName: operation?.name || "Unknown Operation",
-              hospitalName: hospital?.name || "Unknown Hospital"
-            };
-          });
-          
-          setRecentCalculations(mappedData);
-        }
-        
-        // For specialty stats, we'll need to do multiple queries
-        // First get all calculations by this user
-        const allCalculations = await fine.table("calculationHistory")
-          .select("operationId")
-          .eq("userId", session.user.id);
-        
-        if (allCalculations && allCalculations.length > 0) {
-          // Get all operations
-          const operationIds = allCalculations.map(c => c.operationId);
-          const operations = await fine.table("operations")
-            .select("id, specialtyId")
-            .in("id", operationIds);
-          
-          // Count by specialty
-          const specialtyCounts: Record<number, number> = {};
-          operations?.forEach(op => {
-            if (specialtyCounts[op.specialtyId]) {
-              specialtyCounts[op.specialtyId]++;
-            } else {
-              specialtyCounts[op.specialtyId] = 1;
-            }
-          });
-          
-          // Get specialty names
-          const specialtyIds = Object.keys(specialtyCounts).map(Number);
-          const specialties = await fine.table("specialties")
-            .select("id, name")
-            .in("id", specialtyIds);
-          
-          // Create the final stats array
-          const stats = specialties?.map(specialty => ({
-            specialtyName: specialty.name,
-            calculationCount: specialtyCounts[specialty.id] || 0
-          })) || [];
-          
-          // Sort by count descending
-          stats.sort((a, b) => b.calculationCount - a.calculationCount);
-          
-          setSpecialtyStats(stats.slice(0, 5)); // Take top 5
-        }
+        // TODO: Implementar fetch de datos desde Django API
+        // Por ahora, mostrar datos vacíos hasta que se implemente el endpoint
+        setRecentCalculations([]);
+        setSpecialtyStats([]);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -101,7 +30,7 @@ export function DashboardStats() {
     };
 
     fetchDashboardData();
-  }, [session?.user?.id]);
+  }, [user?.id]);
 
   if (loading) {
     return (

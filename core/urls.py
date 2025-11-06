@@ -6,8 +6,8 @@ from core.views import IndexView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/auth/', include('apps.medio_auth.urls')),  # Auth sin versión para simplicidad
     path('api/v1/medico/', include('apps.medico.urls')),
-    path('api/v1/auth/', include('apps.medio_auth.urls')),
     path('api/v1/communication/', include('apps.communication.urls')),
     path('api/v1/invoice/', include('apps.invoice.urls')),
     path('api/v1/payment/', include('apps.payment.urls')),

@@ -7,7 +7,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { useToast } from "@/shared/hooks/use-toast";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { Calculator, Save } from "lucide-react";
 import type { Schema } from "@/shared/lib/db-types";
 
@@ -16,7 +16,7 @@ export function CalculatorForm() {
   const operationId = searchParams.get("operationId");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { data: session } = fine.auth.useSession();
+  const { user } = useAuth();
 
   const [operation, setOperation] = useState<Schema["operations"] & { specialtyName?: string } | null>(null);
   const [selectedHospital, setSelectedHospital] = useState<number | undefined>();
@@ -33,24 +33,12 @@ export function CalculatorForm() {
       
       setLoading(true);
       try {
-        // Using table operations instead of execute
-        const operations = await fine.table("operations").select("*").eq("id", Number(operationId));
-        
-        if (operations && operations.length > 0) {
-          const op = operations[0];
-          
-          // Get specialty name in a separate query
-          const specialties = await fine.table("specialties").select("name").eq("id", op.specialtyId);
-          
-          if (specialties && specialties.length > 0) {
-            setOperation({
-              ...op,
-              specialtyName: specialties[0].name
-            });
-          } else {
-            setOperation(op);
-          }
-        }
+        // TODO: Implementar fetch de operación desde Django API
+        setOperation(null);
+        toast({
+          title: "Coming Soon",
+          description: "Operation details will be loaded from the API soon.",
+        });
       } catch (error) {
         console.error("Failed to fetch operation:", error);
         toast({
@@ -71,20 +59,8 @@ export function CalculatorForm() {
       if (!selectedHospital || !operation?.id) return;
       
       try {
-        const rates = await fine.table("hospitalOperationRates")
-          .select()
-          .eq("hospitalId", selectedHospital)
-          .eq("operationId", operation.id);
-        
-        if (rates && rates.length > 0) {
-          setHospitalRate(rates[0]);
-        } else {
-          setHospitalRate(null);
-          toast({
-            title: "No rate found",
-            description: "This hospital doesn't have a specific rate for this operation. Using default calculation.",
-          });
-        }
+        // TODO: Implementar fetch de tarifas desde Django API
+        setHospitalRate(null);
       } catch (error) {
         console.error("Failed to fetch hospital rate:", error);
         setHospitalRate(null);
@@ -116,13 +92,13 @@ export function CalculatorForm() {
       let value: number;
       
       if (hospitalRate) {
-        value = operation.basePoints * hospitalRate.pointValue * hospitalRate.currencyPerPoint;
+        value = operation.base_points * hospitalRate.point_value * hospitalRate.currency_per_point;
       } else {
         // Default calculation - this is a simplified version
         // In a real app, you might want to fetch a default rate from the hospital
         const defaultPointValue = 1.0;
         const defaultCurrencyPerPoint = 10.0; // 10 Quetzales per point as default
-        value = operation.basePoints * defaultPointValue * defaultCurrencyPerPoint;
+        value = operation.base_points * defaultPointValue * defaultCurrencyPerPoint;
       }
       
       // Apply complexity multiplier
@@ -147,7 +123,7 @@ export function CalculatorForm() {
   };
 
   const handleSaveCalculation = async () => {
-    if (!operation?.id || !selectedHospital || calculatedValue === null || !session?.user?.id) {
+    if (!operation?.id || !selectedHospital || calculatedValue === null || !user?.id) {
       toast({
         title: "Cannot save",
         description: "Please complete the calculation first.",
@@ -158,21 +134,13 @@ export function CalculatorForm() {
     
     setSaving(true);
     try {
-      await fine.table("calculationHistory").insert({
-        userId: session.user.id,
-        operationId: operation.id,
-        hospitalId: selectedHospital,
-        calculatedValue,
-        notes: notes || null
-      });
-      
+      // TODO: Implementar guardado de cálculo en Django API
       toast({
-        title: "Saved successfully",
-        description: "Your calculation has been saved to history.",
+        title: "Coming Soon",
+        description: "Save to history will be available soon.",
       });
       
-      // Redirect to history page
-      navigate("/history");
+      // navigate("/history");
     } catch (error) {
       toast({
         title: "Error",
@@ -232,7 +200,7 @@ export function CalculatorForm() {
             )}
             <div className="mt-2 flex flex-wrap gap-2">
               <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium">
-                {operation.basePoints} base points
+                {operation.base_points} base points
               </span>
               {operation.specialtyName && (
                 <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium">
@@ -280,8 +248,8 @@ export function CalculatorForm() {
                 Q{calculatedValue.toFixed(2)}
               </p>
               <p className="mt-1 text-sm text-green-600 dark:text-green-300">
-                {operation?.basePoints || 0} points × 
-                {hospitalRate ? ` Q${hospitalRate.currencyPerPoint.toFixed(2)}` : " default rate"} × 
+                {operation?.base_points || 0} points × 
+                {hospitalRate ? ` Q${hospitalRate.currency_per_point.toFixed(2)}` : " default rate"} × 
                 complexity factor
               </p>
             </div>

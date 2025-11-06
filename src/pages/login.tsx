@@ -1,7 +1,8 @@
 import type React from "react";
 import { useState } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
-import { fine } from "@/shared/lib/fine";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import { AuthError } from '@/shared/services/authErrors';
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
@@ -20,6 +21,7 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login, isAuthenticated } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,37 +66,32 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await fine.auth.signIn.email(
-        {
-          email: formData.email,
-          password: formData.password,
-          callbackURL: "/",
-          rememberMe: formData.rememberMe,
-        },
-        {
-          onRequest: () => {
-            setIsLoading(true);
-          },
-          onSuccess: () => {
-            toast({
-              title: "Success",
-              description: "You have been signed in successfully.",
-            });
-            navigate("/");
-          },
-          onError: (ctx) => {
-            toast({
-              title: "Error",
-              description: ctx.error.message,
-              variant: "destructive",
-            });
-          },
-        }
-      );
-    } catch (error: any) {
+      await login({
+        email: formData.email,
+        password: formData.password,
+      });
+
       toast({
-        title: "Error",
-        description: error.message || "Invalid email or password.",
+        title: "¡Bienvenido!",
+        description: "Has iniciado sesión exitosamente.",
+      });
+      
+      // El navigate lo hace el AuthContext automáticamente
+    } catch (error: any) {
+      console.error('Error en login:', error);
+      
+      let errorMessage = "Email o contraseña incorrectos.";
+      
+      // Manejar errores estructurados de AuthError
+      if (error instanceof AuthError) {
+        errorMessage = error.getUserMessage();
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      toast({
+        title: "Error al iniciar sesión",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -102,9 +99,10 @@ export default function LoginForm() {
     }
   };
 
-  if (!fine) return <Navigate to='/' />;
-  const { isPending, data } = fine.auth.useSession();
-  if (!isPending && data) return <Navigate to='/' />;
+  // Si ya está autenticado, redirigir al dashboard
+  if (isAuthenticated) {
+    return <Navigate to='/' replace />;
+  }
 
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>
