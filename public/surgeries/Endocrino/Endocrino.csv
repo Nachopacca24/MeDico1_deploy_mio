@@ -1,4 +1,22 @@
 ﻿codigo,cirugia,rvu,especialidad,grupo
+48000,DRAINAGE ABD PANCREATITIS,6.4,Sin clasificación,Sin clasificación
+48020,REMOV PANCREATIC CALCU,8.8,Sin clasificación,Sin clasificación
+48100,BX PANCREAS (SEPART PROC),6.9,Sin clasificación,Sin clasificación
+48102,BX PANCREAS PERCUT NEEDLE,1.5,Sin clasificación,Sin clasificación
+48120,EXC LES PANCREAS,8.8,Sin clasificación,Sin clasificación
+48140,PANCREATECTOMY DISTAL SUBTL W/WO SPLENECTOMY,10.3,Sin clasificación,Sin clasificación
+48145,PANCREATECTOMY DISTAL SUBTL; W/PANCREATICOJEJUNO,11.8,Sin clasificación,Sin clasificación
+48148,EXC AMPULLA VATER SIMPL,11.8,Sin clasificación,Sin clasificación
+48150,PANCREATECTOMY PROX SUBTL W/PANCREATICODUODENECT,19.6,Sin clasificación,Sin clasificación
+48151,PANCREATECTOMY NEAR-TOT W/PRESERV DUODENUM,13.7,Sin clasificación,Sin clasificación
+48155,PANCREATECTOMY TOT,16.7,Sin clasificación,Sin clasificación
+48160,PANCREATECTOMY TOT; W/TRANSPL,BR,Sin clasificación,Sin clasificación
+48180,PANCREATICOJEJUNOS SIDE-SIDE ANASTOM (SEP PRO),15.5,Sin clasificación,Sin clasificación
+48500,MARSUPIALIZATION CYST PANCREAS,9.4,Sin clasificación,Sin clasificación
+48510,EXT DRAINAGE PSEUDOCYST PANCREAS,9.8,Sin clasificación,Sin clasificación
+48520,INT ANASTOM PANCREATIC CYST-GI TRACT; DIRECT,8.3,Sin clasificación,Sin clasificación
+48540,INT ANASTOM PANCREATIC CYST-GI TRACT; ROUX-EN-Y,9.8,Sin clasificación,Sin clasificación
+48999,UNLISTED PROC PANCREAS,BR,Sin clasificación,Sin clasificación
 60000,I&D THYROGLOSSAL CYST INFEC,0.6,Endocrino,Tiroides / glándulas
 60100,BX THYROID PERCUT NEEDLE,0.8,Endocrino,Tiroides / glándulas
 60200,EXC CYST/ADENOMA THYROID/TRANSECTION ISTHMUS,5.4,Endocrino,Tiroides / glándulas
@@ -22,3 +40,4 @@
 60600,EXC CAROTID BODY TUMOR; WO EXC CAROTID ART,9.8,Endocrino,Tiroides / glándulas
 60605,EXC CAROTID BODY TUMOR; W/EXC CAROTID ART,12.3,Endocrino,Tiroides / glándulas
 60699,UNLISTED PROC ENDOCRINE SYST,BR,Endocrino,Tiroides / glándulas
+

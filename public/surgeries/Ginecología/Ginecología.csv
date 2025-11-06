@@ -1,4 +1,21 @@
 ﻿codigo,cirugia,rvu,especialidad,grupo
+56300,LAP DX (SEPART PROC),4.4,Sin clasificación,Sin clasificación
+56301,LAP SURG; W/FULG OVIDUCTS,4.6,Sin clasificación,Sin clasificación
+56302,LAP SURG; W/OCCLUD OVIDUCTS BY DEVICE,4.6,Sin clasificación,Sin clasificación
+56303,LAP SURG; W/FULG/EXC LES OVARY/PELVIC VISCERA,7.4,Sin clasificación,Sin clasificación
+56304,LAP SURG; W/LYSIS ADHESIONS,6.4,Sin clasificación,Sin clasificación
+56305,LAP SURG; W/BX,5.3,Sin clasificación,Sin clasificación
+56306,LAP SURG; W/ASPIRAT,5.6,Sin clasificación,Sin clasificación
+56307,LAP SURG; W/REMOV ADNEXAL STRUCT,8.6,Sin clasificación,Sin clasificación
+56308,LAP SURG; W/VAG HYST W/WO REMOV TUBE(S),11,Sin clasificación,Sin clasificación
+56309,LAP SURG; W/REMOV LEIOMYOMATA SUBSEROSAL,6.2,Sin clasificación,Sin clasificación
+56350,HYSTEROSCOPY DX (SEPART PROC),2.6,Sin clasificación,Sin clasificación
+56351,HYSTEROSCOPY SURG; W/SAMPL ENDOMETRIUM W/WO D&C,4.3,Sin clasificación,Sin clasificación
+56352,HYSTEROSCOPY SURG; W/LYSIS INTRAUTERINE ADHESION,5.2,Sin clasificación,Sin clasificación
+56353,HYSTEROSCOPY SURG; W/DIVIS/RESECT SEPTUM,5.5,Sin clasificación,Sin clasificación
+56354,HYSTEROSCOPY SURG; W/REMOV LEIOMYOMATA,6.2,Sin clasificación,Sin clasificación
+56355,HYSTEROSCOPY SURG; W/REMOV IMPACTED F B,5.5,Sin clasificación,Sin clasificación
+56356,HYSTEROSCOPY SURG; W/ENDOMETRIAL ABLATION,7.5,Sin clasificación,Sin clasificación
 56405,I&D VULVA/PERINEAL ABSCESS,0.6,Ginecología,Ovario y útero
 56420,I&D BARTHOLIN'S GLAND ABSCESS,0.8,Ginecología,Ovario y útero
 56440,MARSUPIALIZATION BARTHOLIN'S GLAND CYST,3,Ginecología,Ovario y útero
@@ -141,4 +158,5 @@
 58972,CULTURE & FERTILIZATION OOCYTE,3.8,Ginecología,Ovario y útero
 58974,EMBRYO TRANSF ANY METHD (SEPART PROC),1.4,Ginecología,Ovario y útero
 58976,GAMETE/ZYGOTE INTRAFALLOPIAN TRANSF ANY METHD,5.5,Ginecología,Ovario y útero
+55980,INTERSEX SURG; FE TO MALE,RNE,Ginecología,Ovario y útero
 58999,UNLISTED PROC FE GENIT SYST,BR,Ginecología,Ovario y útero

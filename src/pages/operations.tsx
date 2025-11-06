@@ -1,3 +1,4 @@
+//operations.tsx
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { loadCSV } from "@/shared/utils/csvLoader";
@@ -13,17 +14,17 @@ interface CSVOperation {
   [key: string]: any;
 }
 
+// ✅ Estructura completa sincronizada con csvLoader.ts
 const folderStructure = {
   Cardiovascular: {
-    "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
     "Corazón": "Cardiovascular/Corazón.csv",
     "Vasos Periféricos": "Cardiovascular/Vasos_periféricos.csv",
+    "Tórax": "Cardiovascular/torax.csv",
   },
   Dermatología: {
     "Dermatología": "Dermatología/Dermatología.csv",
   },
   Digestivo: {
-    "Digestivo": "Digestivo/Digestivo.csv",
     "Estómago e Intestino": "Digestivo/Estómago_e_intestino.csv",
     "Hígado y Páncreas": "Digestivo/Hígado_Páncreas.csv",
     "Peritoneo y Hernias": "Digestivo/Peritoneo_y_hernias.csv",
@@ -37,8 +38,10 @@ const folderStructure = {
   Mama: {
     "Mama": "Mama/Mama.csv",
   },
+  Maxilofacial: {
+    "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
+  },
   Neurocirugía: {
-    "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
     "Columna": "Neurocirugía/Columna.csv",
     "Cráneo y Columna": "Neurocirugía/Cráneo_y_columna.csv",
   },
@@ -49,14 +52,23 @@ const folderStructure = {
     "Oftalmología": "Oftalmología/Oftalmología.csv",
   },
   Ortopedia: {
-    "Ortopedia": "Ortopedia/Ortopedia.csv",
     "Cadera": "Ortopedia/Cadera.csv",
     "Hombro": "Ortopedia/Hombro.csv",
     "Muñeca y Mano": "Ortopedia/Muñeca_y_mano.csv",
     "Pie": "Ortopedia/Pie.csv",
+    "Yesos y Férulas": "Ortopedia/Yesos_y_ferulas.csv",
+    "Injertos, Implantes y Replantación": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
+    "Artroscopias": "Ortopedia/Artroscopia.csv",
   },
   Otorrino: {
     "Otorrino": "Otorrino/Otorrino.csv",
+    "Laringe y Tráqueas": "Otorrino/Laringe_y_traqueas.csv",
+    "Nariz y Senos Paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
+    "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
+    "Tórax": "Otorrino/torax.csv",
+  },
+  Plástica: {
+    "Cirugía Plástica": "Plastica/Plastica.csv",
   },
   "Procesos Variados": {
     "Cirugía General": "Procesos_variados/Cirugía_General.csv",
@@ -67,13 +79,10 @@ const folderStructure = {
   Urología: {
     "Urología": "Urología/Urología.csv",
   },
-  "Sin Clasificación": {
-    "Sin Clasificación": "Sin_clasificación.csv",
-  },
 };
 
 // Tarjeta de operación
-function SimpleOperationCard({ operation, index }: { operation: any; index: number }) {
+export function SimpleOperationCard({ operation, index }: { operation: any; index: number }) {
   const codigo = operation?.codigo || 'N/A';
   const cirugia = operation?.cirugia || 'Sin nombre';
   const rvu = operation?.rvu || '0';

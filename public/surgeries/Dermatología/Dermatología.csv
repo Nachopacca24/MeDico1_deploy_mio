@@ -41,3 +41,46 @@
 11643,EXC MALIG LES FACE/EARS/NOSE/LIPS; 2.1 TO 3.0 CM,2.5,Dermatología,Lesiones cutáneas
 11644,EXC MALIG LES FACE/EARS/NOSE/LIPS; 3.1 TO 4.0 CM,2.8,Dermatología,Lesiones cutáneas
 11646,EXC MALIG LES FACE/EARS/NOSE/LIPS; OVER 4.0 CM,3.3,Dermatología,Lesiones cutáneas
+17000,DESTRCT-ANY METHD-BEN FACE LES W/ANES; 1 LES,0.3,Sin clasificación,Sin clasificación
+17001,DESTRCT-ANY METHD-BEN FACE LES W/ANES; 2ND & 3RD,0.2,Sin clasificación,Sin clasificación
+17002,DESTRCT-ANY METHD-BEN FACE LES W/ANES; >3 EA ADD,0.1,Sin clasificación,Sin clasificación
+17010,DESTRCT-ANY METHD-BEN FACE LES W/ANES; COMPLIC,0.5,Sin clasificación,Sin clasificación
+17100,DESTRCT-ANY METHD- LES NOT FACE W/ANES; 1 LES,0.3,Sin clasificación,Sin clasificación
+17101,DESTRCT-ANY METHD- LES NOT FACE W/ANES; 2ND LES,0.1,Sin clasificación,Sin clasificación
+17102,DESTRCT-ANY METHD-LES NOT FACE W/ANES; > 2 TO 15,0.1,Sin clasificación,Sin clasificación
+17104,DESTRCT-ANY METHD-LES NOT FACE W/ANES; 15/MORE,BR,Sin clasificación,Sin clasificación
+17105,DESTRCT-ANY METHD-LES NOT FACE W/ANES; COMPLIC,1,Sin clasificación,Sin clasificación
+17106,DESTRCT CUT VASCULAR PROLIFERAT LES; < 10 SQ CM,1.6,Sin clasificación,Sin clasificación
+17107,DESTRCT CUT VASCULAR PROLIF LES; 10.0-50.0 SQ CM,2.9,Sin clasificación,Sin clasificación
+17108,DESTRCT CUT VASCULAR PROLIF LES; > 50.0 SQ CM,4.4,Sin clasificación,Sin clasificación
+17110,DESTRCT WARTS/MOLLUSCUM CONTAG/MILIA TO 15 LES,0.3,Sin clasificación,Sin clasificación
+17200,ELEC-SURG DESTRCT MX FIBROCUT TAGS; TO 15 LES,0.3,Sin clasificación,Sin clasificación
+17201,ELEC-SURG DESTRCT MX FIBROCUT TAGS; EA AD 10 LES,0.1,Sin clasificación,Sin clasificación
+17250,CHEM CAUT GRANULATION TISS,0.3,Sin clasificación,Sin clasificación
+17260,DESTRCT MALIG LES TRUNK/ARMS/LEGS; 0.5 CM/LESS,0.3,Sin clasificación,Sin clasificación
+17261,DESTRCT MALIG LES TRUNK/ARMS/LEGS; 0.6-1.0 CM,0.3,Sin clasificación,Sin clasificación
+17262,DESTRCT MALIG LES TRUNK/ARMS/LEGS; 1.1-2.0 CM,0.4,Sin clasificación,Sin clasificación
+17263,DESTRCT MALIG LES TRUNK/ARMS/LEGS; 2.1-3.0 CM,0.5,Sin clasificación,Sin clasificación
+17264,DESTRCT MALIG LES TRUNK/ARMS/LEGS; 3.1-4.0 CM,0.6,Sin clasificación,Sin clasificación
+17266,DESTRCT MALIG LES TRUNK/ARMS/LEGS; OVER 4.0 CM,0.9,Sin clasificación,Sin clasificación
+17270,DESTRCT MALIG LES SCLP/HANDS/GENIT; 0.5 CM/LESS,0.3,Sin clasificación,Sin clasificación
+17271,DESTRCT MALIG LES SCLP/HANDS/GENIT; 0.6-1.0 CM,0.4,Sin clasificación,Sin clasificación
+17272,DESTRCT MALIG LES SCLP/HANDS/GENIT; 1.1-2.0 CM,0.5,Sin clasificación,Sin clasificación
+17273,DESTRCT MALIG LES SCLP/HANDS/GENIT; 2.1-3.0 CM,0.6,Sin clasificación,Sin clasificación
+17274,DESTRCT MALIG LES SCLP/HANDS/GENIT; 3.1-4.0 CM,0.8,Sin clasificación,Sin clasificación
+17276,DESTRCT MALIG LES SCLP/HANDS/GENIT; OVER 4.0 CM,1.2,Sin clasificación,Sin clasificación
+17280,DESTRCT MALIG LES FACE/EARS/LIDS; 0.5 CM/LESS,0.4,Sin clasificación,Sin clasificación
+17281,DESTRCT MALIG LES FACE/EARS/LIDS; 0.6-1.0 CM,0.4,Sin clasificación,Sin clasificación
+17282,DESTRCT MALIG LES FACE/EARS/LIDS; 1.1-2.0 CM,0.6,Sin clasificación,Sin clasificación
+17283,DESTRCT MALIG LES FACE/EARS/LIDS; 2.1-3.0 CM,0.7,Sin clasificación,Sin clasificación
+17284,DESTRCT MALIG LES FACE/EARS/LIDS; 3.1-4.0 CM,1,Sin clasificación,Sin clasificación
+17286,DESTRCT MALIG LES FACE/EARS/LIDS; OVER 4.0 CM,1.4,Sin clasificación,Sin clasificación
+17304,CHEMOSURG (MOH'S TECH); 1ST STAGE UP TO 5 SPECMN,3.2,Sin clasificación,Sin clasificación
+17305,CHEMOSURG (MOH'S TECH); 2ND STAGE UP TO 5 SPECMN,1.5,Sin clasificación,Sin clasificación
+17306,CHEMOSURG (MOH'S TECH); 3RD STAGE UP TO 5 SPECMN,1.5,Sin clasificación,Sin clasificación
+17307,CHEMOSURG (MOH'S TECH); ADD STAGE TO 5 SPEC EA,1.5,Sin clasificación,Sin clasificación
+17310,CHEMOSURG (MOH'S TECH); > 5 SPECMN ANY STAGE,BR,Sin clasificación,Sin clasificación
+17340,CRYOTHERAPY,0.2,Sin clasificación,Sin clasificación
+17360,CHEM EXFOLIATION ACNE,0.2,Sin clasificación,Sin clasificación
+17380,ELECTROLYSIS EPILATION EA 1/2 HR,0.3,Sin clasificación,Sin clasificación
+17999,UNLISTED PROC SKIN/MUCOS MEMBRN/SUBQ TISS,BR,Sin clasificación,Sin clasificación

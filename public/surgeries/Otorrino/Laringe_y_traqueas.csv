@@ -1,0 +1,101 @@
+codigo,cirugia,rvu,especialidad,grupo
+31300,LARYNGOTOMY; W/REMOV TUMOR/LARYNGOCELE/CORDECTMY,10.5,Sin clasificación,Sin clasificación
+31320,LARYNGOTOMY; DX,4.4,Sin clasificación,Sin clasificación
+31360,LARYNGECTOMY; TOT WO RADICAL NECK DISSECTION,13.2,Sin clasificación,Sin clasificación
+31365,LARYNGECTOMY; TOT W/RADICAL NECK DISSECTION,19.6,Sin clasificación,Sin clasificación
+31367,LARYNGECTOMY; SUBTL SUPRAGLOTTIC WO RAD NECK,13.2,Sin clasificación,Sin clasificación
+31368,LARYNGECTOMY; SUBTL SUPRAGLOTTIC W/RAD NECK,19.6,Sin clasificación,Sin clasificación
+31370,PART LARYNGECTOMY; HORIZONTAL,13.2,Sin clasificación,Sin clasificación
+31375,PART LARYNGECTOMY; LATEROVERTICAL,10.8,Sin clasificación,Sin clasificación
+31380,PART LARYNGECTOMY; ANTEROVERTICAL,10.8,Sin clasificación,Sin clasificación
+31382,PART LARYNGECTOMY; ANTERO-LATERO-VERTICAL,10.8,Sin clasificación,Sin clasificación
+31390,PHARYNGOLARYNGECTOMY W/RAD NECK WO RECON,19.6,Sin clasificación,Sin clasificación
+31395,PHARYNGOLARYNGECTOMY W/RAD NECK; W/RECON,24.5,Sin clasificación,Sin clasificación
+31400,ARYTENOIDECTOMY/ARYTENOIDOPEXY EXT APPROACH,8.8,Sin clasificación,Sin clasificación
+31420,EPIGLOTTIDECTOMY,7.4,Sin clasificación,Sin clasificación
+31500,INTUBATION ENDOTRACHEAL ER PROC,1,Sin clasificación,Sin clasificación
+31502,TRACHEOTOMY TUBE CHANGE BEFOR ESTAB FISTULA TRAC,1,Sin clasificación,Sin clasificación
+31505,LARYNGOSCOPY INDIRECT (SEPART PROC); DX,1,Sin clasificación,Sin clasificación
+31510,LARYNGOSCOPY INDIRECT (SEPART PROC); W/BX,2.2,Sin clasificación,Sin clasificación
+31511,LARYNGOSCOPY INDIRECT (SEPART PROC); W/REMOV F B,2.5,Sin clasificación,Sin clasificación
+31512,LARYNGOSCOPY INDIRECT (SEPART PROC); W/REMOV LES,2.9,Sin clasificación,Sin clasificación
+31513,LARYNGOSCOPY INDIREC (SEP PRO); W/VOCAL CORD INJ,3.9,Sin clasificación,Sin clasificación
+31515,LARYNGOSCOPY DIRECT W/WO TRACHEOSCOPY; ASPIRAT,1.5,Sin clasificación,Sin clasificación
+31520,LARYNGOSCOPY DIRECT W/WO TRACHEOSCOPY; DX NB,1.4,Sin clasificación,Sin clasificación
+31525,LARYNGOSCOPY DIRECT W/WO TRACHEOSCOPY; DX EX NB,2.2,Sin clasificación,Sin clasificación
+31526,LARYNGOSCOPY DIR W/WO TRACHEOSCPY; DX W/OR MICRO,3.3,Sin clasificación,Sin clasificación
+31527,LARYNGOSCOPY DIRECT; W/INSRT OBTURATOR,4.9,Sin clasificación,Sin clasificación
+31528,LARYNGOSCOPY DIR W/WO TRACHEOSCOPY; W/DILAT INIT,2.9,Sin clasificación,Sin clasificación
+31529,LARYNGOSCOPY DIR W/WO TRACHEOSCP; W/DILAT SUBSQT,2.5,Sin clasificación,Sin clasificación
+31530,LARYNGOSCOPY DIRECT OR W/F B REMOV,3.3,Sin clasificación,Sin clasificación
+31531,LARYNGOSCOPY DIRECT OR W/F B REMOV; W/OR MICRO,4,Sin clasificación,Sin clasificación
+31535,LARYNGOSCOPY DIRECT OR W/BX,2.7,Sin clasificación,Sin clasificación
+31536,LARYNGOSCOPY DIRECT OR W/BX; W/OPERATING MICRO,4.2,Sin clasificación,Sin clasificación
+31540,LARYNGOSCOPY DIR OR W/EXC TUMOR/STRIP VOCAL CORD,3.8,Sin clasificación,Sin clasificación
+31541,LARYNGOSCOPY DIR OR W/EXC TUMOR; W/OR MICRO,5,Sin clasificación,Sin clasificación
+31560,LARYNGOSCOPY DIRECT OR W/ARYTENOIDECTOMY,6.7,Sin clasificación,Sin clasificación
+31561,LARYNGOSCOPY DIR OR W/ARYTENOIDECT; W/OR MICRO,7.8,Sin clasificación,Sin clasificación
+31570,LARYNGOSCOPY DIR W/INJ INTO VOCAL CORDS; THERAP,3.9,Sin clasificación,Sin clasificación
+31571,LARYNGOSCP DIR W/INJ VOCAL CORDS THERAP; W/MICRO,4.7,Sin clasificación,Sin clasificación
+31575,LARYNGOSCOPY FLEXIBLE FIBEROPTIC; DX,1,Sin clasificación,Sin clasificación
+31576,LARYNGOSCOPY FLEXIBLE FIBEROPTIC; W/BX,2.3,Sin clasificación,Sin clasificación
+31577,LARYNGOSCOPY FLEXIBLE FIBEROPTIC; W/REMOV F B,3.4,Sin clasificación,Sin clasificación
+31578,LARYNGOSCOPY FLEXIBLE FIBEROPTIC; W/REMOV LES,3.9,Sin clasificación,Sin clasificación
+31579,LARYNGOSCOPY FLEXIBLE FIBEROPTIC; W/STROBOSCOPY,3,Sin clasificación,Sin clasificación
+31580,LARYNGOPLASTY; LARYNGEL WEB W/KEEL INSRT & REMOV,9.8,Sin clasificación,Sin clasificación
+31582,LARYNGOPLASTY; STENOSIS W/GFT INCL TRACHEOTOMY,8.8,Sin clasificación,Sin clasificación
+31584,LARYNGOPLASTY; W/OP REDUCTION FX,9.3,Sin clasificación,Sin clasificación
+31585,TX CLO LARYNGEAL FX; WO MANIP,1.5,Sin clasificación,Sin clasificación
+31586,TX CLO LARYNGEAL FX; W/CLO MANIP REDUCTION,2.5,Sin clasificación,Sin clasificación
+31587,LARYNGOPLASTY CRICOID SPLIT,8.8,Sin clasificación,Sin clasificación
+31588,LARYNGOPLASTY NOS,BR,Sin clasificación,Sin clasificación
+31590,LARYNGEAL REINNERVATION BY NEUROMUSCULAR PEDICLE,10.8,Sin clasificación,Sin clasificación
+31595,SECT RECUR LARYNGEAL NERV THERAP (SEP PRO) UNILA,11.8,Sin clasificación,Sin clasificación
+31599,UNLISTED PROC LARYNX,BR,Sin clasificación,Sin clasificación
+31600,TRACHEOSTOMY PLANNED (SEPART PROC),3.1,Sin clasificación,Sin clasificación
+31601,TRACHEOSTOMY PLANNED (SEPART PROC); UNDER 2 YR,3.7,Sin clasificación,Sin clasificación
+31603,TRACHEOSTOMY ER PROC; TRANSTRACHEAL,3.9,Sin clasificación,Sin clasificación
+31605,TRACHEOSTOMY ER PROC; CRICOTHYROID MEMBRN,3.4,Sin clasificación,Sin clasificación
+31610,TRACHEOSTOMY FENESTRATION PROC W/SKIN FLAPS,5.9,Sin clasificación,Sin clasificación
+31611,CONSTRUCT TRACHEOESOPHAG FISTULA & INSRT PROSTH,BR,Sin clasificación,Sin clasificación
+31612,TRACHEAL PUNCT PERCUT ASPIRAT MUCOS,1,Sin clasificación,Sin clasificación
+31613,TRACHEOSTOMA REVIS; SIMPL WO FLAP ROTATION,2.9,Sin clasificación,Sin clasificación
+31614,TRACHEOSTOMA REVIS; COMPLX W/FLAP ROTATION,5.9,Sin clasificación,Sin clasificación
+31615,TRACHEOBRONCHOSCOPY THRU ESTAB TRACHEOSTOMY INCS,2,Sin clasificación,Sin clasificación
+31622,BRONCHOSCOPY; DX W/WO CELL WASHING/BRUSHING,2.5,Sin clasificación,Sin clasificación
+31625,BRONCHOSCOPY; W/BX,2.9,Sin clasificación,Sin clasificación
+31628,BRONCHOSCOPY; W/TRANSBRONCH LUNG BX W/WO FLUORO,3.4,Sin clasificación,Sin clasificación
+31629,BRONCHOSCOPY; W/TRANSBRONCHIAL NEEDLE ASPIRAT BX,3.4,Sin clasificación,Sin clasificación
+31630,BRONCHOSCP; W/TRACH/BRONCH DILAT/CLO REDUCT FX,3.1,Sin clasificación,Sin clasificación
+31631,BRONCHOSCOPY; W/TRACH DILAT PLCMT TRACHEAL STENT,3.9,Sin clasificación,Sin clasificación
+31635,BRONCHOSCOPY; W/REMOV F B,3.2,Sin clasificación,Sin clasificación
+31640,BRONCHOSCOPY; W/EXC TUMOR,4.9,Sin clasificación,Sin clasificación
+31641,BRONCHOSCOPY; W/DESTRCT TUMOR/RELIEF STENOSIS,6.4,Sin clasificación,Sin clasificación
+31645,BRONCHOSCPY; W/THERAP ASPIRAT TRACHEOBRONCH INIT,2.7,Sin clasificación,Sin clasificación
+31646,BRONCHOSCP; W/THERAP ASPIRAT TRACHEOBRONC SUBSQT,2.9,Sin clasificación,Sin clasificación
+31656,BRONCHOSCP; W/INJ CONTRAST MAT-SEGMT BRONCHOGRAP,2.5,Sin clasificación,Sin clasificación
+31659,BRONCHOSCOPY; W/OTHER BRONCHOSCOPIC PROC,BR,Sin clasificación,Sin clasificación
+31700,CATH TRANSGLOTTIC (SEPART PROC),2,Sin clasificación,Sin clasificación
+31708,INSTILL CONTRAST-LARYNGOGRAPHY/BRONCHOGRAPHY,0.6,Sin clasificación,Sin clasificación
+31710,CATH BRONCHOGRAPHY W/WO INSTLL CONTRAST MAT,0.7,Sin clasificación,Sin clasificación
+31715,TRANSTRACHEAL INJ BRONCHOGRAPHY,0.6,Sin clasificación,Sin clasificación
+31717,CATH W/BRONCHIAL BRUSH BX,0.5,Sin clasificación,Sin clasificación
+31720,CATH ASPIRAT (SEPART PROC); NASOTRACHEOBRONCHIAL,0.6,Sin clasificación,Sin clasificación
+31725,CATH ASPIRAT (SEP PRO); TRACHEOBRONCH W/FIBERSCP,1,Sin clasificación,Sin clasificación
+31730,TRANSTRACH INTRO INDWELLING TUBE-O2 THERAP,1,Sin clasificación,Sin clasificación
+31750,TRACHEOPLASTY; CERV,9.8,Sin clasificación,Sin clasificación
+31755,TRACHEOPLASTY; TRACHEOPHARYNG FISTULIZATION,11.8,Sin clasificación,Sin clasificación
+31760,TRACHEOPLASTY; INTRATHORACIC,11.8,Sin clasificación,Sin clasificación
+31766,CARINAL RECON,13,Sin clasificación,Sin clasificación
+31770,BRONCHOPLASTY; GFT REPR,13,Sin clasificación,Sin clasificación
+31775,BRONCHOPLASTY; EXC STENOSIS & ANASTOM,13,Sin clasificación,Sin clasificación
+31780,EXC TRACHEAL STENOSIS & ANASTOM; CERV,13.7,Sin clasificación,Sin clasificación
+31781,EXC TRACHEAL STENOSIS & ANASTOM; CERVICOTHORACIC,13.7,Sin clasificación,Sin clasificación
+31785,EXC TRACHEAL TUMOR/CARCINOMA; CERV,14.7,Sin clasificación,Sin clasificación
+31786,EXC TRACHEAL TUMOR/CARCINOMA; THORACIC,14.7,Sin clasificación,Sin clasificación
+31800,SUTURE EXT TRACHEAL WOUND/INJURY; CERV,7.4,Sin clasificación,Sin clasificación
+31805,SUTURE EXT TRACHEAL WOUND/INJURY; INTRATHORACIC,8.8,Sin clasificación,Sin clasificación
+31820,SURG CLO TRACHEOSTOMY/FISTULA; WO PLASTIC REPR,2.9,Sin clasificación,Sin clasificación
+31825,SURG CLO TRACHEOSTOMY/FISTULA; W/PLASTIC REPR,3.9,Sin clasificación,Sin clasificación
+31830,REVIS TRACHEOSTOMY SCAR,3.2,Sin clasificación,Sin clasificación
+31899,UNLISTED PROC TRACHEA BRONCHI,BR,Sin clasificación,Sin clasificación

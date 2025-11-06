@@ -1,0 +1,55 @@
+codigo,cirugia,rvu,especialidad,grupo
+20600,ARTHROCENTESIS/ASPIR/INJ; SM JT/BURSA/CYST,0.3,Sin clasificación,Sin clasificación
+20605,ARTHROCENTESIS/ASPIR/INJ; INTERMED JT/BURSA/CYST,0.3,Sin clasificación,Sin clasificación
+20610,ARTHROCENTESIS/ASPIR/INJ; MAJOR JT/BURSA,0.3,Sin clasificación,Sin clasificación
+20615,ASPIRAT & INJ TX BONE CYST,1.2,Sin clasificación,Sin clasificación
+20650,INSRT WIRE W/APPLIC TRACT W/REMOV (SEPART PROC),0.7,Sin clasificación,Sin clasificación
+20660,APPLIC CRAN TONGS/CALIPER W/REMOV (SEPART PROC),2.7,Sin clasificación,Sin clasificación
+20661,APPLIC HALO INCL REMOV; CRANIAL,2,Sin clasificación,Sin clasificación
+20662,APPLIC HALO INCL REMOV; PELVIC,2,Sin clasificación,Sin clasificación
+20663,APPLIC HALO INCL REMOV; FEMORAL,2.3,Sin clasificación,Sin clasificación
+20665,REMOV TONGS/HALO APPLIC BY ANOTHER PHYS,0.4,Sin clasificación,Sin clasificación
+20670,REMOV IMPLNT; SUPERF (SEPART PROC),0.8,Sin clasificación,Sin clasificación
+20680,REMOV IMPLNT; DEEP,2.4,Sin clasificación,Sin clasificación
+20690,APPLIC UNIPLANE-UNILAT-EXT FIXA SYST,2.7,Sin clasificación,Sin clasificación
+20692,APPLIC MULTIPLANE-UNILAT-EXT FIXA SYST,3.5,Sin clasificación,Sin clasificación
+20693,ADJUSTMENT/REVIS EXT FIXA SYST REQUIRING ANES,2,Sin clasificación,Sin clasificación
+20694,REMOV UNDER ANES EXT FIXA SYST,1.2,Sin clasificación,Sin clasificación
+20802,REPLANTATION ARM; COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20804,REPLANTATION ARM; INCOMPL AMPUTA,BR,Sin clasificación,Sin clasificación
+20805,REPLANTATION FOREARM; COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20806,REPLANTATION FOREARM; INCOMPL AMPUTA,BR,Sin clasificación,Sin clasificación
+20808,REPLANTATION HAND; COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20812,REPLANTATION HAND; INCOMPL AMPUTA,BR,Sin clasificación,Sin clasificación
+20816,REPLANTATION DIGIT (INCL MCP JT); COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20820,REPLANTATION DIGIT (INCL MCP JT); INCOMP AMPUTA,BR,Sin clasificación,Sin clasificación
+20822,REPLANTATION DIGIT (DISTAL TIP); COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20823,REPLANTATION DIGIT (DISTAL TIP); INCOMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20824,REPLANTATION THUMB (CM JT-MP JT); COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20826,REPLANTATION THUMB (CM JT-MP JT); INCOMPLT AMPUT,BR,Sin clasificación,Sin clasificación
+20827,REPLANTATION THUMB (DISTAL TIP); COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20828,REPLANTATION THUMB (DISTAL TIP); INCOMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20832,REPLANTATION LEG; COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20834,REPLANTATION LEG; INCOMPL AMPUTA,BR,Sin clasificación,Sin clasificación
+20838,REPLANTATION FT; COMPLT AMPUTA,BR,Sin clasificación,Sin clasificación
+20840,REPLANTATION FT; INCOMPL AMPUTA,BR,Sin clasificación,Sin clasificación
+20900,BONE GFT ANY DONOR AREA; MINOR/SM,2.2,Sin clasificación,Sin clasificación
+20902,BONE GFT ANY DONOR AREA; MAJOR/LARGE,4.2,Sin clasificación,Sin clasificación
+20910,CARTILAGE GFT; COSTOCHONDRAL,3.2,Sin clasificación,Sin clasificación
+20912,CARTILAGE GFT; NASAL SEPTUM,2.9,Sin clasificación,Sin clasificación
+20920,FASCIA LATA GFT; BY STRIPPER,2,Sin clasificación,Sin clasificación
+20922,FASCIA LATA GFT; INCS & AREA EXPOSURE COMPLX,2.7,Sin clasificación,Sin clasificación
+20924,TENDON GFT FROM A DISTANCE,2,Sin clasificación,Sin clasificación
+20926,TISS GFT OTHER,2,Sin clasificación,Sin clasificación
+20950,MONITOR INTERSTITIAL PRESS-DETECT MUSCL COMPARTM,0.5,Sin clasificación,Sin clasificación
+20955,BONE GFT W/MICROVASCULAR ANASTOM; FIBULA,14.7,Sin clasificación,Sin clasificación
+20960,BONE GFT W/MICROVASCULAR ANASTOM; RIB,14.7,Sin clasificación,Sin clasificación
+20962,BONE GFT W/MICROVASC ANASTOM; OTHER BONE GFT,17.2,Sin clasificación,Sin clasificación
+20969,FREE OSTEOCUT FLAP; NOT ILIAC CREST/RIB/METATARS,19.6,Sin clasificación,Sin clasificación
+20970,FREE OSTEOCUT FLAP W/MICROVASC ANASTOM; ILIAC,19.6,Sin clasificación,Sin clasificación
+20971,FREE OSTEOCUT FLAP W/MICROVASCULAR ANASTOM; RIB,19.6,Sin clasificación,Sin clasificación
+20972,FREE OSTEOCUT FLAP W/MICROVASC ANASTOM; METATARS,19.6,Sin clasificación,Sin clasificación
+20973,FREE OSTEOCUT FLAP W/MICROVASC ANASTOM; GRT TOE,20.9,Sin clasificación,Sin clasificación
+20974,ELEC STIM TO AID BONE HEALING; NONINVASIVE,2.5,Sin clasificación,Sin clasificación
+20975,ELEC STIM TO AID BONE HEALING; INVASIVE,3.4,Sin clasificación,Sin clasificación
+20999,UNLISTED PROC MS SYST GEN,BR,Sin clasificación,Sin clasificación

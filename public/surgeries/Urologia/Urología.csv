@@ -268,3 +268,131 @@
 53675,CATH URETHRA; COMPLIC,0.4,Urología,Riñón y vejiga
 53800,2/3 GLASS TEST INCL EXAM URIN SPECMN,0.2,Urología,Riñón y vejiga
 53899,UNLISTED PROC URIN SYST,BR,Urología,Riñón y vejiga
+54000,SLITTING PREPUCE DORSAL/LAT (SEPART PROC); NB,0.4,Sin clasificación,Sin clasificación
+54001,SLITTING PREPUCE DORSAL/LAT (SEPART PROC); EX NB,0.9,Sin clasificación,Sin clasificación
+54015,I&D PENIS DEEP,1,Sin clasificación,Sin clasificación
+54050,DESTRCT LES PENIS SIMPL; CHEM,0.4,Sin clasificación,Sin clasificación
+54055,DESTRCT LES PENIS SIMPL; ELECTRODESICCATION,0.6,Sin clasificación,Sin clasificación
+54056,DESTRCT LES PENIS SIMPL; CRYOSURGERY,0.8,Sin clasificación,Sin clasificación
+54057,DESTRCT LES PENIS SIMPL; LASER SURG,2,Sin clasificación,Sin clasificación
+54060,DESTRCT LES PENIS SIMPL; SURG EXC,1.3,Sin clasificación,Sin clasificación
+54065,DESTRCT LES PENIS EXTEN ANY METHD,2.9,Sin clasificación,Sin clasificación
+54100,BX PENIS; CUT (SEPART PROC),0.6,Sin clasificación,Sin clasificación
+54105,BX PENIS; DEEP STRUCT,0.9,Sin clasificación,Sin clasificación
+54110,EXC PENILE PLAQUE,4.7,Sin clasificación,Sin clasificación
+54111,EXC PENILE PLAQUE; W/GFT TO 5 CM LENGTH,4.9,Sin clasificación,Sin clasificación
+54112,EXC PENILE PLAQUE; W/GFT > 5 CM LENGTH,7.4,Sin clasificación,Sin clasificación
+54115,REMOV F B FROM DEEP PENILE TISS,2.9,Sin clasificación,Sin clasificación
+54120,AMPUTA PENIS; PART,5.8,Sin clasificación,Sin clasificación
+54125,AMPUTA PENIS; COMPLT,8.8,Sin clasificación,Sin clasificación
+54130,AMPUTA PENIS RAD; W/BILAT INGUINOFEM LYMPHADENEC,11.8,Sin clasificación,Sin clasificación
+54135,AMPUTA PENIS RAD; W/BILAT PELVIC LYMPHADENECTOMY,14.7,Sin clasificación,Sin clasificación
+54150,CIRCUMCISION USING CLAMP/OTHER DEVICE; NB,0.6,Sin clasificación,Sin clasificación
+54152,CIRCUMCISION USING CLAMP/OTHER DEVICE; EX NB,1.4,Sin clasificación,Sin clasificación
+54160,CIRCUMCISION SURG EXC OTHER THAN CLAMP/SLIT; NB,0.6,Sin clasificación,Sin clasificación
+54161,CIRCUMCISION SURG EXC NOT CLAMP/SLIT; EX NB,1.9,Sin clasificación,Sin clasificación
+54200,INJ PROC PEYRONIE DISEASE,0.3,Sin clasificación,Sin clasificación
+54205,INJ PROC PEYRONIE DISEASE; W/SURG EXPOSURE PLAQ,3.4,Sin clasificación,Sin clasificación
+54220,IRRIGA CORPORA CAVERNOSA PRIAPISM,1.3,Sin clasificación,Sin clasificación
+54230,INJ PROC CORPORA CAVERNOSOGRAPHY,1,Sin clasificación,Sin clasificación
+54235,INJ CORPORA CAVERNOSA W/PHARMACOLOGIC AGENT,0.6,Sin clasificación,Sin clasificación
+54240,PENILE PLETHYSMOGRAPHY,1,Sin clasificación,Sin clasificación
+54250,NOCTURNAL PENILE TUMESCENCE &/OR RIGIDITY TEST,1,Sin clasificación,Sin clasificación
+54300,PLASTIC OPERAT PENIS-STRAIGHT CHORDEE,4.7,Sin clasificación,Sin clasificación
+54304,PLASTIC OPERAT PENIS W/WO TRANSPL PREPUCE,6.4,Sin clasificación,Sin clasificación
+54308,URETHROPLASTY 2ND STAGE HYPOSPADIAS REPR; < 3 CM,7.8,Sin clasificación,Sin clasificación
+54312,URETHROPLASTY 2ND STAGE HYPOSPADIAS REPR; > 3 CM,8.8,Sin clasificación,Sin clasificación
+54316,URETHROPLASTY 2ND STAGE HYPOSPADIAS REPR; W/GFT,9.8,Sin clasificación,Sin clasificación
+54318,URETHROPLASTY 3RD STAGE RELEAS PENIS FRM SCROTUM,4.9,Sin clasificación,Sin clasificación
+54322,1 STAGE DISTAL HYPOSPADIAS REPR; W/SIMPL ADVANCE,6.1,Sin clasificación,Sin clasificación
+54324,1 STAGE DISTAL HYPOSPADIAS REPR; W/URETHROPLASTY,8.3,Sin clasificación,Sin clasificación
+54326,1 STAGE DISTAL HYPOSPADIAS REPR; MOBILIZ URETHRA,9.4,Sin clasificación,Sin clasificación
+54328,1 STAGE DISTAL HYPOSPADIAS REPR; W/EXTEN DISSECT,11.1,Sin clasificación,Sin clasificación
+54332,1 STAGE PROX PENILE REPR REQUIR EXTEN DISSECTION,11.5,Sin clasificación,Sin clasificación
+54336,1 STAGE PERINEAL HYPOSPADIAS REPR W/DISSECTION,11.7,Sin clasificación,Sin clasificación
+54340,REPR HYPOSPADIAS COMPLIC; BY CLO INCS/EXC SIMPL,5.9,Sin clasificación,Sin clasificación
+54344,REPR HYPOSPADIAS COMPLIC; REQ MOBILIZ-SKIN FLAPS,7.8,Sin clasificación,Sin clasificación
+54348,REPR HYPOSPADIAS COMPLIC; REQ EXTEN DISSECTION,11.5,Sin clasificación,Sin clasificación
+54352,REPR HYPOSPADIAS CRIPPLE REQ EXTEN DISSECTION,13.2,Sin clasificación,Sin clasificación
+54360,PLASTIC OR PENIS TO CORRECT ANGULATION,6.5,Sin clasificación,Sin clasificación
+54380,PLASTIC OR PENIS EPISPADIAS DISTAL-EXT SPHINCTER,5.9,Sin clasificación,Sin clasificación
+54385,PLASTIC OR PENIS EPISPADIAS; W/INCONT,9.8,Sin clasificación,Sin clasificación
+54390,PLASTIC OR PENIS EPISPADIAS; W/EXSTROPHY BLADDER,11.8,Sin clasificación,Sin clasificación
+54400,INSRT PENILE PROSTH; NON-INFLATABLE,8.4,Sin clasificación,Sin clasificación
+54401,INSRT PENILE PROSTH; INFLATABLE,8.6,Sin clasificación,Sin clasificación
+54402,REMOV/REPLAC NON-INFLATBL/INFLATBL PENILE PROSTH,4.9,Sin clasificación,Sin clasificación
+54405,INSRT INFLATBL PENILE PROSTH W/PLCMT PUMP/CYLIND,14.2,Sin clasificación,Sin clasificación
+54407,REMOV/REPR/REPLAC INFLATBL PENILE PROSTH W/PUMP,8.6,Sin clasificación,Sin clasificación
+54409,SURG CORRECT HYDRAULIC ABNL-INFLATBL PROSTH,7.8,Sin clasificación,Sin clasificación
+54420,CORPORA CAVERNOSA-SAPHENOUS VEIN SHUNT UNI/BILAT,7,Sin clasificación,Sin clasificación
+54430,CORPORA CAVERNOSA-CORPUS SPONGIOSUM SHUNT,7,Sin clasificación,Sin clasificación
+54435,CORPORA CAVERNOSA-GLANS PENIS FISTULIZ-PRIADISM,3.9,Sin clasificación,Sin clasificación
+54440,PLASTIC OR PENIS INJURY,BR,Sin clasificación,Sin clasificación
+54450,FORESKIN MANIP INCL LYSIS PREPUTIAL ADHESIONS,0.6,Sin clasificación,Sin clasificación
+54500,BX TESTIS NEEDLE (SEPART PROC),0.6,Sin clasificación,Sin clasificación
+54505,BX TESTIS INCS (SEPART PROC),1.8,Sin clasificación,Sin clasificación
+54510,EXC LOCAL LES TESTIS,2.9,Sin clasificación,Sin clasificación
+54520,ORCHIECTOMY SIMPL W/WO TESTICULAR PROSTH,3.5,Sin clasificación,Sin clasificación
+54530,ORCHIECTOMY RADICAL TUMOR; ING APPROACH,5.3,Sin clasificación,Sin clasificación
+54535,ORCHIECTOMY RADICAL TUMOR; W/ABD EXPLOR,5.6,Sin clasificación,Sin clasificación
+54550,EXPLOR UNDESCENDED TESTIS,3.9,Sin clasificación,Sin clasificación
+54560,EXPLOR UNDESCENDED TESTIS W/ABD EXPLOR,5.6,Sin clasificación,Sin clasificación
+54600,REDUCTION TORSION TESTIS-SURG W/WO FIX CONTRALAT,4.7,Sin clasificación,Sin clasificación
+54620,FIXA CONTRALATERAL TESTIS (SEPART PROC),2.3,Sin clasificación,Sin clasificación
+54640,ORCHIOPEXY ANY TYPE W/WO HERNIA REPR,5.4,Sin clasificación,Sin clasificación
+54645,ORCHIOPEXY W/WO HERNIA REPR SECOND STAGE,2.6,Sin clasificación,Sin clasificación
+54660,INSRT TESTICULAR PROSTH (SEPART PROC),2.3,Sin clasificación,Sin clasificación
+54670,SUTURE/REPR TESTICULAR INJURY,4.7,Sin clasificación,Sin clasificación
+54680,TRANSPL TESTIS TO THIGH,5.8,Sin clasificación,Sin clasificación
+54700,I&D EPIDIDYMIS TESTIS &/OR SCROTAL SPACE,1.1,Sin clasificación,Sin clasificación
+54800,BX EPIDIDYMIS NEEDLE,0.6,Sin clasificación,Sin clasificación
+54820,EXPLOR EPIDIDYMIS W/WO BX,2.4,Sin clasificación,Sin clasificación
+54830,EXC LOCAL LES EPIDIDYMIS,2.5,Sin clasificación,Sin clasificación
+54840,EXC SPERMATOCELE W/WO EPIDIDYMECTOMY,3.7,Sin clasificación,Sin clasificación
+54860,EPIDIDYMECTOMY; UNILAT,3.9,Sin clasificación,Sin clasificación
+54861,EPIDIDYMECTOMY; BILAT,5.8,Sin clasificación,Sin clasificación
+54900,EPIDIDYMOVASOSTOMY ANASTOM EPIDIDY-VAS; UNILAT,5.8,Sin clasificación,Sin clasificación
+54901,EPIDIDYMOVASOSTOMY ANASTOM EPIDIDY-VAS; BILAT,8,Sin clasificación,Sin clasificación
+55000,PUNCT ASPIRAT HYDROCELE TUNICA VAG W/WO INJ MEDS,0.5,Sin clasificación,Sin clasificación
+55040,EXC HYDROCELE; UNILAT,3.9,Sin clasificación,Sin clasificación
+55041,EXC HYDROCELE; BILAT,6.1,Sin clasificación,Sin clasificación
+55060,REPR TUNICA VAG HYDROCELE,2.9,Sin clasificación,Sin clasificación
+55100,DRAINAGE SCROTAL WALL ABSCESS,0.4,Sin clasificación,Sin clasificación
+55110,SCROTAL EXPLOR,2.9,Sin clasificación,Sin clasificación
+55120,REMOV F B SCROTUM,1.3,Sin clasificación,Sin clasificación
+55150,RESECT SCROTUM,4.9,Sin clasificación,Sin clasificación
+55175,SCROTOPLASTY; SIMPL,3.9,Sin clasificación,Sin clasificación
+55180,SCROTOPLASTY; COMPLIC,5.9,Sin clasificación,Sin clasificación
+55200,VASOTOMY CANNULIZ W/WO INCS VAS (SEPART PROC),2.1,Sin clasificación,Sin clasificación
+55250,VASECTOMY UNILAT/BILAT (SEP PRO) W/POSTOP SEMEN,2.1,Sin clasificación,Sin clasificación
+55300,VASOTOMY-VASOGMS/SEMINAL VESICULOGMS UNI/BILAT,2.1,Sin clasificación,Sin clasificación
+55400,VASOVASOSTOMY VASOVASORRHAPHY,8.3,Sin clasificación,Sin clasificación
+55450,LIG VAS DEFERENS UNI/BILAT (SEPART PROC),1.4,Sin clasificación,Sin clasificación
+55500,EXC HYDROCELE SPERMATIC CORD UNILAT (SEP PRO),2.9,Sin clasificación,Sin clasificación
+55520,EXC LES SPERMATIC CORD (SEPART PROC),2.9,Sin clasificación,Sin clasificación
+55530,EXC VARICOCELE/LIG SPERMATC VEINS; (SEPART PROC),4.7,Sin clasificación,Sin clasificación
+55535,EXC VARICOCELE/LIG SPERMATIC VEINS; ABD APPROACH,5.5,Sin clasificación,Sin clasificación
+55540,EXC VARICOCELE/LIG SPERMATC VEINS; W/HERNIA REPR,5.5,Sin clasificación,Sin clasificación
+55600,VESICULOTOMY,3.9,Sin clasificación,Sin clasificación
+55605,VESICULOTOMY; COMPLIC,6.4,Sin clasificación,Sin clasificación
+55650,VESICULECTOMY ANY APPROACH,9.8,Sin clasificación,Sin clasificación
+55680,EXC MULLERIAN DUCT CYST,2.9,Sin clasificación,Sin clasificación
+55700,BX PROSTATE; NEEDLE/PUNCH SNGL/MX ANY APPROACH,1.2,Sin clasificación,Sin clasificación
+55705,BX PROSTATE; INCS ANY APPROACH,4.7,Sin clasificación,Sin clasificación
+55720,PROSTATOMY EXT DRAIN PROSTATIC ABSCESS; SIMPL,4.7,Sin clasificación,Sin clasificación
+55725,PROSTATOMY EXT DRAIN PROSTATIC ABSCESS; COMPLIC,8,Sin clasificación,Sin clasificación
+55801,PROSTATECTOMY PERINEAL SUBTL,8.8,Sin clasificación,Sin clasificación
+55810,PROSTATECTOMY PERINEAL RADICAL,12.7,Sin clasificación,Sin clasificación
+55812,PROSTATECTOMY PERINEAL RAD; W/LYMPH NODE BX,15.2,Sin clasificación,Sin clasificación
+55815,PROSTATECTOMY PERINEAL; W/BILAT PELVIC LYMPHADEN,18.1,Sin clasificación,Sin clasificación
+55821,PROSTATECTOMY; SUPRAPUBIC SUBTL 1/2 STAGES,9.8,Sin clasificación,Sin clasificación
+55831,PROSTATECTOMY; RETROPUBIC SUBTL,9.8,Sin clasificación,Sin clasificación
+55840,PROSTATECTOMY RETROPUBIC RADICAL,12.7,Sin clasificación,Sin clasificación
+55842,PROSTATECTOMY RETROPUBIC RAD; W/LYMPH NODE BX,12.7,Sin clasificación,Sin clasificación
+55845,PROSTATECTOMY RETROPUBIC RAD; W/BILAT LYMPHADEN,16.7,Sin clasificación,Sin clasificación
+55860,EXPOSURE PROSTATE-INSRT RADIOACTIVE SUBSTANCE,3.9,Sin clasificación,Sin clasificación
+55862,EXPOS PROSTATE-INSRT RADIOACT; W/LYMPH NODE BX,6.7,Sin clasificación,Sin clasificación
+55865,EXPOSURE PROSTATE-INSRT RADIOACT; W/BILAT LYMPH,11.8,Sin clasificación,Sin clasificación
+55870,ELECTROEJACULATION,BR,Sin clasificación,Sin clasificación
+55899,UNLISTED PROC MALE GENIT SYST,BR,Sin clasificación,Sin clasificación
+55970,INTERSEX SURG; MALE TO FE,RNE,Sin clasificación,Sin clasificación

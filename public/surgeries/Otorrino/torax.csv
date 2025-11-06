@@ -1,0 +1,52 @@
+codigo,cirugia,rvu,especialidad,grupo
+32000,THORACENTESIS-ASPIRAT-INIT/SUBSQT,0.7,Sin clasificación,Sin clasificación
+32002,THORACENTESIS W/INSRT TUBE (SEPART PROC),1.5,Sin clasificación,Sin clasificación
+32005,CHEM PLEURODESIS,0.7,Sin clasificación,Sin clasificación
+32020,TUBE THORACOSTOMY W/WO WATER SEAL (SEPART PROC),2.5,Sin clasificación,Sin clasificación
+32035,THORACOSTOMY; W/RIB RESECT EMPYEMA,5.4,Sin clasificación,Sin clasificación
+32036,THORACOSTOMY; W/OP FLAP-DRAINAGE EMPYEMA,5.9,Sin clasificación,Sin clasificación
+32095,THORACOTOMY LTD BX LUNG/PLEURA,5.5,Sin clasificación,Sin clasificación
+32100,THORACOTOMY MAJOR; W/EXPLOR & BX,7.1,Sin clasificación,Sin clasificación
+32110,THORACOTOMY MAJOR; W/CONTRL TRAUMATIC HEMORR,9.8,Sin clasificación,Sin clasificación
+32120,THORACOTOMY MAJOR; POSTOP COMPLIC,9.8,Sin clasificación,Sin clasificación
+32124,THORACOTOMY MAJ; W/OP INTRAPLEURAL PNEUMONOLYSIS,7.8,Sin clasificación,Sin clasificación
+32140,THORACOTOMY MAJ; W/CYST REMOV W/WO PLEURAL PROC,9.8,Sin clasificación,Sin clasificación
+32141,THORACOTOMY MAJOR; W/EXC-PLICATION BULLAE,9.8,Sin clasificación,Sin clasificación
+32150,THORACOTOMY MAJOR; W/REMOV INTRAPLEURAL F B,8.5,Sin clasificación,Sin clasificación
+32151,THORACOTOMY MAJOR; W/REMOV INTRAPULMONARY F B,9.3,Sin clasificación,Sin clasificación
+32160,THORACOTOMY MAJOR; W/CARDIAC MASSAGE,9.8,Sin clasificación,Sin clasificación
+32200,PNEUMONOSTOMY W/OP DRAINAGE ABSCESS/CYST,7.4,Sin clasificación,Sin clasificación
+32215,PLEURAL SCARIFICATION REPEAT PNEUMOTHORAX,9.8,Sin clasificación,Sin clasificación
+32220,DECORTIC PULM (SEPART PROC); TOT,9.8,Sin clasificación,Sin clasificación
+32225,DECORTIC PULM (SEPART PROC); PART,7.4,Sin clasificación,Sin clasificación
+32310,PLEURECTOMY; PARIETAL (SEPART PROC),8.8,Sin clasificación,Sin clasificación
+32315,PLEURECTOMY; PART,6.9,Sin clasificación,Sin clasificación
+32320,DECORTIC & PARIETAL PLEURECTOMY,11.8,Sin clasificación,Sin clasificación
+32400,BX PLEURA; PERCUT NEEDLE,0.8,Sin clasificación,Sin clasificación
+32402,BX PLEURA; OP,4.9,Sin clasificación,Sin clasificación
+32405,BX LUNG/MEDIASTINUM PERCUT NEEDLE,1.5,Sin clasificación,Sin clasificación
+32420,PNEUMONOCENTESIS-PUNCT LUNG ASPIRAT,1,Sin clasificación,Sin clasificación
+32440,PNEUMONECTOMY TOT,12.7,Sin clasificación,Sin clasificación
+32445,PNEUMONECTOMY EXTRAPLEURAL; WO EMPYEMECTOMY,14.7,Sin clasificación,Sin clasificación
+32450,PNEUMONECTOMY EXTRAPLEURAL; W/EMPYEMECTOMY,17.2,Sin clasificación,Sin clasificación
+32480,LOBEC TOT/SEGMT,11.8,Sin clasificación,Sin clasificación
+32485,LOBEC TOT/SEGMT; W/BRONCHOPLASTY,14.7,Sin clasificación,Sin clasificación
+32490,LOBEC TOT/SEGMT; W/CONCOMITANT DECORTIC,14.7,Sin clasificación,Sin clasificación
+32500,WEDGE RESECT LUNG SNGL/MX,9.8,Sin clasificación,Sin clasificación
+32520,RESECT LUNG; W/RESECT CHEST WALL,14.7,Sin clasificación,Sin clasificación
+32522,RESECT LUNG; W/RECON CHEST WALL WO PROSTH,16.7,Sin clasificación,Sin clasificación
+32525,RESECT LUNG; W/MAJOR RECON CHEST WALL W/PROSTH,17.6,Sin clasificación,Sin clasificación
+32540,EXTRAPLEURAL ENUCLEATION EMPYEMA,12.5,Sin clasificación,Sin clasificación
+32545,EXTRAPLEURAL ENUCLEATION-EMPYEMA; W/LOBEC,18,Sin clasificación,Sin clasificación
+32700,THORACOSCOPY EXPLOR (SEPART PROC),2.4,Sin clasificación,Sin clasificación
+32705,THORACOSCOPY EXPLOR (SEPART PROC); W/BX,2.4,Sin clasificación,Sin clasificación
+32800,REPR LUNG HERNIA THRU CHEST WALL,9.8,Sin clasificación,Sin clasificación
+32810,CLO CHEST WALL FOLLOWING OP FLAP DRAIN EMPYEMA,3.9,Sin clasificación,Sin clasificación
+32815,OP CLO MAJOR BRONCHIAL FISTULA,9.8,Sin clasificación,Sin clasificación
+32820,MAJOR RECON CHEST WALL,12.3,Sin clasificación,Sin clasificación
+32900,RESECT RIBS EXTRAPLEURAL ALL STAGES,6.9,Sin clasificación,Sin clasificación
+32905,THORACOPLASTY SCHEDE TYPE/EXTRAPLEURAL,8.8,Sin clasificación,Sin clasificación
+32906,THORACOPLASTY; W/CLO BRONCHOPLEURAL FISTULA,9.8,Sin clasificación,Sin clasificación
+32940,PNEUMOLYSIS EXTRAPERIOSTEAL INCL FILL/PACK PROC,8.7,Sin clasificación,Sin clasificación
+32960,PNEUMOTHORAX THERAP-INTRAPLEURAL INJ AIR,0.7,Sin clasificación,Sin clasificación
+32999,UNLISTED PROC LUNGS & PLEURA,BR,Sin clasificación,Sin clasificación
