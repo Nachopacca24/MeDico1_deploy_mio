@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { loadCSV } from "@/shared/utils/csvLoader";
-import { ChevronDown, ChevronRight, Folder, FolderOpen, Calculator } from "lucide-react";
+import { ChevronDown, ChevronRight, Folder, FolderOpen, Calculator, Star } from "lucide-react";
+import { useFavorites } from "@/core/contexts/FavoritesContext";
 
 // Tipo para las operaciones del CSV
 interface CSVOperation {
@@ -17,6 +18,7 @@ interface CSVOperation {
 // ✅ Estructura completa sincronizada con csvLoader.ts
 const folderStructure = {
   Cardiovascular: {
+    "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
     "Corazón": "Cardiovascular/Corazón.csv",
     "Vasos Periféricos": "Cardiovascular/Vasos_periféricos.csv",
     "Tórax": "Cardiovascular/torax.csv",
@@ -25,6 +27,7 @@ const folderStructure = {
     "Dermatología": "Dermatología/Dermatología.csv",
   },
   Digestivo: {
+    "Digestivo": "Digestivo/Digestivo.csv",
     "Estómago e Intestino": "Digestivo/Estómago_e_intestino.csv",
     "Hígado y Páncreas": "Digestivo/Hígado_Páncreas.csv",
     "Peritoneo y Hernias": "Digestivo/Peritoneo_y_hernias.csv",
@@ -42,6 +45,7 @@ const folderStructure = {
     "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
   },
   Neurocirugía: {
+    "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
     "Columna": "Neurocirugía/Columna.csv",
     "Cráneo y Columna": "Neurocirugía/Cráneo_y_columna.csv",
   },
@@ -52,6 +56,7 @@ const folderStructure = {
     "Oftalmología": "Oftalmología/Oftalmología.csv",
   },
   Ortopedia: {
+    "Ortopedia": "Ortopedia/Ortopedia.csv",
     "Cadera": "Ortopedia/Cadera.csv",
     "Hombro": "Ortopedia/Hombro.csv",
     "Muñeca y Mano": "Ortopedia/Muñeca_y_mano.csv",
@@ -61,7 +66,6 @@ const folderStructure = {
     "Artroscopias": "Ortopedia/Artroscopia.csv",
   },
   Otorrino: {
-    "Otorrino": "Otorrino/Otorrino.csv",
     "Laringe y Tráqueas": "Otorrino/Laringe_y_traqueas.csv",
     "Nariz y Senos Paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
     "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
@@ -82,15 +86,47 @@ const folderStructure = {
 };
 
 // Tarjeta de operación
-export function SimpleOperationCard({ operation, index }: { operation: any; index: number }) {
-  const codigo = operation?.codigo || 'N/A';
+export function SimpleOperationCard({ 
+  operation, 
+  index, 
+  isFavorite, 
+  isLoading,
+  onToggleFavorite 
+}: { 
+  operation: any; 
+  index: number;
+  isFavorite: boolean;
+  isLoading: boolean;
+  onToggleFavorite: () => void;
+}) {
+  const codigo = String(operation?.codigo || 'N/A').trim();
   const cirugia = operation?.cirugia || 'Sin nombre';
   const rvu = operation?.rvu || '0';
   const especialidad = operation?.especialidad || 'N/A';
   const grupo = operation?.grupo || 'N/A';
   
   return (
-    <div className="border rounded-lg p-4 bg-white shadow hover:shadow-lg transition-shadow">
+    <div className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow hover:shadow-lg transition-all relative">
+      {/* Botón de favorito en la esquina superior izquierda */}
+      <button
+        onClick={onToggleFavorite}
+        disabled={isLoading}
+        className="absolute top-3 left-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+        title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+      >
+        {isLoading ? (
+          <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <Star
+            className={`w-5 h-5 transition-colors ${
+              isFavorite 
+                ? "fill-yellow-400 text-yellow-400" 
+                : "text-gray-400 hover:text-yellow-400"
+            }`}
+          />
+        )}
+      </button>
+
       {/* Código en la esquina superior derecha */}
       <div className="flex justify-end mb-2">
         <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
@@ -99,27 +135,27 @@ export function SimpleOperationCard({ operation, index }: { operation: any; inde
       </div>
       
       {/* Título de la cirugía */}
-      <h3 className="font-bold text-lg text-gray-900 mb-3">
+      <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-3 pr-8">
         {cirugia}
       </h3>
       
       {/* Información */}
-      <div className="space-y-2 text-sm text-gray-700">
+      <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
         <p>
-          <span className="font-semibold text-gray-600">Especialidad:</span>{' '}
-          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+          <span className="font-semibold text-gray-600 dark:text-gray-400">Especialidad:</span>{' '}
+          <span className="bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
             {especialidad}
           </span>
         </p>
         <p>
-          <span className="font-semibold text-gray-600">Grupo:</span>{' '}
-          <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
+          <span className="font-semibold text-gray-600 dark:text-gray-400">Grupo:</span>{' '}
+          <span className="bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
             {grupo}
           </span>
         </p>
         <p>
-          <span className="font-semibold text-gray-600">RVU:</span>{' '}
-          <span className="ml-2 bg-green-100 text-green-700 px-3 py-1 rounded font-bold text-base">
+          <span className="font-semibold text-gray-600 dark:text-gray-400">RVU:</span>{' '}
+          <span className="ml-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1 rounded font-bold text-base">
             {rvu}
           </span>
         </p>
@@ -140,11 +176,31 @@ const Operations = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedSpecialties, setExpandedSpecialties] = useState<Record<string, boolean>>({});
   const [expandedSubcategories, setExpandedSubcategories] = useState<Record<string, boolean>>({});
+  const [loadingFavorite, setLoadingFavorite] = useState<string | null>(null);
+  
+  // Usar el contexto de favoritos
+  const { favorites, toggleFavorite: toggleFavoriteContext } = useFavorites();
+
+  // Toggle favorito usando el contexto
+  const handleToggleFavorite = async (codigo: string, operation: any) => {
+    const normalizedCode = String(codigo).trim();
+    setLoadingFavorite(normalizedCode);
+    
+    try {
+      await toggleFavoriteContext(
+        normalizedCode,
+        operation?.cirugia || '',
+        operation?.especialidad || ''
+      );
+    } catch (error) {
+      alert('Error al actualizar favorito. Por favor intenta de nuevo.');
+    } finally {
+      setLoadingFavorite(null);
+    }
+  };
 
   useEffect(() => {
     async function fetchAllCSV() {
-      console.log("🚀 Iniciando carga de CSVs...");
-      
       try {
         const data: Record<string, any[]> = {};
         
@@ -152,15 +208,12 @@ const Operations = () => {
           for (const [subName, csvPath] of Object.entries(subcategories)) {
             const csvContent = await loadCSV(csvPath);
             data[csvPath] = csvContent;
-            console.log(`✅ ${csvPath}: ${csvContent.length} cirugías cargadas`);
           }
         }
         
-        console.log("🎉 Todos los CSVs cargados exitosamente");
         setCsvData(data);
         
       } catch (err: any) {
-        console.error("💥 ERROR:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -190,7 +243,7 @@ const Operations = () => {
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-xl font-semibold text-gray-700">Cargando cirugías...</p>
+            <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">Cargando cirugías...</p>
           </div>
         </div>
       </AppLayout>
@@ -200,9 +253,9 @@ const Operations = () => {
   if (error) {
     return (
       <AppLayout>
-        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-8 m-8">
-          <h2 className="text-2xl font-bold text-red-700 mb-4">❌ Error</h2>
-          <p className="text-red-600">{error}</p>
+        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg p-8 m-8">
+          <h2 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-4">❌ Error</h2>
+          <p className="text-red-600 dark:text-red-400">{error}</p>
         </div>
       </AppLayout>
     );
@@ -212,23 +265,28 @@ const Operations = () => {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 shadow-lg">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 rounded-lg p-6 shadow-lg">
           <h1 className="text-3xl font-bold text-white mb-2">
             Base de Datos de Cirugías
           </h1>
-          <p className="text-blue-100">
+          <p className="text-blue-100 dark:text-blue-200 flex items-center gap-2">
             {Object.values(csvData).reduce((total, ops) => total + ops.length, 0)} cirugías disponibles
+            {favorites.size > 0 && (
+              <span className="ml-4 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-sm font-bold">
+                ⭐ {favorites.size} favorito{favorites.size !== 1 ? 's' : ''}
+              </span>
+            )}
           </p>
         </div>
 
         {/* Navegación por carpetas */}
         <div className="space-y-4">
           {Object.entries(folderStructure).map(([specialty, subcategories]) => (
-            <div key={specialty} className="border rounded-lg overflow-hidden bg-white shadow-md">
+            <div key={specialty} className="border dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-md">
               {/* Especialidad */}
               <button
                 onClick={() => toggleSpecialty(specialty)}
-                className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white transition-colors"
+                className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-700 dark:to-blue-800 dark:hover:from-blue-800 dark:hover:to-blue-900 text-white transition-colors"
               >
                 {expandedSpecialties[specialty] ? (
                   <ChevronDown className="w-6 h-6" />
@@ -241,50 +299,58 @@ const Operations = () => {
 
               {/* Subcategorías */}
               {expandedSpecialties[specialty] && (
-                <div className="bg-gray-50">
+                <div className="bg-gray-50 dark:bg-gray-900">
                   {Object.entries(subcategories).map(([subName, csvPath]) => {
                     const operations = csvData[csvPath] || [];
                     const subKey = `${specialty}-${subName}`;
                     
                     return (
-                      <div key={subKey} className="border-t">
+                      <div key={subKey} className="border-t dark:border-gray-700">
                         {/* Subcategoría */}
                         <button
                           onClick={() => toggleSubcategory(subKey)}
-                          className="w-full flex items-center gap-3 p-3 pl-8 bg-gray-100 hover:bg-gray-200 transition-colors"
+                          className="w-full flex items-center gap-3 p-3 pl-8 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                         >
                           {expandedSubcategories[subKey] ? (
-                            <ChevronDown className="w-5 h-5 text-blue-600" />
+                            <ChevronDown className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                           ) : (
-                            <ChevronRight className="w-5 h-5 text-gray-600" />
+                            <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                           )}
-                          <FolderOpen className="w-5 h-5 text-blue-600" />
-                          <span className="font-semibold text-gray-900">{subName}</span>
-                          <span className="ml-auto bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          <FolderOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          <span className="font-semibold text-gray-900 dark:text-white">{subName}</span>
+                          <span className="ml-auto bg-blue-600 dark:bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-bold">
                             {operations.length}
                           </span>
                         </button>
 
                         {/* Tarjetas de operaciones */}
                         {expandedSubcategories[subKey] && (
-                          <div className="p-6 bg-white">
+                          <div className="p-6 bg-white dark:bg-gray-800">
                             {operations.length === 0 ? (
-                              <p className="text-center text-gray-500 py-8">
+                              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
                                 No hay cirugías en esta categoría
                               </p>
                             ) : (
                               <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                  {operations.map((op, idx) => (
-                                    <SimpleOperationCard
-                                      key={idx}
-                                      operation={op}
-                                      index={idx}
-                                    />
-                                  ))}
+                                  {operations.map((op, idx) => {
+                                    const codigo = String(op?.codigo || '').trim();
+                                    const isFav = favorites.has(codigo);
+                                    
+                                    return (
+                                      <SimpleOperationCard
+                                        key={idx}
+                                        operation={op}
+                                        index={idx}
+                                        isFavorite={isFav}
+                                        isLoading={loadingFavorite === codigo}
+                                        onToggleFavorite={() => handleToggleFavorite(codigo, op)}
+                                      />
+                                    );
+                                  })}
                                 </div>
 
-                                <p className="mt-6 text-center text-gray-600 font-semibold">
+                                <p className="mt-6 text-center text-gray-600 dark:text-gray-400 font-semibold">
                                   📊 Mostrando {operations.length} cirugías
                                 </p>
                               </>

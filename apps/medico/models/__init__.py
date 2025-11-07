@@ -152,18 +152,31 @@ class HospitalOperationRate(models.Model):
 
 
 class Favorite(models.Model):
-    """Operaciones favoritas de usuarios"""
+    """Operaciones favoritas de usuarios basadas en códigos de CSV"""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='favorites',
         verbose_name="Usuario"
     )
-    operation = models.ForeignKey(
-        Operation,
-        on_delete=models.CASCADE,
-        related_name='favorited_by',
-        verbose_name="Operación"
+    surgery_code = models.CharField(
+        max_length=50,
+        verbose_name="Código de Cirugía",
+        help_text="Código de la cirugía del CSV (ej: 12345, 67890)"
+    )
+    surgery_name = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name="Nombre de la Cirugía",
+        help_text="Nombre de la cirugía (opcional, para referencia)"
+    )
+    specialty = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Especialidad",
+        help_text="Especialidad de la cirugía (ej: Cardiovascular, Ortopedia)"
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -173,14 +186,15 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'Favorito'
         verbose_name_plural = 'Favoritos'
-        unique_together = ['user', 'operation']
+        unique_together = ['user', 'surgery_code']
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['surgery_code']),
         ]
     
     def __str__(self):
-        return f"{self.user.username} - {self.operation.name}"
+        return f"{self.user.username} - {self.surgery_code} ({self.surgery_name or 'Sin nombre'})"
 
 
 class CalculationHistory(models.Model):

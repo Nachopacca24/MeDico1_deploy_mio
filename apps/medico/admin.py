@@ -44,11 +44,13 @@ class HospitalOperationRateAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ['user', 'operation', 'created_at']
-    search_fields = ['user__username', 'user__email', 'operation__name', 'operation__code']
-    list_filter = ['created_at']
+    list_display = ['user', 'surgery_code', 'surgery_name', 'specialty', 'created_at']
+    search_fields = ['user__username', 'user__email', 'surgery_code', 'surgery_name', 'specialty']
+    list_filter = ['specialty', 'created_at']
     ordering = ['-created_at']
-    raw_id_fields = ['user', 'operation']
+    raw_id_fields = ['user']
+    readonly_fields = ['created_at']
+    list_per_page = 50
 
 
 @admin.register(CalculationHistory)

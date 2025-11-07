@@ -1,22 +1,26 @@
 // FavoritesPage.tsx
-// Página de favoritos - COMPATIBLE con OperationsPage.tsx
+// Página de favoritos - Usa API backend
 
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { loadCSV } from "@/shared/utils/csvLoader";
-import { Star, Trash2, StarOff, AlertCircle } from "lucide-react";
+import { Star, Trash2, StarOff, AlertCircle, Calculator } from "lucide-react";
+import { favoritesService, Favorite } from "@/services/favoritesService";
+import { useFavorites } from "@/core/contexts/FavoritesContext";
 
-// IMPORTANTE: Esta estructura debe coincidir EXACTAMENTE con OperationsPage.tsx
+// IMPORTANTE: Esta estructura debe coincidir EXACTAMENTE con operations.tsx
 const folderStructure = {
   Cardiovascular: {
+    "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
     "Corazón": "Cardiovascular/Corazón.csv",
     "Vasos Periféricos": "Cardiovascular/Vasos_periféricos.csv",
-    "Torax": "Cardiovascular/torax.csv",
+    "Tórax": "Cardiovascular/torax.csv",
   },
   Dermatología: {
     "Dermatología": "Dermatología/Dermatología.csv",
   },
   Digestivo: {
+    "Digestivo": "Digestivo/Digestivo.csv",
     "Estómago e Intestino": "Digestivo/Estómago_e_intestino.csv",
     "Hígado y Páncreas": "Digestivo/Hígado_Páncreas.csv",
     "Peritoneo y Hernias": "Digestivo/Peritoneo_y_hernias.csv",
@@ -30,7 +34,11 @@ const folderStructure = {
   Mama: {
     "Mama": "Mama/Mama.csv",
   },
+  Maxilofacial: {
+    "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
+  },
   Neurocirugía: {
+    "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
     "Columna": "Neurocirugía/Columna.csv",
     "Cráneo y Columna": "Neurocirugía/Cráneo_y_columna.csv",
   },
@@ -41,19 +49,23 @@ const folderStructure = {
     "Oftalmología": "Oftalmología/Oftalmología.csv",
   },
   Ortopedia: {
+    "Ortopedia": "Ortopedia/Ortopedia.csv",
     "Cadera": "Ortopedia/Cadera.csv",
     "Hombro": "Ortopedia/Hombro.csv",
     "Muñeca y Mano": "Ortopedia/Muñeca_y_mano.csv",
     "Pie": "Ortopedia/Pie.csv",
-    "Yesos y Ferulas": "Ortopedia/Yesos_y_ferulas.csv",
-    "Ortopedia Injertos, Implantes y Replantacion": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
+    "Yesos y Férulas": "Ortopedia/Yesos_y_ferulas.csv",
+    "Injertos, Implantes y Replantación": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
     "Artroscopias": "Ortopedia/Artroscopia.csv",
   },
   Otorrino: {
-    "Laringe y Traqueas": "Otorrino/Laringe_y_traqueas.csv",
+    "Laringe y Tráqueas": "Otorrino/Laringe_y_traqueas.csv",
     "Nariz y Senos Paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
     "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-    "Torax": "Otorrino/torax.csv",
+    "Tórax": "Otorrino/torax.csv",
+  },
+  Plástica: {
+    "Cirugía Plástica": "Plastica/Plastica.csv",
   },
   "Procesos Variados": {
     "Cirugía General": "Procesos_variados/Cirugía_General.csv",
@@ -61,23 +73,19 @@ const folderStructure = {
     "Reparaciones (Suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
     "Uñas y Piel": "Procesos_variados/Uñas___piel.csv",
   },
-  Plastica: {
-    "Cirugia Plastica": "Plastica/Plastica.csv",
-  },
   Urología: {
     "Urología": "Urología/Urología.csv",
-  },
-  Maxilofacial: {
-    "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
   },
 };
 
 // Componente de tarjeta
 function FavoriteOperationCard({ 
   operation, 
+  isRemoving,
   onToggleFavorite
 }: { 
   operation: any;
+  isRemoving: boolean;
   onToggleFavorite: () => void;
 }) {
   const codigo = operation?.codigo || 'N/A';
@@ -87,141 +95,172 @@ function FavoriteOperationCard({
   const grupo = operation?.grupo || 'N/A';
   
   return (
-    <div className="border rounded-lg p-4 bg-white shadow hover:shadow-lg transition-all">
+    <div className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow hover:shadow-lg transition-all">
       <div className="flex justify-between items-center mb-2">
         <button
           onClick={onToggleFavorite}
-          className="p-1 hover:bg-gray-100 rounded transition-colors"
+          disabled={isRemoving}
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Quitar de favoritos"
         >
-          <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+          {isRemoving ? (
+            <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+          )}
         </button>
         <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
           {codigo}
         </span>
       </div>
       
-      <h3 className="font-bold text-lg text-gray-900 mb-3">
+      <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-3">
         {cirugia}
       </h3>
       
-      <div className="space-y-2 text-sm text-gray-700">
+      <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
         <p>
-          <span className="font-semibold text-gray-600">Especialidad:</span>{' '}
-          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+          <span className="font-semibold text-gray-600 dark:text-gray-400">Especialidad:</span>{' '}
+          <span className="bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
             {especialidad}
           </span>
         </p>
         <p>
-          <span className="font-semibold text-gray-600">Grupo:</span>{' '}
-          <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
+          <span className="font-semibold text-gray-600 dark:text-gray-400">Grupo:</span>{' '}
+          <span className="bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
             {grupo}
           </span>
         </p>
         <p>
-          <span className="font-semibold text-gray-600">RVU:</span>{' '}
-          <span className="ml-2 bg-green-100 text-green-700 px-3 py-1 rounded font-bold text-base">
+          <span className="font-semibold text-gray-600 dark:text-gray-400">RVU:</span>{' '}
+          <span className="ml-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1 rounded font-bold text-base">
             {rvu}
           </span>
         </p>
       </div>
+      
+      {/* Botón de calcular */}
+      <button className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold">
+        <Calculator className="w-4 h-4" />
+        Calcular Valor
+      </button>
     </div>
   );
 }
 
 const FavoritesPage = () => {
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [favoritesData, setFavoritesData] = useState<Favorite[]>([]);
   const [favoriteOperations, setFavoriteOperations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<number | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // Usar el contexto de favoritos
+  const { refreshFavorites } = useFavorites();
 
   useEffect(() => {
     async function loadFavorites() {
+      setLoading(true);
+      setError(null);
+      
       try {
-        console.log("🔍 [FAVORITOS] Iniciando...");
+        // Obtener favoritos desde la API
+        const apiFavorites = await favoritesService.getFavorites();
+        const favoritesArray = Array.isArray(apiFavorites) ? apiFavorites : [];
         
-        const savedFavorites = localStorage.getItem('surgery-favorites');
-        console.log("📦 [FAVORITOS] localStorage:", savedFavorites);
-        
-        if (!savedFavorites) {
-          console.log("ℹ️ [FAVORITOS] No hay favoritos");
-          setLoading(false);
+        if (favoritesArray.length === 0) {
+          setFavoritesData([]);
+          setFavoriteOperations([]);
           return;
         }
+        
+        setFavoritesData(favoritesArray);
 
-        const favArray: string[] = JSON.parse(savedFavorites);
-        const favSet = new Set<string>(favArray);
-        setFavorites(favSet);
-
-        console.log(`✅ [FAVORITOS] ${favSet.size} códigos:`, Array.from(favSet));
-
-        if (favSet.size === 0) {
-          setLoading(false);
-          return;
-        }
-
-        console.log("📂 [FAVORITOS] Buscando en CSVs...");
+        // Crear set de códigos para búsqueda rápida
+        const favCodes = new Set(favoritesArray.map(f => String(f.surgery_code).trim()));
         const foundOperations: any[] = [];
+        const foundCodes = new Set<string>(); // Para evitar duplicados
 
+        // Buscar operaciones en los CSVs
         for (const [specialty, subcategories] of Object.entries(folderStructure)) {
           for (const [subName, csvPath] of Object.entries(subcategories)) {
             try {
               const operations = await loadCSV(csvPath);
               
               operations.forEach((op: any) => {
-                // Convertir ambos a string y hacer trim
                 const opCodigo = String(op?.codigo || '').trim();
                 
-                // Buscar en el set de favoritos
-                if (favSet.has(opCodigo)) {
-                  console.log(`✅ [FAVORITOS] Encontrada: ${opCodigo} - ${op.cirugia}`);
-                  foundOperations.push(op);
+                // Solo agregar si es favorito y no lo hemos agregado ya
+                if (favCodes.has(opCodigo) && !foundCodes.has(opCodigo)) {
+                  const favorite = favoritesArray.find(f => String(f.surgery_code).trim() === opCodigo);
+                  foundOperations.push({
+                    ...op,
+                    favorite_id: favorite?.id
+                  });
+                  foundCodes.add(opCodigo); // Marcar como encontrado
                 }
               });
             } catch (err) {
-              console.warn(`⚠️ [FAVORITOS] Error en ${csvPath}`);
+              // Silently skip CSVs that can't be loaded
             }
           }
         }
 
-        console.log(`🎉 [FAVORITOS] Encontradas: ${foundOperations.length}`);
         setFavoriteOperations(foundOperations);
 
       } catch (err: any) {
-        console.error("❌ [FAVORITOS] Error:", err);
-        setError(err.message);
+        setError(err.message || 'Error al cargar favoritos');
       } finally {
         setLoading(false);
       }
     }
 
     loadFavorites();
-  }, []);
+  }, [refreshTrigger]);
 
-  const removeFavorite = (codigo: string) => {
-    const newFavorites = new Set(favorites);
-    newFavorites.delete(codigo);
+  const removeFavorite = async (codigo: string, favoriteId?: number) => {
+    if (!favoriteId) return;
+
+    setRemoving(favoriteId);
     
-    localStorage.setItem('surgery-favorites', JSON.stringify(Array.from(newFavorites)));
-    setFavorites(newFavorites);
-    setFavoriteOperations(prev => prev.filter(op => op.codigo !== codigo));
+    try {
+      await favoritesService.removeFavorite(favoriteId);
+      await refreshFavorites();
+      setRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      alert('Error al eliminar favorito. Por favor intenta de nuevo.');
+    } finally {
+      setRemoving(null);
+    }
   };
 
-  const clearAllFavorites = () => {
-    if (confirm('¿Estás seguro de que quieres eliminar todos los favoritos?')) {
-      localStorage.removeItem('surgery-favorites');
-      setFavorites(new Set());
-      setFavoriteOperations([]);
+  const clearAllFavorites = async () => {
+    if (!confirm('¿Estás seguro de que quieres eliminar todos los favoritos?')) {
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const result = await favoritesService.clearAll();
+      await refreshFavorites();
+      setRefreshTrigger(prev => prev + 1);
+      alert(`${result.count} favorito(s) eliminado(s) correctamente`);
+    } catch (error) {
+      alert('Error al limpiar favoritos. Por favor intenta de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-500 mx-auto mb-4"></div>
-            <p className="text-xl font-semibold text-gray-700">Cargando favoritos...</p>
+            <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">Cargando favoritos...</p>
           </div>
         </div>
       </AppLayout>
@@ -231,12 +270,15 @@ const FavoritesPage = () => {
   if (error) {
     return (
       <AppLayout>
-        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-8 m-8">
+        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg p-8 m-8">
           <div className="flex items-center gap-3 mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
-            <h2 className="text-2xl font-bold text-red-700">Error</h2>
+            <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            <h2 className="text-2xl font-bold text-red-700 dark:text-red-400">Error al cargar favoritos</h2>
           </div>
-          <p className="text-red-600 text-lg">{error}</p>
+          <p className="text-red-600 dark:text-red-400 text-lg mb-4">{error}</p>
+          <p className="text-red-500 dark:text-red-300 text-sm">
+            Si el problema persiste, intenta cerrar sesión y volver a iniciar sesión.
+          </p>
         </div>
       </AppLayout>
     );
@@ -257,7 +299,7 @@ const FavoritesPage = () => {
                 Acceso rápido a tus procedimientos guardados
               </p>
             </div>
-            {favorites.size > 0 && (
+            {favoritesData.length > 0 && (
               <button
                 onClick={clearAllFavorites}
                 className="flex items-center gap-2 px-5 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors font-semibold"
@@ -270,22 +312,22 @@ const FavoritesPage = () => {
         </div>
 
         {/* Contador */}
-        {favorites.size > 0 && (
-          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-            <p className="text-yellow-900 font-semibold text-lg">
-              ⭐ <span className="font-bold text-xl">{favorites.size}</span> cirugía{favorites.size > 1 ? 's' : ''} guardada{favorites.size > 1 ? 's' : ''}
+        {favoritesData.length > 0 && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg p-4">
+            <p className="text-yellow-900 dark:text-yellow-300 font-semibold text-lg">
+              ⭐ <span className="font-bold text-xl">{favoritesData.length}</span> cirugía{favoritesData.length > 1 ? 's' : ''} guardada{favoritesData.length > 1 ? 's' : ''}
             </p>
           </div>
         )}
 
         {/* Contenido */}
-        {favorites.size === 0 ? (
-          <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-16 text-center">
-            <StarOff className="w-20 h-20 text-gray-300 mx-auto mb-6" />
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+        {favoritesData.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 p-16 text-center">
+            <StarOff className="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-6" />
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
               No tienes favoritos aún
             </h3>
-            <p className="text-gray-500 text-lg max-w-md mx-auto">
+            <p className="text-gray-500 dark:text-gray-400 text-lg max-w-md mx-auto">
               Agrega cirugías a favoritos desde Operations haciendo clic en la estrella
             </p>
           </div>
@@ -296,37 +338,14 @@ const FavoritesPage = () => {
                 <FavoriteOperationCard
                   key={`fav-${operation.codigo}-${idx}`}
                   operation={operation}
-                  onToggleFavorite={() => removeFavorite(operation.codigo)}
+                  isRemoving={removing === operation.favorite_id}
+                  onToggleFavorite={() => removeFavorite(operation.codigo, operation.favorite_id)}
                 />
               ))}
             </div>
-            <div className="mt-6 text-center">
-              <p className="text-gray-600 font-semibold text-lg">
-                📊 Mostrando {favoriteOperations.length} de {favorites.size}
-              </p>
-            </div>
+
           </div>
-        ) : (
-          <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-8 text-center">
-            <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-orange-900 mb-3">
-              Favoritos no encontrados
-            </h3>
-            <p className="text-orange-700 text-lg mb-4">
-              Hay {favorites.size} código{favorites.size > 1 ? 's' : ''} guardado{favorites.size > 1 ? 's' : ''}
-            </p>
-            <div className="bg-orange-100 p-3 rounded mb-4">
-              <p className="text-orange-800 text-sm font-semibold mb-2">Códigos:</p>
-              <p className="text-orange-700 text-xs font-mono">{Array.from(favorites).join(', ')}</p>
-            </div>
-            <button
-              onClick={clearAllFavorites}
-              className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold"
-            >
-              Limpiar favoritos
-            </button>
-          </div>
-        )}
+        ) : null}
       </div>
     </AppLayout>
   );

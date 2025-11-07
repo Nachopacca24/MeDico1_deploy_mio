@@ -13,6 +13,7 @@ import Operations from "@/pages/operations";
 import Favorites from "@/pages/favorites";
 import HistoryPage from "@/pages/history";
 import SettingsPage from "@/pages/settings";
+import DebugFavorites from "@/pages/debug-favorites";
 
 export const AppRouter = () => {
   return (
@@ -29,6 +30,7 @@ export const AppRouter = () => {
       <Route path='/favorites' element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
       <Route path='/history' element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
       <Route path='/settings' element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path='/debug-favorites' element={<ProtectedRoute><DebugFavorites /></ProtectedRoute>} />
     </Routes>
   );
 };
