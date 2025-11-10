@@ -1,0 +1,48 @@
+# ============================================
+# INSTRUCCIONES PARA IMPORTAR EL DUMP A POSTGRESQL
+# ============================================
+
+## PASO 1: Preparar la base de datos
+# Primero, crea el esquema public
+
+psql -U postgres -d medico -f "C:\Users\nacho\OneDrive\Documentos\GitHub\MeDico1\backend\migrations\00_preparar_database.sql"
+
+## PASO 2: Importar el dump
+# Ahora sí, importa el dump completo
+
+psql -U postgres -d medico -f "C:\Users\nacho\OneDrive\Documentos\GitHub\MeDico1\backend\MeDico-2025_11_09_16_45_28-dump.sql"
+
+# ============================================
+# ALTERNATIVA: Si aún falla, recrea la base de datos desde cero
+# ============================================
+
+# 1. Conectarse a PostgreSQL
+psql -U postgres
+
+# 2. Dentro de psql, ejecuta:
+DROP DATABASE IF EXISTS medico;
+CREATE DATABASE medico;
+\c medico
+CREATE SCHEMA IF NOT EXISTS public;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+\q
+
+# 3. Ahora importa el dump
+psql -U postgres -d medico -f "C:\Users\nacho\OneDrive\Documentos\GitHub\MeDico1\backend\MeDico-2025_11_09_16_45_28-dump.sql"
+
+# ============================================
+# VERIFICACIÓN
+# ============================================
+
+# Para verificar que se importó correctamente:
+psql -U postgres -d medico -c "SELECT COUNT(*) FROM medico_hospital;"
+psql -U postgres -d medico -c "SELECT COUNT(*) FROM medico_specialty;"
+psql -U postgres -d medico -c "SELECT COUNT(*) FROM medico_operation;"
+
+# ============================================
+# MÉTODO RÁPIDO (TODO EN UNO)
+# ============================================
+
+# Ejecuta este comando en PowerShell:
+# psql -U postgres -c "DROP DATABASE IF EXISTS medico; CREATE DATABASE medico;" && psql -U postgres -d medico -c "CREATE SCHEMA IF NOT EXISTS public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;" && psql -U postgres -d medico -f "C:\Users\nacho\OneDrive\Documentos\GitHub\MeDico1\backend\MeDico-2025_11_09_16_45_28-dump.sql"

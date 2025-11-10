@@ -95,54 +95,47 @@ function FavoriteOperationCard({
   const grupo = operation?.grupo || 'N/A';
   
   return (
-    <div className="border rounded-lg p-4 bg-white dark:bg-gray-800 shadow hover:shadow-lg transition-all">
-      <div className="flex justify-between items-center mb-2">
+    <div className="group relative border rounded-lg p-4 bg-card hover:border-primary transition-colors">
+      <div className="flex items-start justify-between mb-3">
         <button
           onClick={onToggleFavorite}
           disabled={isRemoving}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Quitar de favoritos"
+          className="p-1.5 hover:bg-accent rounded transition-colors disabled:opacity-50"
+          title="Remove from favorites"
         >
           {isRemoving ? (
-            <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+            <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
           )}
         </button>
-        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+        <span className="text-xs font-mono text-muted-foreground">
           {codigo}
         </span>
       </div>
       
-      <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-3">
+      <h3 className="font-semibold text-base mb-3 leading-tight min-h-[2.5rem]">
         {cirugia}
       </h3>
       
-      <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-        <p>
-          <span className="font-semibold text-gray-600 dark:text-gray-400">Especialidad:</span>{' '}
-          <span className="bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
-            {especialidad}
-          </span>
-        </p>
-        <p>
-          <span className="font-semibold text-gray-600 dark:text-gray-400">Grupo:</span>{' '}
-          <span className="bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
-            {grupo}
-          </span>
-        </p>
-        <p>
-          <span className="font-semibold text-gray-600 dark:text-gray-400">RVU:</span>{' '}
-          <span className="ml-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1 rounded font-bold text-base">
-            {rvu}
-          </span>
-        </p>
+      <div className="space-y-2 text-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Specialty</span>
+          <span className="font-medium">{especialidad}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Group</span>
+          <span className="font-medium">{grupo}</span>
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t">
+          <span className="text-muted-foreground">RVU</span>
+          <span className="text-lg font-semibold">{rvu}</span>
+        </div>
       </div>
-      
-      {/* Botón de calcular */}
-      <button className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold">
+
+      <button className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2">
         <Calculator className="w-4 h-4" />
-        Calcular Valor
+        Calculate Value
       </button>
     </div>
   );
@@ -287,28 +280,23 @@ const FavoritesPage = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg p-6 shadow-lg">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
-                <Star className="w-8 h-8 fill-white" />
-                Cirugías Favoritas
-              </h1>
-              <p className="text-yellow-50 text-lg">
-                Acceso rápido a tus procedimientos guardados
-              </p>
-            </div>
-            {favoritesData.length > 0 && (
-              <button
-                onClick={clearAllFavorites}
-                className="flex items-center gap-2 px-5 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors font-semibold"
-              >
-                <Trash2 className="w-5 h-5" />
-                Limpiar todos
-              </button>
-            )}
+        {/* Minimal Header */}
+        <div className="flex items-center justify-between pb-4 border-b">
+          <div>
+            <h1 className="text-3xl font-semibold mb-1 tracking-tight">Favorite Surgeries</h1>
+            <p className="text-muted-foreground">
+              {favoritesData.length} saved procedure{favoritesData.length !== 1 ? 's' : ''}
+            </p>
           </div>
+          {favoritesData.length > 0 && (
+            <button
+              onClick={clearAllFavorites}
+              className="flex items-center gap-2 px-4 py-2 text-destructive hover:bg-destructive/10 rounded transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Clear All
+            </button>
+          )}
         </div>
 
         {/* Contador */}

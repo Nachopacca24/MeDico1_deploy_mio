@@ -4,6 +4,8 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 import { Button } from "@/shared/components/ui/button";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { 
+  Briefcase,
+  Building2,
   Calculator, 
   History, 
   Home, 
@@ -28,7 +30,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const navItems = [
     { name: "Dashboard", path: "/", icon: Home },
+    { name: "Cases", path: "/cases", icon: Briefcase },
     { name: "Operations", path: "/operations", icon: Stethoscope },
+    { name: "Hospitals", path: "/hospitals", icon: Building2 },
     { name: "Calculator", path: "/calculator", icon: Calculator },
     { name: "Favorites", path: "/favorites", icon: Star },
     { name: "History", path: "/history", icon: History },
@@ -42,11 +46,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Sidebar for desktop */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 transform bg-primary text-primary-foreground transition-transform duration-300 ease-in-out flex flex-col",
+          "fixed inset-y-0 left-0 z-50 w-64 transform bg-slate-900 text-white transition-transform duration-300 ease-in-out flex flex-col",
           isMobile ? (sidebarOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"
         )}
       >
-        <div className="flex h-16 items-center justify-center px-4 border-b border-primary-foreground/10">
+        <div className="flex h-16 items-center justify-center px-4 border-b border-slate-700">
           <Link to="/" className="flex items-center space-x-2">
             <img src="/favicon.png" alt="MeDico Logo" className="h-10 w-10" />
             <span className="text-xl font-bold hidden md:inline">MeDico</span>
@@ -65,14 +69,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Link
                   to={item.path}
                   className={cn(
-                    "flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                    "flex items-center justify-start rounded-md px-4 py-2 text-sm font-medium transition-colors",
                     location.pathname === item.path
-                      ? "bg-primary-foreground text-primary"
-                      : "hover:bg-primary-foreground/10"
+                      ? "bg-primary text-white"
+                      : "hover:bg-slate-800"
                   )}
                   onClick={isMobile ? toggleSidebar : undefined}
                 >
-                  <item.icon className="mr-3 h-6 w-6" />
+                  <item.icon className="mr-3 h-5 w-5" />
                   {item.name}
                 </Link>
               </li>
@@ -80,9 +84,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             <li>
               <Link
                 to="/logout"
-                className="flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-primary-foreground/10"
+                className="flex items-center justify-start rounded-md px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-slate-800"
               >
-                <LogOut className="mr-3 h-6 w-6" />
+                <LogOut className="mr-3 h-5 w-5" />
                 Logout
               </Link>
             </li>
@@ -90,9 +94,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         </nav>
 
         {user && (
-          <div className="border-t border-primary-foreground/10 p-4 mt-4">
+          <div className="border-t border-slate-700 p-4 mt-4">
             <div className="flex items-center justify-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground text-primary text-lg font-bold">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white text-lg font-bold">
                 {user.name?.charAt(0) || user.first_name?.charAt(0) || "U"}
               </div>
               <div className="ml-3 text-left">

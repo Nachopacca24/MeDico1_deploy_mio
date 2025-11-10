@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
 
+# Import surgical case models
+from .surgical_case import SurgicalCase, CaseProcedure
+
 
 class Specialty(models.Model):
     """Especialidades médicas"""
@@ -195,6 +198,39 @@ class Favorite(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.surgery_code} ({self.surgery_name or 'Sin nombre'})"
+
+
+class FavoriteHospital(models.Model):
+    """Hospitales favoritos de usuarios"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='favorite_hospitals',
+        verbose_name="Usuario"
+    )
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.CASCADE,
+        related_name='favorited_by',
+        verbose_name="Hospital"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Creación"
+    )
+    
+    class Meta:
+        verbose_name = 'Hospital Favorito'
+        verbose_name_plural = 'Hospitales Favoritos'
+        unique_together = ['user', 'hospital']
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['hospital']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.hospital.name}"
 
 
 class CalculationHistory(models.Model):

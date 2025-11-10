@@ -1,4 +1,4 @@
-import { Calculator, History, Home, Settings, Star, Stethoscope } from "lucide-react";
+import { Calculator, History, Home, Settings, Star, Stethoscope, Building2 } from "lucide-react";
 
 import {
   Sidebar,
@@ -24,6 +24,11 @@ const items = [
     icon: Stethoscope,
   },
   {
+    title: "Hospitals",
+    url: "/hospitals",
+    icon: Building2,
+  },
+  {
     title: "Calculator",
     url: "/calculator",
     icon: Calculator,
@@ -47,7 +52,7 @@ const items = [
 
 export function AppSidebar() {
   return (
-    <Sidebar className="bg-primary">
+    <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>MeDico</SidebarGroupLabel>

@@ -1,6 +1,18 @@
 from rest_framework import serializers
 from apps.medico.models import Favorite
 
+# Import surgical case serializers
+from .surgical_case import (
+    SurgicalCaseListSerializer,
+    SurgicalCaseDetailSerializer,
+    SurgicalCaseCreateUpdateSerializer,
+    CaseProcedureSerializer,
+    CaseStatsSerializer,
+)
+
+# Import hospital serializer
+from .hospital import HospitalSerializer
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
     """Serializer para favoritos de cirugías"""

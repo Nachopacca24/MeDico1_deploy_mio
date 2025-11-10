@@ -7,6 +7,9 @@ from rest_framework.decorators import action
 from apps.medico.models import Favorite
 from apps.medico.serializers import FavoriteSerializer
 
+# Import surgical case views
+from .surgical_case import SurgicalCaseViewSet, CaseProcedureViewSet
+
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     """

@@ -17,10 +17,13 @@
 
 - 🧮 **Calcular valores** de procedimientos médicos basados en RVU y tarifas hospitalarias
 - 📊 **Explorar catálogo** de **6,894 cirugías** organizadas por 28 especialidades médicas
-- ⭐ **Guardar favoritos** para acceso rápido a procedimientos frecuentes
-- 📝 **Mantener historial** detallado de cálculos realizados
+- ⭐ **Guardar favoritos** para acceso rápido a procedimientos y hospitales frecuentes
+- 🏥 **Gestionar hospitales** con 110 hospitales precargados de Guatemala (públicos, IGSS, privados)
+- 📋 **Crear y gestionar casos quirúrgicos** completos con múltiples procedimientos
+- 💰 **Calcular valores** automáticamente con RVU × factor hospitalario
+- 📝 **Historial de casos** con búsqueda y filtros avanzados
 - 🔐 **Gestión segura** de usuarios con autenticación robusta
-- 🎨 **Interfaz moderna** y responsive con modo claro/oscuro
+- 🎨 **Interfaz moderna** y responsive con diseño minimalista
 - 📱 **Diseño adaptable** para escritorio, tablet y móvil
 
 ---
@@ -135,11 +138,20 @@ DJANGO_SETTINGS_MODULE=core.settings.dev
 DEBUG=True
 ```
 
-#### Aplicar migraciones
+#### Aplicar migraciones y cargar datos iniciales
 
 ```bash
+# Aplicar migraciones
 python manage.py migrate
+
+# Cargar hospitales de Guatemala (110 hospitales)
+python manage.py create_all_hospitals
 ```
+
+Este comando carga:
+- **40 hospitales públicos** (factor 1.0)
+- **14 hospitales IGSS** (factor 1.2)
+- **56 hospitales privados** (factores 1.5 - 3.5)
 
 #### Crear superusuario (admin)
 
@@ -177,6 +189,73 @@ Esto automáticamente:
 
 **Detener servidores:**
 - Presiona `CTRL+C` (detiene Django y Vite automáticamente)
+
+---
+
+## 🧪 Probar la Aplicación
+
+### Verificar Base de Datos
+
+Para verificar que todo se instaló correctamente:
+
+```bash
+# Ver información de la base de datos y tablas
+python manage.py show_db_info
+```
+
+Deberías ver:
+- ✅ **110 hospitales** cargados
+- ✅ Tablas de casos quirúrgicos creadas
+- ✅ Sistema de favoritos configurado
+
+### Crear Caso de Prueba
+
+Puedes crear un caso quirúrgico de prueba desde:
+
+1. **Interfaz Web**: http://127.0.0.1:8000/cases/new
+   - Llena el formulario con datos del paciente
+   - Selecciona hospital
+   - Agrega procedimientos desde el catálogo
+   - Los valores se calculan automáticamente (RVU × factor hospitalario)
+
+2. **API directamente**:
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/medico/cases/ \
+  -H "Authorization: Bearer <tu_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "patient_name": "Juan Pérez",
+    "patient_age": 45,
+    "hospital": 1,
+    "surgery_date": "2025-12-01",
+    "procedures": [
+      {
+        "surgery_code": "12345",
+        "surgery_name": "Cirugía de prueba",
+        "specialty": "Cardiología",
+        "rvu": 10.5,
+        "hospital_factor": 2.5,
+        "calculated_value": 26.25,
+        "order": 1
+      }
+    ]
+  }'
+```
+
+### Rutas Principales
+
+Una vez iniciada la aplicación, puedes acceder a:
+
+- **Dashboard**: http://127.0.0.1:8000/
+- **Operaciones** (Catálogo de 6,894 cirugías): http://127.0.0.1:8000/operations
+- **Hospitales**: http://127.0.0.1:8000/hospitals
+- **Casos Quirúrgicos**:
+  - Lista: http://127.0.0.1:8000/cases
+  - Crear: http://127.0.0.1:8000/cases/new
+  - Ver: http://127.0.0.1:8000/cases/:id
+  - Editar: http://127.0.0.1:8000/cases/:id/edit
+- **Favoritos**: http://127.0.0.1:8000/favorites
+- **Configuración**: http://127.0.0.1:8000/settings
 
 ---
 
@@ -261,6 +340,12 @@ MeDico1/
 # Iniciar servidor (Django + Vite automático)
 python manage.py runserver
 
+# Cargar hospitales iniciales
+python manage.py create_all_hospitals
+
+# Ver información de la base de datos
+python manage.py show_db_info
+
 # Crear migraciones
 python manage.py makemigrations
 
@@ -310,24 +395,31 @@ npm run test
 ### 🎯 Frontend
 - ✅ **Dashboard interactivo** con estadísticas en tiempo real
 - ✅ **Catálogo de 6,894 cirugías** organizadas en 28 especialidades
-- ✅ **Calculadora médica** con cálculo de RVU y tarifas
-- ✅ **Sistema de favoritos** con acceso rápido
-- ✅ **Historial completo** de cálculos realizados
-- ✅ **Búsqueda y filtros** avanzados por especialidad/procedimiento
+- ✅ **Gestión de hospitales** con 110 hospitales precargados de Guatemala
+- ✅ **Sistema de casos quirúrgicos** completo (crear, ver, editar, eliminar)
+- ✅ **Calculadora médica** con cálculo automático de RVU × factor hospitalario
+- ✅ **Sistema de favoritos** para procedimientos y hospitales
+- ✅ **Búsqueda y filtros** avanzados por especialidad, hospital, estado, fecha
 - ✅ **Autenticación segura** con JWT
 - ✅ **Diseño responsive** (móvil, tablet, escritorio)
-- ✅ **Modo oscuro/claro** con persistencia
+- ✅ **Interfaz minimalista** con colores neutros (blanco/gris oscuro)
 - ✅ **Componentes accesibles** (WCAG 2.1)
-- ✅ **Animaciones fluidas** con Framer Motion
+- ✅ **Animaciones fluidas** con transiciones suaves
 
 ### ⚙️ Backend
 - ✅ **API REST completa** con Django REST Framework
-- ✅ **Base de datos PostgreSQL** optimizada
-- ✅ **Autenticación JWT** y sesiones
+- ✅ **Base de datos PostgreSQL** optimizada con índices
+- ✅ **Modelos de datos**:
+  - `SurgicalCase`: Casos quirúrgicos con información del paciente
+  - `CaseProcedure`: Procedimientos individuales con cálculos automáticos
+  - `Hospital`: 110 hospitales con multiplicadores de tarifa
+  - `FavoriteHospital`: Sistema de favoritos por usuario
+- ✅ **Paginación automática** en listados (20 items por página)
+- ✅ **Autenticación JWT** con tokens de acceso y refresh
 - ✅ **Panel de administración** Django personalizado
 - ✅ **CORS configurado** para desarrollo y producción
 - ✅ **Middleware personalizado** (auto-inicio de Vite)
-- ✅ **Migraciones versionadas**
+- ✅ **Migraciones versionadas** con datos iniciales
 
 ---
 
@@ -364,26 +456,37 @@ POST   /api/v1/auth/register/   # Registrar usuario
 GET    /api/v1/auth/user/       # Obtener usuario actual
 ```
 
-### Cirugías
+### Casos Quirúrgicos
+```
+GET    /api/v1/medico/cases/                 # Listar casos del usuario
+POST   /api/v1/medico/cases/                 # Crear nuevo caso
+GET    /api/v1/medico/cases/:id/             # Ver detalle de caso
+PATCH  /api/v1/medico/cases/:id/             # Actualizar caso
+DELETE /api/v1/medico/cases/:id/             # Eliminar caso
+GET    /api/v1/medico/cases/stats/           # Obtener estadísticas
+```
+
+### Hospitales
+```
+GET    /api/v1/medico/hospitals/                    # Listar hospitales
+GET    /api/v1/medico/hospitals/:id/                # Detalle de hospital
+GET    /api/v1/medico/hospitals/?hospital_type=X    # Filtrar por tipo
+GET    /api/v1/medico/hospitals/?search=nombre      # Buscar por nombre
+```
+
+### Favoritos de Hospitales
+```
+GET    /api/v1/medico/favorite-hospitals/           # Listar favoritos del usuario
+POST   /api/v1/medico/favorite-hospitals/           # Agregar hospital a favoritos
+DELETE /api/v1/medico/favorite-hospitals/:id/       # Eliminar de favoritos
+```
+
+### Cirugías (Catálogo)
 ```
 GET    /api/v1/surgeries/                    # Listar todas
 GET    /api/v1/surgeries/?specialty=X        # Filtrar por especialidad
 GET    /api/v1/surgeries/:id/                # Detalle
 POST   /api/v1/surgeries/calculate/          # Calcular valor
-```
-
-### Favoritos
-```
-GET    /api/v1/favorites/           # Listar favoritos del usuario
-POST   /api/v1/favorites/           # Agregar a favoritos
-DELETE /api/v1/favorites/:id/       # Eliminar favorito
-```
-
-### Historial
-```
-GET    /api/v1/history/             # Listar historial del usuario
-GET    /api/v1/history/:id/         # Detalle de cálculo
-POST   /api/v1/history/             # Guardar cálculo
 ```
 
 ---
@@ -463,6 +566,20 @@ taskkill /PID <pid> /F
 
 # Linux/Mac
 lsof -ti:8000 | xargs kill -9
+```
+
+### ❌ Error: `No hospitals loaded / Hospital table empty`
+**Solución:** Carga los hospitales iniciales
+```bash
+python manage.py create_all_hospitals
+# Esto carga 110 hospitales de Guatemala
+```
+
+### ❌ Error: `calculated_value: Asegúrese de que no haya más de 15 dígitos en total`
+**Solución:** Aplica las migraciones más recientes
+```bash
+python manage.py migrate
+# La migración 0004 actualiza el campo calculated_value a 15 dígitos
 ```
 
 ### ❌ Error: `CORS policy blocked`
