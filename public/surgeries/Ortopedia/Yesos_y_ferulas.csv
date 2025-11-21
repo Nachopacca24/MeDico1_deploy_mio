@@ -1,54 +1,54 @@
 codigo,cirugia,rvu,especialidad,grupo
-29000,APPLIC HALO TYPE BODY CAST,2.5,Sin clasificación,Sin clasificación
-29010,APPLIC RISSER JACKET LOCALIZ BODY; ONLY,2,Sin clasificación,Sin clasificación
-29015,APPLIC RISSER JACKET LOCALIZ BODY; INCL HEAD,2.5,Sin clasificación,Sin clasificación
-29020,APPLIC TURNBUCKLE JACKET BODY; ONLY,2,Sin clasificación,Sin clasificación
-29025,APPLIC TURNBUCKLE JACKET BODY; INCL HEAD,2.5,Sin clasificación,Sin clasificación
-29035,APPLIC BODY CAST SHOULDER TO HIPS,1,Sin clasificación,Sin clasificación
-29040,APPLIC BODY CAST SHOULDR-HIPS; INCL HEAD-MINERVA,1.7,Sin clasificación,Sin clasificación
-29044,APPLIC BODY CAST SHOULDER TO HIPS; INCL 1 THIGH,1.3,Sin clasificación,Sin clasificación
-29046,APPLIC BODY CAST SHOULDER-HIPS; INCL BOTH THIGHS,1.4,Sin clasificación,Sin clasificación
-29049,APPLIC; PLASTER FIGURE-8,0.5,Sin clasificación,Sin clasificación
-29055,APPLIC; SHOULDER SPICA,1,Sin clasificación,Sin clasificación
-29058,APPLIC; PLASTER VELPEAU,0.6,Sin clasificación,Sin clasificación
-29065,APPLIC; SHOULDER TO HAND,0.5,Sin clasificación,Sin clasificación
-29075,APPLIC; ELBOW TO FINGER,0.4,Sin clasificación,Sin clasificación
-29085,APPLIC; HAND & LOWER FOREARM,0.4,Sin clasificación,Sin clasificación
-29105,APPLIC LONG ARM SPLINT,0.3,Sin clasificación,Sin clasificación
-29125,APPLIC SHORT ARM SPLINT; STATIC,0.3,Sin clasificación,Sin clasificación
-29126,APPLIC SHORT ARM SPLINT; DYNAMIC,0.4,Sin clasificación,Sin clasificación
-29130,APPLIC FINGER SPLINT; STATIC,0.2,Sin clasificación,Sin clasificación
-29131,APPLIC FINGER SPLINT; DYNAMIC,0.3,Sin clasificación,Sin clasificación
-29200,STRAPPING; THORAX,0.2,Sin clasificación,Sin clasificación
-29220,STRAPPING; LOW BACK,0.3,Sin clasificación,Sin clasificación
-29240,STRAPPING; SHOULDER,0.2,Sin clasificación,Sin clasificación
-29260,STRAPPING; ELBOW/WRIST,0.2,Sin clasificación,Sin clasificación
-29280,STRAPPING; HAND/FINGER,0.2,Sin clasificación,Sin clasificación
-29305,APPLIC HIP SPICA CAST; 1 LEG,1,Sin clasificación,Sin clasificación
-29325,APPLIC HIP SPICA CAST; 1-1/2 SPICA/BOTH LEGS,1.5,Sin clasificación,Sin clasificación
-29345,APPLIC LONG LEG CAST,0.7,Sin clasificación,Sin clasificación
-29355,APPLIC LONG LEG CAST; WALKER/AMBULATORY TYPE,0.8,Sin clasificación,Sin clasificación
-29358,APPLIC LONG LEG CAST BRACE,1.4,Sin clasificación,Sin clasificación
-29365,APPLIC CYLINDER CAST,0.6,Sin clasificación,Sin clasificación
-29405,APPLIC SHORT LEG CAST,0.6,Sin clasificación,Sin clasificación
-29425,APPLIC SHORT LEG CAST; WALKING/AMB TYPE,0.7,Sin clasificación,Sin clasificación
-29435,APPLIC PATELLAR TENDON BEARING CAST,0.9,Sin clasificación,Sin clasificación
-29440,ADD WALKER TO PREV APPLIC CAST,0.2,Sin clasificación,Sin clasificación
-29450,APPLIC CLUBFT CAST W/MOLDING/MANIP LONG/SHORT,0.3,Sin clasificación,Sin clasificación
-29505,APPLIC LONG LEG SPLINT,0.5,Sin clasificación,Sin clasificación
-29515,APPLIC SHORT LEG SPLINT,0.3,Sin clasificación,Sin clasificación
-29520,STRAPPING; HIP,0.3,Sin clasificación,Sin clasificación
-29530,STRAPPING; KNEE,0.2,Sin clasificación,Sin clasificación
-29540,STRAPPING; ANK,0.2,Sin clasificación,Sin clasificación
-29550,STRAPPING; TOES,0.1,Sin clasificación,Sin clasificación
-29580,STRAPPING; UNNA BOOT,0.3,Sin clasificación,Sin clasificación
-29590,DENIS-BROWNE SPLINT STRAPPING,0.3,Sin clasificación,Sin clasificación
-29700,REMOV/BIVALVING; GAUNTLET BOOT BODY CAST,0.2,Sin clasificación,Sin clasificación
-29705,REMOV/BIVALVING; FULL ARM FULL LEG CAST,0.2,Sin clasificación,Sin clasificación
-29710,REMOV/BIVALV; SHOULDR/HIP SPICA MINERVA/RISSER,0.4,Sin clasificación,Sin clasificación
-29715,REMOV/BIVALVING; TURNBUCKLE JACKET,0.5,Sin clasificación,Sin clasificación
-29720,REPR SPICA BODY CAST/JACKET,0.2,Sin clasificación,Sin clasificación
-29730,WINDOWING CAST,0.2,Sin clasificación,Sin clasificación
-29740,WEDGING CAST,0.2,Sin clasificación,Sin clasificación
-29750,WEDGING CLUBFT CAST,0.2,Sin clasificación,Sin clasificación
-29799,UNLISTED PROC CASTING/STRAPPING,BR,Sin clasificación,Sin clasificación
+29000,APPLIC HALO TYPE BODY CAST,2.5,Ortopedia,Yesos y férulas
+29010,APPLIC RISSER JACKET LOCALIZ BODY; ONLY,2,Ortopedia,Yesos y férulas
+29015,APPLIC RISSER JACKET LOCALIZ BODY; INCL HEAD,2.5,Ortopedia,Yesos y férulas
+29020,APPLIC TURNBUCKLE JACKET BODY; ONLY,2,Ortopedia,Yesos y férulas
+29025,APPLIC TURNBUCKLE JACKET BODY; INCL HEAD,2.5,Ortopedia,Yesos y férulas
+29035,APPLIC BODY CAST SHOULDER TO HIPS,1,Ortopedia,Yesos y férulas
+29040,APPLIC BODY CAST SHOULDR-HIPS; INCL HEAD-MINERVA,1.7,Ortopedia,Yesos y férulas
+29044,APPLIC BODY CAST SHOULDER TO HIPS; INCL 1 THIGH,1.3,Ortopedia,Yesos y férulas
+29046,APPLIC BODY CAST SHOULDER-HIPS; INCL BOTH THIGHS,1.4,Ortopedia,Yesos y férulas
+29049,APPLIC; PLASTER FIGURE-8,0.5,Ortopedia,Yesos y férulas
+29055,APPLIC; SHOULDER SPICA,1,Ortopedia,Yesos y férulas
+29058,APPLIC; PLASTER VELPEAU,0.6,Ortopedia,Yesos y férulas
+29065,APPLIC; SHOULDER TO HAND,0.5,Ortopedia,Yesos y férulas
+29075,APPLIC; ELBOW TO FINGER,0.4,Ortopedia,Yesos y férulas
+29085,APPLIC; HAND & LOWER FOREARM,0.4,Ortopedia,Yesos y férulas
+29105,APPLIC LONG ARM SPLINT,0.3,Ortopedia,Yesos y férulas
+29125,APPLIC SHORT ARM SPLINT; STATIC,0.3,Ortopedia,Yesos y férulas
+29126,APPLIC SHORT ARM SPLINT; DYNAMIC,0.4,Ortopedia,Yesos y férulas
+29130,APPLIC FINGER SPLINT; STATIC,0.2,Ortopedia,Yesos y férulas
+29131,APPLIC FINGER SPLINT; DYNAMIC,0.3,Ortopedia,Yesos y férulas
+29200,STRAPPING; THORAX,0.2,Ortopedia,Yesos y férulas
+29220,STRAPPING; LOW BACK,0.3,Ortopedia,Yesos y férulas
+29240,STRAPPING; SHOULDER,0.2,Ortopedia,Yesos y férulas
+29260,STRAPPING; ELBOW/WRIST,0.2,Ortopedia,Yesos y férulas
+29280,STRAPPING; HAND/FINGER,0.2,Ortopedia,Yesos y férulas
+29305,APPLIC HIP SPICA CAST; 1 LEG,1,Ortopedia,Yesos y férulas
+29325,APPLIC HIP SPICA CAST; 1-1/2 SPICA/BOTH LEGS,1.5,Ortopedia,Yesos y férulas
+29345,APPLIC LONG LEG CAST,0.7,Ortopedia,Yesos y férulas
+29355,APPLIC LONG LEG CAST; WALKER/AMBULATORY TYPE,0.8,Ortopedia,Yesos y férulas
+29358,APPLIC LONG LEG CAST BRACE,1.4,Ortopedia,Yesos y férulas
+29365,APPLIC CYLINDER CAST,0.6,Ortopedia,Yesos y férulas
+29405,APPLIC SHORT LEG CAST,0.6,Ortopedia,Yesos y férulas
+29425,APPLIC SHORT LEG CAST; WALKING/AMB TYPE,0.7,Ortopedia,Yesos y férulas
+29435,APPLIC PATELLAR TENDON BEARING CAST,0.9,Ortopedia,Yesos y férulas
+29440,ADD WALKER TO PREV APPLIC CAST,0.2,Ortopedia,Yesos y férulas
+29450,APPLIC CLUBFT CAST W/MOLDING/MANIP LONG/SHORT,0.3,Ortopedia,Yesos y férulas
+29505,APPLIC LONG LEG SPLINT,0.5,Ortopedia,Yesos y férulas
+29515,APPLIC SHORT LEG SPLINT,0.3,Ortopedia,Yesos y férulas
+29520,STRAPPING; HIP,0.3,Ortopedia,Yesos y férulas
+29530,STRAPPING; KNEE,0.2,Ortopedia,Yesos y férulas
+29540,STRAPPING; ANK,0.2,Ortopedia,Yesos y férulas
+29550,STRAPPING; TOES,0.1,Ortopedia,Yesos y férulas
+29580,STRAPPING; UNNA BOOT,0.3,Ortopedia,Yesos y férulas
+29590,DENIS-BROWNE SPLINT STRAPPING,0.3,Ortopedia,Yesos y férulas
+29700,REMOV/BIVALVING; GAUNTLET BOOT BODY CAST,0.2,Ortopedia,Yesos y férulas
+29705,REMOV/BIVALVING; FULL ARM FULL LEG CAST,0.2,Ortopedia,Yesos y férulas
+29710,REMOV/BIVALV; SHOULDR/HIP SPICA MINERVA/RISSER,0.4,Ortopedia,Yesos y férulas
+29715,REMOV/BIVALVING; TURNBUCKLE JACKET,0.5,Ortopedia,Yesos y férulas
+29720,REPR SPICA BODY CAST/JACKET,0.2,Ortopedia,Yesos y férulas
+29730,WINDOWING CAST,0.2,Ortopedia,Yesos y férulas
+29740,WEDGING CAST,0.2,Ortopedia,Yesos y férulas
+29750,WEDGING CLUBFT CAST,0.2,Ortopedia,Yesos y férulas
+29799,UNLISTED PROC CASTING/STRAPPING,BR,Ortopedia,Yesos y férulas

@@ -1,283 +1,216 @@
 ﻿codigo,cirugia,rvu,especialidad,grupo
-10040,ACNE SURG,0.2,Sin clasificación,Sin clasificación
-10060,I&D ABSCESS; SIMPL/SNGL,0.3,Sin clasificación,Sin clasificación
-10061,I&D ABSCESS; COMPLIC/MX,1.1,Sin clasificación,Sin clasificación
-10080,I&D PILONIDAL CYST; SIMPL,0.4,Sin clasificación,Sin clasificación
-10081,I&D PILONIDAL CYST; COMPLIC,1.2,Sin clasificación,Sin clasificación
-10120,INCS & REMOV F B SUBQ TISS; SIMPL,0.4,Cirugía General,Drenajes / Incisiones
-10121,INCS & REMOV F B SUBQ TISS; COMPLIC,1.2,Cirugía General,Drenajes / Incisiones
-10140,I&D HEMATOMA/SEROMA/FLUID COLLEC,0.3,Cirugía General,Drenajes / Incisiones
-10160,PUNCT ASPIRAT ABSCESS/HEMATOMA/BULLA/CYST,0.3,Cirugía General,Drenajes / Incisiones
-10180,I&D COMPLX POSTOP WOUND INFEC,1.8,Cirugía General,Drenajes / Incisiones
-11000,DEBRID EXTEN ECZEMAT/INFEC SKIN; TO 10% BODY SUR,0.3,Sin clasificación,Sin clasificación
-11001,DEBRID EXTEN ECZEMAT/INFEC SKIN; EA AD 10% SURFA,0.2,Sin clasificación,Sin clasificación
-11040,DEBRID; SKIN PART THICK,0.3,Sin clasificación,Sin clasificación
-11041,DEBRID; SKIN FULL THICK,0.7,Sin clasificación,Sin clasificación
-11042,DEBRID; SKIN & SUBQ TISS,1.2,Sin clasificación,Sin clasificación
-11043,DEBRID; SKIN/SUBQ TISS/MUSCL,2.2,Sin clasificación,Sin clasificación
-11044,DEBRID; SKIN/SUBQ TISS/MUSCL/BONE,2.5,Sin clasificación,Sin clasificación
-11050,PARING/CURETT BEN LES W/WO CAUT-W/WO ANES; 1 LES,0.3,Sin clasificación,Sin clasificación
-11051,PARING/CURETT BEN LES W/WO CAUT-W/WO ANES; 2-4,0.3,Sin clasificación,Sin clasificación
-11052,PARING/CURETT BEN LES W/WO CAUT-W/WO ANES; > 4,0.4,Sin clasificación,Sin clasificación
-11100,BX SKIN/SUBQ TISS/MUCOUS MEMB (SEP PRO); 1 LES,0.4,Sin clasificación,Sin clasificación
-11101,BX SKIN/SUBQ TISS/MUCOUS MEMB (SEP PRO); EA ADD,0.3,Sin clasificación,Sin clasificación
-11200,REMOV SKIN TAGS ANY AREA; TO & INCL 15 LES,0.3,Sin clasificación,Sin clasificación
-11201,REMOV SKIN TAGS ANY AREA; EA ADD 10 LES,0.2,Sin clasificación,Sin clasificación
-11300,SHAVING 1 LES TRUNK/ARMS/LEGS; 0.5CM/LESS,0.1,Sin clasificación,Sin clasificación
-11301,SHAVING 1 LES TRUNK/ARMS/LEGS; 0.6 TO 1.0 CM,0.2,Sin clasificación,Sin clasificación
-11302,SHAVING 1 LES TRUNK/ARMS/LEGS; 1.1 TO 2.0 CM,0.2,Sin clasificación,Sin clasificación
-11303,SHAVING 1 LES TRUNK/ARMS/LEGS; OVER 2.0 CM,0.3,Sin clasificación,Sin clasificación
-11305,SHAVING 1 LES SCALP/HANDS/FT/GENIT; 0.5 CM/LESS,0.2,Sin clasificación,Sin clasificación
-11306,SHAVING 1 LES SCALP/HANDS/FT/GENIT; 0.6 TO 1.0CM,0.2,Sin clasificación,Sin clasificación
-11307,SHAVING 1 LES SCALP/HANDS/FT/GENIT; 1.1 TO 2.0CM,0.3,Sin clasificación,Sin clasificación
-11308,SHAVING 1 LES SCALP/HANDS/FT/GENIT; OVER 2.0 CM,0.3,Sin clasificación,Sin clasificación
-11310,SHAVING 1 LES FACE/EARS/NOSE/LIPS; 0.5 CM/LESS,0.2,Sin clasificación,Sin clasificación
-11311,SHAVING 1 LES FACE/EARS/NOSE/LIPS; 0.6 TO 1.0 CM,0.2,Sin clasificación,Sin clasificación
-11312,SHAVING 1 LES FACE/EARS/NOSE/LIPS; 1.1 TO 2.0 CM,0.3,Sin clasificación,Sin clasificación
-11313,SHAVING 1 LES FACE/EARS/NOSE/LIPS; OVER 2.0 CM,0.3,Sin clasificación,Sin clasificación
-11701,DEBRID NAILS MANUAL; EA ADD 5/LESS,0.1,Sin clasificación,Sin clasificación
-11710,DEBRID NAILS ELEC GRINDER; 5/LESS,0.2,Sin clasificación,Sin clasificación
-11730,AVULSION NAIL PLATE PART/COMPLT SIMPL; SNGL,0.4,Cirugía General,Uñas / piel
-11731,AVULSION PLATE PART/COMPLT SIMPL; 2ND NAIL PLATE,0.3,Cirugía General,Uñas / piel
-11732,AVULSION PLATE PART/COMPLT SIMPL; EA ADD NAIL,0.2,Cirugía General,Uñas / piel
-11740,EVACUATION SUBUNGUAL HEMATOMA,0.3,Cirugía General,Uñas / piel
-11750,EXC NAIL/MATRIX PART/COMPLT PERM REMOV,1.4,Cirugía General,Uñas / piel
-11752,EXC NAIL/MATRIX PART/COMPLT PERM; AMPUT DISTAL,1.9,Cirugía General,Uñas / piel
-11760,REPR NAIL BED,1.5,Cirugía General,Uñas / piel
-11762,RECON NAIL BED W/GFT,2.3,Cirugía General,Uñas / piel
-11765,WEDGE EXC SKIN NAIL FOLD,1,Cirugía General,Uñas / piel
-11711,DEBRID NAILS ELEC GRINDER; EA ADD 5/LESS,0.1,Sin clasificación,Sin clasificación
-11770,EXC PILONIDAL CYST/SINUS; SIMPL,2.6,Sin clasificación,Sin clasificación
-11771,EXC PILONIDAL CYST/SINUS; EXTEN,3.7,Sin clasificación,Sin clasificación
-11772,EXC PILONIDAL CYST/SINUS; COMPLIC,4.2,Sin clasificación,Sin clasificación
-11900,INJ INTRALES; UP TO & INCL 7 LES,0.2,Sin clasificación,Sin clasificación
-11901,INJ INTRALES; MORE THAN 7 LES,0.4,Sin clasificación,Sin clasificación
-11920,TATTOOING INCL MICROPIGMENTATION; 6.0 SQ CM/LESS,2.5,Sin clasificación,Sin clasificación
-11921,TATTOOING INCL MICROPIGMENTATION; 6.1-20.0 SQ CM,4.9,Sin clasificación,Sin clasificación
-11922,TATTOOING INCL MICROPIGMENTATION; EA ADD 20.0 CM,2.5,Sin clasificación,Sin clasificación
-11950,SUBQ INJ FILLING MAT; 1 CC/LESS,0.9,Sin clasificación,Sin clasificación
-11951,SUBQ INJ FILLING MAT; 1.1 TO 5.0 CC,1.2,Sin clasificación,Sin clasificación
-11952,SUBQ INJ FILLING MAT; 5.1 TO 10.0 CC,1.5,Sin clasificación,Sin clasificación
-11954,SUBQ INJ FILLING MAT; OVER 10.0 CC,BR,Sin clasificación,Sin clasificación
-11960,INSRT EXPANDER NOT BREAST INCL SUBSQT EXPANSION,RNE,Sin clasificación,Sin clasificación
-11970,REPLAC TISS EXPANDER W/PERM PROSTH,7.6,Sin clasificación,Sin clasificación
-11971,REMOV TISS EXPANDER WO INSRT PROSTH,1.1,Sin clasificación,Sin clasificación
-11975,INSRT IMPLNT CONTRACEPTIVE CAPSULES,0.5,Sin clasificación,Sin clasificación
-11976,REMOV IMPLNT CONTRACEPTIVE CAPSULES,0.5,Sin clasificación,Sin clasificación
-11977,REMOV W/REINSRT IMPLNT CONTRACEPTIVE CAPSULES,0.8,Sin clasificación,Sin clasificación
-
-12001,SIMPL REPR SCLP/AX/GENIT/TRUNK/EXTREM; 2.5/LESS,0.4,Cirugía General,Reparaciones (suturas)
-12002,SIMPL REPR SCLP/AX/GENIT/TRUNK/EXTREM; 2.6-7.5CM,0.5,Cirugía General,Reparaciones (suturas)
-12004,SIMPL REPR SCLP/AX/GENIT/TRUNK/EXTREM; 7.6-12.5,0.8,Cirugía General,Reparaciones (suturas)
-12005,SIMPL REPR SCLP/AX/GENIT/TRUNK/EXTREM; 12.6-20.0,1,Cirugía General,Reparaciones (suturas)
-12006,SIMPL REPR SCLP/AX/GENIT/TRUNK/EXTREM; 20.1-30.0,1.4,Cirugía General,Reparaciones (suturas)
-12007,SIMPL REPR SCLP/AX/GENIT/TRUNK/EXTREM; OVER 30.0,BR,Cirugía General,Reparaciones (suturas)
-12011,SIMPL REPR FACE/EARS/NOSE/MUCOUS MEMB; 2.5/LESS,0.6,Cirugía General,Reparaciones (suturas)
-12013,SIMPL REPR FACE/EARS/NOSE/MUCOUS MEMB; 2.6-5.0,0.8,Cirugía General,Reparaciones (suturas)
-12014,SIMPL REPR FACE/EARS/NOSE/MUCOUS MEMB; 5.1-7.5,1.1,Cirugía General,Reparaciones (suturas)
-12015,SIMPL REPR FACE/EARS/NOSE/MUCOUS MEMB; 7.6-12.5,1.4,Cirugía General,Reparaciones (suturas)
-12016,SIMPL REPR FACE/EARS/NOSE/MUCOUS MEMB; 12.6-20.0,2.2,Cirugía General,Reparaciones (suturas)
-12017,SIMPL REPR FACE/EARS/NOSE/MUCOUS MEMB; 20.1-30.0,3.4,Cirugía General,Reparaciones (suturas)
-12018,SIMPL REPR FACE/EARS/NOSE/MUCOUS MEMB; OVER 30.0,BR,Cirugía General,Reparaciones (suturas)
-12020,TX SUPERF WOUND DEHISCENCE; SIMPL CLO,1,Cirugía General,Reparaciones (suturas)
-12021,TX SUPERF WOUND DEHISCENCE; W/PACKING,1.1,Cirugía General,Reparaciones (suturas)
-12031,LAYER CLO SCLP/AX/TRUNK/EXTREM; 2.5 CM/LESS,0.6,Cirugía General,Reparaciones (suturas)
-12032,LAYER CLO SCLP/AX/TRUNK/EXTREM; 2.6 TO 7.5 CM,0.8,Cirugía General,Reparaciones (suturas)
-12034,LAYER CLO SCLP/AX/TRUNK/EXTREM; 7.6 TO 12.5 CM,1.1,Cirugía General,Reparaciones (suturas)
-12035,LAYER CLO SCLP/AX/TRUNK/EXTREM; 12.6 TO 20.0 CM,1.4,Cirugía General,Reparaciones (suturas)
-12036,LAYER CLO SCLP/AX/TRUNK/EXTREM; 20.1 TO 30.0 CM,1.8,Cirugía General,Reparaciones (suturas)
-12037,LAYER CLO SCLP/AX/TRUNK/EXTREM; OVER 30.0 CM,2.2,Cirugía General,Reparaciones (suturas)
-12041,LAYER CLO NECK/HANDS/FT/GENIT; 2.5 CM/LESS,0.7,Cirugía General,Reparaciones (suturas)
-12042,LAYER CLO NECK/HANDS/FT/GENIT; 2.6 TO 7.5 CM,1,Cirugía General,Reparaciones (suturas)
-12044,LAYER CLO NECK/HANDS/FT/GENIT; 7.6 TO 12.5 CM,1.3,Cirugía General,Reparaciones (suturas)
-12045,LAYER CLO NECK/HANDS/FT/GENIT; 12.6 TO 20.0 CM,1.7,Cirugía General,Reparaciones (suturas)
-12046,LAYER CLO NECK/HANDS/FT/GENIT; 20.1 TO 30.0 CM,2.3,Cirugía General,Reparaciones (suturas)
-12047,LAYER CLO NECK/HANDS/FT/GENIT; OVER 30.0 CM,2.5,Cirugía General,Reparaciones (suturas)
-12051,LAYER CLO FACE/EARS/NOSE/LIPS; 2.5 CM/LESS,0.8,Cirugía General,Reparaciones (suturas)
-12052,LAYER CLO FACE/EARS/NOSE/LIPS; 2.6 TO 5.0 CM,1.1,Cirugía General,Reparaciones (suturas)
-12053,LAYER CLO FACE/EARS/NOSE/LIPS; 5.1 TO 7.5 CM,1.4,Cirugía General,Reparaciones (suturas)
-12054,LAYER CLO FACE/EARS/NOSE/LIPS; 7.6 TO 12.5 CM,2.2,Cirugía General,Reparaciones (suturas)
-12055,LAYER CLO FACE/EARS/NOSE/LIPS; 12.6 TO 20.0 CM,3.3,Cirugía General,Reparaciones (suturas)
-12056,LAYER CLO FACE/EARS/NOSE/LIPS; 20.1 TO 30.0 CM,3.4,Cirugía General,Reparaciones (suturas)
-12057,LAYER CLO FACE/EARS/NOSE/LIPS; OVER 30.0 CM,BR,Cirugía General,Reparaciones (suturas)
-13100,REPR COMPLX TRUNK; 1.1 CM TO 2.5 CM,0.8,Cirugía General,Reparaciones (suturas)
-13101,REPR COMPLX TRUNK; 2.6 CM TO 7.5 CM,1.6,Cirugía General,Reparaciones (suturas)
-13120,REPR COMPLX SCLP/ARMS/LEGS; 1.1 CM TO 2.5 CM,1.5,Cirugía General,Reparaciones (suturas)
-13121,REPR COMPLX SCLP/ARMS/LEGS; 2.6 CM TO 7.5 CM,2.3,Cirugía General,Reparaciones (suturas)
-13131,REPR COMPLX FOREHEAD/CHIN/AX/GENIT/FT; 1.1-2.5,1.6,Cirugía General,Reparaciones (suturas)
-13132,REPR COMPLX FOREHEAD/CHIN/AX/GENIT/FT; 2.6-7.5,3.3,Cirugía General,Reparaciones (suturas)
-13150,REPR COMPLX LIDS/NOSE/EARS/LIPS; 1.0 CM/LESS,1.3,Cirugía General,Reparaciones (suturas)
-13151,REPR COMPLX LIDS/NOSE/EARS/LIPS; 1.1 TO 2.5 CM,2,Cirugía General,Reparaciones (suturas)
-13152,REPR COMPLX LIDS/NOSE/EARS/LIPS; 2.6 TO 7.5 CM,4.2,Cirugía General,Reparaciones (suturas)
-13160,SECNDRY CLO SURG WOUND/DEHISCENCE EXTEN/COMPLIC,2.9,Cirugía General,Reparaciones (suturas)
-13300,REPR UNUSUAL COMPLIC OVER 7.5 CM ANY AREA,BR,Cirugía General,Reparaciones (suturas)
-20000,INCS SOFT TISS ABSCESS; SUPERF,0.3,Sin clasificación,Sin clasificación
-20005,INCS SOFT TISS ABSCESS; DEEP/COMPLIC,1.7,Sin clasificación,Sin clasificación
-20200,BX MUSCL; SUPERF,1.1,Sin clasificación,Sin clasificación
-20205,BX MUSCL; DEEP,1.7,Sin clasificación,Sin clasificación
-20206,BX MUSCL PERCUT NEEDLE,0.6,Sin clasificación,Sin clasificación
-20220,BX BONE TROCAR/NEEDLE; SUPERF,0.8,Sin clasificación,Sin clasificación
-20225,BX BONE TROCAR/NEEDLE; DEEP,2.7,Sin clasificación,Sin clasificación
-20240,BX EXC; SUPERF,2,Sin clasificación,Sin clasificación
-20245,BX EXC; DEEP,2.7,Sin clasificación,Sin clasificación
-20250,BX VERTEBRAL BODY OP; THORACIC,6.9,Sin clasificación,Sin clasificación
-20251,BX VERTEBRAL BODY OP; LUMBAR/CERV,6.9,Sin clasificación,Sin clasificación
-20500,INJ SINUS TRACT; THERAP (SEPART PROC),0.3,Sin clasificación,Sin clasificación
-20501,INJ SINUS TRACT; DX,0.4,Sin clasificación,Sin clasificación
-20520,REMOV F B MUSCL/TENDON SHEATH; SIMPL,0.6,Sin clasificación,Sin clasificación
-20525,REMOV F B MUSCL/TENDON SHEATH; DEEP/COMPLIC,2.7,Sin clasificación,Sin clasificación
-20550,INJ TENDON SHEATH/LIG/TRIGGER PT/GANGLION CYST,0.3,Sin clasificación,Sin clasificación
-38100,SPLENECTOMY (SEPART PROC); TOT,8.8,Sin clasificación,Sin clasificación
-38101,SPLENECTOMY (SEPART PROC); PART,8.8,Sin clasificación,Sin clasificación
-38115,REPR RUPT SPLEEN W/WO PART SPLENECTOMY,8.3,Sin clasificación,Sin clasificación
-38200,INJ PROC SPLENOPORTOGRAPHY,1.7,Sin clasificación,Sin clasificación
-38230,BONE MARROW HARVESTING TRANSPL,6.9,Sin clasificación,Sin clasificación
-38240,BONE MARROW TRANSPL; ALLOGENIC,7.4,Sin clasificación,Sin clasificación
-38241,BONE MARROW TRANSPL; AUTOLOGOUS,7.4,Sin clasificación,Sin clasificación
-38300,DRAINAGE LYMPH NODE ABSCESS/LYMPHADENITIS; SIMPL,0.5,Sin clasificación,Sin clasificación
-38305,DRAINAGE LYMPH NODE ABSCESS/LYMPHADENITIS; EXTEN,1,Sin clasificación,Sin clasificación
-38308,LYMPHANGIOTOMY/OTHER OR ON LYMPHATIC CHANNELS,2,Sin clasificación,Sin clasificación
-38380,SUTURE &/OR LIG THORACIC DUCT; CERV APPROACH,4.9,Sin clasificación,Sin clasificación
-38381,SUTURE &/OR LIG THORACIC DUCT; THORACIC APPROACH,9.8,Sin clasificación,Sin clasificación
-38382,SUTURE &/OR LIG THORACIC DUCT; ABD APPROACH,8.3,Sin clasificación,Sin clasificación
-38500,BX/EXC LYMPH NODE; SUPERF (SEPART PROC),1.5,Sin clasificación,Sin clasificación
-38505,BX/EXC LYMPH NODE; BY NEEDLE SUPERF,1,Sin clasificación,Sin clasificación
-38510,BX/EXC LYMPH NODE; DEEP CERV NODE,2.9,Sin clasificación,Sin clasificación
-38520,BX/EXC LYMPH NODE; DEEP CERV NODE W/EXC FAT PAD,3.1,Sin clasificación,Sin clasificación
-38525,BX/EXC LYMPH NODE; DEEP AXILRY NODE,2.9,Sin clasificación,Sin clasificación
-38530,BX/EXC LYMPH NODE; INT MAMMARY NODE (SEP PRO),3.4,Sin clasificación,Sin clasificación
-38542,DISSECTION DEEP JUGULAR NODE,2.9,Sin clasificación,Sin clasificación
-38550,EXC CYSTIC HYGROMA AX WO NEUROVAS DISSEC; SIMPL,2.9,Sin clasificación,Sin clasificación
-38555,EXC CYSTIC HYGROMA AX WO NEUROVAS DISSEC; COMPLX,7.8,Sin clasificación,Sin clasificación
-38562,LTD LYMPHADENECTOMY (SEPART PROC); PELVIC,7.4,Sin clasificación,Sin clasificación
-38564,LTD LYMPHADENECT (SEPART PROC); RETROPERITONEAL,8.3,Sin clasificación,Sin clasificación
-38700,SUPRAHYOID LYMPHADENECTOMY,6.5,Sin clasificación,Sin clasificación
-38720,CERV LYMPHADENECTOMY (COMPLETE),12.5,Sin clasificación,Sin clasificación
-38724,CERV LYMPHADENECTOMY (MODIFIED RAD NECK DISECT),12.5,Sin clasificación,Sin clasificación
-38740,AXILRY LYMPHADENECTOMY; SUPERF,3.9,Sin clasificación,Sin clasificación
-38745,AXILRY LYMPHADENECTOMY; COMPLT,8.3,Sin clasificación,Sin clasificación
-38760,INGUINOFEM LYMPHADENECT SUPERF (SEPART PROC),4.9,Sin clasificación,Sin clasificación
-38765,INGUINOFEM LYMPHADENECTOMY SUPERF W/PELVIC LYMPH,10.3,Sin clasificación,Sin clasificación
-38770,PELVIC LYMPHADENECTOMY W/EXT ILIAC (SEPART PROC),7.4,Sin clasificación,Sin clasificación
-38780,RETROPERITONEAL TRANSABD LYMPHADNECT (SEP PRO),14.7,Sin clasificación,Sin clasificación
-38790,INJ PROC LYMPHANGIOGRAPHY,1.9,Sin clasificación,Sin clasificación
-38794,CANNULATION THORACIC DUCT,1.5,Sin clasificación,Sin clasificación
-38999,UNLISTED PROC HEMIC/LYMPHATIC SYST,BR,Sin clasificación,Sin clasificación
-39000,MEDIASTINOTOMY W/EXPLOR/DRAINAGE/REMOV F B; CERV,4.2,Sin clasificación,Sin clasificación
-39010,MEDIASTINOTOMY W/EXPLOR/DRAINAGE; TRANSTHORACIC,10.3,Sin clasificación,Sin clasificación
-39020,MEDIASTINOTOMY W/EXPLOR DRAINAGE; STERNAL SPLIT,11.1,Sin clasificación,Sin clasificación
-39200,EXC MEDIASTINAL CYST,12,Sin clasificación,Sin clasificación
-39220,EXC MEDIASTINAL TUMOR,12,Sin clasificación,Sin clasificación
-39400,MEDIASTINOSCOPY W/WO BX,4.2,Sin clasificación,Sin clasificación
-39499,UNLISTED PROC MEDIASTINUM,BR,Sin clasificación,Sin clasificación
-39501,REPR LACERATION DIAPHRAGM,8.8,Sin clasificación,Sin clasificación
-39502,REPR PARAESOPHAGEAL HIATUS HERNIA EXC NEONAT,8.8,Sin clasificación,Sin clasificación
-39503,REPR NEONAT DIAPHRAGMATIC HERNIA W/WO CHEST TUBE,10.8,Sin clasificación,Sin clasificación
-39520,REPR DIAPHRAGMATIC HERNIA; TRANSTHORACIC,8.4,Sin clasificación,Sin clasificación
-39530,REPR DIAPHRAGM HERNIA; COMBO THORACOABD,9.3,Sin clasificación,Sin clasificación
-39531,REPR DIAPHRAGM HERNIA; THORACOABD W/DILAT STRICT,10.8,Sin clasificación,Sin clasificación
-39540,REPR DIAPHRAGMATIC HERNIA-TRAUMATIC; ACUTE,11.2,Sin clasificación,Sin clasificación
-39541,REPR DIAPHRAGMATIC HERNIA-TRAUMATIC; CHRONIC,8.4,Sin clasificación,Sin clasificación
-39545,IMBRICATION DIAPHRAGM-EVENTRATION; PARALYTIC,10.8,Sin clasificación,Sin clasificación
-39547,IMBRICATION DIAPHRAGM-EVENTRATION; NONPARALYTIC,10.8,Sin clasificación,Sin clasificación
-39599,UNLISTED PROC DIAPHRAGM,BR,Sin clasificación,Sin clasificación
-40490,BX LIP,0.5,Sin clasificación,Sin clasificación
-40500,VERMILIONECTOMY W/MUCOS ADVANCEMENT,5.1,Sin clasificación,Sin clasificación
-40510,EXC LIP; TRANSVERSE WEDGE EXC W/PRIM CLO,5.1,Sin clasificación,Sin clasificación
-40520,EXC LIP; V-EXC W/PRIM DIRECT LINEAR CLO,3.9,Sin clasificación,Sin clasificación
-40525,EXC LIP; FULL THICK RECON W/LOCAL FLAP,7.8,Sin clasificación,Sin clasificación
-40527,EXC LIP; FULL THICK RECON W/CROSS LIP FLAP,7.8,Sin clasificación,Sin clasificación
-40530,RESECT LIP MORE THAN 1-FOURTH WO RECON,3.9,Sin clasificación,Sin clasificación
-40650,REPR LIP FULL THICK; VERMILION ONLY,2.5,Sin clasificación,Sin clasificación
-40652,REPR LIP FULL THICK; UP TO HALF VERTICAL HEIGHT,3.2,Sin clasificación,Sin clasificación
-40654,REPR LIP FULL THICK; > 1/2 VERTICAL HT/COMPLX,4.2,Sin clasificación,Sin clasificación
-40700,PLASTIC REPR CLEFT LIP/NASAL DEFORM; PRIM UNILAT,9.8,Sin clasificación,Sin clasificación
-40701,PLASTIC REPR CLEFT LIP; PRIM BILAT-1 STAGE PROC,11.5,Sin clasificación,Sin clasificación
-40702,PLASTIC REPR CLEFT LIP; PRIM BILAT-1 OF 2 STAGES,9.8,Sin clasificación,Sin clasificación
-40720,PLASTIC REPR CLEFT LIP; SECNDRY-RECREAT & RECLO,9.8,Sin clasificación,Sin clasificación
-40761,PLASTIC REPR CLEFT LIP; W/CROSS LIP PEDICLE FLAP,12.9,Sin clasificación,Sin clasificación
-40799,UNLISTED PROC LIPS,BR,Sin clasificación,Sin clasificación
-40800,DRAIN ABSCESS/CYST VESTIBULE MOUTH; SIMPL,0.4,Sin clasificación,Sin clasificación
-40801,DRAIN ABSCESS/CYST VESTIBULE MOUTH; COMPLIC,2.9,Sin clasificación,Sin clasificación
-40804,REMOV EMBEDDED F B VESTIBULE MOUTH; SIMPL,0.8,Sin clasificación,Sin clasificación
-40805,REMOV EMBEDDED F B VESTIBULE MOUTH; COMPLIC,2.7,Sin clasificación,Sin clasificación
-40806,INCS LABIAL FRENUM,1.2,Sin clasificación,Sin clasificación
-40808,BX VESTIBULE MOUTH,0.8,Sin clasificación,Sin clasificación
-40810,EXC LES-MUCOS/SUBMUCOSA-VESTIBULE MOUTH; WO REPR,1,Sin clasificación,Sin clasificación
-40812,EXC LES-MUCOS/SUBMUCOSA-MOUTH; W/SIMPL REPR,1.2,Sin clasificación,Sin clasificación
-40814,EXC LES-MUCOS/SUBMUCOSA-MOUTH; W/COMPLX REPR,2.9,Sin clasificación,Sin clasificación
-40816,EXC LES-VESTIBULE-MOUTH; COMPLX W/EXC MUSCL,3.8,Sin clasificación,Sin clasificación
-40818,EXC MUCOS VESTIBULE MOUTH AS DONOR GFT,1.2,Sin clasificación,Sin clasificación
-40819,EXC FRENUM LABIAL/BUCCAL,1.4,Sin clasificación,Sin clasificación
-40820,DESTRCT LES/SCAR VESTIBULE MOUTH-PHYSICAL METHD,1.2,Sin clasificación,Sin clasificación
-40830,CLO LACERATION VESTIBULE MOUTH; 2.5 CM/LESS,0.8,Sin clasificación,Sin clasificación
-40831,CLO LACERATION VESTIBULE MOUTH; > 2.5 CM/COMPLX,2,Sin clasificación,Sin clasificación
-40840,VESTIBULOPLASTY; ANT,3.9,Sin clasificación,Sin clasificación
-40842,VESTIBULOPLASTY; POST UNILAT,3.9,Sin clasificación,Sin clasificación
-40843,VESTIBULOPLASTY; POST BILAT,5.9,Sin clasificación,Sin clasificación
-40844,VESTIBULOPLASTY; ENTIRE ARCH,6.9,Sin clasificación,Sin clasificación
-40845,VESTIBULOPLASTY; COMPLX,8.3,Sin clasificación,Sin clasificación
-40899,UNLISTED PROC VESTIBULE MOUTH,BR,Sin clasificación,Sin clasificación
-41000,INTRAORAL I&D ABSCESS/CYST TONGUE/MOUTH; LINGUAL,0.8,Sin clasificación,Sin clasificación
-41005,INTRAORAL I&D ABSCESS TONGUE/MOUTH; SUBLINGUAL,0.9,Sin clasificación,Sin clasificación
-41006,INTRAORAL I&D ABSCESS; SUBLINGUAL SUPRAMYLOHYOID,2.5,Sin clasificación,Sin clasificación
-41007,INTRAORAL I&D ABSCESS/CYST; SUBMENTAL SPACE,2.5,Sin clasificación,Sin clasificación
-41008,INTRAORAL I&D ABSCESS/CYST; SUBMANDIBULAR SPACE,2.5,Sin clasificación,Sin clasificación
-41009,INTRAORAL I&D ABSCESS/CYST; MASTICATOR SPACE,2.5,Sin clasificación,Sin clasificación
-41010,INCS LINGUAL FRENUM,1.2,Sin clasificación,Sin clasificación
-41015,EXTRAORAL I&D ABSCESS FLOOR MOUTH; SUBLINGUAL,2.6,Sin clasificación,Sin clasificación
-41016,EXTRAORAL I&D ABSCESS FLOOR MOUTH; SUBMENTAL,2,Sin clasificación,Sin clasificación
-41017,EXTRAORAL I&D ABSCESS FLOOR MOUTH; SUBMANDIBULAR,2.6,Sin clasificación,Sin clasificación
-41018,EXTRAORAL I&D ABSCESS MOUTH; MASTICATOR SPACE,2.6,Sin clasificación,Sin clasificación
-41100,BX TONGUE; ANT TWO-THIRDS,0.8,Sin clasificación,Sin clasificación
-41105,BX TONGUE; POST ONE-THIRD,1,Sin clasificación,Sin clasificación
-41108,BX FLOOR MOUTH,0.7,Sin clasificación,Sin clasificación
-41110,EXC LES TONGUE WO CLO,0.9,Sin clasificación,Sin clasificación
-41112,EXC LES TONGUE W/CLO; ANT TWO-THIRDS,2.2,Sin clasificación,Sin clasificación
-41113,EXC LES TONGUE W/CLO; POST ONE-THIRD,2.7,Sin clasificación,Sin clasificación
-41114,EXC LES TONGUE W/CLO; W/LOCAL TONGUE FLAP,4,Sin clasificación,Sin clasificación
-41115,EXC LINGUAL FRENUM,1.6,Sin clasificación,Sin clasificación
-41116,EXC LES FLOOR MOUTH,2.9,Sin clasificación,Sin clasificación
-41120,GLOSSECTOMY; < ONE-HALF TONGUE,5.2,Sin clasificación,Sin clasificación
-41130,GLOSSECTOMY; HEMIGLOSSECTOMY,7.8,Sin clasificación,Sin clasificación
-41135,GLOSSECTOMY; PART W/UNILAT RADICAL NECK DISSECT,14,Sin clasificación,Sin clasificación
-41140,GLOSSECTOMY; COMPLT/TOT W/WO TRACH WO RAD NCEK,11.5,Sin clasificación,Sin clasificación
-41145,GLOSSECTOMY; COMPLT/TOT W/UNILAT RADICAL NECK,16.5,Sin clasificación,Sin clasificación
-41150,GLOSSECTOMY; COMPOSITE WO RADICAL NECK DISSECT,15.2,Sin clasificación,Sin clasificación
-41153,GLOSSECTOMY; COMPOSITE W/SUPRAHYOID NECK DISSECT,16.7,Sin clasificación,Sin clasificación
-41155,GLOSSECTOMY; COMPOSITE & RADICAL NECK DISSECTION,20.1,Sin clasificación,Sin clasificación
-41250,REPR LACERATION 2.5 CM/LESS; ANT 2/3 TONGUE,0.9,Sin clasificación,Sin clasificación
-41251,REPR LACERATION 2.5 CM/LESS; POST 1/3 TONGUE,0.7,Sin clasificación,Sin clasificación
-41252,REPR LACERAT TONGUE/FLOOR MOUTH > 2.6 CM/COMPLX,3.5,Sin clasificación,Sin clasificación
-41500,FIXA TONGUE MECH OTHER THAN SUTURE,2.5,Sin clasificación,Sin clasificación
-41510,SUTURE TONGUE TO LIP MICROGNATHIA,5.2,Sin clasificación,Sin clasificación
-41520,FRENOPLASTY,2.4,Sin clasificación,Sin clasificación
-41599,UNLISTED PROC TONGUE FLOOR MOUTH,BR,Sin clasificación,Sin clasificación
-41800,DRAINAGE ABSCESS/CYST FROM DENTOALVEOLAR STRUCT,0.8,Sin clasificación,Sin clasificación
-41805,REMOV EMBED F B-DENTOALVEOLAR STRUCT; SOFT TISS,0.9,Sin clasificación,Sin clasificación
-41806,REMOV EMBEDDED F B-DENTOALVEOLAR STRUCT; BONE,1,Sin clasificación,Sin clasificación
-41820,GINGIVECTOMY EXC GINGIVA EA QUADRANT,2,Sin clasificación,Sin clasificación
-41821,OPERCULECTOMY EXC PERICORONAL TISS,0.4,Sin clasificación,Sin clasificación
-41822,EXC FIBROUS TUBEROSITIES DENTOALVEOLAR STRUCT,1,Sin clasificación,Sin clasificación
-41823,EXC OSSEOUS TUBEROSITIES DENTOALVEOLAR STRUCT,2,Sin clasificación,Sin clasificación
-41825,EXC LES/TUMOR DENTOALVEOLAR STRUCT; WO REPR,1,Sin clasificación,Sin clasificación
-41826,EXC LES/TUMOR DENTOALVEOLAR STRUCT; W/SIMPL REPR,1.8,Sin clasificación,Sin clasificación
-41827,EXC LES DENTOALVEOLAR STRUCT; W/COMPLX REPR,2.7,Sin clasificación,Sin clasificación
-41828,EXC HYPERPLASTIC ALVEOLAR MUCOS EA QUADRANT,3.2,Sin clasificación,Sin clasificación
-41830,ALVEOLECTOMY INCL CURET OSTEITIS/SEQUESTRECTOMY,2.4,Sin clasificación,Sin clasificación
-41850,DESTRCT LES DENTOALVEOLAR STRUCT,1,Sin clasificación,Sin clasificación
-41870,PERIODONTAL MUCOS GFT,2.5,Sin clasificación,Sin clasificación
-41872,GINGIVOPLASTY,3.3,Sin clasificación,Sin clasificación
-41874,ALVEOPLASTY,2.5,Sin clasificación,Sin clasificación
-41899,UNLISTED PROC DENTOALVEOLAR STRUCT,BR,Sin clasificación,Sin clasificación
-42000, DRAINAGE ABSCESS PALATE UVULA, 	0.9,Sin clasificación,Sin clasificación
-42100, BX PALATE UVULA,	1,Sin clasificación,Sin clasificación
-42104, EXC LES PALATE UVULA; WO CLO, 1.4,Sin clasificación,Sin clasificación
-42106,EXC LES PALATE UVULA; W/SIMPL PRIM CLO,	1.8,Sin clasificación,Sin clasificación
-42107,EXC LES PALATE UVULA; W/LOCAL FLAP CLO,	3.2,Sin clasificación,Sin clasificación
-42120,RESECT PALATE/EXTEN RESECT LES,	5.2,Sin clasificación,Sin clasificación
-42140,UVULECTOMY EXC UVULA	,2.1,Sin clasificación,Sin clasificación
-42145,PALATOPHARYNGOPLASTY	,9.8,Sin clasificación,Sin clasificación
-42160,DESTRCT LES PALATE/UVULA,	0.6,Sin clasificación,Sin clasificación
-42180,REPR LACERATION PALATE; UP TO 2 CM,	1.4,Sin clasificación,Sin clasificación
-42182,REPR LACERATION PALATE; OVER 2 CM/COMPLX,	BR,Sin clasificación,Sin clasificación
+11000,DEBRID EXTEN ECZEMAT/INFEC SKIN; TO 10% BODY SUR,0.3,Procesos variados,Cirugía General
+11001,DEBRID EXTEN ECZEMAT/INFEC SKIN; EA AD 10% SURFA,0.2,Procesos variados,Cirugía General
+11040,DEBRID; SKIN PART THICK,0.3,Procesos variados,Cirugía General
+11041,DEBRID; SKIN FULL THICK,0.7,Procesos variados,Cirugía General
+11042,DEBRID; SKIN & SUBQ TISS,1.2,Procesos variados,Cirugía General
+11043,DEBRID; SKIN/SUBQ TISS/MUSCL,2.2,Procesos variados,Cirugía General
+11044,DEBRID; SKIN/SUBQ TISS/MUSCL/BONE,2.5,Procesos variados,Cirugía General
+11050,PARING/CURETT BEN LES W/WO CAUT-W/WO ANES; 1 LES,0.3,Procesos variados,Cirugía General
+11051,PARING/CURETT BEN LES W/WO CAUT-W/WO ANES; 2-4,0.3,Procesos variados,Cirugía General
+11052,PARING/CURETT BEN LES W/WO CAUT-W/WO ANES; > 4,0.4,Procesos variados,Cirugía General
+11100,BX SKIN/SUBQ TISS/MUCOUS MEMB (SEP PRO); 1 LES,0.4,Procesos variados,Cirugía General
+11101,BX SKIN/SUBQ TISS/MUCOUS MEMB (SEP PRO); EA ADD,0.3,Procesos variados,Cirugía General
+11200,REMOV SKIN TAGS ANY AREA; TO & INCL 15 LES,0.3,Procesos variados,Cirugía General
+11201,REMOV SKIN TAGS ANY AREA; EA ADD 10 LES,0.2,Procesos variados,Cirugía General
+11300,SHAVING 1 LES TRUNK/ARMS/LEGS; 0.5CM/LESS,0.1,Procesos variados,Cirugía General
+11301,SHAVING 1 LES TRUNK/ARMS/LEGS; 0.6 TO 1.0 CM,0.2,Procesos variados,Cirugía General
+11302,SHAVING 1 LES TRUNK/ARMS/LEGS; 1.1 TO 2.0 CM,0.2,Procesos variados,Cirugía General
+11303,SHAVING 1 LES TRUNK/ARMS/LEGS; OVER 2.0 CM,0.3,Procesos variados,Cirugía General
+11305,SHAVING 1 LES SCALP/HANDS/FT/GENIT; 0.5 CM/LESS,0.2,Procesos variados,Cirugía General
+11306,SHAVING 1 LES SCALP/HANDS/FT/GENIT; 0.6 TO 1.0CM,0.2,Procesos variados,Cirugía General
+11307,SHAVING 1 LES SCALP/HANDS/FT/GENIT; 1.1 TO 2.0CM,0.3,Procesos variados,Cirugía General
+11308,SHAVING 1 LES SCALP/HANDS/FT/GENIT; OVER 2.0 CM,0.3,Procesos variados,Cirugía General
+11310,SHAVING 1 LES FACE/EARS/NOSE/LIPS; 0.5 CM/LESS,0.2,Procesos variados,Cirugía General
+11311,SHAVING 1 LES FACE/EARS/NOSE/LIPS; 0.6 TO 1.0 CM,0.2,Procesos variados,Cirugía General
+11312,SHAVING 1 LES FACE/EARS/NOSE/LIPS; 1.1 TO 2.0 CM,0.3,Procesos variados,Cirugía General
+11313,SHAVING 1 LES FACE/EARS/NOSE/LIPS; OVER 2.0 CM,0.3,Procesos variados,Cirugía General
+11711,DEBRID NAILS ELEC GRINDER; EA ADD 5/LESS,0.1,Procesos variados,Cirugía General
+11770,EXC PILONIDAL CYST/SINUS; SIMPL,2.6,Procesos variados,Cirugía General
+11771,EXC PILONIDAL CYST/SINUS; EXTEN,3.7,Procesos variados,Cirugía General
+11772,EXC PILONIDAL CYST/SINUS; COMPLIC,4.2,Procesos variados,Cirugía General
+11900,INJ INTRALES; UP TO & INCL 7 LES,0.2,Procesos variados,Cirugía General
+11901,INJ INTRALES; MORE THAN 7 LES,0.4,Procesos variados,Cirugía General
+11920,TATTOOING INCL MICROPIGMENTATION; 6.0 SQ CM/LESS,2.5,Procesos variados,Cirugía General
+11921,TATTOOING INCL MICROPIGMENTATION; 6.1-20.0 SQ CM,4.9,Procesos variados,Cirugía General
+11922,TATTOOING INCL MICROPIGMENTATION; EA ADD 20.0 CM,2.5,Procesos variados,Cirugía General
+11950,SUBQ INJ FILLING MAT; 1 CC/LESS,0.9,Procesos variados,Cirugía General
+11951,SUBQ INJ FILLING MAT; 1.1 TO 5.0 CC,1.2,Procesos variados,Cirugía General
+11952,SUBQ INJ FILLING MAT; 5.1 TO 10.0 CC,1.5,Procesos variados,Cirugía General
+11954,SUBQ INJ FILLING MAT; OVER 10.0 CC,BR,Procesos variados,Cirugía General
+11960,INSRT EXPANDER NOT BREAST INCL SUBSQT EXPANSION,RNE,Procesos variados,Cirugía General
+11970,REPLAC TISS EXPANDER W/PERM PROSTH,7.6,Procesos variados,Cirugía General
+11971,REMOV TISS EXPANDER WO INSRT PROSTH,1.1,Procesos variados,Cirugía General
+11975,INSRT IMPLNT CONTRACEPTIVE CAPSULES,0.5,Procesos variados,Cirugía General
+11976,REMOV IMPLNT CONTRACEPTIVE CAPSULES,0.5,Procesos variados,Cirugía General
+11977,REMOV W/REINSRT IMPLNT CONTRACEPTIVE CAPSULES,0.8,Procesos variados,Cirugía General
+20000,INCS SOFT TISS ABSCESS; SUPERF,0.3,Procesos variados,Cirugía General
+20005,INCS SOFT TISS ABSCESS; DEEP/COMPLIC,1.7,Procesos variados,Cirugía General
+20200,BX MUSCL; SUPERF,1.1,Procesos variados,Cirugía General
+20205,BX MUSCL; DEEP,1.7,Procesos variados,Cirugía General
+20206,BX MUSCL PERCUT NEEDLE,0.6,Procesos variados,Cirugía General
+20220,BX BONE TROCAR/NEEDLE; SUPERF,0.8,Procesos variados,Cirugía General
+20225,BX BONE TROCAR/NEEDLE; DEEP,2.7,Procesos variados,Cirugía General
+20240,BX EXC; SUPERF,2,Procesos variados,Cirugía General
+20245,BX EXC; DEEP,2.7,Procesos variados,Cirugía General
+20250,BX VERTEBRAL BODY OP; THORACIC,6.9,Procesos variados,Cirugía General
+20251,BX VERTEBRAL BODY OP; LUMBAR/CERV,6.9,Procesos variados,Cirugía General
+20500,INJ SINUS TRACT; THERAP (SEPART PROC),0.3,Procesos variados,Cirugía General
+20501,INJ SINUS TRACT; DX,0.4,Procesos variados,Cirugía General
+20520,REMOV F B MUSCL/TENDON SHEATH; SIMPL,0.6,Procesos variados,Cirugía General
+20525,REMOV F B MUSCL/TENDON SHEATH; DEEP/COMPLIC,2.7,Procesos variados,Cirugía General
+20550,INJ TENDON SHEATH/LIG/TRIGGER PT/GANGLION CYST,0.3,Procesos variados,Cirugía General
+38100,SPLENECTOMY (SEPART PROC); TOT,8.8,Procesos variados,Cirugía General
+38101,SPLENECTOMY (SEPART PROC); PART,8.8,Procesos variados,Cirugía General
+38115,REPR RUPT SPLEEN W/WO PART SPLENECTOMY,8.3,Procesos variados,Cirugía General
+38200,INJ PROC SPLENOPORTOGRAPHY,1.7,Procesos variados,Cirugía General
+38230,BONE MARROW HARVESTING TRANSPL,6.9,Procesos variados,Cirugía General
+38240,BONE MARROW TRANSPL; ALLOGENIC,7.4,Procesos variados,Cirugía General
+38241,BONE MARROW TRANSPL; AUTOLOGOUS,7.4,Procesos variados,Cirugía General
+38300,DRAINAGE LYMPH NODE ABSCESS/LYMPHADENITIS; SIMPL,0.5,Procesos variados,Cirugía General
+38305,DRAINAGE LYMPH NODE ABSCESS/LYMPHADENITIS; EXTEN,1,Procesos variados,Cirugía General
+38308,LYMPHANGIOTOMY/OTHER OR ON LYMPHATIC CHANNELS,2,Procesos variados,Cirugía General
+38380,SUTURE &/OR LIG THORACIC DUCT; CERV APPROACH,4.9,Procesos variados,Cirugía General
+38381,SUTURE &/OR LIG THORACIC DUCT; THORACIC APPROACH,9.8,Procesos variados,Cirugía General
+38382,SUTURE &/OR LIG THORACIC DUCT; ABD APPROACH,8.3,Procesos variados,Cirugía General
+38500,BX/EXC LYMPH NODE; SUPERF (SEPART PROC),1.5,Procesos variados,Cirugía General
+38505,BX/EXC LYMPH NODE; BY NEEDLE SUPERF,1,Procesos variados,Cirugía General
+38510,BX/EXC LYMPH NODE; DEEP CERV NODE,2.9,Procesos variados,Cirugía General
+38520,BX/EXC LYMPH NODE; DEEP CERV NODE W/EXC FAT PAD,3.1,Procesos variados,Cirugía General
+38525,BX/EXC LYMPH NODE; DEEP AXILRY NODE,2.9,Procesos variados,Cirugía General
+38530,BX/EXC LYMPH NODE; INT MAMMARY NODE (SEP PRO),3.4,Procesos variados,Cirugía General
+38542,DISSECTION DEEP JUGULAR NODE,2.9,Procesos variados,Cirugía General
+38550,EXC CYSTIC HYGROMA AX WO NEUROVAS DISSEC; SIMPL,2.9,Procesos variados,Cirugía General
+38555,EXC CYSTIC HYGROMA AX WO NEUROVAS DISSEC; COMPLX,7.8,Procesos variados,Cirugía General
+38562,LTD LYMPHADENECTOMY (SEPART PROC); PELVIC,7.4,Procesos variados,Cirugía General
+38564,LTD LYMPHADENECT (SEPART PROC); RETROPERITONEAL,8.3,Procesos variados,Cirugía General
+38700,SUPRAHYOID LYMPHADENECTOMY,6.5,Procesos variados,Cirugía General
+38720,CERV LYMPHADENECTOMY (COMPLETE),12.5,Procesos variados,Cirugía General
+38724,CERV LYMPHADENECTOMY (MODIFIED RAD NECK DISECT),12.5,Procesos variados,Cirugía General
+38740,AXILRY LYMPHADENECTOMY; SUPERF,3.9,Procesos variados,Cirugía General
+38745,AXILRY LYMPHADENECTOMY; COMPLT,8.3,Procesos variados,Cirugía General
+38760,INGUINOFEM LYMPHADENECT SUPERF (SEPART PROC),4.9,Procesos variados,Cirugía General
+38765,INGUINOFEM LYMPHADENECTOMY SUPERF W/PELVIC LYMPH,10.3,Procesos variados,Cirugía General
+38770,PELVIC LYMPHADENECTOMY W/EXT ILIAC (SEPART PROC),7.4,Procesos variados,Cirugía General
+38780,RETROPERITONEAL TRANSABD LYMPHADNECT (SEP PRO),14.7,Procesos variados,Cirugía General
+38790,INJ PROC LYMPHANGIOGRAPHY,1.9,Procesos variados,Cirugía General
+38794,CANNULATION THORACIC DUCT,1.5,Procesos variados,Cirugía General
+38999,UNLISTED PROC HEMIC/LYMPHATIC SYST,BR,Procesos variados,Cirugía General
+39000,MEDIASTINOTOMY W/EXPLOR/DRAINAGE/REMOV F B; CERV,4.2,Procesos variados,Cirugía General
+39010,MEDIASTINOTOMY W/EXPLOR/DRAINAGE; TRANSTHORACIC,10.3,Procesos variados,Cirugía General
+39020,MEDIASTINOTOMY W/EXPLOR DRAINAGE; STERNAL SPLIT,11.1,Procesos variados,Cirugía General
+39200,EXC MEDIASTINAL CYST,12,Procesos variados,Cirugía General
+39220,EXC MEDIASTINAL TUMOR,12,Procesos variados,Cirugía General
+39400,MEDIASTINOSCOPY W/WO BX,4.2,Procesos variados,Cirugía General
+39499,UNLISTED PROC MEDIASTINUM,BR,Procesos variados,Cirugía General
+39501,REPR LACERATION DIAPHRAGM,8.8,Procesos variados,Cirugía General
+39502,REPR PARAESOPHAGEAL HIATUS HERNIA EXC NEONAT,8.8,Procesos variados,Cirugía General
+39503,REPR NEONAT DIAPHRAGMATIC HERNIA W/WO CHEST TUBE,10.8,Procesos variados,Cirugía General
+39520,REPR DIAPHRAGMATIC HERNIA; TRANSTHORACIC,8.4,Procesos variados,Cirugía General
+39530,REPR DIAPHRAGM HERNIA; COMBO THORACOABD,9.3,Procesos variados,Cirugía General
+39531,REPR DIAPHRAGM HERNIA; THORACOABD W/DILAT STRICT,10.8,Procesos variados,Cirugía General
+39540,REPR DIAPHRAGMATIC HERNIA-TRAUMATIC; ACUTE,11.2,Procesos variados,Cirugía General
+39541,REPR DIAPHRAGMATIC HERNIA-TRAUMATIC; CHRONIC,8.4,Procesos variados,Cirugía General
+39545,IMBRICATION DIAPHRAGM-EVENTRATION; PARALYTIC,10.8,Procesos variados,Cirugía General
+39547,IMBRICATION DIAPHRAGM-EVENTRATION; NONPARALYTIC,10.8,Procesos variados,Cirugía General
+39599,UNLISTED PROC DIAPHRAGM,BR,Procesos variados,Cirugía General
+40490,BX LIP,0.5,Procesos variados,Cirugía General
+40500,VERMILIONECTOMY W/MUCOS ADVANCEMENT,5.1,Procesos variados,Cirugía General
+40510,EXC LIP; TRANSVERSE WEDGE EXC W/PRIM CLO,5.1,Procesos variados,Cirugía General
+40520,EXC LIP; V-EXC W/PRIM DIRECT LINEAR CLO,3.9,Procesos variados,Cirugía General
+40525,EXC LIP; FULL THICK RECON W/LOCAL FLAP,7.8,Procesos variados,Cirugía General
+40527,EXC LIP; FULL THICK RECON W/CROSS LIP FLAP,7.8,Procesos variados,Cirugía General
+40530,RESECT LIP MORE THAN 1-FOURTH WO RECON,3.9,Procesos variados,Cirugía General
+40650,REPR LIP FULL THICK; VERMILION ONLY,2.5,Procesos variados,Cirugía General
+40652,REPR LIP FULL THICK; UP TO HALF VERTICAL HEIGHT,3.2,Procesos variados,Cirugía General
+40654,REPR LIP FULL THICK; > 1/2 VERTICAL HT/COMPLX,4.2,Procesos variados,Cirugía General
+40700,PLASTIC REPR CLEFT LIP/NASAL DEFORM; PRIM UNILAT,9.8,Procesos variados,Cirugía General
+40701,PLASTIC REPR CLEFT LIP; PRIM BILAT-1 STAGE PROC,11.5,Procesos variados,Cirugía General
+40702,PLASTIC REPR CLEFT LIP; PRIM BILAT-1 OF 2 STAGES,9.8,Procesos variados,Cirugía General
+40720,PLASTIC REPR CLEFT LIP; SECNDRY-RECREAT & RECLO,9.8,Procesos variados,Cirugía General
+40761,PLASTIC REPR CLEFT LIP; W/CROSS LIP PEDICLE FLAP,12.9,Procesos variados,Cirugía General
+40799,UNLISTED PROC LIPS,BR,Procesos variados,Cirugía General
+40800,DRAIN ABSCESS/CYST VESTIBULE MOUTH; SIMPL,0.4,Procesos variados,Cirugía General
+40801,DRAIN ABSCESS/CYST VESTIBULE MOUTH; COMPLIC,2.9,Procesos variados,Cirugía General
+40804,REMOV EMBEDDED F B VESTIBULE MOUTH; SIMPL,0.8,Procesos variados,Cirugía General
+40805,REMOV EMBEDDED F B VESTIBULE MOUTH; COMPLIC,2.7,Procesos variados,Cirugía General
+40806,INCS LABIAL FRENUM,1.2,Procesos variados,Cirugía General
+40808,BX VESTIBULE MOUTH,0.8,Procesos variados,Cirugía General
+40810,EXC LES-MUCOS/SUBMUCOSA-VESTIBULE MOUTH; WO REPR,1,Procesos variados,Cirugía General
+40812,EXC LES-MUCOS/SUBMUCOSA-MOUTH; W/SIMPL REPR,1.2,Procesos variados,Cirugía General
+40814,EXC LES-MUCOS/SUBMUCOSA-MOUTH; W/COMPLX REPR,2.9,Procesos variados,Cirugía General
+40816,EXC LES-VESTIBULE-MOUTH; COMPLX W/EXC MUSCL,3.8,Procesos variados,Cirugía General
+40818,EXC MUCOS VESTIBULE MOUTH AS DONOR GFT,1.2,Procesos variados,Cirugía General
+40819,EXC FRENUM LABIAL/BUCCAL,1.4,Procesos variados,Cirugía General
+40820,DESTRCT LES/SCAR VESTIBULE MOUTH-PHYSICAL METHD,1.2,Procesos variados,Cirugía General
+40830,CLO LACERATION VESTIBULE MOUTH; 2.5 CM/LESS,0.8,Procesos variados,Cirugía General
+40831,CLO LACERATION VESTIBULE MOUTH; > 2.5 CM/COMPLX,2,Procesos variados,Cirugía General
+40840,VESTIBULOPLASTY; ANT,3.9,Procesos variados,Cirugía General
+40842,VESTIBULOPLASTY; POST UNILAT,3.9,Procesos variados,Cirugía General
+40843,VESTIBULOPLASTY; POST BILAT,5.9,Procesos variados,Cirugía General
+40844,VESTIBULOPLASTY; ENTIRE ARCH,6.9,Procesos variados,Cirugía General
+40845,VESTIBULOPLASTY; COMPLX,8.3,Procesos variados,Cirugía General
+40899,UNLISTED PROC VESTIBULE MOUTH,BR,Procesos variados,Cirugía General
+41000,INTRAORAL I&D ABSCESS/CYST TONGUE/MOUTH; LINGUAL,0.8,Procesos variados,Cirugía General
+41005,INTRAORAL I&D ABSCESS TONGUE/MOUTH; SUBLINGUAL,0.9,Procesos variados,Cirugía General
+41006,INTRAORAL I&D ABSCESS; SUBLINGUAL SUPRAMYLOHYOID,2.5,Procesos variados,Cirugía General
+41007,INTRAORAL I&D ABSCESS/CYST; SUBMENTAL SPACE,2.5,Procesos variados,Cirugía General
+41008,INTRAORAL I&D ABSCESS/CYST; SUBMANDIBULAR SPACE,2.5,Procesos variados,Cirugía General
+41009,INTRAORAL I&D ABSCESS/CYST; MASTICATOR SPACE,2.5,Procesos variados,Cirugía General
+41010,INCS LINGUAL FRENUM,1.2,Procesos variados,Cirugía General
+41015,EXTRAORAL I&D ABSCESS FLOOR MOUTH; SUBLINGUAL,2.6,Procesos variados,Cirugía General
+41016,EXTRAORAL I&D ABSCESS FLOOR MOUTH; SUBMENTAL,2,Procesos variados,Cirugía General
+41017,EXTRAORAL I&D ABSCESS FLOOR MOUTH; SUBMANDIBULAR,2.6,Procesos variados,Cirugía General
+41018,EXTRAORAL I&D ABSCESS MOUTH; MASTICATOR SPACE,2.6,Procesos variados,Cirugía General
+41100,BX TONGUE; ANT TWO-THIRDS,0.8,Procesos variados,Cirugía General
+41105,BX TONGUE; POST ONE-THIRD,1,Procesos variados,Cirugía General
+41108,BX FLOOR MOUTH,0.7,Procesos variados,Cirugía General
+41110,EXC LES TONGUE WO CLO,0.9,Procesos variados,Cirugía General
+41112,EXC LES TONGUE W/CLO; ANT TWO-THIRDS,2.2,Procesos variados,Cirugía General
+41113,EXC LES TONGUE W/CLO; POST ONE-THIRD,2.7,Procesos variados,Cirugía General
+41114,EXC LES TONGUE W/CLO; W/LOCAL TONGUE FLAP,4,Procesos variados,Cirugía General
+41115,EXC LINGUAL FRENUM,1.6,Procesos variados,Cirugía General
+41116,EXC LES FLOOR MOUTH,2.9,Procesos variados,Cirugía General
+41120,GLOSSECTOMY; < ONE-HALF TONGUE,5.2,Procesos variados,Cirugía General
+41130,GLOSSECTOMY; HEMIGLOSSECTOMY,7.8,Procesos variados,Cirugía General
+41135,GLOSSECTOMY; PART W/UNILAT RADICAL NECK DISSECT,14,Procesos variados,Cirugía General
+41140,GLOSSECTOMY; COMPLT/TOT W/WO TRACH WO RAD NCEK,11.5,Procesos variados,Cirugía General
+41145,GLOSSECTOMY; COMPLT/TOT W/UNILAT RADICAL NECK,16.5,Procesos variados,Cirugía General
+41150,GLOSSECTOMY; COMPOSITE WO RADICAL NECK DISSECT,15.2,Procesos variados,Cirugía General
+41153,GLOSSECTOMY; COMPOSITE W/SUPRAHYOID NECK DISSECT,16.7,Procesos variados,Cirugía General
+41155,GLOSSECTOMY; COMPOSITE & RADICAL NECK DISSECTION,20.1,Procesos variados,Cirugía General
+41250,REPR LACERATION 2.5 CM/LESS; ANT 2/3 TONGUE,0.9,Procesos variados,Cirugía General
+41251,REPR LACERATION 2.5 CM/LESS; POST 1/3 TONGUE,0.7,Procesos variados,Cirugía General
+41252,REPR LACERAT TONGUE/FLOOR MOUTH > 2.6 CM/COMPLX,3.5,Procesos variados,Cirugía General
+41500,FIXA TONGUE MECH OTHER THAN SUTURE,2.5,Procesos variados,Cirugía General
+41510,SUTURE TONGUE TO LIP MICROGNATHIA,5.2,Procesos variados,Cirugía General
+41520,FRENOPLASTY,2.4,Procesos variados,Cirugía General
+41599,UNLISTED PROC TONGUE FLOOR MOUTH,BR,Procesos variados,Cirugía General
+41800,DRAINAGE ABSCESS/CYST FROM DENTOALVEOLAR STRUCT,0.8,Procesos variados,Cirugía General
+41805,REMOV EMBED F B-DENTOALVEOLAR STRUCT; SOFT TISS,0.9,Procesos variados,Cirugía General
+41806,REMOV EMBEDDED F B-DENTOALVEOLAR STRUCT; BONE,1,Procesos variados,Cirugía General
+41820,GINGIVECTOMY EXC GINGIVA EA QUADRANT,2,Procesos variados,Cirugía General
+41821,OPERCULECTOMY EXC PERICORONAL TISS,0.4,Procesos variados,Cirugía General
+41822,EXC FIBROUS TUBEROSITIES DENTOALVEOLAR STRUCT,1,Procesos variados,Cirugía General
+41823,EXC OSSEOUS TUBEROSITIES DENTOALVEOLAR STRUCT,2,Procesos variados,Cirugía General
+41825,EXC LES/TUMOR DENTOALVEOLAR STRUCT; WO REPR,1,Procesos variados,Cirugía General
+41826,EXC LES/TUMOR DENTOALVEOLAR STRUCT; W/SIMPL REPR,1.8,Procesos variados,Cirugía General
+41827,EXC LES DENTOALVEOLAR STRUCT; W/COMPLX REPR,2.7,Procesos variados,Cirugía General
+41828,EXC HYPERPLASTIC ALVEOLAR MUCOS EA QUADRANT,3.2,Procesos variados,Cirugía General
+41830,ALVEOLECTOMY INCL CURET OSTEITIS/SEQUESTRECTOMY,2.4,Procesos variados,Cirugía General
+41850,DESTRCT LES DENTOALVEOLAR STRUCT,1,Procesos variados,Cirugía General
+41870,PERIODONTAL MUCOS GFT,2.5,Procesos variados,Cirugía General
+41872,GINGIVOPLASTY,3.3,Procesos variados,Cirugía General
+41874,ALVEOPLASTY,2.5,Procesos variados,Cirugía General
+41899,UNLISTED PROC DENTOALVEOLAR STRUCT,BR,Procesos variados,Cirugía General
+42000, DRAINAGE ABSCESS PALATE UVULA, 	0.9,Procesos variados,Cirugía General
+42100, BX PALATE UVULA,	1,Procesos variados,Cirugía General
+42104, EXC LES PALATE UVULA; WO CLO, 1.4,Procesos variados,Cirugía General
+42106,EXC LES PALATE UVULA; W/SIMPL PRIM CLO,	1.8,Procesos variados,Cirugía General
+42107,EXC LES PALATE UVULA; W/LOCAL FLAP CLO,	3.2,Procesos variados,Cirugía General
+42120,RESECT PALATE/EXTEN RESECT LES,	5.2,Procesos variados,Cirugía General
+42140,UVULECTOMY EXC UVULA	,2.1,Procesos variados,Cirugía General
+42145,PALATOPHARYNGOPLASTY	,9.8,Procesos variados,Cirugía General
+42160,DESTRCT LES PALATE/UVULA,	0.6,Procesos variados,Cirugía General
+42180,REPR LACERATION PALATE; UP TO 2 CM,	1.4,Procesos variados,Cirugía General
+42182,REPR LACERATION PALATE; OVER 2 CM/COMPLX,	BR,Procesos variados,Cirugía General

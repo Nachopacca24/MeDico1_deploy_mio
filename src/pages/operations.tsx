@@ -20,7 +20,6 @@ interface CSVOperation {
 // ✅ Estructura completa sincronizada con csvLoader.ts
 const folderStructure = {
   Cardiovascular: {
-    "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
     "Corazón": "Cardiovascular/Corazón.csv",
     "Vasos Periféricos": "Cardiovascular/Vasos_periféricos.csv",
     "Tórax": "Cardiovascular/torax.csv",
@@ -29,7 +28,6 @@ const folderStructure = {
     "Dermatología": "Dermatología/Dermatología.csv",
   },
   Digestivo: {
-    "Digestivo": "Digestivo/Digestivo.csv",
     "Estómago e Intestino": "Digestivo/Estómago_e_intestino.csv",
     "Hígado y Páncreas": "Digestivo/Hígado_Páncreas.csv",
     "Peritoneo y Hernias": "Digestivo/Peritoneo_y_hernias.csv",
@@ -47,7 +45,6 @@ const folderStructure = {
     "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
   },
   Neurocirugía: {
-    "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
     "Columna": "Neurocirugía/Columna.csv",
     "Cráneo y Columna": "Neurocirugía/Cráneo_y_columna.csv",
   },
@@ -58,7 +55,6 @@ const folderStructure = {
     "Oftalmología": "Oftalmología/Oftalmología.csv",
   },
   Ortopedia: {
-    "Ortopedia": "Ortopedia/Ortopedia.csv",
     "Cadera": "Ortopedia/Cadera.csv",
     "Hombro": "Ortopedia/Hombro.csv",
     "Muñeca y Mano": "Ortopedia/Muñeca_y_mano.csv",

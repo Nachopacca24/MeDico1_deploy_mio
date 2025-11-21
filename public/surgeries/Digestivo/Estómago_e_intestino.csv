@@ -343,69 +343,69 @@
 45910,DILAT RECTAL STRICT (SEP PRO) W/ANES-NOT LOCAL,1.7,Digestivo,Estómago e intestino
 45915,REMOV FECAL IMPACTION/F B (SEP PRO) W/GEN ANES,1.7,Digestivo,Estómago e intestino
 45999,UNLISTED PROC RECTUM,BR,Digestivo,Estómago e intestino
-46000,FISTULOTOMY SUBQ,1.5,Sin clasificación,Sin clasificación
-46030,REMOV ANAL SETON OTHER MARKER,0.5,Sin clasificación,Sin clasificación
-46040,I&D ISCHIORECTAL &/OR PERIRECT ABSCESS (SEP PRO),1.9,Sin clasificación,Sin clasificación
-46045,I&D INTRAMURAL/IM ABSCESS TRANSANAL UNDER ANES,2.1,Sin clasificación,Sin clasificación
-46050,I&D PERIANAL ABSCESS SUPERF,0.8,Sin clasificación,Sin clasificación
-46060,I&D ISCHIORECTAL ABSCESS W/FISTULECTOMY SUBMUSCL,4.6,Sin clasificación,Sin clasificación
-46070,INCS ANAL SEPTUM (INFANT),0.8,Sin clasificación,Sin clasificación
-46080,SPHINCTEROTOMY ANAL DIVIS SPHINCTER (SEP PRO),1.8,Sin clasificación,Sin clasificación
-46083,INCS THROMBOSED HEMORRHOID EXT,0.5,Sin clasificación,Sin clasificación
-46200,FISSURECTOMY W/WO SPHINCTEROTOMY,3.1,Sin clasificación,Sin clasificación
-46210,CRYPTECTOMY; SNGL,0.9,Sin clasificación,Sin clasificación
-46211,CRYPTECTOMY; MX (SEPART PROC),2.5,Sin clasificación,Sin clasificación
-46220,PAPILLECTOMY/EXC SNGL TAG ANUS (SEPART PROC),0.5,Sin clasificación,Sin clasificación
-46221,HEMORRHOIDECTOMY BY SIMPL LIG,1,Sin clasificación,Sin clasificación
-46230,EXC EXT HEMORRHOID TAGS &/OR MX PAPILLAE,0.8,Sin clasificación,Sin clasificación
-46250,HEMORRHOIDECTOMY EXT COMPLT,2.9,Sin clasificación,Sin clasificación
-46255,HEMORRHOIDECTOMY INT & EXT SIMPL,3.9,Sin clasificación,Sin clasificación
-46257,HEMORRHOIDECTOMY INT & EXT SIMPL; W/FISSURECTOMY,4.2,Sin clasificación,Sin clasificación
-46258,HEMORRHOIDECTOMY INT & EXT SIMPL; W/FISTULECTOMY,4.4,Sin clasificación,Sin clasificación
-46260,HEMORRHOIDECTOMY INT & EXT COMPLX/EXTEN,4.9,Sin clasificación,Sin clasificación
-46261,HEMORRHOIDECTOMY COMPLX/EXTEN; W/FISSURECTOMY,5.2,Sin clasificación,Sin clasificación
-46262,HEMORRHOIDECTOMY COMPLX/EXTEN; W/FISTULECTOMY,5.4,Sin clasificación,Sin clasificación
-46270,FISTULECTOMY; SUBQ,2.9,Sin clasificación,Sin clasificación
-46275,FISTULECTOMY; SUBMUSCULAR,3.9,Sin clasificación,Sin clasificación
-46280,FISTULECTOMY; COMPLX/MX,4.9,Sin clasificación,Sin clasificación
-46285,FISTULECTOMY; SECOND STAGE,1.6,Sin clasificación,Sin clasificación
-46320,ENUCLEATION/EXC EXT THROMBOTIC HEMORRHOID,0.7,Sin clasificación,Sin clasificación
-46500,INJ SCLEROSING SOLUTION HEMORRHOIDS,0.3,Sin clasificación,Sin clasificación
-46600,ANOSCOPY; DX (SEPART PROC),0.3,Sin clasificación,Sin clasificación
-46602,ANOSCOPY; COLLECT SPECMN BY BRUSHING/WASHING,0.3,Sin clasificación,Sin clasificación
-46604,ANOSCOPY; DILAT DIRECT INSTRUM,0.3,Sin clasificación,Sin clasificación
-46606,ANOSCOPY; BX,0.4,Sin clasificación,Sin clasificación
-46608,ANOSCOPY; REMOV F B,0.5,Sin clasificación,Sin clasificación
-46610,ANOSCOPY; REMOV POLYP,0.7,Sin clasificación,Sin clasificación
-46612,ANOSCOPY; MX POLYP REMOV,0.9,Sin clasificación,Sin clasificación
-46614,ANOSCOPY; W/COAGULAT-CONTRL HEMORR &/OR FULG LES,1,Sin clasificación,Sin clasificación
-46700,ANOPLASTY PLASTIC OR STRICT; ADULT,4,Sin clasificación,Sin clasificación
-46705,ANOPLASTY PLASTIC OR STRICT; INFANT,4.5,Sin clasificación,Sin clasificación
-46715,REPR CONGEN ANOVAGINAL FISTULA,3.9,Sin clasificación,Sin clasificación
-46716,PERINEAL TRANSPL ANOVAGINAL FISTULA,4.9,Sin clasificación,Sin clasificación
-46730,CONSTRUCT ANUS; PERINEAL/SACROCOCCYGEAL APPROACH,9.8,Sin clasificación,Sin clasificación
-46735,CONSTRUCTION ANUS; COMBO ABD & PERINEAL APPROACH,13,Sin clasificación,Sin clasificación
-46740,CONSTRUCTION ANUS W/REPR URIN FISTULA,13.7,Sin clasificación,Sin clasificación
-46750,SPHINCTEROPLASTY-ANAL-INCONT/PROLAPSE; ADULT,6.5,Sin clasificación,Sin clasificación
-46751,SPHINCTEROPLASTY-ANAL-INCONT/PROLAPSE; CHILD,7.8,Sin clasificación,Sin clasificación
-46753,GFT RECTAL INCONT &/OR PROLAPSE,3.4,Sin clasificación,Sin clasificación
-46754,REMOV THIERSCH WIRE/SUTURE ANAL CANAL,0.8,Sin clasificación,Sin clasificación
-46760,SPHINCTEROPLASTY ANAL-ADULT; MUSCL TRANSPL,6.9,Sin clasificación,Sin clasificación
-46761,SPHINCTEROPLASTY-ANAL; LEVATOR MUSCL IMBRICATION,9.8,Sin clasificación,Sin clasificación
-46762,SPHINCTEROPLASTY-ANAL; IMPLNT ARTIFICIAL SPHINCT,12.3,Sin clasificación,Sin clasificación
-46900,DESTRCT LES ANUS SIMPL; CHEM,0.4,Sin clasificación,Sin clasificación
-46910,DESTRCT LES ANUS SIMPL; ELECTRODESICCATION,0.7,Sin clasificación,Sin clasificación
-46916,DESTRCT LES ANUS SIMPL; CRYOSURGERY,0.9,Sin clasificación,Sin clasificación
-46917,DESTRCT LES ANUS SIMPL; LASER SURG,2,Sin clasificación,Sin clasificación
-46922,DESTRCT LES ANUS SIMPL; SURG EXC,1.3,Sin clasificación,Sin clasificación
-46924,DESTRCT LES ANUS EXTEN ANY METHD,2.9,Sin clasificación,Sin clasificación
-46934,DESTRCT HEMORRHOIDS ANY METHD; INT,1.5,Sin clasificación,Sin clasificación
-46935,DESTRCT HEMORRHOIDS ANY METHD; EXT,1.5,Sin clasificación,Sin clasificación
-46936,DESTRCT HEMORRHOIDS ANY METHD; INT & EXT,2.9,Sin clasificación,Sin clasificación
-46937,CRYOSURGERY RECTAL TUMOR; BEN,1.5,Sin clasificación,Sin clasificación
-46938,CRYOSURGERY RECTAL TUMOR; MALIG,2.5,Sin clasificación,Sin clasificación
-46940,CURET/CAUT ANAL FISSURE (SEPART PROC); INIT,0.5,Sin clasificación,Sin clasificación
-46942,CURET/CAUT ANAL FISSURE (SEPART PROC); SUBSQT,0.5,Sin clasificación,Sin clasificación
-46945,LIG INT HEMORRHOIDS; SNGL PROC,0.7,Sin clasificación,Sin clasificación
-46946,LIG INT HEMORRHOIDS; MX PROC,1.2,Sin clasificación,Sin clasificación
-46999,UNLISTED PROC ANUS,BR,Sin clasificación,Sin clasificación
+46000,FISTULOTOMY SUBQ,1.5,Digestivo,Estómago e intestino
+46030,REMOV ANAL SETON OTHER MARKER,0.5,Digestivo,Estómago e intestino
+46040,I&D ISCHIORECTAL &/OR PERIRECT ABSCESS (SEP PRO),1.9,Digestivo,Estómago e intestino
+46045,I&D INTRAMURAL/IM ABSCESS TRANSANAL UNDER ANES,2.1,Digestivo,Estómago e intestino
+46050,I&D PERIANAL ABSCESS SUPERF,0.8,Digestivo,Estómago e intestino
+46060,I&D ISCHIORECTAL ABSCESS W/FISTULECTOMY SUBMUSCL,4.6,Digestivo,Estómago e intestino
+46070,INCS ANAL SEPTUM (INFANT),0.8,Digestivo,Estómago e intestino
+46080,SPHINCTEROTOMY ANAL DIVIS SPHINCTER (SEP PRO),1.8,Digestivo,Estómago e intestino
+46083,INCS THROMBOSED HEMORRHOID EXT,0.5,Digestivo,Estómago e intestino
+46200,FISSURECTOMY W/WO SPHINCTEROTOMY,3.1,Digestivo,Estómago e intestino
+46210,CRYPTECTOMY; SNGL,0.9,Digestivo,Estómago e intestino
+46211,CRYPTECTOMY; MX (SEPART PROC),2.5,Digestivo,Estómago e intestino
+46220,PAPILLECTOMY/EXC SNGL TAG ANUS (SEPART PROC),0.5,Digestivo,Estómago e intestino
+46221,HEMORRHOIDECTOMY BY SIMPL LIG,1,Digestivo,Estómago e intestino
+46230,EXC EXT HEMORRHOID TAGS &/OR MX PAPILLAE,0.8,Digestivo,Estómago e intestino
+46250,HEMORRHOIDECTOMY EXT COMPLT,2.9,Digestivo,Estómago e intestino
+46255,HEMORRHOIDECTOMY INT & EXT SIMPL,3.9,Digestivo,Estómago e intestino
+46257,HEMORRHOIDECTOMY INT & EXT SIMPL; W/FISSURECTOMY,4.2,Digestivo,Estómago e intestino
+46258,HEMORRHOIDECTOMY INT & EXT SIMPL; W/FISTULECTOMY,4.4,Digestivo,Estómago e intestino
+46260,HEMORRHOIDECTOMY INT & EXT COMPLX/EXTEN,4.9,Digestivo,Estómago e intestino
+46261,HEMORRHOIDECTOMY COMPLX/EXTEN; W/FISSURECTOMY,5.2,Digestivo,Estómago e intestino
+46262,HEMORRHOIDECTOMY COMPLX/EXTEN; W/FISTULECTOMY,5.4,Digestivo,Estómago e intestino
+46270,FISTULECTOMY; SUBQ,2.9,Digestivo,Estómago e intestino
+46275,FISTULECTOMY; SUBMUSCULAR,3.9,Digestivo,Estómago e intestino
+46280,FISTULECTOMY; COMPLX/MX,4.9,Digestivo,Estómago e intestino
+46285,FISTULECTOMY; SECOND STAGE,1.6,Digestivo,Estómago e intestino
+46320,ENUCLEATION/EXC EXT THROMBOTIC HEMORRHOID,0.7,Digestivo,Estómago e intestino
+46500,INJ SCLEROSING SOLUTION HEMORRHOIDS,0.3,Digestivo,Estómago e intestino
+46600,ANOSCOPY; DX (SEPART PROC),0.3,Digestivo,Estómago e intestino
+46602,ANOSCOPY; COLLECT SPECMN BY BRUSHING/WASHING,0.3,Digestivo,Estómago e intestino
+46604,ANOSCOPY; DILAT DIRECT INSTRUM,0.3,Digestivo,Estómago e intestino
+46606,ANOSCOPY; BX,0.4,Digestivo,Estómago e intestino
+46608,ANOSCOPY; REMOV F B,0.5,Digestivo,Estómago e intestino
+46610,ANOSCOPY; REMOV POLYP,0.7,Digestivo,Estómago e intestino
+46612,ANOSCOPY; MX POLYP REMOV,0.9,Digestivo,Estómago e intestino
+46614,ANOSCOPY; W/COAGULAT-CONTRL HEMORR &/OR FULG LES,1,Digestivo,Estómago e intestino
+46700,ANOPLASTY PLASTIC OR STRICT; ADULT,4,Digestivo,Estómago e intestino
+46705,ANOPLASTY PLASTIC OR STRICT; INFANT,4.5,Digestivo,Estómago e intestino
+46715,REPR CONGEN ANOVAGINAL FISTULA,3.9,Digestivo,Estómago e intestino
+46716,PERINEAL TRANSPL ANOVAGINAL FISTULA,4.9,Digestivo,Estómago e intestino
+46730,CONSTRUCT ANUS; PERINEAL/SACROCOCCYGEAL APPROACH,9.8,Digestivo,Estómago e intestino
+46735,CONSTRUCTION ANUS; COMBO ABD & PERINEAL APPROACH,13,Digestivo,Estómago e intestino
+46740,CONSTRUCTION ANUS W/REPR URIN FISTULA,13.7,Digestivo,Estómago e intestino
+46750,SPHINCTEROPLASTY-ANAL-INCONT/PROLAPSE; ADULT,6.5,Digestivo,Estómago e intestino
+46751,SPHINCTEROPLASTY-ANAL-INCONT/PROLAPSE; CHILD,7.8,Digestivo,Estómago e intestino
+46753,GFT RECTAL INCONT &/OR PROLAPSE,3.4,Digestivo,Estómago e intestino
+46754,REMOV THIERSCH WIRE/SUTURE ANAL CANAL,0.8,Digestivo,Estómago e intestino
+46760,SPHINCTEROPLASTY ANAL-ADULT; MUSCL TRANSPL,6.9,Digestivo,Estómago e intestino
+46761,SPHINCTEROPLASTY-ANAL; LEVATOR MUSCL IMBRICATION,9.8,Digestivo,Estómago e intestino
+46762,SPHINCTEROPLASTY-ANAL; IMPLNT ARTIFICIAL SPHINCT,12.3,Digestivo,Estómago e intestino
+46900,DESTRCT LES ANUS SIMPL; CHEM,0.4,Digestivo,Estómago e intestino
+46910,DESTRCT LES ANUS SIMPL; ELECTRODESICCATION,0.7,Digestivo,Estómago e intestino
+46916,DESTRCT LES ANUS SIMPL; CRYOSURGERY,0.9,Digestivo,Estómago e intestino
+46917,DESTRCT LES ANUS SIMPL; LASER SURG,2,Digestivo,Estómago e intestino
+46922,DESTRCT LES ANUS SIMPL; SURG EXC,1.3,Digestivo,Estómago e intestino
+46924,DESTRCT LES ANUS EXTEN ANY METHD,2.9,Digestivo,Estómago e intestino
+46934,DESTRCT HEMORRHOIDS ANY METHD; INT,1.5,Digestivo,Estómago e intestino
+46935,DESTRCT HEMORRHOIDS ANY METHD; EXT,1.5,Digestivo,Estómago e intestino
+46936,DESTRCT HEMORRHOIDS ANY METHD; INT & EXT,2.9,Digestivo,Estómago e intestino
+46937,CRYOSURGERY RECTAL TUMOR; BEN,1.5,Digestivo,Estómago e intestino
+46938,CRYOSURGERY RECTAL TUMOR; MALIG,2.5,Digestivo,Estómago e intestino
+46940,CURET/CAUT ANAL FISSURE (SEPART PROC); INIT,0.5,Digestivo,Estómago e intestino
+46942,CURET/CAUT ANAL FISSURE (SEPART PROC); SUBSQT,0.5,Digestivo,Estómago e intestino
+46945,LIG INT HEMORRHOIDS; SNGL PROC,0.7,Digestivo,Estómago e intestino
+46946,LIG INT HEMORRHOIDS; MX PROC,1.2,Digestivo,Estómago e intestino
+46999,UNLISTED PROC ANUS,BR,Digestivo,Estómago e intestino

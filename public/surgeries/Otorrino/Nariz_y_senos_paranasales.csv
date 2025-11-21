@@ -1,86 +1,86 @@
 codigo,cirugia,rvu,especialidad,grupo
-30000,DRAINAGE ABSCESS/HEMATOMA-NASAL-INT APPROACH,0.5,Sin clasificación,Sin clasificación
-30020,DRAINAGE ABSCESS/HEMATOMA NASAL SEPTUM,1,Sin clasificación,Sin clasificación
-30100,BX INTRANASAL,0.5,Sin clasificación,Sin clasificación
-30110,EXC NASAL POLYP SIMPL,1,Sin clasificación,Sin clasificación
-30115,EXC NASAL POLYP EXTEN,2.7,Sin clasificación,Sin clasificación
-30117,EXC/DESTRCT INTRANASAL LES; INT APPROACH,2,Sin clasificación,Sin clasificación
-30118,EXC/DESTRCT INTRANASAL LES; EXT APPROACH,4.9,Sin clasificación,Sin clasificación
-30120,EXC/SURG PLANING SKIN NOSE RHINOPHYMA,5.9,Sin clasificación,Sin clasificación
-30124,EXC DERMOID CYST NOSE; SIMPL SKIN SUBQ,1.9,Sin clasificación,Sin clasificación
-30125,EXC DERMOID CYST NOSE; COMPLX UNDER BONE/CARTIL,7.4,Sin clasificación,Sin clasificación
-30130,EXC TURBINATE PART/COMPLT,2.3,Sin clasificación,Sin clasificación
-30140,SUBMUCOUS RESECT TURBINATE PART/COMPLT,3.6,Sin clasificación,Sin clasificación
-30150,RHINECTOMY; PART,2.9,Sin clasificación,Sin clasificación
-30160,RHINECTOMY; TOT,4.9,Sin clasificación,Sin clasificación
-30200,INJ INTO TURBINATE THERAP,0.3,Sin clasificación,Sin clasificación
-30210,DISPLACEMENT THERAP,0.2,Sin clasificación,Sin clasificación
-30220,INSRT NASAL SEPTAL PROSTH,1.5,Sin clasificación,Sin clasificación
-30300,REMOV F B INTRANASAL; OFFIC TYPE PROC,0.4,Sin clasificación,Sin clasificación
-30310,REMOV F B INTRANASAL; REQUIRING GEN ANES,1.8,Sin clasificación,Sin clasificación
-30320,REMOV F B INTRANASAL; BY LAT RHINOTOMY,3.9,Sin clasificación,Sin clasificación
-30400,RHINOPLASTY PRIM; LAT & ALAR CARTIL/ELEVAT TIP,7.7,Sin clasificación,Sin clasificación
-30410,RHINOPLASTY PRIM; COMPLT-EXT PARTS-ELEVAT TIP,11,Sin clasificación,Sin clasificación
-30420,RHINOPLASTY PRIMARY; INCL MAJOR SEPTAL REPR,12.5,Sin clasificación,Sin clasificación
-30430,RHINOPLASTY SECNDRY; MINOR REVIS,3.9,Sin clasificación,Sin clasificación
-30435,RHINOPLASTY SECNDRY; INTERMED REVIS,5.3,Sin clasificación,Sin clasificación
-30450,RHINOPLASTY SECNDRY; MAJOR REVIS,10.2,Sin clasificación,Sin clasificación
-30460,RHINOPLASTY-DEFORM CLEFT LIP; TIP ONLY,3.9,Sin clasificación,Sin clasificación
-30462,RHINOPLASTY-DEFORM CLEFT LIP; TIP/SEPTUM/OSTEOT,14.4,Sin clasificación,Sin clasificación
-30520,SEPTOPLASTY/SMR W/WO CARTIL SCORING/REPLAC W/GFT,7.4,Sin clasificación,Sin clasificación
-30540,REPR CHOANAL ATRESIA; INTRANASAL,7.2,Sin clasificación,Sin clasificación
-30545,REPR CHOANAL ATRESIA; TRANSPALATINE,13.5,Sin clasificación,Sin clasificación
-30560,LYSIS INTRANASAL SYNECHIA,0.7,Sin clasificación,Sin clasificación
-30580,REPR FISTULA; OROMAXILLARY,4.9,Sin clasificación,Sin clasificación
-30600,REPR FISTULA; ORONASAL,4.9,Sin clasificación,Sin clasificación
-30620,SEPTAL/OTHER INTRANASAL DERMATOPLASTY,8.3,Sin clasificación,Sin clasificación
-30630,REPR NASAL SEPTAL PERFORATIONS,5.9,Sin clasificación,Sin clasificación
-30801,CAUT MUCOSA TURBIN UNI-/BILAT (SEP PRO); SUPERF,0.9,Sin clasificación,Sin clasificación
-30802,CAUT MUCOS TURBIN UNI-/BILAT (SEP PRO); INTRAMUR,1.7,Sin clasificación,Sin clasificación
-30901,CONTRL NASAL HEMORR-ANT-SIMPL ANY METHD,0.4,Sin clasificación,Sin clasificación
-30903,CONTRL NASAL HEMORR-ANT-COMPLX ANY METHD,0.7,Sin clasificación,Sin clasificación
-30905,CONTRL NASAL HEMORR-POST-W/PACKS-CAUT; INIT,1.5,Sin clasificación,Sin clasificación
-30906,CONTRL NASAL HEMORR-POST-W/PACKS-CAUT; SUBSQT,1.4,Sin clasificación,Sin clasificación
-30915,LIG ART; ETHMO,5.4,Sin clasificación,Sin clasificación
-30920,LIG ART; INT MAXIL ART TRANSANTRAL,8.3,Sin clasificación,Sin clasificación
-30930,FX NASAL TURBINATE THERAP,0.7,Sin clasificación,Sin clasificación
-30999,UNLISTED PROC NOSE,BR,Sin clasificación,Sin clasificación
-31000,LAVAGE BY CANNULATION; MAXIL SINUS,0.5,Sin clasificación,Sin clasificación
-31002,LAVAGE BY CANNULATION; SPHENOID SINUS,0.6,Sin clasificación,Sin clasificación
-31020,SINUSOTOMY MAXIL; INTRANASAL,2.6,Sin clasificación,Sin clasificación
-31030,SINUSOTMY MAXIL; RAD WO REMOV ANTROCHOANAL POLYP,6.4,Sin clasificación,Sin clasificación
-31032,SINUSOTMY MAXIL; RAD W/REMOV ANTROCHOANAL POLYPS,7.4,Sin clasificación,Sin clasificación
-31040,PTERYGOMAXILLARY FOSSA SURG ANY APPROACH,13.7,Sin clasificación,Sin clasificación
-31050,SINUSOTOMY SPHENOID W/WO BX,9.8,Sin clasificación,Sin clasificación
-31051,SINUSOTOMY SPHENOID W/WO BX; W/MUCOS STRIPPING,10.3,Sin clasificación,Sin clasificación
-31070,SINUSOTOMY FRONTAL; EXT SIMPL,4.9,Sin clasificación,Sin clasificación
-31071,SINUSOTOMY FRONTAL; INTRANASAL,BR,Sin clasificación,Sin clasificación
-31075,SINUSOTOMY FRONTAL; TRANSORBITAL UNILAT,10.5,Sin clasificación,Sin clasificación
-31080,SINUSOTOMY FRONTAL; OBLIT-W/O FLAP-BROW INCS,9.8,Sin clasificación,Sin clasificación
-31081,SINUSOTOMY FRONTAL; OBLIT WO FLAP CORONAL INCS,9.8,Sin clasificación,Sin clasificación
-31084,SINUSOTOMY FRONTAL; OBLIT-W/FLAP-BROW INCS,11.8,Sin clasificación,Sin clasificación
-31085,SINUSOTOMY FRONTAL; OBLIT-W/FLAP-CORONAL INCS,11.8,Sin clasificación,Sin clasificación
-31086,SINUSOTOMY FRONT; NONOBLIT W/FLAP-BROW INCS,11.8,Sin clasificación,Sin clasificación
-31087,SINUSOTOMY FRONT; NONOBLIT W/FLAP-CORONAL INCS,11.8,Sin clasificación,Sin clasificación
-31090,SINUSOTOMY COMBO 3/MORE SINUSES,17,Sin clasificación,Sin clasificación
-31200,ETHMO; INTRANASAL ANT,5.4,Sin clasificación,Sin clasificación
-31201,ETHMO; INTRANASAL TOT,6.9,Sin clasificación,Sin clasificación
-31205,ETHMO; EXTRANASAL TOT,7.4,Sin clasificación,Sin clasificación
-31225,MAXILLECTOMY; WO ORBITAL EXENTERATION,16.5,Sin clasificación,Sin clasificación
-31230,MAXILLECTOMY; W/ORBITAL EXENTERATION,19,Sin clasificación,Sin clasificación
-31250,NASAL ENDO DX W/WO BX (SEPART PROC),2.9,Sin clasificación,Sin clasificación
-31252,NASAL ENDO SURG; W/NASAL POLYPECTOMY,3.9,Sin clasificación,Sin clasificación
-31254,NASAL ENDO SURG; W/ETHMO PART,6.4,Sin clasificación,Sin clasificación
-31255,NASAL ENDO SURG; W/ETHMO ANT & POST,8.3,Sin clasificación,Sin clasificación
-31256,NASAL ENDO SURG; W/MAXIL ANTROSTOMY,4.9,Sin clasificación,Sin clasificación
-31258,NASAL ENDO SURG; W/REMOV F B,7.4,Sin clasificación,Sin clasificación
-31260,MAXIL SINUS ENDO DX W/WO BX (SEPART PROC),3.4,Sin clasificación,Sin clasificación
-31263,MAXIL SINUS ENDO SURG; W/REMOV F B,8.3,Sin clasificación,Sin clasificación
-31265,MAXIL SINUS ENDO SURG; W/REMOV CYST,5.9,Sin clasificación,Sin clasificación
-31267,MAXIL SINUS ENDO SURG; W/REMOV MUCOS MEMBRN,8.3,Sin clasificación,Sin clasificación
-31268,MAXIL SINUS ENDO SURG; W/REMOV FUNGUS BALL,6.4,Sin clasificación,Sin clasificación
-31270,SPHENOID ENDO DX W/WO BX (SEPART PROC),6.4,Sin clasificación,Sin clasificación
-31275,SPHENOID ENDO SURG,6.9,Sin clasificación,Sin clasificación
-31277,SPHENOID ENDO SURG; W/REMOV MUCOS MEMBRN,7.8,Sin clasificación,Sin clasificación
-31285,SINUS ENDO 2/MORE SINUSES UNILAT,BR,Sin clasificación,Sin clasificación
-31299,UNLISTED PROC ACCES SINUSES,BR,Sin clasificación,Sin clasificación
+30000,DRAINAGE ABSCESS/HEMATOMA-NASAL-INT APPROACH,0.5,Otorrino,Nariz y senos paranasales
+30020,DRAINAGE ABSCESS/HEMATOMA NASAL SEPTUM,1,Otorrino,Nariz y senos paranasales
+30100,BX INTRANASAL,0.5,Otorrino,Nariz y senos paranasales
+30110,EXC NASAL POLYP SIMPL,1,Otorrino,Nariz y senos paranasales
+30115,EXC NASAL POLYP EXTEN,2.7,Otorrino,Nariz y senos paranasales
+30117,EXC/DESTRCT INTRANASAL LES; INT APPROACH,2,Otorrino,Nariz y senos paranasales
+30118,EXC/DESTRCT INTRANASAL LES; EXT APPROACH,4.9,Otorrino,Nariz y senos paranasales
+30120,EXC/SURG PLANING SKIN NOSE RHINOPHYMA,5.9,Otorrino,Nariz y senos paranasales
+30124,EXC DERMOID CYST NOSE; SIMPL SKIN SUBQ,1.9,Otorrino,Nariz y senos paranasales
+30125,EXC DERMOID CYST NOSE; COMPLX UNDER BONE/CARTIL,7.4,Otorrino,Nariz y senos paranasales
+30130,EXC TURBINATE PART/COMPLT,2.3,Otorrino,Nariz y senos paranasales
+30140,SUBMUCOUS RESECT TURBINATE PART/COMPLT,3.6,Otorrino,Nariz y senos paranasales
+30150,RHINECTOMY; PART,2.9,Otorrino,Nariz y senos paranasales
+30160,RHINECTOMY; TOT,4.9,Otorrino,Nariz y senos paranasales
+30200,INJ INTO TURBINATE THERAP,0.3,Otorrino,Nariz y senos paranasales
+30210,DISPLACEMENT THERAP,0.2,Otorrino,Nariz y senos paranasales
+30220,INSRT NASAL SEPTAL PROSTH,1.5,Otorrino,Nariz y senos paranasales
+30300,REMOV F B INTRANASAL; OFFIC TYPE PROC,0.4,Otorrino,Nariz y senos paranasales
+30310,REMOV F B INTRANASAL; REQUIRING GEN ANES,1.8,Otorrino,Nariz y senos paranasales
+30320,REMOV F B INTRANASAL; BY LAT RHINOTOMY,3.9,Otorrino,Nariz y senos paranasales
+30400,RHINOPLASTY PRIM; LAT & ALAR CARTIL/ELEVAT TIP,7.7,Otorrino,Nariz y senos paranasales
+30410,RHINOPLASTY PRIM; COMPLT-EXT PARTS-ELEVAT TIP,11,Otorrino,Nariz y senos paranasales
+30420,RHINOPLASTY PRIMARY; INCL MAJOR SEPTAL REPR,12.5,Otorrino,Nariz y senos paranasales
+30430,RHINOPLASTY SECNDRY; MINOR REVIS,3.9,Otorrino,Nariz y senos paranasales
+30435,RHINOPLASTY SECNDRY; INTERMED REVIS,5.3,Otorrino,Nariz y senos paranasales
+30450,RHINOPLASTY SECNDRY; MAJOR REVIS,10.2,Otorrino,Nariz y senos paranasales
+30460,RHINOPLASTY-DEFORM CLEFT LIP; TIP ONLY,3.9,Otorrino,Nariz y senos paranasales
+30462,RHINOPLASTY-DEFORM CLEFT LIP; TIP/SEPTUM/OSTEOT,14.4,Otorrino,Nariz y senos paranasales
+30520,SEPTOPLASTY/SMR W/WO CARTIL SCORING/REPLAC W/GFT,7.4,Otorrino,Nariz y senos paranasales
+30540,REPR CHOANAL ATRESIA; INTRANASAL,7.2,Otorrino,Nariz y senos paranasales
+30545,REPR CHOANAL ATRESIA; TRANSPALATINE,13.5,Otorrino,Nariz y senos paranasales
+30560,LYSIS INTRANASAL SYNECHIA,0.7,Otorrino,Nariz y senos paranasales
+30580,REPR FISTULA; OROMAXILLARY,4.9,Otorrino,Nariz y senos paranasales
+30600,REPR FISTULA; ORONASAL,4.9,Otorrino,Nariz y senos paranasales
+30620,SEPTAL/OTHER INTRANASAL DERMATOPLASTY,8.3,Otorrino,Nariz y senos paranasales
+30630,REPR NASAL SEPTAL PERFORATIONS,5.9,Otorrino,Nariz y senos paranasales
+30801,CAUT MUCOSA TURBIN UNI-/BILAT (SEP PRO); SUPERF,0.9,Otorrino,Nariz y senos paranasales
+30802,CAUT MUCOS TURBIN UNI-/BILAT (SEP PRO); INTRAMUR,1.7,Otorrino,Nariz y senos paranasales
+30901,CONTRL NASAL HEMORR-ANT-SIMPL ANY METHD,0.4,Otorrino,Nariz y senos paranasales
+30903,CONTRL NASAL HEMORR-ANT-COMPLX ANY METHD,0.7,Otorrino,Nariz y senos paranasales
+30905,CONTRL NASAL HEMORR-POST-W/PACKS-CAUT; INIT,1.5,Otorrino,Nariz y senos paranasales
+30906,CONTRL NASAL HEMORR-POST-W/PACKS-CAUT; SUBSQT,1.4,Otorrino,Nariz y senos paranasales
+30915,LIG ART; ETHMO,5.4,Otorrino,Nariz y senos paranasales
+30920,LIG ART; INT MAXIL ART TRANSANTRAL,8.3,Otorrino,Nariz y senos paranasales
+30930,FX NASAL TURBINATE THERAP,0.7,Otorrino,Nariz y senos paranasales
+30999,UNLISTED PROC NOSE,BR,Otorrino,Nariz y senos paranasales
+31000,LAVAGE BY CANNULATION; MAXIL SINUS,0.5,Otorrino,Nariz y senos paranasales
+31002,LAVAGE BY CANNULATION; SPHENOID SINUS,0.6,Otorrino,Nariz y senos paranasales
+31020,SINUSOTOMY MAXIL; INTRANASAL,2.6,Otorrino,Nariz y senos paranasales
+31030,SINUSOTMY MAXIL; RAD WO REMOV ANTROCHOANAL POLYP,6.4,Otorrino,Nariz y senos paranasales
+31032,SINUSOTMY MAXIL; RAD W/REMOV ANTROCHOANAL POLYPS,7.4,Otorrino,Nariz y senos paranasales
+31040,PTERYGOMAXILLARY FOSSA SURG ANY APPROACH,13.7,Otorrino,Nariz y senos paranasales
+31050,SINUSOTOMY SPHENOID W/WO BX,9.8,Otorrino,Nariz y senos paranasales
+31051,SINUSOTOMY SPHENOID W/WO BX; W/MUCOS STRIPPING,10.3,Otorrino,Nariz y senos paranasales
+31070,SINUSOTOMY FRONTAL; EXT SIMPL,4.9,Otorrino,Nariz y senos paranasales
+31071,SINUSOTOMY FRONTAL; INTRANASAL,BR,Otorrino,Nariz y senos paranasales
+31075,SINUSOTOMY FRONTAL; TRANSORBITAL UNILAT,10.5,Otorrino,Nariz y senos paranasales
+31080,SINUSOTOMY FRONTAL; OBLIT-W/O FLAP-BROW INCS,9.8,Otorrino,Nariz y senos paranasales
+31081,SINUSOTOMY FRONTAL; OBLIT WO FLAP CORONAL INCS,9.8,Otorrino,Nariz y senos paranasales
+31084,SINUSOTOMY FRONTAL; OBLIT-W/FLAP-BROW INCS,11.8,Otorrino,Nariz y senos paranasales
+31085,SINUSOTOMY FRONTAL; OBLIT-W/FLAP-CORONAL INCS,11.8,Otorrino,Nariz y senos paranasales
+31086,SINUSOTOMY FRONT; NONOBLIT W/FLAP-BROW INCS,11.8,Otorrino,Nariz y senos paranasales
+31087,SINUSOTOMY FRONT; NONOBLIT W/FLAP-CORONAL INCS,11.8,Otorrino,Nariz y senos paranasales
+31090,SINUSOTOMY COMBO 3/MORE SINUSES,17,Otorrino,Nariz y senos paranasales
+31200,ETHMO; INTRANASAL ANT,5.4,Otorrino,Nariz y senos paranasales
+31201,ETHMO; INTRANASAL TOT,6.9,Otorrino,Nariz y senos paranasales
+31205,ETHMO; EXTRANASAL TOT,7.4,Otorrino,Nariz y senos paranasales
+31225,MAXILLECTOMY; WO ORBITAL EXENTERATION,16.5,Otorrino,Nariz y senos paranasales
+31230,MAXILLECTOMY; W/ORBITAL EXENTERATION,19,Otorrino,Nariz y senos paranasales
+31250,NASAL ENDO DX W/WO BX (SEPART PROC),2.9,Otorrino,Nariz y senos paranasales
+31252,NASAL ENDO SURG; W/NASAL POLYPECTOMY,3.9,Otorrino,Nariz y senos paranasales
+31254,NASAL ENDO SURG; W/ETHMO PART,6.4,Otorrino,Nariz y senos paranasales
+31255,NASAL ENDO SURG; W/ETHMO ANT & POST,8.3,Otorrino,Nariz y senos paranasales
+31256,NASAL ENDO SURG; W/MAXIL ANTROSTOMY,4.9,Otorrino,Nariz y senos paranasales
+31258,NASAL ENDO SURG; W/REMOV F B,7.4,Otorrino,Nariz y senos paranasales
+31260,MAXIL SINUS ENDO DX W/WO BX (SEPART PROC),3.4,Otorrino,Nariz y senos paranasales
+31263,MAXIL SINUS ENDO SURG; W/REMOV F B,8.3,Otorrino,Nariz y senos paranasales
+31265,MAXIL SINUS ENDO SURG; W/REMOV CYST,5.9,Otorrino,Nariz y senos paranasales
+31267,MAXIL SINUS ENDO SURG; W/REMOV MUCOS MEMBRN,8.3,Otorrino,Nariz y senos paranasales
+31268,MAXIL SINUS ENDO SURG; W/REMOV FUNGUS BALL,6.4,Otorrino,Nariz y senos paranasales
+31270,SPHENOID ENDO DX W/WO BX (SEPART PROC),6.4,Otorrino,Nariz y senos paranasales
+31275,SPHENOID ENDO SURG,6.9,Otorrino,Nariz y senos paranasales
+31277,SPHENOID ENDO SURG; W/REMOV MUCOS MEMBRN,7.8,Otorrino,Nariz y senos paranasales
+31285,SINUS ENDO 2/MORE SINUSES UNILAT,BR,Otorrino,Nariz y senos paranasales
+31299,UNLISTED PROC ACCES SINUSES,BR,Otorrino,Nariz y senos paranasales

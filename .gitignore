@@ -185,8 +185,9 @@ out/
 *.sqlite3
 *.db
 *.DB
-
+*.sql
 # PostgreSQL
+
 
 *.dump
 *.pgsql
