@@ -2,7 +2,12 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'medico1-h5lk.onrender.com,me-dico1.vercel.app,localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [
+    "medico1-h5lk.onrender.com",
+    "me-dico1.vercel.app",
+    "localhost",
+    "127.0.0.1",
+]
 
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
@@ -27,15 +32,14 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
+        'console': {
             'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
+            'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
     },
     'root': {
-        'handlers': ['file'],
+        'handlers': ['console'],
         'level': 'ERROR',
     },
 }
