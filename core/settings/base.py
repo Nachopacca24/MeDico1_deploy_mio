@@ -10,7 +10,11 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "medico1-h5lk.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -148,6 +152,13 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
 CORS_ALLOW_CREDENTIALS = True
 
 # Excluir las rutas de API del CSRF (usamos JWT en su lugar)
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
-CSRF_COOKIE_SECURE = False  # Para desarrollo local
+
+# Para producción y frontend en Vercel
+CSRF_TRUSTED_ORIGINS = [
+    "https://medico1-h5lk.onrender.com",
+    "https://me-dico1.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+CSRF_COOKIE_SECURE = False  # Cambia a True en prod si usas HTTPS
 CSRF_COOKIE_HTTPONLY = False  # Permitir acceso desde JavaScript

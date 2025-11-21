@@ -82,7 +82,7 @@ const EditCase = () => {
       setSurgeryTime(caseData.surgery_time || '');
       setDiagnosis(caseData.diagnosis || '');
       setNotes(caseData.notes || '');
-      setStatus(caseData.status || 'scheduled');
+      setStatus((caseData.status?.toLowerCase?.() || 'scheduled') as import('@/types/surgical-case').CaseStatus);
       
       // Populate procedures
       if (caseData.procedures && caseData.procedures.length > 0) {
@@ -336,7 +336,7 @@ const EditCase = () => {
         surgery_time: surgeryTime || undefined,
         diagnosis: diagnosis || undefined,
         notes: notes || undefined,
-        status: status || 'scheduled',
+        status: (status?.toLowerCase?.() as import('@/types/surgical-case').CaseStatus) || 'scheduled',
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
           surgery_name: proc.surgery_name,
