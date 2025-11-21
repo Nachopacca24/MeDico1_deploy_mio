@@ -10,42 +10,24 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in
 
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "medico1-h5lk.onrender.com",
-    "localhost",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "medico1-h5lk.onrender.com,me-dico1.vercel.app,localhost,127.0.0.1").split(",")
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
-    'corsheaders',
-    'django_filters',
-    'apps.medico.apps.MedicoConfig',
-    'apps.medio_auth.apps.MedioAuthConfig',
-    'apps.communication.apps.CommunicationConfig',
-    'apps.invoice.apps.InvoiceConfig',
-    'apps.payment.apps.PaymentConfig',
-]
+if 'corsheaders' not in INSTALLED_APPS:
+    INSTALLED_APPS += ['corsheaders']
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'core.middleware.ViteDevMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'core.middleware.DisableCSRFForAPIMiddleware',  # Deshabilitar CSRF para /api/* ANTES de CsrfViewMiddleware
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    *[
+        'django.middleware.security.SecurityMiddleware',
+        'core.middleware.ViteDevMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'core.middleware.DisableCSRFForAPIMiddleware',  # Deshabilitar CSRF para /api/* ANTES de CsrfViewMiddleware
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    ]
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -92,7 +74,7 @@ TIME_ZONE = 'America/Guatemala'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
@@ -147,18 +129,22 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
+
+# CORS para frontend y backend en producción y local
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+CORS_ALLOWED_ORIGINS = [
+    "https://me-dico1.vercel.app",
+    "https://medico1-h5lk.onrender.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Excluir las rutas de API del CSRF (usamos JWT en su lugar)
 
-# Para producción y frontend en Vercel
 CSRF_TRUSTED_ORIGINS = [
-    "https://medico1-h5lk.onrender.com",
     "https://me-dico1.vercel.app",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173"
+    "https://medico1-h5lk.onrender.com",
 ]
 CSRF_COOKIE_SECURE = False  # Cambia a True en prod si usas HTTPS
 CSRF_COOKIE_HTTPONLY = False  # Permitir acceso desde JavaScript
