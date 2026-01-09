@@ -71,7 +71,12 @@ class SurgicalCaseService {
       
       const url = `${API_URL}/api/v1/medico/cases/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
       const response = await authService.authenticatedFetch(url);
-      return await this.handleResponse<SurgicalCase[]>(response);
+      const data = await this.handleResponse<SurgicalCase[] | { results?: SurgicalCase[] }>(response);
+
+      // Render/DRF may return paginated shape { count, results, ... } – normalize to array.
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray((data as any).results)) return (data as any).results;
+      return [];
     } catch (error: any) {
       console.error('Error fetching cases:', error);
       throw error;
