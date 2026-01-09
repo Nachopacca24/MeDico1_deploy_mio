@@ -23,6 +23,27 @@ export default defineConfig({
     strictPort: true,
     host: true,
     origin: 'http://localhost:5173',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+          configure: (proxy) => {
+            proxy.on('error', (err) => {
+              console.log('❌ Proxy error:', err);
+            });
+            proxy.on('proxyReq', (_proxyReq, req) => {
+              // req here is IncomingMessage, so .url is available
+              console.log('➡️  Proxy request:', req.method, req.url, '→ http://localhost:8000' + req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req) => {
+              // req is IncomingMessage, which has .url
+              console.log('⬅️  Proxy response:', proxyRes.statusCode, req.url);
+            });
+        },
+      },
+    },
   },
   build: {
     outDir: 'dist',

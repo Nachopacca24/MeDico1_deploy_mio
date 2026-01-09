@@ -1,9 +1,7 @@
-/**
- * Servicio de Autenticación para MeDico
- * Maneja todas las operaciones relacionadas con autenticación JWT
- */
+// src/shared/services/authService.ts
 
 import { parseAuthError, NetworkError, TokenRefreshError } from './authErrors';
+import { googleCalendarService } from '@/services/googleCalendarService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const AUTH_ENDPOINTS = {
@@ -23,7 +21,11 @@ export interface User {
   first_name: string;
   last_name: string;
   full_name: string;
-  name: string;  // Alias de full_name para compatibilidad
+  role: number;
+  is_admin: boolean;
+  plan: string;
+  friend_code: string;
+  name: string;
   phone?: string;
   specialty?: string;
   license_number?: string;
@@ -31,6 +33,7 @@ export interface User {
   avatar?: string;
   signature_image?: string;
   is_verified: boolean;
+  is_email_verified: boolean;
   theme_preference: 'light' | 'dark' | 'system';
   is_profile_complete: boolean;
   created_at: string;
@@ -64,6 +67,7 @@ export interface AuthResponse {
   message: string;
   user: User;
   tokens: AuthTokens;
+  email_verification_sent?: boolean;
 }
 
 export interface ChangePasswordData {
@@ -77,6 +81,7 @@ const TOKEN_STORAGE_KEYS = {
   access: 'medico_access_token',
   refresh: 'medico_refresh_token',
   user: 'medico_user',
+  lastUserId: 'medico_last_user_id',
 };
 
 class AuthService {
@@ -91,10 +96,20 @@ class AuthService {
   }
 
   /**
-   * Guardar información del usuario en localStorage
+   * 🔒 Guardar información del usuario en localStorage
    */
   private saveUser(user: User): void {
+    const previousUserId = localStorage.getItem(TOKEN_STORAGE_KEYS.lastUserId);
+    const currentUserId = user.id.toString();
+    
+    // Si el usuario cambió, limpiar tokens de Google Calendar
+    if (previousUserId && previousUserId !== currentUserId) {
+      console.log(`🔄 Usuario cambió de ${previousUserId} a ${currentUserId}, limpiando Google Calendar`);
+      googleCalendarService.clearTokens();
+    }
+    
     localStorage.setItem(TOKEN_STORAGE_KEYS.user, JSON.stringify(user));
+    localStorage.setItem(TOKEN_STORAGE_KEYS.lastUserId, currentUserId);
   }
 
   /**
@@ -120,12 +135,19 @@ class AuthService {
   }
 
   /**
-   * Limpiar todos los datos de autenticación
+   * 🔒 Limpiar todos los datos de autenticación
    */
   clearAuth(): void {
+    console.log('🧹 Limpiando todos los datos de autenticación');
+    
+    // Limpiar tokens de autenticación
     localStorage.removeItem(TOKEN_STORAGE_KEYS.access);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.refresh);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.user);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.lastUserId);
+    
+    // 🔒 CRÍTICO: Limpiar tokens de Google Calendar
+    googleCalendarService.clearTokens();
   }
 
   /**
@@ -168,7 +190,7 @@ class AuthService {
   }
 
   /**
-   * Login de usuario
+   * 🔒 Login de usuario
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
@@ -186,9 +208,11 @@ class AuthService {
 
       const result: AuthResponse = await response.json();
       
-      // Guardar tokens y usuario
+      // Guardar tokens y usuario (esto limpiará Google Calendar si es usuario diferente)
       this.saveTokens(result.tokens);
       this.saveUser(result.user);
+
+      console.log(`✅ Login exitoso para usuario: ${result.user.email}`);
 
       return result;
     } catch (error) {
@@ -200,10 +224,13 @@ class AuthService {
   }
 
   /**
-   * Logout de usuario
+   * 🔒 Logout de usuario
    */
   async logout(): Promise<void> {
     const refreshToken = this.getRefreshToken();
+    const currentUser = this.getCurrentUser();
+    
+    console.log(`🚪 Logout de usuario: ${currentUser?.email || 'unknown'}`);
     
     if (refreshToken) {
       try {
@@ -220,16 +247,16 @@ class AuthService {
       }
     }
 
-    // Limpiar datos locales siempre
+    // 🔒 CRÍTICO: Limpiar TODOS los datos (incluyendo Google Calendar)
     this.clearAuth();
+    
+    console.log('✅ Logout completado');
   }
 
   /**
    * Renovar access token usando refresh token
-   * Implementa lock para prevenir múltiples refreshes simultáneos
    */
   async refreshAccessToken(): Promise<string> {
-    // Si ya hay un refresh en progreso, retornar la misma promesa
     if (this.refreshPromise) {
       return this.refreshPromise;
     }
@@ -240,7 +267,6 @@ class AuthService {
       throw new TokenRefreshError('No refresh token available');
     }
 
-    // Crear y guardar la promesa de refresh
     this.refreshPromise = (async () => {
       try {
         const response = await fetch(AUTH_ENDPOINTS.refresh, {
@@ -252,7 +278,6 @@ class AuthService {
         });
 
         if (!response.ok) {
-          // Token inválido - será manejado en el catch
           throw new TokenRefreshError('Refresh token expired or invalid');
         }
 
@@ -261,16 +286,12 @@ class AuthService {
 
         return result.access;
       } catch (error) {
-        // Solo limpiar auth si es un error de autenticación, NO en errores de red
         if (error instanceof TypeError) {
-          // Error de red - no limpiar tokens, permitir retry
           throw new NetworkError();
         }
-        // Error de autenticación (TokenRefreshError u otros) - limpiar tokens
         this.clearAuth();
         throw error;
       } finally {
-        // Limpiar la promesa después de completar
         this.refreshPromise = null;
       }
     })();
@@ -328,7 +349,7 @@ class AuthService {
   }
 
   /**
-   * Realizar fetch con autenticación automática (incluye retry con refresh token)
+   * Realizar fetch con autenticación automática
    */
   async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const accessToken = this.getAccessToken();
@@ -337,32 +358,55 @@ class AuthService {
       throw new Error('No access token available');
     }
 
-    // Intentar request con access token actual
+    const headers: Record<string, string> = {
+      'Authorization': `Bearer ${accessToken}`,
+      ...(options.headers as Record<string, string>),
+    };
+
+    let bodyToSend = options.body;
+
+    if (options.body instanceof FormData) {
+      // FormData - no agregar Content-Type
+    } else if (options.body) {
+      headers['Content-Type'] = 'application/json';
+      
+      if (typeof options.body === 'string') {
+        bodyToSend = options.body;
+      } else {
+        bodyToSend = JSON.stringify(options.body);
+      }
+    }
+
     let response = await fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-        ...options.headers,
-      },
+      headers,
+      body: bodyToSend,
     });
 
-    // Si es 401, intentar refresh y reintentar
     if (response.status === 401) {
       try {
         const newAccessToken = await this.refreshAccessToken();
         
-        // Reintentar request con nuevo token
+        const retryHeaders: Record<string, string> = {
+          'Authorization': `Bearer ${newAccessToken}`,
+          ...(options.headers as Record<string, string>),
+        };
+
+        let retryBody = options.body;
+        
+        if (options.body instanceof FormData) {
+          // FormData - no hacer nada
+        } else if (options.body) {
+          retryHeaders['Content-Type'] = 'application/json';
+          retryBody = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+        }
+        
         response = await fetch(url, {
           ...options,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${newAccessToken}`,
-            ...options.headers,
-          },
+          headers: retryHeaders,
+          body: retryBody,
         });
       } catch (error) {
-        // Si falla el refresh, redirigir a login
         this.clearAuth();
         window.location.href = '/login';
         throw error;
@@ -373,5 +417,4 @@ class AuthService {
   }
 }
 
-// Exportar instancia singleton
 export const authService = new AuthService();

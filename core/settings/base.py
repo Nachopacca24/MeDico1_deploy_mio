@@ -1,3 +1,4 @@
+# core/settings/base.py
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -11,6 +12,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
 
 
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '172.22.240.1',
+]
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
@@ -42,6 +48,8 @@ INSTALLED_APPS = [
     'apps.communication.apps.CommunicationConfig',
     'apps.invoice.apps.InvoiceConfig',
     'apps.payment.apps.PaymentConfig',
+    'apps.advertising.apps.AdvertisingConfig',
+    'django_extensions',
 ]
 
 
@@ -56,10 +64,7 @@ MIDDLEWARE = [
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-
-    # Disable CSRF only for /api/
     'core.middleware.DisableCSRFForAPIMiddleware',
-
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -142,7 +147,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-
+# Configuración de Simple JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -157,6 +162,55 @@ SIMPLE_JWT = {
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
 }
 
+# ============================================
+# CONFIGURACIÓN DE EMAIL
+# ============================================
+
+# Para desarrollo: Console backend (muestra emails en la terminal)
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # Para producción: SMTP backend
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Configuración SMTP (para producción)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'MéDico1 <noreply@medico1.com>')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Timeout para envío de emails
+EMAIL_TIMEOUT = 10
+
+# URL del frontend para enlaces de verificación
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
+# ============================================
+# FIN CONFIGURACIÓN DE EMAIL
+# ============================================
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://172.22.240.1:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://172.22.240.1:5173",
+]
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
+
+# Tamaño máximo de archivo subido (20MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 
 
 CORS_ALLOW_ALL_ORIGINS = False

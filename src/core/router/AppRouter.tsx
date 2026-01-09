@@ -1,12 +1,22 @@
+// src/core/router/AppRouter.tsx
+
 import { Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/shared/components/auth/ProtectedRoute";
 
-// Auth pages (new custom auth)
+// Admin components
+import { AdminLayout } from "@/admin/components/AdminLayout";
+import AdminDashboard from "@/admin/pages/Dashboard";
+import Clients from "@/admin/pages/Clients";
+import Advertisements from "@/admin/pages/Advertisements";
+import UsersPage from "@/admin/pages/UsersPage";
+
+// Auth pages
 import LoginPage from "@/pages/login";
 import SignupForm from "@/pages/signup";
 import LogoutPage from "@/pages/logout";
+import VerifyEmailPage from "@/pages/verify-email";
 
-// Main pages (updated with custom auth)
+// Main pages
 import Index from "@/pages/index";
 import CasesPage from "@/pages/cases";
 import NewCase from "@/pages/cases/new";
@@ -19,6 +29,8 @@ import Favorites from "@/pages/favorites";
 import HistoryPage from "@/pages/history";
 import SettingsPage from "@/pages/settings";
 import DebugFavorites from "@/pages/debug-favorites";
+import ColleaguesPage from "@/pages/ColleaguesPage"; 
+import CalendarPage from "@/pages/calendar";
 
 export const AppRouter = () => {
   return (
@@ -27,6 +39,22 @@ export const AppRouter = () => {
       <Route path='/login' element={<LoginPage />} />
       <Route path='/signup' element={<SignupForm />} />
       <Route path='/logout' element={<LogoutPage />} />
+      <Route path='/verify-email' element={<VerifyEmailPage />} />
+
+      {/* Admin routes */}
+      <Route
+        path='/admin'
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path='users' element={<UsersPage />} />
+        <Route path='clients' element={<Clients />} />
+        <Route path='advertisements' element={<Advertisements />} />
+      </Route>
 
       {/* Protected routes */}
       <Route path='/' element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -38,9 +66,11 @@ export const AppRouter = () => {
       <Route path='/operations' element={<ProtectedRoute><Operations /></ProtectedRoute>} />
       <Route path='/hospitals' element={<ProtectedRoute><HospitalsPage /></ProtectedRoute>} />
       <Route path='/favorites' element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+      <Route path='/colleagues' element={<ProtectedRoute><ColleaguesPage /></ProtectedRoute>} /> 
       <Route path='/history' element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
       <Route path='/settings' element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path='/debug-favorites' element={<ProtectedRoute><DebugFavorites /></ProtectedRoute>} />
+      <Route path='/calendar' element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
     </Routes>
   );
 };

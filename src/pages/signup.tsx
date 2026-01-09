@@ -8,8 +8,28 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { useToast } from "@/shared/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+
+// Lista de especialidades médicas basadas en tu sistema
+const SPECIALTIES = [
+  "Cardiovascular",
+  "Dermatología",
+  "Digestivo",
+  "Endocrino",
+  "Ginecología",
+  "Mama",
+  "Maxilofacial",
+  "Neurocirugía",
+  "Obstetricia",
+  "Oftalmología",
+  "Ortopedia",
+  "Otorrinolaringología",
+  "Plástica",
+  "Procesos variados",
+  "Urología",
+];
 
 export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +40,7 @@ export default function SignupForm() {
     password2: "",
     first_name: "",
     last_name: "",
+    specialty: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
@@ -35,6 +56,19 @@ export default function SignupForm() {
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSpecialtyChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, specialty: value }));
+    
+    // Clear error when user selects
+    if (errors.specialty) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.specialty;
         return newErrors;
       });
     }
@@ -59,6 +93,10 @@ export default function SignupForm() {
 
     if (!formData.last_name) {
       newErrors.last_name = "Apellido es requerido";
+    }
+
+    if (!formData.specialty) {
+      newErrors.specialty = "Especialidad es requerida";
     }
 
     if (!formData.password) {
@@ -92,6 +130,7 @@ export default function SignupForm() {
         password2: formData.password2,
         first_name: formData.first_name,
         last_name: formData.last_name,
+        specialty: formData.specialty,
       });
 
       toast({
@@ -131,8 +170,8 @@ export default function SignupForm() {
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>
       <Card className='mx-auto w-full max-w-md'>
         <CardHeader>
-          <CardTitle className='text-2xl'>Create an account</CardTitle>
-          <CardDescription>Enter your details below to create your account</CardDescription>
+          <CardTitle className='text-2xl'>Crear cuenta</CardTitle>
+          <CardDescription>Ingresa tus datos para crear tu cuenta profesional</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className='space-y-4'>
@@ -195,6 +234,32 @@ export default function SignupForm() {
               {errors.email && <p className='text-sm text-destructive'>{errors.email}</p>}
             </div>
 
+            {/* Campo de Especialidad */}
+            <div className='space-y-2'>
+              <Label htmlFor='specialty'>Especialidad Médica</Label>
+              <Select 
+                value={formData.specialty} 
+                onValueChange={handleSpecialtyChange}
+                disabled={isLoading}
+              >
+                <SelectTrigger 
+                  id='specialty'
+                  aria-invalid={!!errors.specialty}
+                  className={errors.specialty ? 'border-destructive' : ''}
+                >
+                  <SelectValue placeholder='Selecciona tu especialidad' />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPECIALTIES.map((specialty) => (
+                    <SelectItem key={specialty} value={specialty}>
+                      {specialty}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.specialty && <p className='text-sm text-destructive'>{errors.specialty}</p>}
+            </div>
+
             <div className='space-y-2'>
               <Label htmlFor='password'>Contraseña</Label>
               <Input
@@ -231,17 +296,17 @@ export default function SignupForm() {
               {isLoading ? (
                 <>
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Creating account...
+                  Creando cuenta...
                 </>
               ) : (
-                "Sign up"
+                "Crear cuenta"
               )}
             </Button>
 
             <p className='text-center text-sm text-muted-foreground'>
-              Already have an account?{" "}
+              ¿Ya tienes cuenta?{" "}
               <Link to='/login' className='text-primary underline underline-offset-4 hover:text-primary/90'>
-                Sign in
+                Inicia sesión
               </Link>
             </p>
           </CardFooter>

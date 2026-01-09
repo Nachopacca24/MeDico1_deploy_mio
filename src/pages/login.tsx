@@ -21,7 +21,7 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -76,7 +76,7 @@ export default function LoginForm() {
         description: "Has iniciado sesión exitosamente.",
       });
       
-      // El navigate lo hace el AuthContext automáticamente
+      // La redirección se maneja automáticamente en AuthContext
     } catch (error: any) {
       console.error('Error en login:', error);
       
@@ -99,8 +99,11 @@ export default function LoginForm() {
     }
   };
 
-  // Si ya está autenticado, redirigir al dashboard
+  // Si ya está autenticado, redirigir según el rol
   if (isAuthenticated) {
+    if (isAdmin) {
+      return <Navigate to='/admin' replace />;
+    }
     return <Navigate to='/' replace />;
   }
 

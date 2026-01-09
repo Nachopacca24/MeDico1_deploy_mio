@@ -1,3 +1,4 @@
+// src/shared/components/ui/DashboardStats.tsx
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { useAuth } from "@/shared/contexts/AuthContext";

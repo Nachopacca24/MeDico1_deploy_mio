@@ -1,0 +1,370 @@
+// src/services/googleCalendarService.ts
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/calendar';
+
+export interface CalendarEvent {
+  id?: string;
+  summary: string;
+  description?: string;
+  location?: string;
+  start: {
+    dateTime: string;
+    timeZone: string;
+  };
+  end: {
+    dateTime: string;
+    timeZone: string;
+  };
+  attendees?: Array<{
+    email: string;
+    responseStatus?: string;
+  }>;
+  reminders?: {
+    useDefault: boolean;
+    overrides?: Array<{
+      method: string;
+      minutes: number;
+    }>;
+  };
+}
+
+class GoogleCalendarService {
+  private tokenClient: any = null;
+  private gapiInited = false;
+  private gisInited = false;
+  private readonly STORAGE_PREFIX = 'medico_google_';
+
+  /**
+   * 🔒 Obtener el ID del usuario actual
+   */
+  private getCurrentUserId(): string | null {
+    const userStr = localStorage.getItem('medico_user');
+    if (!userStr) return null;
+    try {
+      const user = JSON.parse(userStr);
+      return user.id?.toString() || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 🔒 Generar clave única para cada usuario
+   */
+  private getStorageKey(key: string): string {
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      console.warn('⚠️ No hay usuario autenticado');
+      return `${this.STORAGE_PREFIX}${key}`;
+    }
+    return `${this.STORAGE_PREFIX}${userId}_${key}`;
+  }
+
+  /**
+   * 🔒 Guardar tokens del usuario actual
+   */
+  setTokens(accessToken: string): void {
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      console.error('❌ No se pueden guardar tokens sin usuario autenticado');
+      return;
+    }
+    
+    console.log(`✅ Guardando tokens para usuario: ${userId}`);
+    localStorage.setItem(this.getStorageKey('access_token'), accessToken);
+    localStorage.setItem(this.getStorageKey('connected_user_id'), userId);
+  }
+
+  /**
+   * 🔒 Obtener access token del usuario actual
+   */
+  getAccessToken(): string | null {
+    const userId = this.getCurrentUserId();
+    const connectedUserId = localStorage.getItem(this.getStorageKey('connected_user_id'));
+    
+    // Validar que el token pertenece al usuario actual
+    if (userId && connectedUserId && userId !== connectedUserId) {
+      console.warn('⚠️ Token no pertenece al usuario actual, limpiando...');
+      this.clearTokens();
+      return null;
+    }
+    
+    return localStorage.getItem(this.getStorageKey('access_token'));
+  }
+
+  /**
+   * 🔒 Limpiar tokens del usuario actual
+   */
+  clearTokens(): void {
+    const userId = this.getCurrentUserId();
+    console.log(`🧹 Limpiando tokens de Google Calendar para usuario: ${userId || 'unknown'}`);
+    
+    localStorage.removeItem(this.getStorageKey('access_token'));
+    localStorage.removeItem(this.getStorageKey('connected_user_id'));
+  }
+
+  /**
+   * 🔒 Verificar si el usuario actual está conectado
+   */
+  isConnected(): boolean {
+    const token = this.getAccessToken();
+    const userId = this.getCurrentUserId();
+    
+    if (!userId) {
+      console.warn('⚠️ No hay usuario autenticado');
+      return false;
+    }
+    
+    return !!token;
+  }
+
+  /**
+   * Inicializar Google API
+   */
+  async initialize(): Promise<void> {
+    if (this.gapiInited && this.gisInited) {
+      console.log('✅ Google API ya inicializada');
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      // Cargar GAPI
+      const gapiScript = document.createElement('script');
+      gapiScript.src = 'https://apis.google.com/js/api.js';
+      gapiScript.async = true;
+      gapiScript.defer = true;
+      gapiScript.onload = () => {
+        (window as any).gapi.load('client', async () => {
+          try {
+            await (window as any).gapi.client.init({
+              apiKey: GOOGLE_API_KEY,
+              discoveryDocs: [DISCOVERY_DOC],
+            });
+            this.gapiInited = true;
+            console.log('✅ GAPI inicializado');
+            
+            if (this.gisInited) resolve();
+          } catch (error) {
+            console.error('❌ Error inicializando GAPI:', error);
+            reject(error);
+          }
+        });
+      };
+      document.body.appendChild(gapiScript);
+
+      // Cargar GIS
+      const gisScript = document.createElement('script');
+      gisScript.src = 'https://accounts.google.com/gsi/client';
+      gisScript.async = true;
+      gisScript.defer = true;
+      gisScript.onload = () => {
+        this.tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: SCOPES,
+          callback: '', // Se define en connect()
+        });
+        this.gisInited = true;
+        console.log('✅ GIS inicializado');
+        
+        if (this.gapiInited) resolve();
+      };
+      document.body.appendChild(gisScript);
+    });
+  }
+
+  /**
+   * 🔒 Conectar a Google Calendar
+   */
+  async connect(): Promise<void> {
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    await this.initialize();
+
+    return new Promise((resolve, reject) => {
+      try {
+        this.tokenClient.callback = async (resp: any) => {
+          if (resp.error !== undefined) {
+            console.error('❌ Error en autenticación:', resp);
+            reject(resp);
+            return;
+          }
+
+          console.log(`✅ Google Calendar conectado exitosamente para usuario: ${userId}`);
+          this.setTokens(resp.access_token);
+          
+          // Configurar token en GAPI
+          (window as any).gapi.client.setToken({ access_token: resp.access_token });
+          
+          resolve();
+        };
+
+        // Verificar si ya tiene token válido
+        const token = this.getAccessToken();
+        if (token && (window as any).gapi.client.getToken()) {
+          console.log('✅ Token válido existente');
+          resolve();
+        } else {
+          // Solicitar token
+          this.tokenClient.requestAccessToken({ prompt: 'consent' });
+        }
+      } catch (error) {
+        console.error('❌ Error al conectar:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * 🔒 Desconectar de Google Calendar
+   */
+  async disconnect(): Promise<void> {
+    const token = this.getAccessToken();
+    
+    if (token) {
+      try {
+        await (window as any).google.accounts.oauth2.revoke(token);
+        console.log('✅ Token revocado en Google');
+      } catch (error) {
+        console.error('Error al revocar token:', error);
+      }
+    }
+
+    this.clearTokens();
+    
+    if ((window as any).gapi?.client) {
+      (window as any).gapi.client.setToken(null);
+    }
+    
+    console.log('✅ Desconectado de Google Calendar');
+  }
+
+  /**
+   * Configurar token en GAPI
+   */
+  private async ensureToken(): Promise<void> {
+    const token = this.getAccessToken();
+    
+    if (!token) {
+      throw new Error('No hay token de acceso disponible');
+    }
+
+    if (!(window as any).gapi?.client) {
+      await this.initialize();
+    }
+
+    (window as any).gapi.client.setToken({ access_token: token });
+  }
+
+  /**
+   * Obtener eventos del calendario
+   */
+  async getEvents(
+    timeMin: Date = new Date(),
+    timeMax?: Date
+  ): Promise<CalendarEvent[]> {
+    await this.ensureToken();
+
+    const request: any = {
+      calendarId: 'primary',
+      timeMin: timeMin.toISOString(),
+      showDeleted: false,
+      singleEvents: true,
+      orderBy: 'startTime',
+    };
+
+    if (timeMax) {
+      request.timeMax = timeMax.toISOString();
+    }
+
+    try {
+      const response = await (window as any).gapi.client.calendar.events.list(request);
+      return response.result.items || [];
+    } catch (error) {
+      console.error('Error obteniendo eventos:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear un evento
+   */
+  async createEvent(event: CalendarEvent): Promise<string> {
+    await this.ensureToken();
+
+    try {
+      const response = await (window as any).gapi.client.calendar.events.insert({
+        calendarId: 'primary',
+        resource: event,
+      });
+
+      console.log('✅ Evento creado:', response.result.id);
+      return response.result.id;
+    } catch (error) {
+      console.error('❌ Error creando evento:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualizar un evento
+   */
+  async updateEvent(eventId: string, event: CalendarEvent): Promise<void> {
+    await this.ensureToken();
+
+    try {
+      await (window as any).gapi.client.calendar.events.update({
+        calendarId: 'primary',
+        eventId: eventId,
+        resource: event,
+      });
+
+      console.log('✅ Evento actualizado:', eventId);
+    } catch (error) {
+      console.error('❌ Error actualizando evento:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Eliminar un evento
+   */
+  async deleteEvent(eventId: string): Promise<void> {
+    await this.ensureToken();
+
+    try {
+      await (window as any).gapi.client.calendar.events.delete({
+        calendarId: 'primary',
+        eventId: eventId,
+      });
+
+      console.log('✅ Evento eliminado:', eventId);
+    } catch (error) {
+      console.error('❌ Error eliminando evento:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener información del usuario de Google
+   */
+  getUserEmail(): string | null {
+    const token = (window as any).gapi?.client?.getToken();
+    if (!token) return null;
+
+    try {
+      // Decodificar el ID token si está disponible
+      const payload = JSON.parse(atob(token.id_token?.split('.')[1] || ''));
+      return payload.email || null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+export const googleCalendarService = new GoogleCalendarService();

@@ -1,3 +1,5 @@
+# core/middleware.py
+
 from django.conf import settings
 from django.http import HttpResponse
 import os
@@ -162,32 +164,17 @@ atexit.register(cleanup_vite)
 
 class DisableCSRFForAPIMiddleware:
     """
-    Deshabilitar CSRF para rutas de autenticación JWT.
+    Deshabilitar CSRF para todas las rutas /api/* ya que usamos JWT.
     
-    SECURITY NOTE: Solo deshabilita CSRF para endpoints que usan exclusivamente JWT.
-    Los endpoints que aceptan autenticación por sesión deben mantener CSRF habilitado.
-    
-    Para endpoints que necesiten ambos tipos de auth, use @csrf_protect en la vista específica.
+    SECURITY NOTE: Esto es seguro porque todas las rutas de API usan JWT authentication
+    que no es vulnerable a CSRF. Las rutas de admin de Django mantienen CSRF habilitado.
     """
     def __init__(self, get_response):
         self.get_response = get_response
-        
-        # Lista explícita de rutas que usan JWT exclusivamente
-        self.jwt_only_paths = [
-            '/api/auth/register/',
-            '/api/auth/login/',
-            '/api/auth/logout/',
-            '/api/auth/refresh/',
-            '/api/auth/me/',
-            '/api/auth/change-password/',
-        ]
 
     def __call__(self, request):
-        # Solo deshabilitar CSRF para rutas específicas de JWT (coincidencia exacta)
-        # Normalizar path: remover trailing slash y agregar uno nuevo para consistencia
-        request_path = request.path.rstrip('/') + '/'
-        
-        if request_path in self.jwt_only_paths:
+        # Deshabilitar CSRF para TODAS las rutas que empiecen con /api/
+        if request.path.startswith('/api/'):
             setattr(request, '_dont_enforce_csrf_checks', True)
         
         return self.get_response(request)

@@ -1,14 +1,20 @@
+# apps/medico/views/__init__.py
+
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.db.models import Count
 
-from apps.medico.models import Favorite
+from apps.medico.models import Favorite, SurgicalCase
 from apps.medico.serializers import FavoriteSerializer
 
 # Import surgical case views
 from .surgical_case import SurgicalCaseViewSet, CaseProcedureViewSet
+
+User = get_user_model()
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
@@ -116,3 +122,97 @@ class FavoriteViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED
             )
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestionar usuarios desde el panel de admin
+    """
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    queryset = User.objects.all()
+    
+    def list(self, request):
+        """
+        Listar todos los usuarios con sus estadísticas
+        """
+        users = User.objects.annotate(
+            total_cases=Count('surgicalcase', distinct=True),
+            total_favorites=Count('favorite', distinct=True)
+        ).values(
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'phone', 'specialty', 'is_superuser', 'is_staff', 
+            'is_active', 'date_joined', 'plan',
+            'total_cases', 'total_favorites'
+        )
+        
+        return Response(list(users))
+    
+    def destroy(self, request, pk=None):
+        """
+        Eliminar usuario y todos sus datos relacionados
+        """
+        try:
+            user = self.get_object()
+            
+            # No permitir eliminar superusuarios
+            if user.is_superuser:
+                return Response(
+                    {'error': 'No se puede eliminar un superusuario'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Eliminar casos (y sus procedimientos por CASCADE)
+            SurgicalCase.objects.filter(created_by=user).delete()
+            
+            # Eliminar favoritos
+            Favorite.objects.filter(user=user).delete()
+            
+            # Eliminar usuario
+            user.delete()
+            
+            return Response(
+                {'message': 'Usuario eliminado exitosamente'},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['patch'], url_path='toggle_active')
+    def toggle_active(self, request, pk=None):
+        """
+        Activar/desactivar usuario
+        """
+        user = self.get_object()
+        
+        if user.is_superuser:
+            return Response(
+                {'error': 'No se puede modificar un superusuario'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        user.is_active = request.data.get('is_active', user.is_active)
+        user.save()
+        
+        return Response({'message': 'Usuario actualizado'})
+    
+    @action(detail=True, methods=['patch'], url_path='update_plan')
+    def update_plan(self, request, pk=None):
+        """
+        Actualizar plan del usuario
+        """
+        user = self.get_object()
+        plan = request.data.get('plan')
+        
+        if plan not in ['bronze', 'silver', 'gold']:
+            return Response(
+                {'error': 'Plan inválido'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.plan = plan
+        user.save()
+        
+        return Response({'message': 'Plan actualizado'})

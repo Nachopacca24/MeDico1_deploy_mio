@@ -1,3 +1,4 @@
+//src/pages/cases/new.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
@@ -7,11 +8,12 @@ import { Label } from '@/shared/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { toast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/shared/hooks/useToast';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
+import { colleaguesService } from '@/services/colleaguesService';
 import { loadCSV } from '@/shared/utils/csvLoader';
-import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star } from 'lucide-react';
+import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users } from 'lucide-react';
 import type { PatientGender } from '@/types/surgical-case';
 
 interface ProcedureData {
@@ -32,8 +34,15 @@ interface SelectedProcedure {
   notes: string;
 }
 
+interface Colleague {
+  id: number;
+  full_name: string;
+  specialty?: string;
+}
+
 const NewCase = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -43,8 +52,14 @@ const NewCase = () => {
   const [hospitalId, setHospitalId] = useState('');
   const [surgeryDate, setSurgeryDate] = useState('');
   const [surgeryTime, setSurgeryTime] = useState('');
+  const [surgeryEndTime, setSurgeryEndTime] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
+  
+  // Assistant doctor state
+  const [assistantType, setAssistantType] = useState<'colleague' | 'manual' | 'none'>('none');
+  const [selectedColleagueId, setSelectedColleagueId] = useState<number | null>(null);
+  const [manualAssistantName, setManualAssistantName] = useState('');
   
   // Procedure selection state
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,8 +68,10 @@ const NewCase = () => {
   
   // Data state
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [allProcedures, setAllProcedures] = useState<ProcedureData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingColleagues, setLoadingColleagues] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Load hospitals and procedures
@@ -159,17 +176,33 @@ const NewCase = () => {
         setAllProcedures(procedures);
       } catch (error) {
         console.error('Error loading data:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load hospitals and procedures',
-          variant: 'destructive'
-        });
+        toast.error(
+          'Error al cargar datos',
+          'No se pudieron cargar los hospitales y procedimientos'
+        );
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
+  }, [toast]);
+
+  // Load colleagues
+  useEffect(() => {
+    const loadColleagues = async () => {
+      try {
+        setLoadingColleagues(true);
+        const data = await colleaguesService.getColleagues();
+        setColleagues(data.colleagues);
+      } catch (error) {
+        console.error('Error loading colleagues:', error);
+      } finally {
+        setLoadingColleagues(false);
+      }
+    };
+
+    loadColleagues();
   }, []);
 
   // Filter procedures based on search
@@ -210,10 +243,21 @@ const NewCase = () => {
     setSelectedProcedures([...selectedProcedures, newProcedure]);
     setSearchQuery('');
     setShowProcedureSearch(false);
+    
+    toast.success(
+      'Procedimiento agregado',
+      `${proc.cirugia} agregado exitosamente`
+    );
   };
 
   const handleRemoveProcedure = (index: number) => {
+    const removedProc = selectedProcedures[index];
     setSelectedProcedures(selectedProcedures.filter((_, i) => i !== index));
+    
+    toast.info(
+      'Procedimiento eliminado',
+      `${removedProc.surgery_name} fue eliminado de la lista`
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -221,38 +265,34 @@ const NewCase = () => {
     
     // Validation
     if (!patientName.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Patient name is required',
-        variant: 'destructive'
-      });
+      toast.error(
+        'Error de validación',
+        'El nombre del paciente es requerido'
+      );
       return;
     }
     
     if (!hospitalId) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please select a hospital',
-        variant: 'destructive'
-      });
+      toast.error(
+        'Error de validación',
+        'Por favor selecciona un hospital'
+      );
       return;
     }
     
     if (!surgeryDate) {
-      toast({
-        title: 'Validation Error',
-        description: 'Surgery date is required',
-        variant: 'destructive'
-      });
+      toast.error(
+        'Error de validación',
+        'La fecha de cirugía es requerida'
+      );
       return;
     }
     
     if (selectedProcedures.length === 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please add at least one procedure',
-        variant: 'destructive'
-      });
+      toast.error(
+        'Error de validación',
+        'Por favor agrega al menos un procedimiento'
+      );
       return;
     }
 
@@ -270,8 +310,12 @@ const NewCase = () => {
         hospital: parseInt(hospitalId),
         surgery_date: surgeryDate,
         surgery_time: surgeryTime || undefined,
+        surgery_end_time: surgeryEndTime || undefined,
         diagnosis: diagnosis || undefined,
         notes: notes || undefined,
+        // Médico ayudante
+         assistant_doctor: assistantType === 'colleague' ? selectedColleagueId : undefined,
+        assistant_doctor_name: assistantType === 'manual' ? manualAssistantName : undefined,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
           surgery_name: proc.surgery_name,
@@ -284,23 +328,28 @@ const NewCase = () => {
           order: index + 1
         }))
       };
+      // Solo agregar campos de ayudante si hay uno seleccionado
+    if (assistantType === 'colleague' && selectedColleagueId) {
+      caseData.assistant_doctor = selectedColleagueId;
+      // NO enviar assistant_accepted - se establece como null en el backend
+    } else if (assistantType === 'manual' && manualAssistantName) {
+      caseData.assistant_doctor_name = manualAssistantName;
+    }
 
-      const response = await surgicalCaseService.createCase(caseData);
+      await surgicalCaseService.createCase(caseData);
       
-      toast({
-        title: 'Success',
-        description: 'Surgical case created successfully'
-      });
+      toast.success(
+        '¡Caso creado exitosamente!',
+        `El caso de ${patientName} ha sido registrado correctamente con ${selectedProcedures.length} procedimiento${selectedProcedures.length !== 1 ? 's' : ''}`
+      );
       
-      // Redirect to dashboard (cases list)
       navigate('/cases');
     } catch (error) {
       console.error('Error creating case:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create surgical case',
-        variant: 'destructive'
-      });
+      toast.error(
+        'Error al crear caso',
+        'No se pudo crear el caso quirúrgico. Por favor intenta de nuevo.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -320,8 +369,8 @@ const NewCase = () => {
     <AppLayout>
       <div className="mx-auto max-w-5xl space-y-6 pb-12">
         <div className="pb-4 border-b">
-          <h1 className="text-3xl font-semibold mb-1 tracking-tight">New Surgical Case</h1>
-          <p className="text-muted-foreground">Create a new surgical case record</p>
+          <h1 className="text-3xl font-semibold mb-1 tracking-tight">Nuevo Caso Quirúrgico</h1>
+          <p className="text-muted-foreground">Crear un nuevo registro de caso quirúrgico</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -330,70 +379,70 @@ const NewCase = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Patient Information
+                Información del Paciente
               </CardTitle>
-              <CardDescription>Enter patient details</CardDescription>
+              <CardDescription>Ingresa los datos del paciente</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="patientName">
-                    Patient Name <span className="text-destructive">*</span>
+                    Nombre del Paciente <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="patientName"
                     value={patientName}
                     onChange={(e) => setPatientName(e.target.value)}
-                    placeholder="Enter patient name"
+                    placeholder="Ingresa el nombre del paciente"
                     required
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="patientId">Patient ID</Label>
+                  <Label htmlFor="patientId">ID del Paciente</Label>
                   <Input
                     id="patientId"
                     value={patientId}
                     onChange={(e) => setPatientId(e.target.value)}
-                    placeholder="Enter patient ID"
+                    placeholder="Ingresa el ID del paciente"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="patientAge">Age</Label>
+                  <Label htmlFor="patientAge">Edad</Label>
                   <Input
                     id="patientAge"
                     type="number"
                     value={patientAge}
                     onChange={(e) => setPatientAge(e.target.value)}
-                    placeholder="Enter age"
+                    placeholder="Ingresa la edad"
                     min="0"
                     max="150"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="patientGender">Gender</Label>
+                  <Label htmlFor="patientGender">Género</Label>
                   <Select value={patientGender} onValueChange={(value) => setPatientGender(value as PatientGender)}>
                     <SelectTrigger id="patientGender">
-                      <SelectValue placeholder="Select gender" />
+                      <SelectValue placeholder="Selecciona el género" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="M">Male</SelectItem>
-                      <SelectItem value="F">Female</SelectItem>
-                      <SelectItem value="O">Other</SelectItem>
+                      <SelectItem value="M">Masculino</SelectItem>
+                      <SelectItem value="F">Femenino</SelectItem>
+                      <SelectItem value="O">Otro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="diagnosis">Diagnosis</Label>
+                <Label htmlFor="diagnosis">Diagnóstico</Label>
                 <Input
                   id="diagnosis"
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
-                  placeholder="Enter diagnosis"
+                  placeholder="Ingresa el diagnóstico"
                 />
               </div>
             </CardContent>
@@ -404,9 +453,9 @@ const NewCase = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Surgery Details
+                Detalles de la Cirugía
               </CardTitle>
-              <CardDescription>Schedule and location information</CardDescription>
+              <CardDescription>Información de programación y ubicación</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -416,7 +465,7 @@ const NewCase = () => {
                   </Label>
                   <Select value={hospitalId} onValueChange={setHospitalId} required>
                     <SelectTrigger id="hospital">
-                      <SelectValue placeholder="Select hospital" />
+                      <SelectValue placeholder="Selecciona un hospital" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       {hospitals.map((hospital) => (
@@ -439,7 +488,7 @@ const NewCase = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="surgeryDate">
-                    Surgery Date <span className="text-destructive">*</span>
+                    Fecha de Cirugía <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="surgeryDate"
@@ -451,7 +500,7 @@ const NewCase = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="surgeryTime">Surgery Time</Label>
+                  <Label htmlFor="surgeryTime">Hora de Cirugía</Label>
                   <Input
                     id="surgeryTime"
                     type="time"
@@ -460,6 +509,97 @@ const NewCase = () => {
                   />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="surgeryEndTime">Hora de Fin (estimada)</Label>
+                <Input
+                  id="surgeryEndTime"
+                  type="time"
+                  value={surgeryEndTime}
+                  onChange={(e) => setSurgeryEndTime(e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Assistant Doctor - NUEVO */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Médico Ayudante
+              </CardTitle>
+              <CardDescription>Selecciona un colega o ingresa el nombre manualmente (opcional)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="assistantType">Tipo de Ayudante</Label>
+                <Select value={assistantType} onValueChange={(value: any) => {
+                  setAssistantType(value);
+                  if (value === 'none') {
+                    setSelectedColleagueId(null);
+                    setManualAssistantName('');
+                  }
+                }}>
+                  <SelectTrigger id="assistantType">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin ayudante</SelectItem>
+                    <SelectItem value="colleague">Seleccionar colega</SelectItem>
+                    <SelectItem value="manual">Ingresar nombre manualmente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {assistantType === 'colleague' && (
+                <div className="space-y-2">
+                  <Label htmlFor="colleague">Seleccionar Colega</Label>
+                  {loadingColleagues ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground p-4 border rounded-lg">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Cargando colegas...
+                    </div>
+                  ) : colleagues.length === 0 ? (
+                    <div className="text-sm text-muted-foreground p-4 border rounded-lg bg-muted/50">
+                      No tienes colegas agregados. Ve a la sección de Colegas para agregar algunos.
+                    </div>
+                  ) : (
+                    <Select 
+                      value={selectedColleagueId?.toString() || ''} 
+                      onValueChange={(value) => setSelectedColleagueId(parseInt(value))}
+                    >
+                      <SelectTrigger id="colleague">
+                        <SelectValue placeholder="Selecciona un colega" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {colleagues.map((colleague) => (
+                          <SelectItem key={colleague.id} value={colleague.id.toString()}>
+                            <div className="flex flex-col">
+                              <span>{colleague.full_name}</span>
+                              {colleague.specialty && (
+                                <span className="text-xs text-muted-foreground">{colleague.specialty}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+
+              {assistantType === 'manual' && (
+                <div className="space-y-2">
+                  <Label htmlFor="manualAssistant">Nombre del Médico Ayudante</Label>
+                  <Input
+                    id="manualAssistant"
+                    value={manualAssistantName}
+                    onChange={(e) => setManualAssistantName(e.target.value)}
+                    placeholder="Ej: Dr. Juan Pérez"
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -468,19 +608,18 @@ const NewCase = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Stethoscope className="h-5 w-5" />
-                Procedures
+                Procedimientos
               </CardTitle>
               <CardDescription>
-                Add surgical procedures to this case
+                Agrega procedimientos quirúrgicos a este caso
                 {selectedProcedures.length > 0 && (
                   <span className="ml-2 text-primary font-medium">
-                    ({selectedProcedures.length} selected)
+                    ({selectedProcedures.length} seleccionado{selectedProcedures.length !== 1 ? 's' : ''})
                   </span>
                 )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Search Input */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -489,11 +628,10 @@ const NewCase = () => {
                     setSearchQuery(e.target.value);
                     setShowProcedureSearch(e.target.value.length > 0);
                   }}
-                  placeholder="Search procedures by name, code, or specialty..."
+                  placeholder="Buscar procedimientos por nombre, código o especialidad..."
                   className="pl-10"
                 />
                 
-                {/* Search Results Dropdown */}
                 {showProcedureSearch && filteredProcedures.length > 0 && (
                   <Card className="absolute z-10 mt-2 w-full max-h-80 overflow-y-auto">
                     <CardContent className="p-2">
@@ -515,12 +653,11 @@ const NewCase = () => {
                 )}
               </div>
 
-              {/* Selected Procedures */}
               {selectedProcedures.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No procedures added yet</p>
-                  <p className="text-sm">Search and add procedures above</p>
+                  <p>No hay procedimientos agregados aún</p>
+                  <p className="text-sm">Busca y agrega procedimientos arriba</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -544,7 +681,7 @@ const NewCase = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor={`notes-${index}`}>Procedure Notes (optional)</Label>
+                        <Label htmlFor={`notes-${index}`}>Notas del Procedimiento (opcional)</Label>
                         <Textarea
                           id={`notes-${index}`}
                           value={proc.notes}
@@ -553,7 +690,7 @@ const NewCase = () => {
                             updated[index].notes = e.target.value;
                             setSelectedProcedures(updated);
                           }}
-                          placeholder="Add notes for this procedure..."
+                          placeholder="Agrega notas para este procedimiento..."
                           rows={2}
                         />
                       </div>
@@ -562,15 +699,14 @@ const NewCase = () => {
                 </div>
               )}
 
-              {/* Totals */}
               {selectedProcedures.length > 0 && hospitalId && (
                 <div className="pt-4 border-t space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Total RVU:</span>
+                    <span className="text-muted-foreground">RVU Total:</span>
                     <span className="font-medium">{totalRvu.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium">Estimated Value:</span>
+                    <span className="font-medium">Valor Estimado:</span>
                     <span className="text-lg font-semibold text-primary">
                       ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
@@ -583,14 +719,14 @@ const NewCase = () => {
           {/* Additional Notes */}
           <Card>
             <CardHeader>
-              <CardTitle>Additional Notes</CardTitle>
-              <CardDescription>Any additional information about this case</CardDescription>
+              <CardTitle>Notas Adicionales</CardTitle>
+              <CardDescription>Cualquier información adicional sobre este caso</CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Enter additional notes..."
+                placeholder="Ingresa notas adicionales..."
                 rows={4}
               />
             </CardContent>
@@ -604,18 +740,18 @@ const NewCase = () => {
               onClick={() => navigate('/cases')}
               disabled={submitting}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit" disabled={submitting}>
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Case...
+                  Creando Caso...
                 </>
               ) : (
                 <>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Case
+                  Crear Caso
                 </>
               )}
             </Button>
