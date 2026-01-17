@@ -233,3 +233,9 @@ CSRF_TRUSTED_ORIGINS = [
 # En producción, idealmente poner True
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
+
+# Configurar django-environ para leer variables del .env
+import environ
+env = environ.Env()
+# Leer el archivo .env desde la raíz del proyecto
+environ.Env.read_env(BASE_DIR / '.env')
