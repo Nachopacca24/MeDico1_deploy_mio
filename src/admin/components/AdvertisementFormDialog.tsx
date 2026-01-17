@@ -477,7 +477,7 @@ export function AdvertisementFormDialog({
                     required
                   >
                     <option value="">Selecciona un cliente</option>
-                    {clients.map(client => (
+                    {Array.isArray(clients) && clients.map(client => (
                       <option key={client.id} value={client.id}>
                         {client.company_name} ({client.plan_display})
                       </option>
