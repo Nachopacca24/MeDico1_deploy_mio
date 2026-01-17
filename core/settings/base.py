@@ -3,20 +3,18 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+import environ
+
 
 load_dotenv()
 
+env = environ.Env()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+environ.Env.read_env(BASE_DIR / '.env')
 
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
 
-
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '172.22.240.1',
-]
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
@@ -96,11 +94,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'medico'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': env('PGDATABASE', default='heliumdb'),
+        'USER': env('PGUSER', default='postgres'),
+        'PASSWORD': env('PGPASSWORD', default='password'),
+        'HOST': env('PGHOST', default='helium'),
+        'PORT': env('PGPORT', default='5432'),
     }
 }
 
@@ -234,8 +232,4 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 
-# Configurar django-environ para leer variables del .env
-import environ
-env = environ.Env()
-# Leer el archivo .env desde la raíz del proyecto
-environ.Env.read_env(BASE_DIR / '.env')
+

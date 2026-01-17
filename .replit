@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["nano", "psmisc"]
+packages = ["nano", "psmisc", "lsof"]
 
 [workflows]
 runButton = "Project"
@@ -37,7 +37,6 @@ externalPort = 80
 [[ports]]
 localPort = 8000
 externalPort = 3001
-exposeLocalhost = true
 
 [deployment]
 deploymentTarget = "autoscale"

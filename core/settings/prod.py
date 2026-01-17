@@ -54,13 +54,20 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "ERROR",
+            "level": "DEBUG",  # ← Cambiar de ERROR a DEBUG
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
     "root": {
         "handlers": ["console"],
-        "level": "ERROR",
+        "level": "DEBUG",  # ← Cambiar de ERROR a DEBUG
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
