@@ -36,7 +36,8 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     
     # Catch-all para React - DEBE IR AL FINAL
-    re_path(r'^(?!api/|admin/|media/|static/).*$', IndexView.as_view(), name='index'),
+    # Catch-all para React - DEBE IR AL FINAL
+re_path(r'^(?!api/|django-admin/|media/|static/).*$', IndexView.as_view(), name='index'),
 ]
 
 if settings.DEBUG:
