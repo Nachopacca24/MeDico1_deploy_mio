@@ -1,10 +1,24 @@
 from .base import *
+import os
+import dj_database_url
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+ALLOWED_HOSTS = ['*']
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.replit.dev',
+    'https://*.repl.co',
+    'http://localhost:5000',
+    'http://127.0.0.1:5000',
+]
+
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
 
 STATICFILES_DIRS = [
     BASE_DIR / 'src',
