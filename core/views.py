@@ -12,6 +12,9 @@ from datetime import timedelta
 from decimal import Decimal
 import os
 import requests
+from django.shortcuts import render
+
+
 
 # Importar modelos de medico
 from apps.medico.models import SurgicalCase, CaseProcedure, Hospital, Operation, Specialty
