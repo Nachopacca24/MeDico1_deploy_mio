@@ -190,6 +190,13 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 # FIN CONFIGURACIÓN DE EMAIL
 # ============================================
 
+# Backend de autenticación personalizado
+AUTHENTICATION_BACKENDS = [
+    'apps.medio_auth.backends.EmailBackend',  # Email authentication
+    'django.contrib.auth.backends.ModelBackend',  # Username authentication (fallback)
+]
+
+
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
