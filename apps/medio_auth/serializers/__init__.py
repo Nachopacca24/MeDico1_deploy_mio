@@ -137,7 +137,7 @@ class LoginSerializer(serializers.Serializer):
             if password_valid:
                 user = authenticate(
                     request=self.context.get('request'),
-                    username=user_obj.username,
+                    email=email, 
                     password=password
                 )
         else:
