@@ -24,7 +24,8 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # Servir el frontend de Vite compilado
 STATICFILES_DIRS = [
@@ -34,6 +35,13 @@ STATICFILES_DIRS = [
 
 # Template para servir el index.html del frontend
 TEMPLATES[0]['DIRS'] = [BASE_DIR / 'dist']
+
+# WhiteNoise para servir archivos estáticos
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+WHITENOISE_ROOT = BASE_DIR / 'dist'
+WHITENOISE_INDEX_FILE = True
+
+
 
 LOGGING = {
     "version": 1,
