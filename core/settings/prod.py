@@ -14,6 +14,14 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
     'https://*.replit.dev',
 ])
 
+
+# Backend de autenticación personalizado
+AUTHENTICATION_BACKENDS = [
+    'apps.medio_auth.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
