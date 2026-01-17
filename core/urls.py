@@ -15,7 +15,7 @@ from core.views import (
 
 urlpatterns = [
     # Django Admin Panel
-    path('admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls),
 
     path('api/auth/', include('apps.medio_auth.urls')),
     path('api/v1/medico/', include('apps.medico.urls')),
