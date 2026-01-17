@@ -26,7 +26,14 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+# Servir el frontend de Vite compilado
+STATICFILES_DIRS = [
+    BASE_DIR / 'dist',  # Frontend compilado por Vite
+    BASE_DIR / 'static',
+]
 
+# Template para servir el index.html del frontend
+TEMPLATES[0]['DIRS'] = [BASE_DIR / 'dist']
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

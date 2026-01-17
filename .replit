@@ -4,6 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["nano", "psmisc"]
 
 [workflows]
 runButton = "Project"
@@ -35,9 +36,10 @@ externalPort = 80
 
 [[ports]]
 localPort = 8000
-externalPort = 8000
+externalPort = 3001
 
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "gunicorn --bind 0.0.0.0:5000 --reuse-port core.wsgi:application"]
-build = ["bash", "-c", "npm run build && DJANGO_SETTINGS_MODULE=core.settings.prod python manage.py collectstatic --noinput"]
+build = ["bash", "build.sh"]
+

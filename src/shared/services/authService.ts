@@ -3,7 +3,7 @@
 import { parseAuthError, NetworkError, TokenRefreshError } from './authErrors';
 import { googleCalendarService } from '@/services/googleCalendarService';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 const AUTH_ENDPOINTS = {
   register: `${API_URL}/api/auth/register/`,
   login: `${API_URL}/api/auth/login/`,
