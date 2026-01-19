@@ -1,18 +1,22 @@
+import dj_database_url
+import os
+
 from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[
-    'localhost',
-    '127.0.0.1',
-    '.replit.app',
-    '.replit.dev',
-])
+ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
+CSRF_TRUSTED_ORIGINS = [
     'https://*.replit.app',
     'https://*.replit.dev',
-])
+]
+
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
+
 
 
 # Backend de autenticación personalizado
