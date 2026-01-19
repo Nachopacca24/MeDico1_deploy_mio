@@ -39,17 +39,9 @@ class ClientViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-created_at')
     
     def perform_create(self, serializer):
-        try:
-            print(f"DATOS RECIBIDOS EN SERIALIZER: {serializer.validated_data}")
-            serializer.save(created_by=self.request.user)
-        except Exception as e:
-            print(f"ERROR en perform_create: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            raise
+        serializer.save(created_by=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        print(f"DATOS RECIBIDOS EN REQUEST: {request.data}")
         return super().create(request, *args, **kwargs)
     
     @action(detail=False, methods=['get'])
@@ -122,17 +114,9 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-priority', '-created_at')
     
     def perform_create(self, serializer):
-        try:
-            print(f"DATOS RECIBIDOS EN SERIALIZER: {serializer.validated_data}")
-            serializer.save(created_by=self.request.user)
-        except Exception as e:
-            print(f"ERROR en perform_create: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            raise
+        serializer.save(created_by=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        print(f"DATOS RECIBIDOS EN REQUEST: {request.data}")
         return super().create(request, *args, **kwargs)
     
     @action(detail=True, methods=['post'])
