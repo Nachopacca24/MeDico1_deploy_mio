@@ -137,22 +137,41 @@ export function AdvertisementFormDialog({
         status: formData.status,
       };
 
+      console.log('🚀 Preparando datos para envío:', submitData);
+
       if (formData.image) {
         submitData.image = formData.image;
       }
 
       if (mode === 'edit' && advertisement) {
+        console.log('📝 Actualizando publicidad ID:', advertisement.id);
         await advertisementService.updateAdvertisement(advertisement.id, submitData);
       } else if (mode === 'create') {
-        submitData.image = formData.image!;
+        if (!formData.image) throw new Error('Imagen requerida');
+        submitData.image = formData.image;
+        console.log('✨ Creando nueva publicidad');
         await advertisementService.createAdvertisement(submitData);
       }
       
+      console.log('✅ Éxito');
       onSuccess();
       onClose();
     } catch (err: any) {
-      console.error('Error saving advertisement:', err);
-      setError(err.message || 'Error al guardar el anuncio');
+      console.error('❌ Error saving advertisement:', err);
+      // Extraer mensaje detallado si es un error del servidor
+      let errorMessage = 'Error al guardar el anuncio';
+      if (err.message) {
+        try {
+          // Intentar parsear el error si viene como JSON string del service
+          const parsed = JSON.parse(err.message);
+          errorMessage = Object.entries(parsed)
+            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+            .join(' | ');
+        } catch {
+          errorMessage = err.message;
+        }
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
