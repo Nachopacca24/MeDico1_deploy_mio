@@ -88,7 +88,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                         "Debe ser una URL pública externa."
                     )
             
-            blocked_paths = ['/admin', '/api/admin', '/dashboard/admin']
+            blocked_paths = []
             path_lower = parsed.path.lower()
             for blocked_path in blocked_paths:
                 if path_lower.startswith(blocked_path):

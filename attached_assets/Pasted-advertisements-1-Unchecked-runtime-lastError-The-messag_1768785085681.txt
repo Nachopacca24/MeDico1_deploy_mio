@@ -1,0 +1,69 @@
+advertisements:1 Unchecked runtime.lastError: The message port closed before a response was received.
+advertisements:1 Notifications permission has been blocked as the user has ignored the permission prompt several times. This can be reset in Page Info which can be accessed by clicking the tune icon next to the URL. See https://www.chromestatus.com/feature/6443143280984064 for more information.
+index-BGTL0cLV.js:27  POST https://me-dico-1--josepaccagnella.replit.app/api/v1/advertising/advertisements/ 400 (Bad Request)
+authenticatedFetch @ index-BGTL0cLV.js:27
+createAdvertisement @ index-BGTL0cLV.js:34
+g @ index-BGTL0cLV.js:34
+et @ index-BGTL0cLV.js:5
+ot @ index-BGTL0cLV.js:5
+st @ index-BGTL0cLV.js:5
+_i @ index-BGTL0cLV.js:5
+vi @ index-BGTL0cLV.js:5
+(anonymous) @ index-BGTL0cLV.js:5
+Gl @ index-BGTL0cLV.js:8
+Xe @ index-BGTL0cLV.js:5
+wi @ index-BGTL0cLV.js:5
+_n @ index-BGTL0cLV.js:5
+hn @ index-BGTL0cLV.js:5
+index-BGTL0cLV.js:34 Error detallado del servidor: {redirect_url: Array(1)}
+handleResponse @ index-BGTL0cLV.js:34
+await in handleResponse
+createAdvertisement @ index-BGTL0cLV.js:34
+await in createAdvertisement
+g @ index-BGTL0cLV.js:34
+et @ index-BGTL0cLV.js:5
+ot @ index-BGTL0cLV.js:5
+st @ index-BGTL0cLV.js:5
+_i @ index-BGTL0cLV.js:5
+vi @ index-BGTL0cLV.js:5
+(anonymous) @ index-BGTL0cLV.js:5
+Gl @ index-BGTL0cLV.js:8
+Xe @ index-BGTL0cLV.js:5
+wi @ index-BGTL0cLV.js:5
+_n @ index-BGTL0cLV.js:5
+hn @ index-BGTL0cLV.js:5
+index-BGTL0cLV.js:34 Error en createAdvertisement: Error: {"redirect_url":["No se permiten URLs a rutas administrativas."]}
+    at Bp.handleResponse (index-BGTL0cLV.js:34:22736)
+    at async Bp.createAdvertisement (index-BGTL0cLV.js:34:24254)
+    at async g (index-BGTL0cLV.js:34:28097)
+createAdvertisement @ index-BGTL0cLV.js:34
+await in createAdvertisement
+g @ index-BGTL0cLV.js:34
+et @ index-BGTL0cLV.js:5
+ot @ index-BGTL0cLV.js:5
+st @ index-BGTL0cLV.js:5
+_i @ index-BGTL0cLV.js:5
+vi @ index-BGTL0cLV.js:5
+(anonymous) @ index-BGTL0cLV.js:5
+Gl @ index-BGTL0cLV.js:8
+Xe @ index-BGTL0cLV.js:5
+wi @ index-BGTL0cLV.js:5
+_n @ index-BGTL0cLV.js:5
+hn @ index-BGTL0cLV.js:5
+index-BGTL0cLV.js:34 Error saving advertisement: Error: {"redirect_url":["No se permiten URLs a rutas administrativas."]}
+    at Bp.handleResponse (index-BGTL0cLV.js:34:22736)
+    at async Bp.createAdvertisement (index-BGTL0cLV.js:34:24254)
+    at async g (index-BGTL0cLV.js:34:28097)
+g @ index-BGTL0cLV.js:34
+await in g
+et @ index-BGTL0cLV.js:5
+ot @ index-BGTL0cLV.js:5
+st @ index-BGTL0cLV.js:5
+_i @ index-BGTL0cLV.js:5
+vi @ index-BGTL0cLV.js:5
+(anonymous) @ index-BGTL0cLV.js:5
+Gl @ index-BGTL0cLV.js:8
+Xe @ index-BGTL0cLV.js:5
+wi @ index-BGTL0cLV.js:5
+_n @ index-BGTL0cLV.js:5
+hn @ index-BGTL0cLV.js:5
