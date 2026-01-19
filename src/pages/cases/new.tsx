@@ -475,21 +475,27 @@ const NewCase = () => {
                     <SelectTrigger id="hospital" className="h-11">
                       <SelectValue placeholder="Selecciona un hospital" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
-                      {hospitals.map((hospital) => (
-                        <SelectItem key={hospital.id} value={hospital.id.toString()}>
-                          <div className="flex items-center gap-2">
-                            {hospital.is_favorite && (
-                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            )}
-                            <Building2 className="h-4 w-4" />
-                            <span className="font-medium">{hospital.name}</span>
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({hospital.rate_multiplier}x)
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                    <SelectContent position="popper" sideOffset={5} className="w-[var(--radix-select-trigger-width)] max-h-[300px]">
+                      {hospitals.length > 0 ? (
+                        hospitals.map((hospital) => (
+                          <SelectItem key={hospital.id} value={hospital.id.toString()}>
+                            <div className="flex items-center gap-2">
+                              {hospital.is_favorite && (
+                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                              )}
+                              <Building2 className="h-4 w-4" />
+                              <span className="font-medium">{hospital.name}</span>
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({hospital.rate_multiplier}x)
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-sm text-center text-muted-foreground">
+                          No hay hospitales disponibles
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
