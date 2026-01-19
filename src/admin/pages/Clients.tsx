@@ -37,14 +37,19 @@ const Clients = () => {
   const fetchClients = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Iniciando fetchClients con filtros:', { statusFilter, planFilter, search });
       const data = await clientService.getClients({
         status: statusFilter || undefined,
         plan: planFilter || undefined,
         search: search || undefined,
       });
+      console.log('✅ Clientes recibidos:', data);
+      if (!Array.isArray(data)) {
+        console.error('❌ Los datos recibidos no son un array:', data);
+      }
       setClients(data);
     } catch (err: any) {
-      console.error('Error loading clients:', err);
+      console.error('❌ Error loading clients:', err);
       setError(err.message || 'Error al cargar clientes');
     } finally {
       setLoading(false);

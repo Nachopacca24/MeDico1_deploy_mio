@@ -82,7 +82,9 @@ class ClientService {
       if (params?.search) queryParams.append('search', params.search);
 
       const url = `${API_URL}/api/v1/advertising/clients/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      console.log('🌐 Fetching from URL:', url);
       const response = await authService.authenticatedFetch(url);
+      console.log('📡 Response status:', response.status);
       return await this.handleResponse(response);
     } catch (error) {
       console.error('Error en getClients:', error);
