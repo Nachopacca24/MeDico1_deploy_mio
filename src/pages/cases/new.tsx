@@ -367,64 +367,69 @@ const NewCase = () => {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-5xl space-y-6 pb-12">
-        <div className="pb-4 border-b">
-          <h1 className="text-3xl font-semibold mb-1 tracking-tight">Nuevo Caso Quirúrgico</h1>
-          <p className="text-muted-foreground">Crear un nuevo registro de caso quirúrgico</p>
+      <div className="mx-auto max-w-5xl space-y-8 pb-12 pt-4 px-4">
+        <div className="pb-6 border-b">
+          <h1 className="text-3xl font-bold mb-2 tracking-tight">Nuevo Caso Quirúrgico</h1>
+          <p className="text-muted-foreground text-lg">Ingresa los detalles del procedimiento quirúrgico</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-10">
           {/* Patient Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <User className="h-5 w-5" />
+                </div>
                 Información del Paciente
               </CardTitle>
-              <CardDescription>Ingresa los datos del paciente</CardDescription>
+              <CardDescription className="pl-12">Ingresa los datos demográficos del paciente</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="patientName">
-                    Nombre del Paciente <span className="text-destructive">*</span>
+                  <Label htmlFor="patientName" className="text-sm font-semibold">
+                    Nombre Completo <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="patientName"
                     value={patientName}
                     onChange={(e) => setPatientName(e.target.value)}
-                    placeholder="Ingresa el nombre del paciente"
+                    placeholder="Ej: Juan Pérez"
+                    className="h-11"
                     required
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="patientId">ID del Paciente</Label>
+                  <Label htmlFor="patientId" className="text-sm font-semibold">ID / No. Expediente</Label>
                   <Input
                     id="patientId"
                     value={patientId}
                     onChange={(e) => setPatientId(e.target.value)}
-                    placeholder="Ingresa el ID del paciente"
+                    placeholder="Ej: 12345-6"
+                    className="h-11"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="patientAge">Edad</Label>
+                  <Label htmlFor="patientAge" className="text-sm font-semibold">Edad (años)</Label>
                   <Input
                     id="patientAge"
                     type="number"
                     value={patientAge}
                     onChange={(e) => setPatientAge(e.target.value)}
-                    placeholder="Ingresa la edad"
+                    placeholder="Ej: 45"
+                    className="h-11"
                     min="0"
                     max="150"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="patientGender">Género</Label>
+                  <Label htmlFor="patientGender" className="text-sm font-semibold">Género</Label>
                   <Select value={patientGender} onValueChange={(value) => setPatientGender(value as PatientGender)}>
-                    <SelectTrigger id="patientGender">
+                    <SelectTrigger id="patientGender" className="h-11">
                       <SelectValue placeholder="Selecciona el género" />
                     </SelectTrigger>
                     <SelectContent>
@@ -437,34 +442,37 @@ const NewCase = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="diagnosis">Diagnóstico</Label>
+                <Label htmlFor="diagnosis" className="text-sm font-semibold">Diagnóstico Principal</Label>
                 <Input
                   id="diagnosis"
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
-                  placeholder="Ingresa el diagnóstico"
+                  placeholder="Ej: Colecistitis crónica calculosa"
+                  className="h-11"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Surgery Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <Calendar className="h-5 w-5" />
+                </div>
                 Detalles de la Cirugía
               </CardTitle>
-              <CardDescription>Información de programación y ubicación</CardDescription>
+              <CardDescription className="pl-12">Lugar y programación del evento</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="hospital">
-                    Hospital <span className="text-destructive">*</span>
+                  <Label htmlFor="hospital" className="text-sm font-semibold">
+                    Hospital / Centro Médico <span className="text-destructive">*</span>
                   </Label>
                   <Select value={hospitalId} onValueChange={setHospitalId} required>
-                    <SelectTrigger id="hospital">
+                    <SelectTrigger id="hospital" className="h-11">
                       <SelectValue placeholder="Selecciona un hospital" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
@@ -475,9 +483,9 @@ const NewCase = () => {
                               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                             )}
                             <Building2 className="h-4 w-4" />
-                            <span className="flex-1">{hospital.name}</span>
-                            <span className="text-xs text-muted-foreground ml-2">
-                              {hospital.rate_multiplier}x
+                            <span className="font-medium">{hospital.name}</span>
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({hospital.rate_multiplier}x)
                             </span>
                           </div>
                         </SelectItem>
@@ -487,37 +495,40 @@ const NewCase = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="surgeryDate">
-                    Fecha de Cirugía <span className="text-destructive">*</span>
+                  <Label htmlFor="surgeryDate" className="text-sm font-semibold">
+                    Fecha de Intervención <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="surgeryDate"
                     type="date"
                     value={surgeryDate}
                     onChange={(e) => setSurgeryDate(e.target.value)}
+                    className="h-11"
                     required
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="surgeryTime">Hora de Cirugía</Label>
+                  <Label htmlFor="surgeryTime" className="text-sm font-semibold">Hora de Inicio</Label>
                   <Input
                     id="surgeryTime"
                     type="time"
                     value={surgeryTime}
                     onChange={(e) => setSurgeryTime(e.target.value)}
+                    className="h-11"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="surgeryEndTime">Hora de Fin (estimada)</Label>
-                <Input
-                  id="surgeryEndTime"
-                  type="time"
-                  value={surgeryEndTime}
-                  onChange={(e) => setSurgeryEndTime(e.target.value)}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="surgeryEndTime" className="text-sm font-semibold">Hora de Finalización (estimada)</Label>
+                  <Input
+                    id="surgeryEndTime"
+                    type="time"
+                    value={surgeryEndTime}
+                    onChange={(e) => setSurgeryEndTime(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
