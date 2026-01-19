@@ -67,7 +67,12 @@ class ClientService {
       throw new Error(error.detail || error.message || `Error HTTP: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    // Manejar respuesta paginada de Django REST Framework
+    if (data && data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    return data;
   }
 
   async getClients(params?: {
