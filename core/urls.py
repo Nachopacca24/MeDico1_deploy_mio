@@ -40,6 +40,12 @@ urlpatterns = [
 re_path(r'^(?!api/|django-admin/|media/|static/).*$', IndexView.as_view(), name='index'),
 ]
 
+# Servir archivos media en producción (solo si no hay un servidor como Nginx)
+from django.views.static import serve
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
