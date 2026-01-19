@@ -71,7 +71,8 @@ class AdvertisementService {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || error.message || `Error HTTP: ${response.status}`);
+      console.error('Error detallado del servidor:', error);
+      throw new Error(error.detail || error.message || JSON.stringify(error) || `Error HTTP: ${response.status}`);
     }
 
     const data = await response.json();
