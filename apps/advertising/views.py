@@ -3,10 +3,12 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Q
+from datetime import timedelta
+
 from .models import Client, Advertisement
 from .serializers import (
     ClientSerializer, 
@@ -20,7 +22,7 @@ class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
-    
+
     def get_queryset(self):
         queryset = Client.objects.all()
         status_filter = self.request.query_params.get('status', None)
@@ -37,13 +39,10 @@ class ClientViewSet(viewsets.ModelViewSet):
                 Q(email__icontains=search)
             )
         return queryset.order_by('-created_at')
-    
+
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-    
     @action(detail=False, methods=['get'])
     def active(self, request):
         today = timezone.now().date()
@@ -54,11 +53,10 @@ class ClientViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(active_clients, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['get'])
     def expiring_soon(self, request):
         today = timezone.now().date()
-        from datetime import timedelta
         expiring_date = today + timedelta(days=30)
         expiring_clients = Client.objects.filter(
             status='active',
@@ -67,7 +65,7 @@ class ClientViewSet(viewsets.ModelViewSet):
         ).order_by('end_date')
         serializer = self.get_serializer(expiring_clients, many=True)
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['get'])
     def stats(self, request):
         total = Client.objects.count()
@@ -83,21 +81,17 @@ class ClientViewSet(viewsets.ModelViewSet):
             'clients_by_plan': by_plan,
         })
 
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 class AdvertisementViewSet(viewsets.ModelViewSet):
     queryset = Advertisement.objects.all()
     permission_classes = [IsAuthenticated, IsAdminUser]
-    parser_classes = [MultiPartParser, FormParser]
-    parser_classes = [MultiPartParser, FormParser, JSONParser] 
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-
-    
     def get_serializer_class(self):
         if self.action == 'list':
             return AdvertisementListSerializer
         return AdvertisementSerializer
-    
+
     def get_queryset(self):
         queryset = Advertisement.objects.select_related('client')
         client_id = self.request.query_params.get('client', None)
@@ -116,25 +110,22 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
                 Q(client__company_name__icontains=search)
             )
         return queryset.order_by('-priority', '-created_at')
-    
+
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-    
     @action(detail=True, methods=['post'])
     def increment_impression(self, request, pk=None):
         ad = self.get_object()
         ad.increment_impressions()
         return Response({'impressions': ad.impressions})
-    
+
     @action(detail=True, methods=['post'])
     def increment_click(self, request, pk=None):
         ad = self.get_object()
         ad.increment_clicks()
         return Response({'clicks': ad.clicks})
-    
+
     @action(detail=False, methods=['get'])
     def stats(self, request):
         total = Advertisement.objects.count()
@@ -155,7 +146,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
 def get_active_ads(request):
     """
     Endpoint público para obtener anuncios activos.
-    
+
     Filtros por placement:
     - home_banner: Solo clientes GOLD
     - sidebar: Clientes GOLD y SILVER
@@ -165,7 +156,7 @@ def get_active_ads(request):
     """
     placement = request.query_params.get('placement', 'home_banner')
     today = timezone.now().date()
-    
+
     # Determinar qué planes son elegibles según el placement
     if placement in ['home_banner', 'popup']:
         # Solo Gold para ubicaciones premium
@@ -173,7 +164,7 @@ def get_active_ads(request):
     else:
         # Gold y Silver para otras ubicaciones
         allowed_plans = ['gold', 'silver']
-    
+
     ads = Advertisement.objects.filter(
         status='active',
         placement=placement,
@@ -182,7 +173,7 @@ def get_active_ads(request):
         client__plan__in=allowed_plans,
         client__status='active'
     ).select_related('client').order_by('-priority')[:5]
-    
+
     serializer = ActiveAdvertisementSerializer(ads, many=True, context={'request': request})
     return Response(serializer.data)
 
