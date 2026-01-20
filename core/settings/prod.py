@@ -1,10 +1,9 @@
+# core/settings/prod.py
 import dj_database_url
 import os
-
 from .base import *
 
 DEBUG = False
-
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
@@ -17,14 +16,11 @@ if os.environ.get('DATABASE_URL'):
         'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
 
-
-
 # Backend de autenticación personalizado
 AUTHENTICATION_BACKENDS = [
     'apps.medio_auth.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-
 
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
@@ -38,7 +34,6 @@ SECURE_HSTS_PRELOAD = True
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-
 # Servir el frontend de Vite compilado
 STATICFILES_DIRS = [
     BASE_DIR / 'dist',
@@ -50,13 +45,18 @@ TEMPLATES[0]['DIRS'] = [BASE_DIR / 'dist']
 
 # WhiteNoise para servir archivos estáticos
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
 WHITENOISE_ROOT = os.path.join(BASE_DIR, 'dist')
 WHITENOISE_INDEX_FILE = True
 WHITENOISE_MANIFEST_STRICT = False
 
-# Servir archivos media en producción - Servido directamente por Django
-# No configuramos WHITENOISE para media para evitar conflictos de MIME type
-DEBUG_PROPAGATE_EXCEPTIONS = True
+# ============================================
+# CLOUDINARY - Ya está configurado en base.py
+# NO necesitamos servir media files con WhiteNoise
+# Cloudinary maneja TODO automáticamente
+# ============================================
+
+DEBUG_PROPAGATE_EXCEPTION = True
 
 # LOGGING DETALLADO PARA DEPURACIÓN
 LOGGING = {

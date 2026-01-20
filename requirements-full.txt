@@ -37,6 +37,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 whitenoise==6.11.0
 
+
 # Solo para desarrollo (no instalar en producción)
 black==25.9.0
 django-debug-toolbar==6.1.0

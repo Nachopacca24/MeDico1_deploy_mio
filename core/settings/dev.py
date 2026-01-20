@@ -1,11 +1,10 @@
+# core/settings/dev.py
 from .base import *
 import os
 import dj_database_url
 
 DEBUG = True
-
 ALLOWED_HOSTS = ['*']
-
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
@@ -64,6 +63,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',  # ← IMPORTANTE para subir archivos
+        'rest_framework.parsers.FormParser',        # ← IMPORTANTE para subir archivos
     ],
 }
 
@@ -78,20 +79,21 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': False,
-
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,
     'AUDIENCE': None,
     'ISSUER': None,
-
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
-
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
-
     'JTI_CLAIM': 'jti',
 }
+
+# ============================================
+# CLOUDINARY - Ya está configurado en base.py
+# Las credenciales vienen de las variables de entorno
+# ============================================

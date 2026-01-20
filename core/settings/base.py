@@ -4,6 +4,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 import environ
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 
 load_dotenv()
@@ -39,6 +42,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'django_filters',
+
+    # Cloudinary - DEBE IR ANTES de staticfiles
+    'cloudinary_storage',
+    'cloudinary',
 
     # Local Apps
     'apps.medico.apps.MedicoConfig',
@@ -119,16 +126,38 @@ USE_I18N = True
 USE_TZ = True
 
 
+# ============================================
+# ARCHIVOS ESTÁTICOS (CSS, JavaScript, Images)
+# ============================================
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# ============================================
+# CLOUDINARY CONFIGURATION
+# ============================================
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
 
-# Crear el directorio media si no existe
-if not os.path.exists(MEDIA_ROOT):
-    os.makedirs(MEDIA_ROOT)
+cloudinary.config(
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+    secure=True
+)
+
+# USAR CLOUDINARY PARA ARCHIVOS MEDIA
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# MEDIA_URL - Cloudinary manejará las URLs automáticamente
+MEDIA_URL = '/media/'
+
+# ============================================
+# FIN CLOUDINARY CONFIGURATION
+# ============================================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -242,5 +271,3 @@ CSRF_TRUSTED_ORIGINS = [
 # En producción, idealmente poner True
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
-
-
