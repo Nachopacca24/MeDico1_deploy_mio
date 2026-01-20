@@ -41,8 +41,21 @@ urlpatterns = [
 
 # Servir archivos media
 from django.views.static import serve
+from django.http import HttpResponse
+import os
+from django.conf import settings
+
+def debug_serve(request, path, document_root=None, **kwargs):
+    full_path = os.path.join(document_root, path)
+    if not os.path.exists(full_path):
+        return HttpResponse(f"Archivo no encontrado en: {full_path}", status=404)
+    try:
+        return serve(request, path, document_root=document_root, **kwargs)
+    except Exception as e:
+        return HttpResponse(f"Error al servir archivo: {str(e)}", status=500)
+
 urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT, 'insecure': True}),
+    re_path(r'^media/(?P<path>.*)$', debug_serve, {'document_root': settings.MEDIA_ROOT, 'insecure': True}),
 ]
 
 if settings.DEBUG:

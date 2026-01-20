@@ -58,11 +58,7 @@ WHITENOISE_MANIFEST_STRICT = False
 # No configuramos WHITENOISE para media para evitar conflictos de MIME type
 DEBUG_PROPAGATE_EXCEPTIONS = True
 
-# Forzar a Django a permitir servir media incluso si DEBUG=False mediante vista estática
-# La ruta en urls.py usa 'insecure': True para esto.
-
-
-
+# LOGGING DETALLADO PARA DEPURACIÓN
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -74,20 +70,20 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",  # ← Cambiar de ERROR a DEBUG
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
     "root": {
         "handlers": ["console"],
-        "level": "DEBUG",  # ← Cambiar de ERROR a DEBUG
+        "level": "DEBUG",
     },
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
+            "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
