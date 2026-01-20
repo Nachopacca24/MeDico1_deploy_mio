@@ -54,8 +54,12 @@ WHITENOISE_ROOT = os.path.join(BASE_DIR, 'dist')
 WHITENOISE_INDEX_FILE = True
 WHITENOISE_MANIFEST_STRICT = False
 
-# Servir archivos media en producción
+# Servir archivos media en producción - Servido directamente por Django
+# No configuramos WHITENOISE para media para evitar conflictos de MIME type
 DEBUG_PROPAGATE_EXCEPTIONS = True
+
+# Forzar a Django a permitir servir media incluso si DEBUG=False mediante vista estática
+# La ruta en urls.py usa 'insecure': True para esto.
 
 
 
