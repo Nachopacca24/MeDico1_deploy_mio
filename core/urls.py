@@ -39,27 +39,10 @@ urlpatterns = [
     re_path(r'^(?!api/|django-admin/|media/|static/).*$', IndexView.as_view(), name='index'),
 ]
 
-# Servir archivos media
-from django.views.static import serve
-from django.http import HttpResponse
-import os
-from django.conf import settings
-
-def debug_serve(request, path, document_root=None, **kwargs):
-    full_path = os.path.join(document_root, path)
-    if not os.path.exists(full_path):
-        return HttpResponse(f"Archivo no encontrado en: {full_path}", status=404)
-    try:
-        return serve(request, path, document_root=document_root, **kwargs)
-    except Exception as e:
-        return HttpResponse(f"Error al servir archivo: {str(e)}", status=500)
-
-urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', debug_serve, {'document_root': settings.MEDIA_ROOT, 'insecure': True}),
-]
+# Servir archivos media (siempre en Replit)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 admin.site.site_header = "MéDico1 Administration"
