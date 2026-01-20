@@ -10,7 +10,7 @@ from core.views import (
     admin_users,
     admin_hospitals,
     admin_procedures,
-    delete_user  # ← AGREGADO
+    delete_user
 )
 
 urlpatterns = [
@@ -28,7 +28,7 @@ urlpatterns = [
     path('api/admin/stats/', admin_stats, name='admin_stats'),
     path('api/admin/activity/', admin_activity, name='admin_activity'),
     path('api/admin/users/', admin_users, name='admin_users'),
-    path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'),  # ← AGREGADO
+    path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'),
     path('api/admin/hospitals/', admin_hospitals, name='admin_hospitals'),
     path('api/admin/procedures/', admin_procedures, name='admin_procedures'),
     
@@ -36,7 +36,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     
     # Catch-all para React - DEBE IR AL FINAL
-re_path(r'^(?!api/|django-admin/|media/|static/).*$', IndexView.as_view(), name='index'),
+    re_path(r'^(?!api/|django-admin/|media/|static/).*$', IndexView.as_view(), name='index'),
 ]
 
 # Servir archivos media
@@ -48,10 +48,6 @@ urlpatterns += [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-    urlpatterns += [
-        re_path(r'^.*$', IndexView.as_view(), name='index'),
-    ]
 
 admin.site.site_header = "MéDico1 Administration"
 admin.site.site_title = "MéDico1 Admin Portal"

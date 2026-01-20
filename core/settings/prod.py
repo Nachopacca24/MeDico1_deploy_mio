@@ -50,7 +50,7 @@ TEMPLATES[0]['DIRS'] = [BASE_DIR / 'dist']
 
 # WhiteNoise para servir archivos estáticos
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-# WHITENOISE_ROOT = BASE_DIR / 'dist'  # Eliminado para evitar conflictos con media
+WHITENOISE_ROOT = BASE_DIR / 'dist'
 WHITENOISE_INDEX_FILE = True
 WHITENOISE_MANIFEST_STRICT = False
 
