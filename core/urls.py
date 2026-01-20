@@ -36,14 +36,13 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     
     # Catch-all para React - DEBE IR AL FINAL
-    # Catch-all para React - DEBE IR AL FINAL
 re_path(r'^(?!api/|django-admin/|media/|static/).*$', IndexView.as_view(), name='index'),
 ]
 
-# Servir archivos media en producción (solo si no hay un servidor como Nginx)
+# Servir archivos media
 from django.views.static import serve
 urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT, 'insecure': True}),
 ]
 
 if settings.DEBUG:
