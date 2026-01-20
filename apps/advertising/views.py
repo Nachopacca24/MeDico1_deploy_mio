@@ -112,6 +112,12 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-priority', '-created_at')
 
     def perform_create(self, serializer):
+        print("=" * 80)
+        print("REQUEST DATA:", self.request.data)
+        print("REQUEST FILES:", self.request.FILES)
+        print("IMAGE en data:", self.request.data.get('image'))
+        print("IMAGE en FILES:", self.request.FILES.get('image'))
+        print("=" * 80)
         serializer.save(created_by=self.request.user)
 
     @action(detail=True, methods=['post'])
