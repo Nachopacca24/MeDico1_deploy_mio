@@ -83,11 +83,15 @@ class ClientViewSet(viewsets.ModelViewSet):
             'clients_by_plan': by_plan,
         })
 
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 class AdvertisementViewSet(viewsets.ModelViewSet):
     queryset = Advertisement.objects.all()
     permission_classes = [IsAuthenticated, IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser] 
+
+
     
     def get_serializer_class(self):
         if self.action == 'list':
