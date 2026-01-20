@@ -5,6 +5,8 @@ from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from decimal import Decimal
 import os
+from cloudinary.models import CloudinaryField
+import cloudinary.uploader
 
 
 class Client(models.Model):
@@ -196,9 +198,9 @@ class Advertisement(models.Model):
     )
     
     # Imagen/Media
-    image = models.ImageField(
-        upload_to='advertisements/%Y/%m/',
-        verbose_name="Imagen/GIF",
+    image = CloudinaryField(
+        'image',
+        folder='advertisements',
         help_text="Imagen o GIF del anuncio"
     )
     image_alt_text = models.CharField(
@@ -329,24 +331,21 @@ class Advertisement(models.Model):
 @receiver(post_delete, sender=Advertisement)
 def delete_advertisement_image_on_delete(sender, instance, **kwargs):
     """
-    Elimina el archivo de imagen del sistema cuando se elimina un Advertisement.
-    Se ejecuta DESPUÉS de eliminar el registro de la base de datos.
+    Elimina la imagen de Cloudinary cuando se elimina un Advertisement.
     """
     if instance.image:
         try:
-            if os.path.isfile(instance.image.path):
-                os.remove(instance.image.path)
-                print(f"✓ Imagen eliminada: {instance.image.path}")
+            public_id = instance.image.public_id
+            cloudinary.uploader.destroy(public_id)
+            print(f"✓ Imagen de Cloudinary eliminada: {public_id}")
         except Exception as e:
-            print(f"✗ Error al eliminar imagen: {e}")
+            print(f"✗ Error al eliminar imagen de Cloudinary: {e}")
 
 
 @receiver(pre_save, sender=Advertisement)
 def delete_old_image_on_update(sender, instance, **kwargs):
     """
-    Elimina la imagen ANTIGUA cuando se sube una NUEVA al editar.
-    Se ejecuta ANTES de guardar el nuevo registro.
-    Evita acumulación de imágenes obsoletas.
+    Elimina la imagen antigua de Cloudinary cuando se sube una nueva.
     """
     if not instance.pk:
         return
@@ -355,12 +354,12 @@ def delete_old_image_on_update(sender, instance, **kwargs):
         old_instance = Advertisement.objects.get(pk=instance.pk)
         
         if old_instance.image and old_instance.image != instance.image:
-            if os.path.isfile(old_instance.image.path):
-                try:
-                    os.remove(old_instance.image.path)
-                    print(f"✓ Imagen antigua eliminada: {old_instance.image.path}")
-                except Exception as e:
-                    print(f"✗ Error al eliminar imagen antigua: {e}")
+            try:
+                public_id = old_instance.image.public_id
+                cloudinary.uploader.destroy(public_id)
+                print(f"✓ Imagen antigua de Cloudinary eliminada: {public_id}")
+            except Exception as e:
+                print(f"✗ Error al eliminar imagen antigua de Cloudinary: {e}")
     except Advertisement.DoesNotExist:
         pass
     except Exception as e:
