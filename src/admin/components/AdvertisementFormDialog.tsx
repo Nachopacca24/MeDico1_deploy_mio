@@ -27,7 +27,7 @@ export function AdvertisementFormDialog({
   const [error, setError] = useState<string | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     client: '',
     campaign_name: '',
@@ -85,7 +85,7 @@ export function AdvertisementFormDialog({
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1);
         const endDateStr = endDate.toISOString().split('T')[0];
-        
+
         setFormData({
           client: '',
           campaign_name: '',
@@ -109,9 +109,9 @@ export function AdvertisementFormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (isReadOnly) return;
-    
+
     setError(null);
 
     if (mode === 'create' && !formData.image) {
@@ -122,33 +122,49 @@ export function AdvertisementFormDialog({
     setLoading(true);
 
     try {
-      const submitData: any = {
-        client: parseInt(formData.client),
-        campaign_name: formData.campaign_name,
-        title: formData.title,
-        description: formData.description,
-        image_alt_text: formData.image_alt_text,
-        redirect_url: formData.redirect_url,
-        open_in_new_tab: formData.open_in_new_tab,
-        placement: formData.placement,
-        priority: formData.priority,
-        start_date: formData.start_date,
-        end_date: formData.end_date,
-        status: formData.status,
-      };
-
-      if (formData.image) {
-        submitData.image = formData.image;
-      }
-
       if (mode === 'edit' && advertisement) {
+        const submitData: any = {
+          client: parseInt(formData.client),
+          campaign_name: formData.campaign_name,
+          title: formData.title,
+          description: formData.description,
+          image_alt_text: formData.image_alt_text,
+          redirect_url: formData.redirect_url,
+          open_in_new_tab: formData.open_in_new_tab,
+          placement: formData.placement,
+          priority: formData.priority,
+          start_date: formData.start_date,
+          end_date: formData.end_date,
+          status: formData.status,
+        };
+
+        if (formData.image) {
+          submitData.image = formData.image;
+        }
+
         await advertisementService.updateAdvertisement(advertisement.id, submitData);
       } else if (mode === 'create') {
         if (!formData.image) throw new Error('Imagen requerida');
-        submitData.image = formData.image;
+
+        const submitData: any = {
+          client: parseInt(formData.client),
+          campaign_name: formData.campaign_name,
+          title: formData.title,
+          description: formData.description,
+          image: formData.image,  // ← Incluir directamente aquí
+          image_alt_text: formData.image_alt_text,
+          redirect_url: formData.redirect_url,
+          open_in_new_tab: formData.open_in_new_tab,
+          placement: formData.placement,
+          priority: formData.priority,
+          start_date: formData.start_date,
+          end_date: formData.end_date,
+          status: formData.status,
+        };
+
         await advertisementService.createAdvertisement(submitData);
       }
-      
+
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -161,9 +177,9 @@ export function AdvertisementFormDialog({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     if (isReadOnly) return;
-    
+
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -176,7 +192,7 @@ export function AdvertisementFormDialog({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isReadOnly) return;
-    
+
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
@@ -190,7 +206,7 @@ export function AdvertisementFormDialog({
       }
 
       setFormData(prev => ({ ...prev, image: file }));
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -263,13 +279,13 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg border-b pb-2">Información Básica</h3>
-                
+
                 <div className="grid gap-3">
                   <div>
                     <label className="text-sm text-muted-foreground">Cliente</label>
                     <p className="font-medium">{advertisement.client_name || 'N/A'}</p>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm text-muted-foreground">Nombre de la Campaña</label>
                     <p className="font-medium">{advertisement.campaign_name || 'N/A'}</p>
@@ -300,7 +316,7 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg border-b pb-2">Configuración</h3>
-                
+
                 <div className="grid gap-3">
                   <div>
                     <label className="text-sm text-muted-foreground">URL de Redirección</label>
@@ -344,7 +360,7 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg border-b pb-2">Periodo de Visualización</h3>
-                
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-sm text-muted-foreground">Fecha de Inicio</label>
@@ -359,7 +375,7 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg border-b pb-2">Métricas</h3>
-                
+
                 <div className="grid grid-cols-3 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
@@ -396,7 +412,7 @@ export function AdvertisementFormDialog({
               {(advertisement.created_by_name || advertisement.created_at || advertisement.updated_at) && (
                 <div className="space-y-3">
                   <h3 className="font-semibold text-lg border-b pb-2">Información del Sistema</h3>
-                  
+
                   <div className="grid gap-3 text-sm">
                     {advertisement.created_by_name && (
                       <div>
@@ -467,7 +483,7 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Información Básica</h3>
-                
+
                 <div>
                   <label className="text-sm font-medium">Cliente *</label>
                   <select
@@ -521,7 +537,7 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Imagen/GIF</h3>
-                
+
                 <div>
                   <label className="text-sm font-medium">
                     Imagen del Anuncio {mode === 'create' && '* (Requerido)'}
@@ -573,7 +589,7 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Configuración</h3>
-                
+
                 <div>
                   <label className="text-sm font-medium">URL de Redirección *</label>
                   <Input
@@ -651,7 +667,7 @@ export function AdvertisementFormDialog({
 
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Periodo de Visualización</h3>
-                
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-medium">Fecha de Inicio *</label>
