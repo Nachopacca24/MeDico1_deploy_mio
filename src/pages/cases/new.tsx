@@ -153,26 +153,33 @@ const NewCase = () => {
         
         const procedures: ProcedureData[] = [];
         
+        // Optimización: Cargar archivos en paralelo
+        const loadPromises: Promise<void>[] = [];
+
         for (const [specialty, subcategories] of Object.entries(folderStructure)) {
           for (const [subName, csvPath] of Object.entries(subcategories)) {
-            try {
-              const csvContent = await loadCSV(csvPath);
-              csvContent.forEach((op: any) => {
-                procedures.push({
-                  codigo: op.codigo || '',
-                  cirugia: op.cirugia || '',
-                  especialidad: specialty,
-                  subespecialidad: subName,
-                  grupo: op.grupo || '',
-                  rvu: parseFloat(op.rvu) || 0
+            const loadPromise = (async () => {
+              try {
+                const csvContent = await loadCSV(csvPath);
+                csvContent.forEach((op: any) => {
+                  procedures.push({
+                    codigo: op.codigo || '',
+                    cirugia: op.cirugia || '',
+                    especialidad: specialty,
+                    subespecialidad: subName,
+                    grupo: op.grupo || '',
+                    rvu: parseFloat(op.rvu) || 0
+                  });
                 });
-              });
-            } catch (err) {
-              console.error(`Error loading CSV ${csvPath}:`, err);
-            }
+              } catch (err) {
+                console.error(`Error loading CSV ${csvPath}:`, err);
+              }
+            })();
+            loadPromises.push(loadPromise);
           }
         }
         
+        await Promise.all(loadPromises);
         setAllProcedures(procedures);
       } catch (error) {
         console.error('Error loading data:', error);
