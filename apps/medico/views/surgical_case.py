@@ -55,6 +55,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 Q(created_by=user) | Q(assistant_doctor=user)
             )
         
+        # Optimizamos con select_related y prefetch_related para evitar el problema N+1
         queryset = queryset.select_related(
             'hospital', 
             'created_by',
@@ -86,7 +87,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 Q(patient_id__icontains=search)
             )
         
-        return queryset
+        # Ordenamiento explícito para aprovechar los índices
+        return queryset.order_by('-surgery_date', '-created_at')
     
     def get_serializer_class(self):
         """Usar diferentes serializers según la acción"""

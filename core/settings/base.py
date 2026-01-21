@@ -159,7 +159,13 @@ MEDIA_URL = '/media/'
 # FIN CLOUDINARY CONFIGURATION
 # ============================================
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# GOOGLE CALENDAR CONFIGURATION
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+# The domain must match what's configured in Google Cloud Console
+# In Replit, this is usually the project domain
+BASE_DOMAIN = os.environ.get('REPLIT_DEV_DOMAIN', 'me-dico-1--josepaccagnella.replit.app')
+GOOGLE_REDIRECT_URI = f"https://{BASE_DOMAIN}/api/auth/google/callback"
 
 
 REST_FRAMEWORK = {

@@ -167,13 +167,13 @@ class SurgicalCase(models.Model):
         indexes = [
             models.Index(fields=['created_by', 'surgery_date']),
             models.Index(fields=['hospital', 'surgery_date']),
-            models.Index(fields=['status']),
-            models.Index(fields=['surgery_date']),
+            models.Index(fields=['status', 'surgery_date']),
             models.Index(fields=['is_operated']),
             models.Index(fields=['is_billed']),
             models.Index(fields=['is_paid']),
-            models.Index(fields=['assistant_doctor']),
+            models.Index(fields=['assistant_doctor', 'assistant_accepted']),
             models.Index(fields=['calendar_event_id']),
+            models.Index(fields=['created_at']),
         ]
     
     def __str__(self):
