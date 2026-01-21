@@ -119,14 +119,33 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Crear un nuevo caso quirúrgico"""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        case = serializer.save(created_by=request.user)
+        # Log incoming data
+        print(f"DEBUG VIEW: Incoming case data: {request.data}")
         
-        # Optimizamos la respuesta para evitar recargas innecesarias
-        # Devolvemos los datos del serializer detallado pero sin disparar lógica extra pesada
-        # El frontend ya tiene lo que necesita para mostrar el caso creado
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            # Pasamos explícitamente el usuario al save
+            case = serializer.save(created_by=request.user)
+            print(f"DEBUG VIEW: Case created successfully: {case.id}")
+            
+            # Devolvemos el ID y un mensaje de éxito rápido
+            return Response({
+                'id': case.id,
+                'status': 'success',
+                'message': 'Caso creado correctamente'
+            }, status=status.HTTP_201_CREATED)
+        except serializers.ValidationError as e:
+            print(f"DEBUG VIEW VALIDATION ERROR: {e.detail}")
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            import traceback
+            print(f"DEBUG VIEW ERROR: {str(e)}")
+            print(traceback.format_exc())
+            return Response(
+                {'error': 'Error interno del servidor', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     def update(self, request, *args, **kwargs):
         """Actualizar caso completo"""

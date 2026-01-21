@@ -346,17 +346,53 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         if 'assistant_accepted' not in validated_data or validated_data['assistant_accepted'] is None:
             validated_data['assistant_accepted'] = None
         
-        case = SurgicalCase.objects.create(**validated_data)
+        # Log to debug 500 error
+        print(f"DEBUG: Creating SurgicalCase with data: {validated_data}")
+        
+        try:
+            # Asegurarse de que el usuario creador esté en los datos si no viene de perform_create
+            case = SurgicalCase.objects.create(**validated_data)
+            print(f"DEBUG: SurgicalCase created with ID: {case.id}")
+        except Exception as e:
+            import traceback
+            print(f"DEBUG ERROR: Failed to create SurgicalCase: {str(e)}")
+            print(traceback.format_exc())
+            raise serializers.ValidationError(f"Error al crear el caso: {str(e)}")
         
         # Batch create procedures for better performance
-        procedures = [
-            CaseProcedure(
-                case=case,
-                order=index if 'order' not in proc_data else proc_data['order'],
-                **proc_data
-            ) for index, proc_data in enumerate(procedures_data)
-        ]
-        CaseProcedure.objects.bulk_create(procedures)
+        if procedures_data:
+            print(f"DEBUG: Creating {len(procedures_data)} procedures")
+            procedures = []
+            for index, proc_data in enumerate(procedures_data):
+                # Ensure values are Decimal for calculation
+                try:
+                    rvu = Decimal(str(proc_data.get('rvu', 0)))
+                    factor = Decimal(str(proc_data.get('hospital_factor', 1)))
+                    if 'calculated_value' not in proc_data or not proc_data['calculated_value']:
+                        proc_data['calculated_value'] = rvu * factor
+                    
+                    procedures.append(
+                        CaseProcedure(
+                            case=case,
+                            order=index if 'order' not in proc_data else proc_data['order'],
+                            **proc_data
+                        )
+                    )
+                except Exception as e:
+                    print(f"DEBUG ERROR: Procedure data processing failed: {str(e)}")
+                    continue
+
+            if procedures:
+                try:
+                    CaseProcedure.objects.bulk_create(procedures)
+                    print("DEBUG: Procedures bulk created successfully")
+                except Exception as e:
+                    import traceback
+                    print(f"DEBUG ERROR: Failed to bulk create procedures: {str(e)}")
+                    print(traceback.format_exc())
+                    # Intentar borrar el caso para evitar datos inconsistentes
+                    case.delete()
+                    raise serializers.ValidationError(f"Error al crear los procedimientos: {str(e)}")
         
         return case
     

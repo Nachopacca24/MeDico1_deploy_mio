@@ -51,7 +51,20 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):
         if obj.image:
             # CloudinaryField returns a CloudinaryResource which has a .url property
-            return obj.image.url
+            url = obj.image.url
+            print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
+            
+            # Handle potentially missing protocol or relative paths
+            if not url.startswith('http'):
+                import cloudinary
+                # If it's just a public_id or partial path, build full URL
+                url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
+                print(f"DEBUG AD IMAGE: Reconstructed URL: {url}")
+            
+            if url.startswith('http://'):
+                url = url.replace('http://', 'https://', 1)
+            
+            return url
         return None
 
     def validate_redirect_url(self, value):
@@ -123,7 +136,20 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):
         if obj.image:
             # CloudinaryField returns a CloudinaryResource which has a .url property
-            return obj.image.url
+            url = obj.image.url
+            print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
+            
+            # Handle potentially missing protocol or relative paths
+            if not url.startswith('http'):
+                import cloudinary
+                # If it's just a public_id or partial path, build full URL
+                url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
+                print(f"DEBUG AD IMAGE: Reconstructed URL: {url}")
+            
+            if url.startswith('http://'):
+                url = url.replace('http://', 'https://', 1)
+            
+            return url
         return None
 
 
