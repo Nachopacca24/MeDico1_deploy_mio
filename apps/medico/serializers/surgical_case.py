@@ -346,28 +346,27 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         if 'assistant_accepted' not in validated_data or validated_data['assistant_accepted'] is None:
             validated_data['assistant_accepted'] = None
         
-        # Log to debug 500 error
-        print(f"DEBUG: Creating SurgicalCase with data: {validated_data}")
+        # Obtener el hospital para obtener su factor por defecto si es necesario
+        hospital = validated_data.get('hospital')
+        hospital_factor = hospital.rate_multiplier if hospital else Decimal('1.00')
         
         try:
-            # Asegurarse de que el usuario creador esté en los datos si no viene de perform_create
             case = SurgicalCase.objects.create(**validated_data)
-            print(f"DEBUG: SurgicalCase created with ID: {case.id}")
         except Exception as e:
             import traceback
             print(f"DEBUG ERROR: Failed to create SurgicalCase: {str(e)}")
-            print(traceback.format_exc())
             raise serializers.ValidationError(f"Error al crear el caso: {str(e)}")
         
-        # Batch create procedures for better performance
         if procedures_data:
-            print(f"DEBUG: Creating {len(procedures_data)} procedures")
             procedures = []
             for index, proc_data in enumerate(procedures_data):
-                # Ensure values are Decimal for calculation
                 try:
+                    # Asegurar valores numéricos para el cálculo
                     rvu = Decimal(str(proc_data.get('rvu', 0)))
-                    factor = Decimal(str(proc_data.get('hospital_factor', 1)))
+                    # Si no viene factor, usar el del hospital
+                    factor = Decimal(str(proc_data.get('hospital_factor', hospital_factor)))
+                    proc_data['hospital_factor'] = factor
+                    
                     if 'calculated_value' not in proc_data or not proc_data['calculated_value']:
                         proc_data['calculated_value'] = rvu * factor
                     
@@ -385,12 +384,7 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
             if procedures:
                 try:
                     CaseProcedure.objects.bulk_create(procedures)
-                    print("DEBUG: Procedures bulk created successfully")
                 except Exception as e:
-                    import traceback
-                    print(f"DEBUG ERROR: Failed to bulk create procedures: {str(e)}")
-                    print(traceback.format_exc())
-                    # Intentar borrar el caso para evitar datos inconsistentes
                     case.delete()
                     raise serializers.ValidationError(f"Error al crear los procedimientos: {str(e)}")
         

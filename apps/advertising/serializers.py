@@ -50,21 +50,24 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.image:
-            # CloudinaryField returns a CloudinaryResource which has a .url property
-            url = obj.image.url
-            print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
-            
-            # Handle potentially missing protocol or relative paths
-            if not url.startswith('http'):
-                import cloudinary
-                # If it's just a public_id or partial path, build full URL
-                url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
-                print(f"DEBUG AD IMAGE: Reconstructed URL: {url}")
-            
-            if url.startswith('http://'):
-                url = url.replace('http://', 'https://', 1)
-            
-            return url
+            try:
+                # CloudinaryField returns a CloudinaryResource which has a .url property
+                url = obj.image.url
+                # print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
+                
+                # Cloudinary URLs might be returned as http even if they support https
+                if url.startswith('http://'):
+                    url = url.replace('http://', 'https://', 1)
+                
+                # If the URL is relative (unlikely with Cloudinary but good to handle)
+                if not url.startswith('http'):
+                    import cloudinary
+                    url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
+                
+                return url
+            except Exception as e:
+                print(f"DEBUG AD IMAGE ERROR: {str(e)}")
+                return None
         return None
 
     def validate_redirect_url(self, value):
@@ -135,21 +138,24 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.image:
-            # CloudinaryField returns a CloudinaryResource which has a .url property
-            url = obj.image.url
-            print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
-            
-            # Handle potentially missing protocol or relative paths
-            if not url.startswith('http'):
-                import cloudinary
-                # If it's just a public_id or partial path, build full URL
-                url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
-                print(f"DEBUG AD IMAGE: Reconstructed URL: {url}")
-            
-            if url.startswith('http://'):
-                url = url.replace('http://', 'https://', 1)
-            
-            return url
+            try:
+                # CloudinaryField returns a CloudinaryResource which has a .url property
+                url = obj.image.url
+                # print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
+                
+                # Cloudinary URLs might be returned as http even if they support https
+                if url.startswith('http://'):
+                    url = url.replace('http://', 'https://', 1)
+                
+                # If the URL is relative (unlikely with Cloudinary but good to handle)
+                if not url.startswith('http'):
+                    import cloudinary
+                    url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
+                
+                return url
+            except Exception as e:
+                print(f"DEBUG AD IMAGE ERROR: {str(e)}")
+                return None
         return None
 
 
