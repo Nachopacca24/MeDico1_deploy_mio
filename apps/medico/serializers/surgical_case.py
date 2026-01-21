@@ -348,13 +348,15 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         
         case = SurgicalCase.objects.create(**validated_data)
         
-        for index, proc_data in enumerate(procedures_data):
-            if 'order' not in proc_data:
-                proc_data['order'] = index
-            CaseProcedure.objects.create(
+        # Batch create procedures for better performance
+        procedures = [
+            CaseProcedure(
                 case=case,
+                order=index if 'order' not in proc_data else proc_data['order'],
                 **proc_data
-            )
+            ) for index, proc_data in enumerate(procedures_data)
+        ]
+        CaseProcedure.objects.bulk_create(procedures)
         
         return case
     

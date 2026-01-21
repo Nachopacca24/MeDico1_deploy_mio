@@ -149,8 +149,10 @@ class ActiveAdvertisementSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
+            # CloudinaryField returns a CloudinaryResource which has a .url property
+            # For Cloudinary, we don't need build_absolute_uri as the URL is already absolute
+            url = obj.image.url
+            if url.startswith('http://'):
+                url = url.replace('http://', 'https://', 1)
+            return url
         return None

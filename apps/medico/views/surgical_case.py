@@ -123,8 +123,10 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         case = serializer.save(created_by=request.user)
         
-        detail_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
-        return Response(detail_serializer.data, status=status.HTTP_201_CREATED)
+        # Optimizamos la respuesta para evitar recargas innecesarias
+        # Devolvemos los datos del serializer detallado pero sin disparar lógica extra pesada
+        # El frontend ya tiene lo que necesita para mostrar el caso creado
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def update(self, request, *args, **kwargs):
         """Actualizar caso completo"""
