@@ -78,109 +78,16 @@ const NewCase = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log("[NewCase] Cargando hospitales...");
         setLoading(true);
         const hospitalsData = await hospitalService.getHospitals();
         setHospitals(hospitalsData);
-        
-        const folderStructure: Record<string, Record<string, string>> = {
-          "Cardiovascular": {
-            "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
-            "Corazón": "Cardiovascular/Corazón.csv",
-            "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
-            "Tórax": "Cardiovascular/torax.csv",
-          },
-          "Dermatología": {
-            "Dermatología": "Dermatología/Dermatología.csv",
-          },
-          "Digestivo": {
-            "Digestivo": "Digestivo/Digestivo.csv",
-            "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
-            "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
-            "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
-          },
-          "Endocrino": {
-            "Endocrino": "Endocrino/Endocrino.csv",
-          },
-          "Ginecología": {
-            "Ginecología": "Ginecología/Ginecología.csv",
-          },
-          "Mama": {
-            "Mama": "Mama/Mama.csv",
-          },
-          "Maxilofacial": {
-            "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
-          },
-          "Neurocirugía": {
-            "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
-            "Columna": "Neurocirugía/Columna.csv",
-            "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
-          },
-          "Obstetricia": {
-            "Obstetricia": "Obstetricia/Obstetricia.csv",
-          },
-          "Oftalmología": {
-            "Oftalmología": "Oftalmología/Oftalmología.csv",
-          },
-          "Ortopedia": {
-            "Ortopedia": "Ortopedia/Ortopedia.csv",
-            "Cadera": "Ortopedia/Cadera.csv",
-            "Hombro": "Ortopedia/Hombro.csv",
-            "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
-            "Pie": "Ortopedia/Pie.csv",
-            "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
-            "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
-            "Artroscopia": "Ortopedia/Artroscopia.csv",
-          },
-          "Otorrinolaringología": {
-            "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
-            "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
-            "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-            "Tórax": "Otorrino/torax.csv",
-          },
-          "Plástica": {
-            "Plástica": "Plastica/Plastica.csv",
-          },
-          "Procesos variados": {
-            "Cirugía General": "Procesos_variados/Cirugía_General.csv",
-            "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
-            "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
-            "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
-          },
-          "Urología": {
-            "Urología": "Urología/Urología.csv",
-          },
-        };
-        
-        const procedures: ProcedureData[] = [];
-        const specialties = Object.entries(folderStructure);
-        
-        // Carga secuencial al inicio para tener los datos listos sin saturar el navegador
-        for (const [specialty, subcategories] of specialties) {
-          for (const [subName, csvPath] of Object.entries(subcategories)) {
-            try {
-              const csvContent = await loadCSV(csvPath);
-              csvContent.forEach((op: any) => {
-                procedures.push({
-                  codigo: op.codigo || '',
-                  cirugia: op.cirugia || '',
-                  especialidad: specialty,
-                  subespecialidad: subName,
-                  grupo: op.grupo || '',
-                  rvu: parseFloat(op.rvu) || 0
-                });
-              });
-            } catch (err) {
-              console.error(`Error loading ${csvPath}:`, err);
-            }
-          }
-          // Actualizar periódicamente para que el usuario pueda empezar a buscar
-          setAllProcedures([...procedures]);
-        }
+        console.log("[NewCase] Hospitales cargados. Formulario listo.");
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('[NewCase] Error:', error);
         toast.error(
           'Error al cargar datos',
-          'No se pudieron cargar los hospitales y procedimientos'
+          'No se pudieron cargar los hospitales'
         );
       } finally {
         setLoading(false);
@@ -303,10 +210,6 @@ const NewCase = () => {
     setAllProcedures(procedures);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
-
   // Filtrado de procedimientos basado en búsqueda
   const filteredProcedures = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) return [];
@@ -320,6 +223,122 @@ const NewCase = () => {
       )
       .slice(0, 50); // Limitar a 50 resultados
   }, [searchQuery, allProcedures]);
+
+  // Carga bajo demanda si no está en allProcedures
+  const loadSpecificCSV = async (csvPath: string, specialty: string, subName: string) => {
+    try {
+      console.log(`[CSV] Cargando archivo: ${csvPath} (${specialty})`);
+      const csvContent = await loadCSV(csvPath);
+      const formatted = csvContent.map((op: any) => ({
+        codigo: String(op.codigo || '').trim(),
+        cirugia: op.cirugia || '',
+        especialidad: specialty,
+        subespecialidad: subName,
+        grupo: op.grupo || '',
+        rvu: parseFloat(op.rvu) || 0
+      }));
+      
+      setAllProcedures(prev => {
+        const existingCodes = new Set(prev.map(p => p.codigo));
+        const newProcs = formatted.filter(p => !existingCodes.has(p.codigo));
+        if (newProcs.length > 0) {
+          console.log(`[CSV] Se agregaron ${newProcs.length} procedimientos nuevos.`);
+          return [...prev, ...newProcs];
+        }
+        return prev;
+      });
+    } catch (err) {
+      console.error(`[CSV] Error cargando ${csvPath}:`, err);
+    }
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.length < 2) return;
+
+    console.log(`[Busca] Consultando: "${query}"`);
+    
+    // Identificar qué archivos CSV podrían contener el resultado
+    const folderStructure: Record<string, Record<string, string>> = {
+      "Cardiovascular": {
+        "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
+        "Corazón": "Cardiovascular/Corazón.csv",
+        "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
+        "Tórax": "Cardiovascular/torax.csv",
+      },
+      "Dermatología": {
+        "Dermatología": "Dermatología/Dermatología.csv",
+      },
+      "Digestivo": {
+        "Digestivo": "Digestivo/Digestivo.csv",
+        "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
+        "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
+        "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
+      },
+      "Endocrino": {
+        "Endocrino": "Endocrino/Endocrino.csv",
+      },
+      "Ginecología": {
+        "Ginecología": "Ginecología/Ginecología.csv",
+      },
+      "Mama": {
+        "Mama": "Mama/Mama.csv",
+      },
+      "Maxilofacial": {
+        "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
+      },
+      "Neurocirugía": {
+        "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
+        "Columna": "Neurocirugía/Columna.csv",
+        "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
+      },
+      "Obstetricia": {
+        "Obstetricia": "Obstetricia/Obstetricia.csv",
+      },
+      "Oftalmología": {
+        "Oftalmología": "Oftalmología/Oftalmología.csv",
+      },
+      "Ortopedia": {
+        "Ortopedia": "Ortopedia/Ortopedia.csv",
+        "Cadera": "Ortopedia/Cadera.csv",
+        "Hombro": "Ortopedia/Hombro.csv",
+        "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
+        "Pie": "Ortopedia/Pie.csv",
+        "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
+        "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
+        "Artroscopia": "Ortopedia/Artroscopia.csv",
+      },
+      "Otorrinolaringología": {
+        "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
+        "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
+        "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
+        "Tórax": "Otorrino/torax.csv",
+      },
+      "Plástica": {
+        "Plástica": "Plastica/Plastica.csv",
+      },
+      "Procesos variados": {
+        "Cirugía General": "Procesos_variados/Cirugía_General.csv",
+        "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
+        "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
+        "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
+      },
+      "Urología": {
+        "Urología": "Urología/Urología.csv",
+      },
+    };
+
+    // Si es un número (Código), buscar en todos los CSVs pero secuencialmente
+    const loadAllMatch = async () => {
+      for (const [specialty, subcategories] of Object.entries(folderStructure)) {
+        for (const [subName, csvPath] of Object.entries(subcategories)) {
+          await loadSpecificCSV(csvPath, specialty, subName);
+        }
+      }
+    };
+    
+    loadAllMatch();
+  };
   const { totalRvu, totalValue } = useMemo(() => {
     const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
     const factor = hospital?.rate_multiplier || 1;

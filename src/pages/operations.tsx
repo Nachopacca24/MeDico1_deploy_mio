@@ -248,14 +248,15 @@ const Operations = () => {
   useEffect(() => {
     async function fetchAllCSV() {
       try {
+        console.log("[Operations] Iniciando carga de CSVs...");
         setLoading(true);
         const data: Record<string, any[]> = {};
         
-        // Cargar todas las especialidades secuencialmente para evitar ERR_INSUFFICIENT_RESOURCES
         const specialties = Object.entries(folderStructure);
         for (const [specialty, subcategories] of specialties) {
           for (const [subName, csvPath] of Object.entries(subcategories)) {
             try {
+              console.log(`[Operations] Cargando: ${csvPath}`);
               const csvContent = await loadCSV(csvPath);
               data[csvPath] = csvContent.map(op => ({
                 ...op,
@@ -263,14 +264,13 @@ const Operations = () => {
                 subespecialidad: subName
               }));
             } catch (err) {
-              console.error(`Error loading ${csvPath}:`, err);
+              console.error(`[Operations] Error cargando ${csvPath}:`, err);
             }
           }
-          // Actualizar estado después de cada especialidad para mostrar progreso
           setCsvData({ ...data });
         }
         
-        // ✅ Expandir todas las especialidades por defecto para que los procedimientos sean visibles
+        console.log("[Operations] Carga completa. Expandiendo carpetas...");
         const allSpecialtiesExpanded = Object.keys(folderStructure).reduce((acc, specialty) => ({
           ...acc,
           [specialty]: true
@@ -278,6 +278,7 @@ const Operations = () => {
         setExpandedSpecialties(allSpecialtiesExpanded);
 
       } catch (err: any) {
+        console.error("[Operations] Error general:", err);
         setError(err.message);
       } finally {
         setLoading(false);
