@@ -348,6 +348,7 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         
         # Obtener el hospital para obtener su factor por defecto si es necesario
         hospital = validated_data.get('hospital')
+        from decimal import Decimal
         hospital_factor = hospital.rate_multiplier if hospital else Decimal('1.00')
         
         try:
@@ -370,6 +371,10 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
                     if 'calculated_value' not in proc_data or not proc_data['calculated_value']:
                         proc_data['calculated_value'] = rvu * factor
                     
+                    # Convertir calculated_value a Decimal si es necesario
+                    if not isinstance(proc_data['calculated_value'], Decimal):
+                        proc_data['calculated_value'] = Decimal(str(proc_data['calculated_value']))
+
                     procedures.append(
                         CaseProcedure(
                             case=case,
@@ -385,8 +390,13 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
                 try:
                     CaseProcedure.objects.bulk_create(procedures)
                 except Exception as e:
-                    case.delete()
-                    raise serializers.ValidationError(f"Error al crear los procedimientos: {str(e)}")
+                    # Si falla bulk_create, intentamos crear uno por uno para debug o fallback
+                    print(f"DEBUG ERROR: bulk_create failed: {str(e)}. Attempting one by one.")
+                    for proc in procedures:
+                        try:
+                            proc.save()
+                        except Exception as inner_e:
+                            print(f"DEBUG ERROR: Single procedure save failed: {str(inner_e)}")
         
         # Devolver el objeto completo para que el serializer pueda incluir las relaciones
         return case

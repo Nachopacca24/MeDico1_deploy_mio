@@ -121,6 +121,10 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Crear un nuevo caso quirúrgico"""
+        # Log para debug
+        import json
+        print(f"DEBUG CREATE DATA: {json.dumps(request.data)}")
+        
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -131,6 +135,9 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             # Esto asegura que el frontend reciba los procedimientos recién creados
             response_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        except serializers.ValidationError as e:
+            print(f"VALIDATION ERROR: {e.detail}")
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             print(f"ERROR CREATING CASE: {str(e)}")
