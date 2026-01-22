@@ -388,6 +388,7 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
                     case.delete()
                     raise serializers.ValidationError(f"Error al crear los procedimientos: {str(e)}")
         
+        # Devolver el objeto completo para que el serializer pueda incluir las relaciones
         return case
     
     def update(self, instance, validated_data):
