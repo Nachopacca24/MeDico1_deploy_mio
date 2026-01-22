@@ -14,6 +14,13 @@ User = get_user_model()
 class CaseProcedureSerializer(serializers.ModelSerializer):
     """Serializer para procedimientos individuales dentro de un caso"""
     
+    calculated_value = serializers.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        required=False,
+        allow_null=True
+    )
+
     class Meta:
         model = CaseProcedure
         fields = [
@@ -270,6 +277,17 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         """Limpiar datos antes de validar"""
         cleaned_data = copy.deepcopy(data)
+        
+        # Limpiar procedimientos para evitar errores de validación de max_digits si vienen con demasiados decimales
+        if 'procedures' in cleaned_data and isinstance(cleaned_data['procedures'], list):
+            for proc in cleaned_data['procedures']:
+                if 'calculated_value' in proc and proc['calculated_value']:
+                    try:
+                        from decimal import Decimal, ROUND_HALF_UP
+                        val = Decimal(str(proc['calculated_value']))
+                        proc['calculated_value'] = val.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                    except:
+                        pass
         
         if 'assistant_doctor_name' in cleaned_data:
             if cleaned_data['assistant_doctor_name'] == '':

@@ -355,7 +355,7 @@ class CaseProcedure(models.Model):
         help_text="Multiplicador del hospital para este procedimiento"
     )
     calculated_value = models.DecimalField(
-        max_digits=12,
+        max_digits=15,
         decimal_places=2,
         verbose_name="Valor Calculado",
         help_text="RVU × Factor del Hospital"
