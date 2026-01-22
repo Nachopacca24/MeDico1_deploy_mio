@@ -294,6 +294,10 @@ const NewCase = () => {
       const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
       const hospitalFactor = hospital?.rate_multiplier || 1;
 
+      // 🔍 DEBUG: Verificar procedimientos antes de enviar
+      console.log('📋 Procedimientos seleccionados:', selectedProcedures.length);
+      console.log('📊 Total RVU:', selectedProcedures.reduce((sum, p) => sum + p.rvu, 0));
+
       const caseData: any = {
         patient_name: patientName,
         patient_id: patientId || undefined,
