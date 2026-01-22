@@ -248,32 +248,42 @@ const Operations = () => {
   useEffect(() => {
     async function fetchAllCSV() {
       try {
-        const data: Record<string, any[]> = {};
-        
-        for (const [specialty, subcategories] of Object.entries(folderStructure)) {
-          for (const [subName, csvPath] of Object.entries(subcategories)) {
-            const csvContent = await loadCSV(csvPath);
-            data[csvPath] = csvContent;
-          }
-        }
-        
-        setCsvData(data);
-        
+        setLoading(false); // No cargar nada al inicio para ahorrar recursos
       } catch (err: any) {
         setError(err.message);
-      } finally {
-        setLoading(false);
       }
     }
-
     fetchAllCSV();
   }, []);
 
-  const toggleSpecialty = (specialty: string) => {
+  const toggleSpecialty = async (specialty: string) => {
+    const isExpanding = !expandedSpecialties[specialty];
     setExpandedSpecialties(prev => ({
       ...prev,
-      [specialty]: !prev[specialty]
+      [specialty]: isExpanding
     }));
+
+    if (isExpanding) {
+      const subcategories = folderStructure[specialty as keyof typeof folderStructure];
+      const newCsvData = { ...csvData };
+      let updated = false;
+
+      for (const [subName, csvPath] of Object.entries(subcategories)) {
+        if (!newCsvData[csvPath]) {
+          try {
+            const csvContent = await loadCSV(csvPath);
+            newCsvData[csvPath] = csvContent;
+            updated = true;
+          } catch (err) {
+            console.error(`Error loading ${csvPath}:`, err);
+          }
+        }
+      }
+
+      if (updated) {
+        setCsvData(newCsvData);
+      }
+    }
   };
 
   const toggleSubcategory = (key: string) => {

@@ -153,34 +153,20 @@ const NewCase = () => {
         
         const procedures: ProcedureData[] = [];
         
-        // Optimización: Cargar archivos en paralelo
+        // Optimización: Cargar solo archivos necesarios (ej: favoritos o los más comunes) o cargar bajo demanda
         const loadPromises: Promise<void>[] = [];
 
+        // No cargar todo al inicio para evitar ERR_INSUFFICIENT_RESOURCES
+        // Solo cargamos una pequeña muestra o esperamos a la búsqueda
+        /* 
         for (const [specialty, subcategories] of Object.entries(folderStructure)) {
           for (const [subName, csvPath] of Object.entries(subcategories)) {
-            const loadPromise = (async () => {
-              try {
-                const csvContent = await loadCSV(csvPath);
-                csvContent.forEach((op: any) => {
-                  procedures.push({
-                    codigo: op.codigo || '',
-                    cirugia: op.cirugia || '',
-                    especialidad: specialty,
-                    subespecialidad: subName,
-                    grupo: op.grupo || '',
-                    rvu: parseFloat(op.rvu) || 0
-                  });
-                });
-              } catch (err) {
-                console.error(`Error loading CSV ${csvPath}:`, err);
-              }
-            })();
-            loadPromises.push(loadPromise);
+            // ... logic to load all
           }
         }
+        */
         
-        await Promise.all(loadPromises);
-        setAllProcedures(procedures);
+        setAllProcedures([]); // Empezar vacío y cargar bajo demanda si es posible
       } catch (error) {
         console.error('Error loading data:', error);
         toast.error(
@@ -212,21 +198,121 @@ const NewCase = () => {
     loadColleagues();
   }, []);
 
-  // Filter procedures based on search
+  // Carga bajo demanda si no está en allProcedures
+  const loadAllCSVData = async () => {
+    if (allProcedures.length > 0) return;
+    
+    const folderStructure: Record<string, Record<string, string>> = {
+      "Cardiovascular": {
+        "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
+        "Corazón": "Cardiovascular/Corazón.csv",
+        "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
+        "Tórax": "Cardiovascular/torax.csv",
+      },
+      "Dermatología": {
+        "Dermatología": "Dermatología/Dermatología.csv",
+      },
+      "Digestivo": {
+        "Digestivo": "Digestivo/Digestivo.csv",
+        "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
+        "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
+        "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
+      },
+      "Endocrino": {
+        "Endocrino": "Endocrino/Endocrino.csv",
+      },
+      "Ginecología": {
+        "Ginecología": "Ginecología/Ginecología.csv",
+      },
+      "Mama": {
+        "Mama": "Mama/Mama.csv",
+      },
+      "Maxilofacial": {
+        "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
+      },
+      "Neurocirugía": {
+        "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
+        "Columna": "Neurocirugía/Columna.csv",
+        "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
+      },
+      "Obstetricia": {
+        "Obstetricia": "Obstetricia/Obstetricia.csv",
+      },
+      "Oftalmología": {
+        "Oftalmología": "Oftalmología/Oftalmología.csv",
+      },
+      "Ortopedia": {
+        "Ortopedia": "Ortopedia/Ortopedia.csv",
+        "Cadera": "Ortopedia/Cadera.csv",
+        "Hombro": "Ortopedia/Hombro.csv",
+        "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
+        "Pie": "Ortopedia/Pie.csv",
+        "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
+        "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
+        "Artroscopia": "Ortopedia/Artroscopia.csv",
+      },
+      "Otorrinolaringología": {
+        "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
+        "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
+        "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
+        "Tórax": "Otorrino/torax.csv",
+      },
+      "Plástica": {
+        "Plástica": "Plastica/Plastica.csv",
+      },
+      "Procesos variados": {
+        "Cirugía General": "Procesos_variados/Cirugía_General.csv",
+        "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
+        "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
+        "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
+      },
+      "Urología": {
+        "Urología": "Urología/Urología.csv",
+      },
+    };
+
+    const procedures: ProcedureData[] = [];
+    const specialties = Object.entries(folderStructure);
+    
+    for (const [specialty, subcategories] of specialties) {
+      for (const [subName, csvPath] of Object.entries(subcategories)) {
+        try {
+          const csvContent = await loadCSV(csvPath);
+          csvContent.forEach((op: any) => {
+            procedures.push({
+              codigo: op.codigo || '',
+              cirugia: op.cirugia || '',
+              especialidad: specialty,
+              subespecialidad: subName,
+              grupo: op.grupo || '',
+              rvu: parseFloat(op.rvu) || 0
+            });
+          });
+        } catch (err) {}
+      }
+    }
+    setAllProcedures(procedures);
+  };
+
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (query.length < 3) return;
+    await loadAllCSVData();
+  };
+
+  // Filtrado de procedimientos basado en búsqueda
   const filteredProcedures = useMemo(() => {
-    if (!searchQuery) return [];
+    if (!searchQuery || searchQuery.length < 2) return [];
     
     const query = searchQuery.toLowerCase();
     return allProcedures
       .filter(proc => 
-        proc.cirugia.toLowerCase().includes(query) ||
-        proc.codigo.toLowerCase().includes(query) ||
-        proc.especialidad.toLowerCase().includes(query)
+        (proc.cirugia && proc.cirugia.toLowerCase().includes(query)) ||
+        (proc.codigo && proc.codigo.toLowerCase().includes(query)) ||
+        (proc.especialidad && proc.especialidad.toLowerCase().includes(query))
       )
-      .slice(0, 50); // Limit to 50 results
+      .slice(0, 50); // Limitar a 50 resultados
   }, [searchQuery, allProcedures]);
-
-  // Calculate totals
   const { totalRvu, totalValue } = useMemo(() => {
     const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
     const factor = hospital?.rate_multiplier || 1;
@@ -649,8 +735,10 @@ const NewCase = () => {
                 <Input
                   value={searchQuery}
                   onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setShowProcedureSearch(e.target.value.length > 0);
+                    const val = e.target.value;
+                    setSearchQuery(val);
+                    setShowProcedureSearch(val.length > 0);
+                    handleSearch(val);
                   }}
                   placeholder="Buscar procedimientos por nombre, código o especialidad..."
                   className="pl-10"
