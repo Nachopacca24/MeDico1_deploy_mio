@@ -78,10 +78,10 @@ const NewCase = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setLoading(true);
         const hospitalsData = await hospitalService.getHospitals();
         setHospitals(hospitalsData);
         
-        // Load all CSV files and flatten procedures (using only existing CSV files)
         const folderStructure: Record<string, Record<string, string>> = {
           "Cardiovascular": {
             "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
@@ -152,21 +152,30 @@ const NewCase = () => {
         };
         
         const procedures: ProcedureData[] = [];
+        const specialties = Object.entries(folderStructure);
         
-        // Optimización: Cargar solo archivos necesarios (ej: favoritos o los más comunes) o cargar bajo demanda
-        const loadPromises: Promise<void>[] = [];
-
-        // No cargar todo al inicio para evitar ERR_INSUFFICIENT_RESOURCES
-        // Solo cargamos una pequeña muestra o esperamos a la búsqueda
-        /* 
-        for (const [specialty, subcategories] of Object.entries(folderStructure)) {
+        // Carga secuencial al inicio para tener los datos listos sin saturar el navegador
+        for (const [specialty, subcategories] of specialties) {
           for (const [subName, csvPath] of Object.entries(subcategories)) {
-            // ... logic to load all
+            try {
+              const csvContent = await loadCSV(csvPath);
+              csvContent.forEach((op: any) => {
+                procedures.push({
+                  codigo: op.codigo || '',
+                  cirugia: op.cirugia || '',
+                  especialidad: specialty,
+                  subespecialidad: subName,
+                  grupo: op.grupo || '',
+                  rvu: parseFloat(op.rvu) || 0
+                });
+              });
+            } catch (err) {
+              console.error(`Error loading ${csvPath}:`, err);
+            }
           }
+          // Actualizar periódicamente para que el usuario pueda empezar a buscar
+          setAllProcedures([...procedures]);
         }
-        */
-        
-        setAllProcedures([]); // Empezar vacío y cargar bajo demanda si es posible
       } catch (error) {
         console.error('Error loading data:', error);
         toast.error(
@@ -294,10 +303,8 @@ const NewCase = () => {
     setAllProcedures(procedures);
   };
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (query.length < 3) return;
-    await loadAllCSVData();
   };
 
   // Filtrado de procedimientos basado en búsqueda

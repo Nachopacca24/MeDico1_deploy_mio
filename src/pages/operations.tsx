@@ -248,9 +248,39 @@ const Operations = () => {
   useEffect(() => {
     async function fetchAllCSV() {
       try {
-        setLoading(false); // No cargar nada al inicio para ahorrar recursos
+        setLoading(true);
+        const data: Record<string, any[]> = {};
+        
+        // Cargar todas las especialidades secuencialmente para evitar ERR_INSUFFICIENT_RESOURCES
+        const specialties = Object.entries(folderStructure);
+        for (const [specialty, subcategories] of specialties) {
+          for (const [subName, csvPath] of Object.entries(subcategories)) {
+            try {
+              const csvContent = await loadCSV(csvPath);
+              data[csvPath] = csvContent.map(op => ({
+                ...op,
+                especialidad: specialty,
+                subespecialidad: subName
+              }));
+            } catch (err) {
+              console.error(`Error loading ${csvPath}:`, err);
+            }
+          }
+          // Actualizar estado después de cada especialidad para mostrar progreso
+          setCsvData({ ...data });
+        }
+        
+        // ✅ Expandir todas las especialidades por defecto para que los procedimientos sean visibles
+        const allSpecialtiesExpanded = Object.keys(folderStructure).reduce((acc, specialty) => ({
+          ...acc,
+          [specialty]: true
+        }), {});
+        setExpandedSpecialties(allSpecialtiesExpanded);
+
       } catch (err: any) {
         setError(err.message);
+      } finally {
+        setLoading(false);
       }
     }
     fetchAllCSV();
