@@ -359,7 +359,7 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Error al crear el caso: {str(e)}")
         
         if procedures_data:
-            procedures = []
+            # Crear los procedimientos inmediatamente
             for index, proc_data in enumerate(procedures_data):
                 try:
                     # Asegurar valores numéricos para el cálculo
@@ -375,30 +375,17 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
                     if not isinstance(proc_data['calculated_value'], Decimal):
                         proc_data['calculated_value'] = Decimal(str(proc_data['calculated_value']))
 
-                    procedures.append(
-                        CaseProcedure(
-                            case=case,
-                            order=index if 'order' not in proc_data else proc_data['order'],
-                            **proc_data
-                        )
+                    CaseProcedure.objects.create(
+                        case=case,
+                        order=index if 'order' not in proc_data else proc_data['order'],
+                        **proc_data
                     )
                 except Exception as e:
-                    print(f"DEBUG ERROR: Procedure data processing failed: {str(e)}")
+                    print(f"DEBUG ERROR: Procedure creation failed: {str(e)}")
                     continue
-
-            if procedures:
-                try:
-                    CaseProcedure.objects.bulk_create(procedures)
-                except Exception as e:
-                    # Si falla bulk_create, intentamos crear uno por uno para debug o fallback
-                    print(f"DEBUG ERROR: bulk_create failed: {str(e)}. Attempting one by one.")
-                    for proc in procedures:
-                        try:
-                            proc.save()
-                        except Exception as inner_e:
-                            print(f"DEBUG ERROR: Single procedure save failed: {str(inner_e)}")
         
-        # Devolver el objeto completo para que el serializer pueda incluir las relaciones
+        # Refrescar el objeto para asegurar que las relaciones estén actualizadas
+        case.refresh_from_db()
         return case
     
     def update(self, instance, validated_data):

@@ -53,16 +53,10 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             try:
                 # CloudinaryField returns a CloudinaryResource which has a .url property
                 url = obj.image.url
-                # print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
                 
-                # Cloudinary URLs might be returned as http even if they support https
+                # Ensure HTTPS
                 if url.startswith('http://'):
                     url = url.replace('http://', 'https://', 1)
-                
-                # If the URL is relative (unlikely with Cloudinary but good to handle)
-                if not url.startswith('http'):
-                    import cloudinary
-                    url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
                 
                 return url
             except Exception as e:
@@ -141,16 +135,10 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
             try:
                 # CloudinaryField returns a CloudinaryResource which has a .url property
                 url = obj.image.url
-                # print(f"DEBUG AD IMAGE: Raw URL from obj.image.url: {url}")
                 
-                # Cloudinary URLs might be returned as http even if they support https
+                # Ensure HTTPS
                 if url.startswith('http://'):
                     url = url.replace('http://', 'https://', 1)
-                
-                # If the URL is relative (unlikely with Cloudinary but good to handle)
-                if not url.startswith('http'):
-                    import cloudinary
-                    url = cloudinary.utils.cloudinary_url(str(obj.image), secure=True)[0]
                 
                 return url
             except Exception as e:
