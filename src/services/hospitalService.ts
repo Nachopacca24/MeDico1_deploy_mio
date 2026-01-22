@@ -16,19 +16,17 @@ export interface Hospital {
 }
 
 class HospitalService {
-  /**
-   * Get all hospitals (favorites first)
-   */
   async getHospitals(): Promise<Hospital[]> {
     try {
+      // ❌ ANTES: authService.authenticatedFetch`${API_BASE_URL}/`)
+      // ✅ AHORA: authService.authenticatedFetch(`${API_BASE_URL}/`)
       const response = await authService.authenticatedFetch(`${API_BASE_URL}/`);
-      
+
       if (!response.ok) {
         throw new Error(`Error al obtener hospitales: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      // Django REST Framework may return paginated results {count, next, previous, results: [...]}
       if (Array.isArray(data)) return data;
       if (data && Array.isArray((data as any).results)) return (data as any).results;
       return [];
@@ -36,17 +34,16 @@ class HospitalService {
       console.error('Error fetching hospitals:', error);
       throw error;
     }
-  }  /**
-   * Get a single hospital by ID
-   */
+  }
+
   async getHospital(id: number): Promise<Hospital> {
     try {
       const response = await authService.authenticatedFetch(`${API_BASE_URL}/${id}/`);
-      
+
       if (!response.ok) {
         throw new Error(`Error al obtener hospital: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('Error fetching hospital:', error);
@@ -54,9 +51,6 @@ class HospitalService {
     }
   }
 
-  /**
-   * Add hospital to favorites
-   */
   async favoriteHospital(hospitalId: number): Promise<void> {
     try {
       const response = await authService.authenticatedFetch(
@@ -68,7 +62,6 @@ class HospitalService {
           },
         }
       );
-
       if (!response.ok) {
         throw new Error('Error al agregar a favoritos');
       }
@@ -78,9 +71,6 @@ class HospitalService {
     }
   }
 
-  /**
-   * Remove hospital from favorites
-   */
   async unfavoriteHospital(hospitalId: number): Promise<void> {
     try {
       const response = await authService.authenticatedFetch(
@@ -89,7 +79,6 @@ class HospitalService {
           method: 'DELETE',
         }
       );
-
       if (!response.ok) {
         throw new Error('Error al quitar de favoritos');
       }
@@ -99,19 +88,15 @@ class HospitalService {
     }
   }
 
-  /**
-   * Get only favorite hospitals
-   */
   async getFavoriteHospitals(): Promise<Hospital[]> {
     try {
       const response = await authService.authenticatedFetch(`${API_BASE_URL}/favorites/`);
-      
+
       if (!response.ok) {
         throw new Error('Error al obtener hospitales favoritos');
       }
-      
+
       const data = await response.json();
-      // Extract hospitals from favorite objects
       return Array.isArray(data) ? data.map((fav: any) => fav.hospital) : [];
     } catch (error) {
       console.error('Error fetching favorite hospitals:', error);

@@ -1,4 +1,3 @@
-//src/pages/cases/new.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
@@ -43,7 +42,7 @@ interface Colleague {
 const NewCase = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // Form state
   const [patientName, setPatientName] = useState('');
   const [patientId, setPatientId] = useState('');
@@ -55,165 +54,56 @@ const NewCase = () => {
   const [surgeryEndTime, setSurgeryEndTime] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
-  
+
   // Assistant doctor state
   const [assistantType, setAssistantType] = useState<'colleague' | 'manual' | 'none'>('none');
   const [selectedColleagueId, setSelectedColleagueId] = useState<number | null>(null);
   const [manualAssistantName, setManualAssistantName] = useState('');
-  
+
   // Procedure selection state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProcedures, setSelectedProcedures] = useState<SelectedProcedure[]>([]);
   const [showProcedureSearch, setShowProcedureSearch] = useState(false);
-  
+
   // Data state
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [allProcedures, setAllProcedures] = useState<ProcedureData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingColleagues, setLoadingColleagues] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Load hospitals and procedures
+  // ✅ CARGA INICIAL: Solo hospitales y colegas (UNA VEZ)
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialData = async () => {
       try {
-        console.log("[NewCase] Cargando hospitales...");
+        console.log("[NewCase] Cargando datos iniciales...");
         setLoading(true);
-        const hospitalsData = await hospitalService.getHospitals();
+
+        // Cargar hospitales y colegas en paralelo
+        const [hospitalsData, colleaguesData] = await Promise.all([
+          hospitalService.getHospitals(),
+          colleaguesService.getColleagues()
+        ]);
+
         setHospitals(hospitalsData);
-        console.log("[NewCase] Hospitales cargados. Formulario listo.");
+        setColleagues(colleaguesData.colleagues);
+
+        console.log("[NewCase] Datos iniciales cargados ✅");
       } catch (error) {
         console.error('[NewCase] Error:', error);
-        toast.error(
-          'Error al cargar datos',
-          'No se pudieron cargar los hospitales'
-        );
+        toast.error('Error', 'No se pudieron cargar los datos');
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, [toast]);
-
-  // Load colleagues
-  useEffect(() => {
-    const loadColleagues = async () => {
-      try {
-        setLoadingColleagues(true);
-        const data = await colleaguesService.getColleagues();
-        setColleagues(data.colleagues);
-      } catch (error) {
-        console.error('Error loading colleagues:', error);
-      } finally {
-        setLoadingColleagues(false);
-      }
-    };
-
-    loadColleagues();
-  }, []);
-
-  // Carga bajo demanda si no está en allProcedures
-  const loadAllCSVData = async () => {
-    if (allProcedures.length > 0) return;
-    
-    const folderStructure: Record<string, Record<string, string>> = {
-      "Cardiovascular": {
-        "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
-        "Corazón": "Cardiovascular/Corazón.csv",
-        "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
-        "Tórax": "Cardiovascular/torax.csv",
-      },
-      "Dermatología": {
-        "Dermatología": "Dermatología/Dermatología.csv",
-      },
-      "Digestivo": {
-        "Digestivo": "Digestivo/Digestivo.csv",
-        "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
-        "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
-        "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
-      },
-      "Endocrino": {
-        "Endocrino": "Endocrino/Endocrino.csv",
-      },
-      "Ginecología": {
-        "Ginecología": "Ginecología/Ginecología.csv",
-      },
-      "Mama": {
-        "Mama": "Mama/Mama.csv",
-      },
-      "Maxilofacial": {
-        "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
-      },
-      "Neurocirugía": {
-        "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
-        "Columna": "Neurocirugía/Columna.csv",
-        "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
-      },
-      "Obstetricia": {
-        "Obstetricia": "Obstetricia/Obstetricia.csv",
-      },
-      "Oftalmología": {
-        "Oftalmología": "Oftalmología/Oftalmología.csv",
-      },
-      "Ortopedia": {
-        "Ortopedia": "Ortopedia/Ortopedia.csv",
-        "Cadera": "Ortopedia/Cadera.csv",
-        "Hombro": "Ortopedia/Hombro.csv",
-        "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
-        "Pie": "Ortopedia/Pie.csv",
-        "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
-        "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
-        "Artroscopia": "Ortopedia/Artroscopia.csv",
-      },
-      "Otorrinolaringología": {
-        "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
-        "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
-        "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-        "Tórax": "Otorrino/torax.csv",
-      },
-      "Plástica": {
-        "Plástica": "Plastica/Plastica.csv",
-      },
-      "Procesos variados": {
-        "Cirugía General": "Procesos_variados/Cirugía_General.csv",
-        "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
-        "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
-        "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
-      },
-      "Urología": {
-        "Urología": "Urología/Urología.csv",
-      },
-    };
-
-    const procedures: ProcedureData[] = [];
-    const specialties = Object.entries(folderStructure);
-    
-    for (const [specialty, subcategories] of specialties) {
-      for (const [subName, csvPath] of Object.entries(subcategories)) {
-        try {
-          const csvContent = await loadCSV(csvPath);
-          csvContent.forEach((op: any) => {
-            procedures.push({
-              codigo: op.codigo || '',
-              cirugia: op.cirugia || '',
-              especialidad: specialty,
-              subespecialidad: subName,
-              grupo: op.grupo || '',
-              rvu: parseFloat(op.rvu) || 0
-            });
-          });
-        } catch (err) {}
-      }
-    }
-    setAllProcedures(procedures);
-  };
+    loadInitialData();
+  }, []); // ✅ Sin dependencias - solo se ejecuta UNA VEZ
 
   // Filtrado de procedimientos basado en búsqueda
   const filteredProcedures = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) return [];
-    
+
     const query = searchQuery.toLowerCase();
     return allProcedures
       .filter(proc => 
@@ -221,131 +111,127 @@ const NewCase = () => {
         (proc.codigo && proc.codigo.toLowerCase().includes(query)) ||
         (proc.especialidad && proc.especialidad.toLowerCase().includes(query))
       )
-      .slice(0, 50); // Limitar a 50 resultados
+      .slice(0, 50);
   }, [searchQuery, allProcedures]);
 
-  // Carga bajo demanda si no está en allProcedures
-  const loadSpecificCSV = async (csvPath: string, specialty: string, subName: string) => {
-    try {
-      console.log(`[CSV] Cargando archivo: ${csvPath} (${specialty})`);
-      const csvContent = await loadCSV(csvPath);
-      const formatted = csvContent.map((op: any) => ({
-        codigo: String(op.codigo || '').trim(),
-        cirugia: op.cirugia || '',
-        especialidad: specialty,
-        subespecialidad: subName,
-        grupo: op.grupo || '',
-        rvu: parseFloat(op.rvu) || 0
-      }));
-      
-      setAllProcedures(prev => {
-        const existingCodes = new Set(prev.map(p => p.codigo));
-        const newProcs = formatted.filter(p => !existingCodes.has(p.codigo));
-        if (newProcs.length > 0) {
-          console.log(`[CSV] Se agregaron ${newProcs.length} procedimientos nuevos.`);
-          return [...prev, ...newProcs];
+  // ✅ BÚSQUEDA: Carga CSVs solo cuando el usuario busca
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+
+    if (query.length < 2) {
+      setShowProcedureSearch(false);
+      return;
+    }
+
+    setShowProcedureSearch(true);
+
+    // Solo cargar CSVs la primera vez que se busca
+    if (allProcedures.length === 0) {
+      console.log("[CSV] Primera búsqueda - cargando todos los CSVs...");
+
+      const folderStructure: Record<string, Record<string, string>> = {
+        "Cardiovascular": {
+          "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
+          "Corazón": "Cardiovascular/Corazón.csv",
+          "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
+          "Tórax": "Cardiovascular/torax.csv",
+        },
+        "Dermatología": {
+          "Dermatología": "Dermatología/Dermatología.csv",
+        },
+        "Digestivo": {
+          "Digestivo": "Digestivo/Digestivo.csv",
+          "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
+          "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
+          "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
+        },
+        "Endocrino": {
+          "Endocrino": "Endocrino/Endocrino.csv",
+        },
+        "Ginecología": {
+          "Ginecología": "Ginecología/Ginecología.csv",
+        },
+        "Mama": {
+          "Mama": "Mama/Mama.csv",
+        },
+        "Maxilofacial": {
+          "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
+        },
+        "Neurocirugía": {
+          "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
+          "Columna": "Neurocirugía/Columna.csv",
+          "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
+        },
+        "Obstetricia": {
+          "Obstetricia": "Obstetricia/Obstetricia.csv",
+        },
+        "Oftalmología": {
+          "Oftalmología": "Oftalmología/Oftalmología.csv",
+        },
+        "Ortopedia": {
+          "Ortopedia": "Ortopedia/Ortopedia.csv",
+          "Cadera": "Ortopedia/Cadera.csv",
+          "Hombro": "Ortopedia/Hombro.csv",
+          "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
+          "Pie": "Ortopedia/Pie.csv",
+          "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
+          "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
+          "Artroscopia": "Ortopedia/Artroscopia.csv",
+        },
+        "Otorrinolaringología": {
+          "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
+          "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
+          "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
+          "Tórax": "Otorrino/torax.csv",
+        },
+        "Plástica": {
+          "Plástica": "Plastica/Plastica.csv",
+        },
+        "Procesos variados": {
+          "Cirugía General": "Procesos_variados/Cirugía_General.csv",
+          "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
+          "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
+          "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
+        },
+        "Urología": {
+          "Urología": "Urología/Urología.csv",
+        },
+      };
+
+      const procedures: ProcedureData[] = [];
+
+      for (const [specialty, subcategories] of Object.entries(folderStructure)) {
+        for (const [subName, csvPath] of Object.entries(subcategories)) {
+          try {
+            const csvContent = await loadCSV(csvPath);
+            csvContent.forEach((op: any) => {
+              procedures.push({
+                codigo: String(op.codigo || '').trim(),
+                cirugia: op.cirugia || '',
+                especialidad: specialty,
+                subespecialidad: subName,
+                grupo: op.grupo || '',
+                rvu: parseFloat(op.rvu) || 0
+              });
+            });
+          } catch (err) {
+            console.warn(`[CSV] Error cargando ${csvPath}`);
+          }
         }
-        return prev;
-      });
-    } catch (err) {
-      console.error(`[CSV] Error cargando ${csvPath}:`, err);
+      }
+
+      setAllProcedures(procedures);
+      console.log(`[CSV] ✅ Cargados ${procedures.length} procedimientos`);
     }
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    if (query.length < 2) return;
-
-    console.log(`[Busca] Consultando: "${query}"`);
-    
-    // Identificar qué archivos CSV podrían contener el resultado
-    const folderStructure: Record<string, Record<string, string>> = {
-      "Cardiovascular": {
-        "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
-        "Corazón": "Cardiovascular/Corazón.csv",
-        "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
-        "Tórax": "Cardiovascular/torax.csv",
-      },
-      "Dermatología": {
-        "Dermatología": "Dermatología/Dermatología.csv",
-      },
-      "Digestivo": {
-        "Digestivo": "Digestivo/Digestivo.csv",
-        "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
-        "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
-        "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
-      },
-      "Endocrino": {
-        "Endocrino": "Endocrino/Endocrino.csv",
-      },
-      "Ginecología": {
-        "Ginecología": "Ginecología/Ginecología.csv",
-      },
-      "Mama": {
-        "Mama": "Mama/Mama.csv",
-      },
-      "Maxilofacial": {
-        "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
-      },
-      "Neurocirugía": {
-        "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
-        "Columna": "Neurocirugía/Columna.csv",
-        "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
-      },
-      "Obstetricia": {
-        "Obstetricia": "Obstetricia/Obstetricia.csv",
-      },
-      "Oftalmología": {
-        "Oftalmología": "Oftalmología/Oftalmología.csv",
-      },
-      "Ortopedia": {
-        "Ortopedia": "Ortopedia/Ortopedia.csv",
-        "Cadera": "Ortopedia/Cadera.csv",
-        "Hombro": "Ortopedia/Hombro.csv",
-        "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
-        "Pie": "Ortopedia/Pie.csv",
-        "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
-        "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
-        "Artroscopia": "Ortopedia/Artroscopia.csv",
-      },
-      "Otorrinolaringología": {
-        "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
-        "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
-        "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-        "Tórax": "Otorrino/torax.csv",
-      },
-      "Plástica": {
-        "Plástica": "Plastica/Plastica.csv",
-      },
-      "Procesos variados": {
-        "Cirugía General": "Procesos_variados/Cirugía_General.csv",
-        "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
-        "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
-        "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
-      },
-      "Urología": {
-        "Urología": "Urología/Urología.csv",
-      },
-    };
-
-    // Si es un número (Código), buscar en todos los CSVs pero secuencialmente
-    const loadAllMatch = async () => {
-      for (const [specialty, subcategories] of Object.entries(folderStructure)) {
-        for (const [subName, csvPath] of Object.entries(subcategories)) {
-          await loadSpecificCSV(csvPath, specialty, subName);
-        }
-      }
-    };
-    
-    loadAllMatch();
-  };
   const { totalRvu, totalValue } = useMemo(() => {
     const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
     const factor = hospital?.rate_multiplier || 1;
-    
+
     const rvu = selectedProcedures.reduce((sum, proc) => sum + proc.rvu, 0);
     const value = rvu * factor;
-    
+
     return { totalRvu: rvu, totalValue: value };
   }, [selectedProcedures, hospitalId, hospitals]);
 
@@ -358,11 +244,11 @@ const NewCase = () => {
       rvu: proc.rvu,
       notes: ''
     };
-    
+
     setSelectedProcedures([...selectedProcedures, newProcedure]);
     setSearchQuery('');
     setShowProcedureSearch(false);
-    
+
     toast.success(
       'Procedimiento agregado',
       `${proc.cirugia} agregado exitosamente`
@@ -372,7 +258,7 @@ const NewCase = () => {
   const handleRemoveProcedure = (index: number) => {
     const removedProc = selectedProcedures[index];
     setSelectedProcedures(selectedProcedures.filter((_, i) => i !== index));
-    
+
     toast.info(
       'Procedimiento eliminado',
       `${removedProc.surgery_name} fue eliminado de la lista`
@@ -381,47 +267,34 @@ const NewCase = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
+
     if (!patientName.trim()) {
-      toast.error(
-        'Error de validación',
-        'El nombre del paciente es requerido'
-      );
+      toast.error('Error de validación', 'El nombre del paciente es requerido');
       return;
     }
-    
+
     if (!hospitalId) {
-      toast.error(
-        'Error de validación',
-        'Por favor selecciona un hospital'
-      );
+      toast.error('Error de validación', 'Por favor selecciona un hospital');
       return;
     }
-    
+
     if (!surgeryDate) {
-      toast.error(
-        'Error de validación',
-        'La fecha de cirugía es requerida'
-      );
+      toast.error('Error de validación', 'La fecha de cirugía es requerida');
       return;
     }
-    
+
     if (selectedProcedures.length === 0) {
-      toast.error(
-        'Error de validación',
-        'Por favor agrega al menos un procedimiento'
-      );
+      toast.error('Error de validación', 'Por favor agrega al menos un procedimiento');
       return;
     }
 
     setSubmitting(true);
-    
+
     try {
       const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
       const hospitalFactor = hospital?.rate_multiplier || 1;
-      
-      const caseData = {
+
+      const caseData: any = {
         patient_name: patientName,
         patient_id: patientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
@@ -432,9 +305,6 @@ const NewCase = () => {
         surgery_end_time: surgeryEndTime || undefined,
         diagnosis: diagnosis || undefined,
         notes: notes || undefined,
-        // Médico ayudante
-         assistant_doctor: assistantType === 'colleague' ? selectedColleagueId : undefined,
-        assistant_doctor_name: assistantType === 'manual' ? manualAssistantName : undefined,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
           surgery_name: proc.surgery_name,
@@ -447,28 +317,25 @@ const NewCase = () => {
           order: index + 1
         }))
       };
+
       // Solo agregar campos de ayudante si hay uno seleccionado
-    if (assistantType === 'colleague' && selectedColleagueId) {
-      caseData.assistant_doctor = selectedColleagueId;
-      // NO enviar assistant_accepted - se establece como null en el backend
-    } else if (assistantType === 'manual' && manualAssistantName) {
-      caseData.assistant_doctor_name = manualAssistantName;
-    }
+      if (assistantType === 'colleague' && selectedColleagueId) {
+        caseData.assistant_doctor = selectedColleagueId;
+      } else if (assistantType === 'manual' && manualAssistantName) {
+        caseData.assistant_doctor_name = manualAssistantName;
+      }
 
       await surgicalCaseService.createCase(caseData);
-      
+
       toast.success(
         '¡Caso creado exitosamente!',
-        `El caso de ${patientName} ha sido registrado correctamente con ${selectedProcedures.length} procedimiento${selectedProcedures.length !== 1 ? 's' : ''}`
+        `El caso de ${patientName} ha sido registrado correctamente`
       );
-      
+
       navigate('/cases');
     } catch (error) {
       console.error('Error creating case:', error);
-      toast.error(
-        'Error al crear caso',
-        'No se pudo crear el caso quirúrgico. Por favor intenta de nuevo.'
-      );
+      toast.error('Error al crear caso', 'Por favor intenta de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -519,7 +386,7 @@ const NewCase = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="patientId" className="text-sm font-semibold">ID / No. Expediente</Label>
                   <Input
@@ -530,7 +397,7 @@ const NewCase = () => {
                     className="h-11"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="patientAge" className="text-sm font-semibold">Edad (años)</Label>
                   <Input
@@ -544,7 +411,7 @@ const NewCase = () => {
                     max="150"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="patientGender" className="text-sm font-semibold">Género</Label>
                   <Select value={patientGender} onValueChange={(value) => setPatientGender(value as PatientGender)}>
@@ -559,7 +426,7 @@ const NewCase = () => {
                   </Select>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="diagnosis" className="text-sm font-semibold">Diagnóstico Principal</Label>
                 <Input
@@ -618,7 +485,7 @@ const NewCase = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="surgeryDate" className="text-sm font-semibold">
                     Fecha de Intervención <span className="text-destructive">*</span>
@@ -632,7 +499,7 @@ const NewCase = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="surgeryTime" className="text-sm font-semibold">Hora de Inicio</Label>
                   <Input
@@ -658,7 +525,7 @@ const NewCase = () => {
             </CardContent>
           </Card>
 
-          {/* Assistant Doctor - NUEVO */}
+          {/* Assistant Doctor */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -691,14 +558,9 @@ const NewCase = () => {
               {assistantType === 'colleague' && (
                 <div className="space-y-2">
                   <Label htmlFor="colleague">Seleccionar Colega</Label>
-                  {loadingColleagues ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground p-4 border rounded-lg">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Cargando colegas...
-                    </div>
-                  ) : colleagues.length === 0 ? (
+                  {colleagues.length === 0 ? (
                     <div className="text-sm text-muted-foreground p-4 border rounded-lg bg-muted/50">
-                      No tienes colegas agregados. Ve a la sección de Colegas para agregar algunos.
+                      No tienes colegas agregados.
                     </div>
                   ) : (
                     <Select 
@@ -760,16 +622,11 @@ const NewCase = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   value={searchQuery}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setSearchQuery(val);
-                    setShowProcedureSearch(val.length > 0);
-                    handleSearch(val);
-                  }}
+                  onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Buscar procedimientos por nombre, código o especialidad..."
                   className="pl-10"
                 />
-                
+
                 {showProcedureSearch && filteredProcedures.length > 0 && (
                   <Card className="absolute z-10 mt-2 w-full max-h-80 overflow-y-auto">
                     <CardContent className="p-2">
@@ -817,7 +674,7 @@ const NewCase = () => {
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label htmlFor={`notes-${index}`}>Notas del Procedimiento (opcional)</Label>
                         <Textarea
