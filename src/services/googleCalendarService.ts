@@ -169,10 +169,6 @@ class GoogleCalendarService {
             client_id: GOOGLE_CLIENT_ID,
             scope: SCOPES,
             callback: '', // Se define en connect()
-            // ✅ Añadir configuración de UX
-            ux_mode: 'popup',
-            // ✅ Forzar selección de cuenta
-            prompt: 'consent',
           });
           this.gisInited = true;
           gisLoaded = true;
