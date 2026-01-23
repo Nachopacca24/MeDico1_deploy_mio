@@ -117,6 +117,12 @@ class GoogleCalendarService {
 
     console.log('🔄 Inicializando Google APIs...');
 
+    // Eliminar scripts previos si existen para evitar duplicados
+    const existingGapi = document.querySelector('script[src*="apis.google.com/js/api.js"]');
+    const existingGis = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    if (existingGapi) existingGapi.remove();
+    if (existingGis) existingGis.remove();
+
     return new Promise((resolve, reject) => {
       let gapiLoaded = false;
       let gisLoaded = false;
