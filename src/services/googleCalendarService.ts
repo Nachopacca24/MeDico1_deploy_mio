@@ -376,11 +376,19 @@ class GoogleCalendarService {
     const token = (window as any).gapi?.client?.getToken();
     if (!token) return null;
 
+    // Intentar obtener el email del token de acceso si no hay id_token
     try {
-      const payload = JSON.parse(atob(token.id_token?.split('.')[1] || ''));
-      return payload.email || null;
+      if (token.id_token) {
+        const payload = JSON.parse(atob(token.id_token.split('.')[1] || ''));
+        return payload.email || null;
+      }
+      
+      // Si no hay id_token, el email podría estar en el hint o user info que ya tenemos
+      const user = this.getCurrentUser();
+      return user?.email || null;
     } catch {
-      return null;
+      const user = this.getCurrentUser();
+      return user?.email || null;
     }
   }
 }
