@@ -359,53 +359,66 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         """Crear caso con procedimientos anidados"""
+        print("🆕 CREATE - Iniciando...")
+
         procedures_data = validated_data.pop('procedures', [])
-        
+        print(f"📋 Procedures recibidos: {len(procedures_data)}")
+
         if 'assistant_accepted' not in validated_data or validated_data['assistant_accepted'] is None:
             validated_data['assistant_accepted'] = None
-        
+
         # Obtener el hospital para obtener su factor por defecto si es necesario
         hospital = validated_data.get('hospital')
         from decimal import Decimal
         hospital_factor = hospital.rate_multiplier if hospital else Decimal('1.00')
-        
+
+        print(f"🏥 Hospital factor: {hospital_factor}")
+
         try:
             case = SurgicalCase.objects.create(**validated_data)
+            print(f"✅ Caso creado ID: {case.id}")
         except Exception as e:
             import traceback
-            print(f"DEBUG ERROR: Failed to create SurgicalCase: {str(e)}")
+            print(f"❌ Error creando caso: {str(e)}")
+            print(traceback.format_exc())
             raise serializers.ValidationError(f"Error al crear el caso: {str(e)}")
-        
-        if procedures_data:
-            # Crear los procedimientos inmediatamente
-            for index, proc_data in enumerate(procedures_data):
-                try:
-                    # Asegurar valores numéricos para el cálculo
-                    rvu = Decimal(str(proc_data.get('rvu', 0)))
-                    # Si no viene factor, usar el del hospital
-                    factor = Decimal(str(proc_data.get('hospital_factor', hospital_factor)))
-                    proc_data['hospital_factor'] = factor
-                    
-                    if 'calculated_value' not in proc_data or not proc_data['calculated_value']:
-                        proc_data['calculated_value'] = rvu * factor
-                    
-                    # Convertir calculated_value a Decimal si es necesario
-                    if not isinstance(proc_data['calculated_value'], Decimal):
-                        proc_data['calculated_value'] = Decimal(str(proc_data['calculated_value']))
 
-                    CaseProcedure.objects.create(
-                        case=case,
-                        order=index if 'order' not in proc_data else proc_data['order'],
-                        **proc_data
-                    )
-                except Exception as e:
-                    print(f"DEBUG ERROR: Procedure creation failed: {str(e)}")
-                    continue
-        
+        # Crear procedimientos
+        if procedures_data:
+            print(f"🔄 Creando {len(procedures_data)} procedimientos...")
+            for index, proc_data in enumerate(procedures_data):
+                print(f"  Procedimiento {index + 1}: {proc_data.get('surgery_name', 'N/A')[:30]}")
+
+                # Asegurar valores numéricos para el cálculo
+                rvu = Decimal(str(proc_data.get('rvu', 0)))
+                # Si no viene factor, usar el del hospital
+                factor = Decimal(str(proc_data.get('hospital_factor', hospital_factor)))
+
+                if 'calculated_value' not in proc_data or not proc_data['calculated_value']:
+                    calculated_value = rvu * factor
+                else:
+                    calculated_value = Decimal(str(proc_data['calculated_value']))
+
+                # Crear procedimiento
+                CaseProcedure.objects.create(
+                    case=case,
+                    surgery_code=proc_data['surgery_code'],
+                    surgery_name=proc_data['surgery_name'],
+                    specialty=proc_data.get('specialty', ''),
+                    grupo=proc_data.get('grupo', ''),
+                    rvu=rvu,
+                    hospital_factor=factor,
+                    calculated_value=calculated_value,
+                    notes=proc_data.get('notes', ''),
+                    order=proc_data.get('order', index)
+                )
+                print(f"    ✅ Creado")
+
         # Refrescar el objeto para asegurar que las relaciones estén actualizadas
         case.refresh_from_db()
+        print(f"✅ Total procedimientos guardados: {case.procedures.count()}")
         return case
-    
+        
     def update(self, instance, validated_data):
         """Actualizar caso y sus procedimientos"""
         procedures_data = validated_data.pop('procedures', None)
