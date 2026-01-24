@@ -1,6 +1,7 @@
-// src/pages/calendar.tsx
+// src/pages/calendar.tsx - VERSIÓN CORREGIDA
 
 import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -48,13 +49,16 @@ interface CalendarDay {
 }
 
 const CalendarPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const {
     isConnected,
     userEmail,
     isLoading,
     connect,
-    getEvents
+    getEvents,
+    checkConnection
   } = useGoogleCalendar();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -63,7 +67,7 @@ const CalendarPage = () => {
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
-  
+
   // Create event dialog
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -75,6 +79,44 @@ const CalendarPage = () => {
     location: '',
     description: ''
   });
+
+  // 🆕 MANEJAR CALLBACK DE OAUTH AL CARGAR LA PÁGINA
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      const params = new URLSearchParams(location.search);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      const error = params.get('error');
+
+      if (error) {
+        console.error('❌ Error en OAuth:', error);
+        toast.error('Error de autenticación', 'No se pudo conectar con Google Calendar');
+        navigate('/calendar', { replace: true });
+        return;
+      }
+
+      if (accessToken) {
+        try {
+          console.log('✅ Recibido access_token del backend');
+          await googleCalendarService.handleCallback(accessToken, refreshToken || undefined);
+
+          toast.success('¡Conectado!', 'Google Calendar conectado exitosamente');
+
+          // Actualizar estado
+          checkConnection();
+
+          // Limpiar URL
+          navigate('/calendar', { replace: true });
+
+        } catch (error) {
+          console.error('❌ Error procesando callback:', error);
+          toast.error('Error', 'No se pudo completar la conexión');
+        }
+      }
+    };
+
+    handleOAuthCallback();
+  }, [location.search, navigate, toast, checkConnection]);
 
   useEffect(() => {
     if (isConnected) {
@@ -91,10 +133,9 @@ const CalendarPage = () => {
     try {
       const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-      
+
       const fetchedEvents = await getEvents(startOfMonth, endOfMonth);
       console.log('📅 Eventos cargados:', fetchedEvents.length);
-      console.log('Eventos:', fetchedEvents);
       setEvents(fetchedEvents);
     } catch (error) {
       console.error('Error loading events:', error);
@@ -107,15 +148,14 @@ const CalendarPage = () => {
   const generateCalendarDays = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
-    
+
     const startingDayOfWeek = firstDay.getDay();
     const days: CalendarDay[] = [];
-    
-    // Días del mes anterior
+
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       const date = new Date(year, month - 1, prevMonthLastDay - i);
@@ -126,8 +166,7 @@ const CalendarPage = () => {
         events: getEventsForDate(date)
       });
     }
-    
-    // Días del mes actual
+
     const today = new Date();
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
@@ -138,9 +177,8 @@ const CalendarPage = () => {
         events: getEventsForDate(date)
       });
     }
-    
-    // Días del siguiente mes
-    const remainingDays = 42 - days.length; // 6 semanas * 7 días
+
+    const remainingDays = 42 - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(year, month + 1, day);
       days.push({
@@ -150,7 +188,7 @@ const CalendarPage = () => {
         events: getEventsForDate(date)
       });
     }
-    
+
     setCalendarDays(days);
   };
 
@@ -175,8 +213,6 @@ const CalendarPage = () => {
 
   const handleDayClick = (day: CalendarDay) => {
     setSelectedDay(day);
-    
-    // Scroll al panel de detalles en móvil
     setTimeout(() => {
       detailsPanelRef.current?.scrollIntoView({ 
         behavior: 'smooth', 
@@ -217,10 +253,9 @@ const CalendarPage = () => {
       };
 
       await googleCalendarService.createEvent(event);
-      
+
       toast.success('¡Evento creado!', 'El evento se agregó a tu calendario');
-      
-      // Limpiar formulario y cerrar
+
       setNewEvent({
         title: '',
         date: '',
@@ -230,8 +265,6 @@ const CalendarPage = () => {
         description: ''
       });
       setShowCreateDialog(false);
-      
-      // Recargar eventos
       await loadMonthEvents();
     } catch (error) {
       console.error('Error creating event:', error);
@@ -270,7 +303,7 @@ const CalendarPage = () => {
     const diff = endDate.getTime() - startDate.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
@@ -345,7 +378,6 @@ const CalendarPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Calendario principal */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -372,7 +404,6 @@ const CalendarPage = () => {
                 </div>
               ) : (
                 <>
-                  {/* Headers de días */}
                   <div className="grid grid-cols-7 gap-2 mb-2">
                     {DAYS.map(day => (
                       <div key={day} className="text-center text-sm font-semibold text-muted-foreground py-2">
@@ -381,7 +412,6 @@ const CalendarPage = () => {
                     ))}
                   </div>
 
-                  {/* Días del calendario */}
                   <div className="grid grid-cols-7 gap-2">
                     {calendarDays.map((day, index) => (
                       <button
@@ -409,7 +439,7 @@ const CalendarPage = () => {
                         `}>
                           {day.date.getDate()}
                         </span>
-                        
+
                         {day.events.length > 0 && (
                           <div className="mt-1 space-y-1">
                             {day.events.slice(0, 2).map((event, i) => (
@@ -435,7 +465,6 @@ const CalendarPage = () => {
             </CardContent>
           </Card>
 
-          {/* Panel de detalles */}
           <Card className="lg:col-span-1" ref={detailsPanelRef}>
             <CardHeader>
               <CardTitle>
@@ -476,7 +505,7 @@ const CalendarPage = () => {
                           </Button>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="w-4 h-4" />
                         <span>{formatTime(event.start.dateTime)}</span>
@@ -515,7 +544,6 @@ const CalendarPage = () => {
         </div>
       </div>
 
-      {/* Create Event Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -524,7 +552,7 @@ const CalendarPage = () => {
               Agrega un evento a tu Google Calendar
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="title">Título *</Label>

@@ -1,4 +1,4 @@
-# apps/medico/urls.py
+# apps/medico/urls.py - ACTUALIZAR
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
@@ -9,6 +9,14 @@ from apps.medico.views import (
     AdminUserViewSet
 )
 from apps.medico.serializers.hospital import HospitalViewSet
+
+# 🆕 Importar vistas de Google Calendar
+from apps.medico.views.google_calendar import (
+    google_calendar_auth,
+    google_calendar_callback,
+    google_calendar_refresh,
+    google_calendar_revoke
+)
 
 app_name = 'medico'
 
@@ -22,4 +30,10 @@ router.register(r'admin/users', AdminUserViewSet, basename='admin-users')
 
 urlpatterns = [
     path('', include(router.urls)),
+
+    # 🆕 Google Calendar OAuth endpoints
+    path('google-calendar/auth/', google_calendar_auth, name='google-calendar-auth'),
+    path('google-calendar/callback/', google_calendar_callback, name='google-calendar-callback'),
+    path('google-calendar/refresh/', google_calendar_refresh, name='google-calendar-refresh'),
+    path('google-calendar/revoke/', google_calendar_revoke, name='google-calendar-revoke'),
 ]
