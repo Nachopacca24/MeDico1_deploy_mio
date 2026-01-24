@@ -1,9 +1,10 @@
-// src/services/googleCalendarService.ts - MEJORADO CON MEJOR MANEJO
+// src/services/googleCalendarService.ts - VERSIÓN CON REDIRECCIÓN (SIN POPUP)
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/calendar';
+const REDIRECT_URI = window.location.origin + '/calendar';
 
 // ⚠️ VERIFICAR QUE LAS VARIABLES EXISTAN
 if (!GOOGLE_CLIENT_ID || !GOOGLE_API_KEY) {
@@ -39,12 +40,8 @@ export interface CalendarEvent {
 }
 
 class GoogleCalendarService {
-  private tokenClient: any = null;
   private gapiInited = false;
-  private gisInited = false;
   private readonly STORAGE_PREFIX = 'medico_google_';
-  private connectAttempts = 0;
-  private readonly MAX_ATTEMPTS = 3;
 
   private getCurrentUserId(): string | null {
     const userStr = localStorage.getItem('medico_user');
@@ -114,49 +111,19 @@ class GoogleCalendarService {
   }
 
   async initialize(): Promise<void> {
-    if (this.gapiInited && this.gisInited) {
+    if (this.gapiInited) {
       console.log('✅ Google API ya inicializada');
       return;
     }
 
-    console.log('🔄 Inicializando Google APIs...');
+    console.log('🔄 Inicializando Google API...');
 
     return new Promise((resolve, reject) => {
-      let gapiLoaded = false;
-      let gisLoaded = false;
-      let gapiTimeout: any;
-      let gisTimeout: any;
-
-      const checkBothLoaded = () => {
-        if (gapiLoaded && gisLoaded) {
-          clearTimeout(gapiTimeout);
-          clearTimeout(gisTimeout);
-          console.log('✅ Ambas APIs inicializadas correctamente');
-          resolve();
-        }
-      };
-
-      // Timeout para GAPI (30 segundos)
-      gapiTimeout = setTimeout(() => {
-        if (!gapiLoaded) {
-          console.error('❌ Timeout cargando GAPI');
-          reject(new Error('Timeout loading GAPI'));
-        }
-      }, 30000);
-
-      // Timeout para GIS (30 segundos)
-      gisTimeout = setTimeout(() => {
-        if (!gisLoaded) {
-          console.error('❌ Timeout cargando GIS');
-          reject(new Error('Timeout loading GIS'));
-        }
-      }, 30000);
-
-      // Cargar GAPI
       const gapiScript = document.createElement('script');
       gapiScript.src = 'https://apis.google.com/js/api.js';
       gapiScript.async = true;
       gapiScript.defer = true;
+
       gapiScript.onload = () => {
         console.log('📦 Script GAPI cargado');
         (window as any).gapi.load('client', async () => {
@@ -166,152 +133,115 @@ class GoogleCalendarService {
               discoveryDocs: [DISCOVERY_DOC],
             });
             this.gapiInited = true;
-            gapiLoaded = true;
             console.log('✅ GAPI inicializado');
-            checkBothLoaded();
+            resolve();
           } catch (error) {
             console.error('❌ Error inicializando GAPI:', error);
-            clearTimeout(gapiTimeout);
             reject(error);
           }
         });
       };
+
       gapiScript.onerror = () => {
         console.error('❌ Error cargando script GAPI');
-        clearTimeout(gapiTimeout);
         reject(new Error('Failed to load GAPI script'));
       };
-      document.body.appendChild(gapiScript);
 
-      // Cargar GIS
-      const gisScript = document.createElement('script');
-      gisScript.src = 'https://accounts.google.com/gsi/client';
-      gisScript.async = true;
-      gisScript.defer = true;
-      gisScript.onload = () => {
-        console.log('📦 Script GIS cargado');
-        try {
-          this.tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: SCOPES,
-            callback: '', // Se define en connect()
-          });
-          this.gisInited = true;
-          gisLoaded = true;
-          console.log('✅ GIS inicializado');
-          checkBothLoaded();
-        } catch (error) {
-          console.error('❌ Error inicializando GIS:', error);
-          clearTimeout(gisTimeout);
-          reject(error);
-        }
-      };
-      gisScript.onerror = () => {
-        console.error('❌ Error cargando script GIS');
-        clearTimeout(gisTimeout);
-        reject(new Error('Failed to load GIS script'));
-      };
-      document.body.appendChild(gisScript);
+      document.body.appendChild(gapiScript);
     });
   }
 
+  /**
+   * 🆕 CONECTAR CON REDIRECCIÓN (NO POPUP)
+   * Este método redirige al usuario a Google OAuth
+   */
   async connect(): Promise<void> {
     const userId = this.getCurrentUserId();
     if (!userId) {
       throw new Error('Usuario no autenticado');
     }
 
-    this.connectAttempts++;
-    console.log(`🔗 Intento ${this.connectAttempts}/${this.MAX_ATTEMPTS} - Conectando Google Calendar para usuario: ${userId}`);
+    console.log(`🔗 Conectando Google Calendar para usuario: ${userId}`);
+    console.log('🚀 Redirigiendo a Google OAuth...');
 
-    if (this.connectAttempts > this.MAX_ATTEMPTS) {
-      this.connectAttempts = 0;
-      throw new Error('Demasiados intentos de conexión. Por favor recarga la página.');
-    }
+    // Guardar estado para validar después
+    const state = `user_${userId}_${Date.now()}`;
+    localStorage.setItem('google_oauth_state', state);
 
-    try {
-      await this.initialize();
-    } catch (error) {
-      console.error('❌ Error en inicialización:', error);
-      throw new Error('No se pudo inicializar Google Calendar. Verifica tu conexión a internet.');
-    }
+    // Construir URL de autorización de Google
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
+    authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
+    authUrl.searchParams.append('response_type', 'token');
+    authUrl.searchParams.append('scope', SCOPES);
+    authUrl.searchParams.append('state', state);
+    authUrl.searchParams.append('prompt', 'consent');
 
-    return new Promise((resolve, reject) => {
-      try {
-        let callbackExecuted = false;
-
-        // ✅ Configurar callback ANTES de solicitar token
-        this.tokenClient.callback = async (resp: any) => {
-          if (callbackExecuted) {
-            console.warn('⚠️ Callback ya ejecutado, ignorando...');
-            return;
-          }
-          callbackExecuted = true;
-
-          if (resp.error !== undefined) {
-            console.error('❌ Error en autenticación:', resp);
-            this.connectAttempts = 0;
-            reject(new Error(resp.error || 'Error de autenticación'));
-            return;
-          }
-
-          console.log('✅ Token recibido exitosamente');
-          this.setTokens(resp.access_token);
-
-          // Configurar token en GAPI
-          (window as any).gapi.client.setToken({ access_token: resp.access_token });
-
-          console.log(`✅ Google Calendar conectado para usuario: ${userId}`);
-          this.connectAttempts = 0;
-          resolve();
-        };
-
-        // Verificar si ya tiene token válido
-        const token = this.getAccessToken();
-        if (token) {
-          console.log('🔍 Verificando token existente...');
-          try {
-            (window as any).gapi.client.setToken({ access_token: token });
-            console.log('✅ Token válido existente');
-            this.connectAttempts = 0;
-            resolve();
-            return;
-          } catch (error) {
-            console.warn('⚠️ Token existente inválido, solicitando nuevo...');
-          }
-        }
-
-        // Solicitar nuevo token
-        console.log('🚀 Abriendo popup de Google OAuth...');
-
-        // Timeout para detectar si el popup no se abre
-        const popupTimeout = setTimeout(() => {
-          if (!callbackExecuted) {
-            console.error('❌ Timeout: El popup no respondió');
-            reject(new Error('El popup de autenticación no respondió. Verifica que los popups no estén bloqueados.'));
-          }
-        }, 60000); // 60 segundos
-
-        this.tokenClient.requestAccessToken({
-          prompt: 'consent',
-          hint: this.getCurrentUser()?.email
-        });
-
-      } catch (error) {
-        console.error('❌ Error al conectar:', error);
-        this.connectAttempts = 0;
-        reject(error);
-      }
-    });
+    // Redirigir a Google
+    window.location.href = authUrl.toString();
   }
 
-  private getCurrentUser(): any {
-    const userStr = localStorage.getItem('medico_user');
-    if (!userStr) return null;
+  /**
+   * 🆕 MANEJAR CALLBACK DE GOOGLE
+   * Este método procesa el token que Google devuelve en la URL
+   */
+  async handleOAuthCallback(): Promise<boolean> {
+    const hash = window.location.hash;
+
+    if (!hash) {
+      return false;
+    }
+
+    console.log('🔍 Detectado hash en URL, procesando...');
+
     try {
-      return JSON.parse(userStr);
-    } catch {
-      return null;
+      // Parsear el hash (formato: #access_token=xxx&token_type=Bearer&expires_in=3599&state=xxx)
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get('access_token');
+      const state = params.get('state');
+      const error = params.get('error');
+
+      if (error) {
+        console.error('❌ Error en OAuth:', error);
+        throw new Error(`Error de OAuth: ${error}`);
+      }
+
+      if (!accessToken) {
+        console.warn('⚠️ No se encontró access_token en la URL');
+        return false;
+      }
+
+      // Validar estado
+      const savedState = localStorage.getItem('google_oauth_state');
+      if (state !== savedState) {
+        console.error('❌ Estado inválido - posible ataque CSRF');
+        throw new Error('Estado de OAuth inválido');
+      }
+
+      console.log('✅ Token recibido de Google');
+
+      // Guardar token
+      this.setTokens(accessToken);
+
+      // Inicializar GAPI y configurar token
+      await this.initialize();
+      (window as any).gapi.client.setToken({ access_token: accessToken });
+
+      // Limpiar URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Limpiar estado
+      localStorage.removeItem('google_oauth_state');
+
+      console.log('✅ Google Calendar conectado exitosamente');
+      return true;
+
+    } catch (error) {
+      console.error('❌ Error procesando callback:', error);
+      // Limpiar URL incluso si hay error
+      window.history.replaceState({}, document.title, window.location.pathname);
+      localStorage.removeItem('google_oauth_state');
+      throw error;
     }
   }
 
@@ -320,7 +250,10 @@ class GoogleCalendarService {
 
     if (token) {
       try {
-        await (window as any).google.accounts.oauth2.revoke(token);
+        // Revocar token en Google
+        await fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, {
+          method: 'POST',
+        });
         console.log('✅ Token revocado en Google');
       } catch (error) {
         console.error('Error al revocar token:', error);
@@ -333,7 +266,6 @@ class GoogleCalendarService {
       (window as any).gapi.client.setToken(null);
     }
 
-    this.connectAttempts = 0;
     console.log('✅ Desconectado de Google Calendar');
   }
 
