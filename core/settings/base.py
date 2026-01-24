@@ -1,4 +1,4 @@
-# core/settings/base.py - VERSIÓN COMPLETA ACTUALIZADA
+# core/settings/base.py
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -8,26 +8,25 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
+
 load_dotenv()
 
 env = environ.Env()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 environ.Env.read_env(BASE_DIR / '.env')
 
+
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
-    "medico1-h5lk.onrender.com",
-    "me-dico1.vercel.app",
-    "me-dico-1--josepaccagnella.replit.app",
-    "8000-me-dico-1--josepaccagnella.replit.app",
-    ".replit.app",
-    ".replit.dev",
+    "medico1-h5lk.onrender.com",   # Render Backend
+    "me-dico1.vercel.app",         # Vercel Frontend
     "localhost",
     "127.0.0.1",
 ]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -58,10 +57,16 @@ INSTALLED_APPS = [
     'django_extensions',
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+
+    # CORS
     'corsheaders.middleware.CorsMiddleware',
+
+    # Custom
     'core.middleware.ViteDevMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'core.middleware.DisableCSRFForAPIMiddleware',
@@ -72,6 +77,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
+
 
 TEMPLATES = [
     {
@@ -91,6 +97,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -102,6 +109,7 @@ DATABASES = {
     }
 }
 
+
 AUTH_USER_MODEL = 'medio_auth.CustomUser'
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -111,13 +119,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+
 LANGUAGE_CODE = 'es-gt'
 TIME_ZONE = 'America/Guatemala'
 USE_I18N = True
 USE_TZ = True
 
+
 # ============================================
-# ARCHIVOS ESTÁTICOS
+# ARCHIVOS ESTÁTICOS (CSS, JavaScript, Images)
 # ============================================
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -139,38 +149,25 @@ cloudinary.config(
     secure=True
 )
 
+# USAR CLOUDINARY PARA ARCHIVOS MEDIA
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# MEDIA_URL - Cloudinary manejará las URLs automáticamente
 MEDIA_URL = '/media/'
 
 # ============================================
-# GOOGLE CALENDAR OAUTH CONFIGURATION
+# FIN CLOUDINARY CONFIGURATION
 # ============================================
+
+# GOOGLE CALENDAR CONFIGURATION
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+# The domain must match what's configured in Google Cloud Console
+# In Replit, this is usually the project domain
+BASE_DOMAIN = os.environ.get('REPLIT_DEV_DOMAIN', 'me-dico-1--josepaccagnella.replit.app')
+GOOGLE_REDIRECT_URI = f"https://{BASE_DOMAIN}/api/auth/google/callback"
 
-# Detectar entorno
-if DEBUG:
-    # Desarrollo en Replit
-    BASE_DOMAIN = os.environ.get('REPLIT_DEV_DOMAIN', 'me-dico-1--josepaccagnella.replit.app')
-    FRONTEND_URL = f'https://{BASE_DOMAIN}'
-    GOOGLE_REDIRECT_URI = f"https://{BASE_DOMAIN}/api/medico/google-calendar/callback/"
-else:
-    # Producción
-    FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://me-dico1.vercel.app')
-    GOOGLE_REDIRECT_URI = 'https://medico1-h5lk.onrender.com/api/medico/google-calendar/callback/'
 
-# ============================================
-# SESSION CONFIGURATION (necesario para OAuth)
-# ============================================
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600  # 2 semanas
-SESSION_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-
-# ============================================
-# REST FRAMEWORK
-# ============================================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -187,29 +184,33 @@ REST_FRAMEWORK = {
     ],
 }
 
-# ============================================
-# SIMPLE JWT
-# ============================================
+# Configuración de Simple JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
+
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
+
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
 }
 
 # ============================================
-# EMAIL CONFIGURATION
+# CONFIGURACIÓN DE EMAIL
 # ============================================
+
+# Para desarrollo: Console backend (muestra emails en la terminal)
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
+    # Para producción: SMTP backend
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+# Configuración SMTP (para producción)
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
@@ -217,48 +218,62 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'MéDico1 <noreply@medico1.com>')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Timeout para envío de emails
 EMAIL_TIMEOUT = 10
 
-# ============================================
-# AUTHENTICATION BACKENDS
-# ============================================
-AUTHENTICATION_BACKENDS = [
-    'apps.medio_auth.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
+# URL del frontend para enlaces de verificación
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 
 # ============================================
-# CORS CONFIGURATION
+# FIN CONFIGURACIÓN DE EMAIL
 # ============================================
+
+# Backend de autenticación personalizado
+AUTHENTICATION_BACKENDS = [
+    'apps.medio_auth.backends.EmailBackend',  # Email authentication
+    'django.contrib.auth.backends.ModelBackend',  # Username authentication (fallback)
+]
+
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://172.22.240.1:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://172.22.240.1:5173",
+]
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
+
+# Tamaño máximo de archivo subido (20MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+
+
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "https://me-dico1.vercel.app",
     "https://medico1-h5lk.onrender.com",
-    "https://me-dico-1--josepaccagnella.replit.app",
-    "https://8000-me-dico-1--josepaccagnella.replit.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:5000",
-    "http://127.0.0.1:5000",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://medico1-h5lk.onrender.com",
     "https://me-dico1.vercel.app",
-    "https://me-dico-1--josepaccagnella.replit.app",
-    "https://8000-me-dico-1--josepaccagnella.replit.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
 
-CSRF_COOKIE_SECURE = not DEBUG
+# En producción, idealmente poner True
+CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
-
-# ============================================
-# FILE UPLOAD SETTINGS
-# ============================================
-DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
-FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
