@@ -117,12 +117,6 @@ class GoogleCalendarService {
 
     console.log('🔄 Inicializando Google APIs...');
 
-    // Eliminar scripts previos si existen para evitar duplicados
-    const existingGapi = document.querySelector('script[src*="apis.google.com/js/api.js"]');
-    const existingGis = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
-    if (existingGapi) existingGapi.remove();
-    if (existingGis) existingGis.remove();
-
     return new Promise((resolve, reject) => {
       let gapiLoaded = false;
       let gisLoaded = false;
@@ -382,19 +376,11 @@ class GoogleCalendarService {
     const token = (window as any).gapi?.client?.getToken();
     if (!token) return null;
 
-    // Intentar obtener el email del token de acceso si no hay id_token
     try {
-      if (token.id_token) {
-        const payload = JSON.parse(atob(token.id_token.split('.')[1] || ''));
-        return payload.email || null;
-      }
-      
-      // Si no hay id_token, el email podría estar en el hint o user info que ya tenemos
-      const user = this.getCurrentUser();
-      return user?.email || null;
+      const payload = JSON.parse(atob(token.id_token?.split('.')[1] || ''));
+      return payload.email || null;
     } catch {
-      const user = this.getCurrentUser();
-      return user?.email || null;
+      return null;
     }
   }
 }
