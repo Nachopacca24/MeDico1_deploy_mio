@@ -849,9 +849,6 @@ const NewCase = () => {
                             <p className="text-sm font-medium text-muted-foreground">
                               Cargando base de datos de procedimientos...
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Esto solo ocurre la primera vez
-                            </p>
                           </CardContent>
                         </Card>
                       )}
