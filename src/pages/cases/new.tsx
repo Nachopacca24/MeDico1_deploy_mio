@@ -133,6 +133,7 @@ const NewCase = () => {
   }, [searchQuery, allProcedures]);
 
   // ✅ BÚSQUEDA: Carga CSVs solo cuando el usuario busca
+  // ✅ BÚSQUEDA: Carga CSVs solo cuando el usuario busca
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
 
@@ -142,6 +143,105 @@ const NewCase = () => {
     }
 
     setShowProcedureSearch(true);
+
+    // Solo cargar CSVs la primera vez que se busca
+    if (allProcedures.length === 0) {
+      console.log("[CSV] Primera búsqueda - cargando todos los CSVs...");
+
+      const folderStructure: Record<string, Record<string, string>> = {
+        "Cardiovascular": {
+          "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
+          "Corazón": "Cardiovascular/Corazón.csv",
+          "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
+          "Tórax": "Cardiovascular/torax.csv",
+        },
+        "Dermatología": {
+          "Dermatología": "Dermatología/Dermatología.csv",
+        },
+        "Digestivo": {
+          "Digestivo": "Digestivo/Digestivo.csv",
+          "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
+          "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
+          "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
+        },
+        "Endocrino": {
+          "Endocrino": "Endocrino/Endocrino.csv",
+        },
+        "Ginecología": {
+          "Ginecología": "Ginecología/Ginecología.csv",
+        },
+        "Mama": {
+          "Mama": "Mama/Mama.csv",
+        },
+        "Maxilofacial": {
+          "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
+        },
+        "Neurocirugía": {
+          "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
+          "Columna": "Neurocirugía/Columna.csv",
+          "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
+        },
+        "Obstetricia": {
+          "Obstetricia": "Obstetricia/Obstetricia.csv",
+        },
+        "Oftalmología": {
+          "Oftalmología": "Oftalmología/Oftalmología.csv",
+        },
+        "Ortopedia": {
+          "Ortopedia": "Ortopedia/Ortopedia.csv",
+          "Cadera": "Ortopedia/Cadera.csv",
+          "Hombro": "Ortopedia/Hombro.csv",
+          "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
+          "Pie": "Ortopedia/Pie.csv",
+          "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
+          "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
+          "Artroscopia": "Ortopedia/Artroscopia.csv",
+        },
+        "Otorrinolaringología": {
+          "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
+          "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
+          "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
+          "Tórax": "Otorrino/torax.csv",
+        },
+        "Plástica": {
+          "Plástica": "Plastica/Plastica.csv",
+        },
+        "Procesos variados": {
+          "Cirugía General": "Procesos_variados/Cirugía_General.csv",
+          "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
+          "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
+          "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
+        },
+        "Urología": {
+          "Urología": "Urología/Urología.csv",
+        },
+      };
+
+      const procedures: ProcedureData[] = [];
+
+      for (const [specialty, subcategories] of Object.entries(folderStructure)) {
+        for (const [subName, csvPath] of Object.entries(subcategories)) {
+          try {
+            const csvContent = await loadCSV(csvPath);
+            csvContent.forEach((op: any) => {
+              procedures.push({
+                codigo: String(op.codigo || '').trim(),
+                cirugia: op.cirugia || '',
+                especialidad: specialty,
+                subespecialidad: subName,
+                grupo: op.grupo || '',
+                rvu: parseFloat(op.rvu) || 0
+              });
+            });
+          } catch (err) {
+            console.warn(`[CSV] Error cargando ${csvPath}`);
+          }
+        }
+      }
+
+      setAllProcedures(procedures);
+      console.log(`[CSV] ✅ Cargados ${procedures.length} procedimientos`);
+    }
   };
   // ✅ NUEVA FUNCIÓN: Cargar RVU de un favorito específico
   const loadFavoriteRvu = async (proc: ProcedureData): Promise<ProcedureData | null> => {
