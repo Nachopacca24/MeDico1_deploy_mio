@@ -1,3 +1,4 @@
+//src/pages/cases/edit.tsx 
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
@@ -487,6 +488,10 @@ const EditCase = () => {
     setSubmitting(true);
 
     try {
+      console.log('📝 EDITANDO CASO ID:', id);
+      console.log('📅 Nueva fecha:', surgeryDate);
+      console.log('🕐 Nueva hora:', surgeryTime);
+
       const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
       const hospitalFactor = hospital?.rate_multiplier || 1;
 
@@ -522,6 +527,9 @@ const EditCase = () => {
         caseData.assistant_doctor_name = manualAssistantName;
       }
 
+      console.log('📤 Enviando actualización:', caseData);
+
+      // ✅ CRÍTICO: Llamar a updateCase (NO createCase)
       await surgicalCaseService.updateCase(parseInt(id!), caseData);
 
       toast.success(
@@ -530,9 +538,9 @@ const EditCase = () => {
       );
 
       navigate(`/cases/${id}`);
-    } catch (error) {
-      console.error('Error updating case:', error);
-      toast.error('Error al actualizar caso', 'Por favor intenta de nuevo.');
+    } catch (error: any) {
+      console.error('❌ Error updating case:', error);
+      toast.error('Error al actualizar caso', error.message || 'Por favor intenta de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -1027,12 +1035,12 @@ const EditCase = () => {
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creando Caso...
+                  Actualizando Caso...
                 </>
               ) : (
                 <>
                   <Plus className="mr-2 h-4 w-4" />
-                  Crear Caso
+                  Actualizar Caso
                 </>
               )}
               </Button>
