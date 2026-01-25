@@ -1,4 +1,4 @@
-// src/shared/hooks/useGoogleCalendar.ts
+// src/shared/hooks/useGoogleCalendar.ts - VERSIÓN MEJORADA
 
 import { useState, useEffect, useCallback } from 'react';
 import { googleCalendarService, CalendarEvent } from '@/services/googleCalendarService';
@@ -28,7 +28,7 @@ export function useGoogleCalendar() {
    */
   const checkConnection = useCallback(() => {
     const user = getCurrentUser();
-    
+
     if (!user) {
       setIsConnected(false);
       setUserEmail(null);
@@ -37,29 +37,50 @@ export function useGoogleCalendar() {
 
     const connected = googleCalendarService.isConnected();
     setIsConnected(connected);
-    
+
     if (connected) {
       const email = googleCalendarService.getUserEmail();
       setUserEmail(email);
       console.log(`✅ Google Calendar conectado para usuario: ${user.email}`);
     } else {
       setUserEmail(null);
+      console.log(`⚠️ Google Calendar NO conectado para usuario: ${user.email}`);
     }
   }, [getCurrentUser]);
 
   /**
-   * 🔒 Verificar conexión al montar el hook
+   * 🔒 Verificar conexión al montar el hook y cada 60 segundos
    */
   useEffect(() => {
     checkConnection();
-  }, [checkConnection]);
+
+    // ✅ Verificar conexión periódicamente
+    const interval = setInterval(() => {
+      const wasConnected = isConnected;
+      checkConnection();
+      const nowConnected = googleCalendarService.isConnected();
+
+      // Si se desconectó, notificar al usuario
+      if (wasConnected && !nowConnected) {
+        console.warn('⚠️ Google Calendar se desconectó');
+        toast({
+          variant: "destructive",
+          title: "Google Calendar desconectado",
+          description: "Tu sesión de Google Calendar expiró. Por favor, reconéctate.",
+          duration: 5000,
+        });
+      }
+    }, 60000); // Cada 60 segundos
+
+    return () => clearInterval(interval);
+  }, [checkConnection, isConnected, toast]);
 
   /**
    * 🔒 Conectar a Google Calendar
    */
   const connect = useCallback(async () => {
     const user = getCurrentUser();
-    
+
     if (!user) {
       toast({
         variant: "destructive",
@@ -73,11 +94,11 @@ export function useGoogleCalendar() {
     try {
       console.log(`🔗 Iniciando conexión a Google Calendar para: ${user.email}`);
       await googleCalendarService.connect();
-      
+
       // Verificar conexión exitosa
       const connected = googleCalendarService.isConnected();
       setIsConnected(connected);
-      
+
       if (connected) {
         const email = googleCalendarService.getUserEmail();
         setUserEmail(email);
@@ -105,7 +126,7 @@ export function useGoogleCalendar() {
   const disconnect = useCallback(async () => {
     const user = getCurrentUser();
     console.log(`🔌 Desconectando Google Calendar para: ${user?.email || 'unknown'}`);
-    
+
     try {
       await googleCalendarService.disconnect();
       setIsConnected(false);
@@ -126,11 +147,11 @@ export function useGoogleCalendar() {
   }, [getCurrentUser, toast]);
 
   /**
-   * Crear evento en Google Calendar
+   * ✅ MEJORADO: Crear evento con manejo de errores de token expirado
    */
   const createEvent = useCallback(async (event: CalendarEvent): Promise<string | null> => {
     const user = getCurrentUser();
-    
+
     if (!user) {
       toast({
         variant: "destructive",
@@ -158,13 +179,26 @@ export function useGoogleCalendar() {
       });
       console.log(`✅ Evento creado: ${eventId}`);
       return eventId;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error al crear evento:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "No se pudo crear el evento",
-      });
+
+      // ✅ Detectar token expirado
+      if (error.message?.includes('expirada')) {
+        setIsConnected(false);
+        setUserEmail(null);
+        toast({
+          variant: "destructive",
+          title: "Sesión expirada",
+          description: "Tu sesión de Google Calendar expiró. Por favor, reconéctate.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message || "No se pudo crear el evento",
+        });
+      }
+
       return null;
     } finally {
       setIsLoading(false);
@@ -172,11 +206,11 @@ export function useGoogleCalendar() {
   }, [isConnected, getCurrentUser, toast]);
 
   /**
-   * Actualizar evento en Google Calendar
+   * ✅ MEJORADO: Actualizar evento con manejo de errores
    */
   const updateEvent = useCallback(async (eventId: string, event: CalendarEvent): Promise<boolean> => {
     const user = getCurrentUser();
-    
+
     if (!user) {
       toast({
         variant: "destructive",
@@ -204,13 +238,26 @@ export function useGoogleCalendar() {
       });
       console.log(`✅ Evento actualizado: ${eventId}`);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error al actualizar evento:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "No se pudo actualizar el evento",
-      });
+
+      // ✅ Detectar token expirado
+      if (error.message?.includes('expirada')) {
+        setIsConnected(false);
+        setUserEmail(null);
+        toast({
+          variant: "destructive",
+          title: "Sesión expirada",
+          description: "Tu sesión de Google Calendar expiró. Por favor, reconéctate.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message || "No se pudo actualizar el evento",
+        });
+      }
+
       return false;
     } finally {
       setIsLoading(false);
@@ -222,7 +269,7 @@ export function useGoogleCalendar() {
    */
   const deleteEvent = useCallback(async (eventId: string): Promise<boolean> => {
     const user = getCurrentUser();
-    
+
     if (!user) {
       return false;
     }
@@ -240,13 +287,26 @@ export function useGoogleCalendar() {
       });
       console.log(`✅ Evento eliminado: ${eventId}`);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error al eliminar evento:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "No se pudo eliminar el evento",
-      });
+
+      // ✅ Detectar token expirado
+      if (error.message?.includes('expirada')) {
+        setIsConnected(false);
+        setUserEmail(null);
+        toast({
+          variant: "destructive",
+          title: "Sesión expirada",
+          description: "Tu sesión de Google Calendar expiró. Por favor, reconéctate.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message || "No se pudo eliminar el evento",
+        });
+      }
+
       return false;
     } finally {
       setIsLoading(false);
@@ -254,11 +314,11 @@ export function useGoogleCalendar() {
   }, [isConnected, getCurrentUser, toast]);
 
   /**
-   * Obtener eventos de Google Calendar
+   * ✅ MEJORADO: Obtener eventos con manejo de errores
    */
   const getEvents = useCallback(async (startDate: Date, endDate: Date): Promise<CalendarEvent[]> => {
     const user = getCurrentUser();
-    
+
     if (!user) {
       console.warn('⚠️ No hay usuario autenticado');
       return [];
@@ -274,13 +334,26 @@ export function useGoogleCalendar() {
       const events = await googleCalendarService.getEvents(startDate, endDate);
       console.log(`✅ Eventos obtenidos: ${events.length}`);
       return events;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error al obtener eventos:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "No se pudieron obtener los eventos",
-      });
+
+      // ✅ Detectar token expirado
+      if (error.message?.includes('expirada')) {
+        setIsConnected(false);
+        setUserEmail(null);
+        toast({
+          variant: "destructive",
+          title: "Sesión expirada",
+          description: "Tu sesión de Google Calendar expiró. Por favor, reconéctate.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message || "No se pudieron obtener los eventos",
+        });
+      }
+
       return [];
     } finally {
       setIsLoading(false);
