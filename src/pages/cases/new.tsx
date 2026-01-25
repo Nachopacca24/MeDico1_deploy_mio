@@ -76,6 +76,7 @@ const NewCase = () => {
   const [favoriteProcedures, setFavoriteProcedures] = useState<ProcedureData[]>([]);
   const [showFavorites, setShowFavorites] = useState(true);
   const [loadingFavoriteRvu, setLoadingFavoriteRvu] = useState<string | null>(null);
+  const [loadingAllProcedures, setLoadingAllProcedures] = useState(false);
 
   // ✅ CARGA INICIAL: Hospitales, colegas Y favoritos (UNA VEZ)
   useEffect(() => {
@@ -144,105 +145,107 @@ const NewCase = () => {
 
     setShowProcedureSearch(true);
 
-    // Solo cargar CSVs la primera vez que se busca
-    if (allProcedures.length === 0) {
-      console.log("[CSV] Primera búsqueda - cargando todos los CSVs...");
+  // Solo cargar CSVs la primera vez que se busca
+  if (allProcedures.length === 0) {
+    setLoadingAllProcedures(true);
+    console.log("[CSV] Primera búsqueda - cargando todos los CSVs...");
 
-      const folderStructure: Record<string, Record<string, string>> = {
-        "Cardiovascular": {
-          "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
-          "Corazón": "Cardiovascular/Corazón.csv",
-          "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
-          "Tórax": "Cardiovascular/torax.csv",
-        },
-        "Dermatología": {
-          "Dermatología": "Dermatología/Dermatología.csv",
-        },
-        "Digestivo": {
-          "Digestivo": "Digestivo/Digestivo.csv",
-          "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
-          "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
-          "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
-        },
-        "Endocrino": {
-          "Endocrino": "Endocrino/Endocrino.csv",
-        },
-        "Ginecología": {
-          "Ginecología": "Ginecología/Ginecología.csv",
-        },
-        "Mama": {
-          "Mama": "Mama/Mama.csv",
-        },
-        "Maxilofacial": {
-          "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
-        },
-        "Neurocirugía": {
-          "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
-          "Columna": "Neurocirugía/Columna.csv",
-          "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
-        },
-        "Obstetricia": {
-          "Obstetricia": "Obstetricia/Obstetricia.csv",
-        },
-        "Oftalmología": {
-          "Oftalmología": "Oftalmología/Oftalmología.csv",
-        },
-        "Ortopedia": {
-          "Ortopedia": "Ortopedia/Ortopedia.csv",
-          "Cadera": "Ortopedia/Cadera.csv",
-          "Hombro": "Ortopedia/Hombro.csv",
-          "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
-          "Pie": "Ortopedia/Pie.csv",
-          "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
-          "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
-          "Artroscopia": "Ortopedia/Artroscopia.csv",
-        },
-        "Otorrinolaringología": {
-          "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
-          "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
-          "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-          "Tórax": "Otorrino/torax.csv",
-        },
-        "Plástica": {
-          "Plástica": "Plastica/Plastica.csv",
-        },
-        "Procesos variados": {
-          "Cirugía General": "Procesos_variados/Cirugía_General.csv",
-          "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
-          "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
-          "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
-        },
-        "Urología": {
-          "Urología": "Urología/Urología.csv",
-        },
-      };
+    const folderStructure: Record<string, Record<string, string>> = {
+      "Cardiovascular": {
+        "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
+        "Corazón": "Cardiovascular/Corazón.csv",
+        "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
+        "Tórax": "Cardiovascular/torax.csv",
+      },
+      "Dermatología": {
+        "Dermatología": "Dermatología/Dermatología.csv",
+      },
+      "Digestivo": {
+        "Digestivo": "Digestivo/Digestivo.csv",
+        "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
+        "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
+        "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
+      },
+      "Endocrino": {
+        "Endocrino": "Endocrino/Endocrino.csv",
+      },
+      "Ginecología": {
+        "Ginecología": "Ginecología/Ginecología.csv",
+      },
+      "Mama": {
+        "Mama": "Mama/Mama.csv",
+      },
+      "Maxilofacial": {
+        "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
+      },
+      "Neurocirugía": {
+        "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
+        "Columna": "Neurocirugía/Columna.csv",
+        "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
+      },
+      "Obstetricia": {
+        "Obstetricia": "Obstetricia/Obstetricia.csv",
+      },
+      "Oftalmología": {
+        "Oftalmología": "Oftalmología/Oftalmología.csv",
+      },
+      "Ortopedia": {
+        "Ortopedia": "Ortopedia/Ortopedia.csv",
+        "Cadera": "Ortopedia/Cadera.csv",
+        "Hombro": "Ortopedia/Hombro.csv",
+        "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
+        "Pie": "Ortopedia/Pie.csv",
+        "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
+        "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
+        "Artroscopia": "Ortopedia/Artroscopia.csv",
+      },
+      "Otorrinolaringología": {
+        "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
+        "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
+        "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
+        "Tórax": "Otorrino/torax.csv",
+      },
+      "Plástica": {
+        "Plástica": "Plastica/Plastica.csv",
+      },
+      "Procesos variados": {
+        "Cirugía General": "Procesos_variados/Cirugía_General.csv",
+        "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
+        "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
+        "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
+      },
+      "Urología": {
+        "Urología": "Urología/Urología.csv",
+      },
+    };
 
-      const procedures: ProcedureData[] = [];
+    const procedures: ProcedureData[] = [];
 
-      for (const [specialty, subcategories] of Object.entries(folderStructure)) {
-        for (const [subName, csvPath] of Object.entries(subcategories)) {
-          try {
-            const csvContent = await loadCSV(csvPath);
-            csvContent.forEach((op: any) => {
-              procedures.push({
-                codigo: String(op.codigo || '').trim(),
-                cirugia: op.cirugia || '',
-                especialidad: specialty,
-                subespecialidad: subName,
-                grupo: op.grupo || '',
-                rvu: parseFloat(op.rvu) || 0
-              });
+    for (const [specialty, subcategories] of Object.entries(folderStructure)) {
+      for (const [subName, csvPath] of Object.entries(subcategories)) {
+        try {
+          const csvContent = await loadCSV(csvPath);
+          csvContent.forEach((op: any) => {
+            procedures.push({
+              codigo: String(op.codigo || '').trim(),
+              cirugia: op.cirugia || '',
+              especialidad: specialty,
+              subespecialidad: subName,
+              grupo: op.grupo || '',
+              rvu: parseFloat(op.rvu) || 0
             });
-          } catch (err) {
-            console.warn(`[CSV] Error cargando ${csvPath}`);
-          }
+          });
+        } catch (err) {
+          console.warn(`[CSV] Error cargando ${csvPath}`);
         }
       }
-
-      setAllProcedures(procedures);
-      console.log(`[CSV] ✅ Cargados ${procedures.length} procedimientos`);
     }
-  };
+
+    setAllProcedures(procedures);
+    setLoadingAllProcedures(false);
+    console.log(`[CSV] ✅ Cargados ${procedures.length} procedimientos`);
+  }
+};
   // ✅ NUEVA FUNCIÓN: Cargar RVU de un favorito específico
   const loadFavoriteRvu = async (proc: ProcedureData): Promise<ProcedureData | null> => {
     try {
@@ -839,8 +842,22 @@ const NewCase = () => {
                     className="pl-10"
                   />
 
-                  {showProcedureSearch && filteredProcedures.length > 0 && (
-                    <Card className="absolute z-10 mt-2 w-full max-h-80 overflow-y-auto">
+                      {showProcedureSearch && loadingAllProcedures && (
+                        <Card className="absolute z-10 mt-2 w-full">
+                          <CardContent className="p-8 text-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
+                            <p className="text-sm font-medium text-muted-foreground">
+                              Cargando base de datos de procedimientos...
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Esto solo ocurre la primera vez
+                            </p>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {showProcedureSearch && !loadingAllProcedures && filteredProcedures.length > 0 && (
+                        <Card className="absolute z-10 mt-2 w-full max-h-80 overflow-y-auto">
                       <CardContent className="p-2">
                         {filteredProcedures.map((proc, index) => (
                           <button
