@@ -12,6 +12,7 @@ import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { colleaguesService } from '@/services/colleaguesService';
 import { loadCSV } from '@/shared/utils/csvLoader';
+import { favoritesService } from '@/services/favoritesService';
 import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users } from 'lucide-react';
 import type { PatientGender } from '@/types/surgical-case';
 
@@ -71,24 +72,41 @@ const NewCase = () => {
   const [allProcedures, setAllProcedures] = useState<ProcedureData[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // Estados para favoritos
+  const [favoriteProcedures, setFavoriteProcedures] = useState<ProcedureData[]>([]);
+  const [showFavorites, setShowFavorites] = useState(true);
+  const [loadingFavoriteRvu, setLoadingFavoriteRvu] = useState<string | null>(null);
 
-  // ✅ CARGA INICIAL: Solo hospitales y colegas (UNA VEZ)
+  // ✅ CARGA INICIAL: Hospitales, colegas Y favoritos (UNA VEZ)
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         console.log("[NewCase] Cargando datos iniciales...");
         setLoading(true);
 
-        // Cargar hospitales y colegas en paralelo
-        const [hospitalsData, colleaguesData] = await Promise.all([
+        // Cargar hospitales, colegas Y favoritos en paralelo
+        const [hospitalsData, colleaguesData, favoritesData] = await Promise.all([
           hospitalService.getHospitals(),
-          colleaguesService.getColleagues()
+          colleaguesService.getColleagues(),
+          favoritesService.getFavorites()
         ]);
 
         setHospitals(hospitalsData);
         setColleagues(colleaguesData.colleagues);
 
-        console.log("[NewCase] Datos iniciales cargados ✅");
+        // Convertir favoritos a formato de procedimientos
+        const favProcs: ProcedureData[] = favoritesData.map(fav => ({
+          codigo: fav.surgery_code,
+          cirugia: fav.surgery_name || fav.surgery_code,
+          especialidad: fav.specialty || 'General',
+          subespecialidad: undefined,
+          grupo: '',
+          rvu: 0 // Se cargará on-demand
+        }));
+
+        setFavoriteProcedures(favProcs);
+
+        console.log(`[NewCase] Datos iniciales cargados ✅ (${favProcs.length} favoritos)`);
       } catch (error) {
         console.error('[NewCase] Error:', error);
         toast.error('Error', 'No se pudieron cargar los datos');
@@ -124,11 +142,22 @@ const NewCase = () => {
     }
 
     setShowProcedureSearch(true);
+  };
+  // ✅ NUEVA FUNCIÓN: Cargar RVU de un favorito específico
+  const loadFavoriteRvu = async (proc: ProcedureData): Promise<ProcedureData | null> => {
+    try {
+      setLoadingFavoriteRvu(proc.codigo);
 
-    // Solo cargar CSVs la primera vez que se busca
-    if (allProcedures.length === 0) {
-      console.log("[CSV] Primera búsqueda - cargando todos los CSVs...");
+      // Si allProcedures ya está cargado, buscar ahí
+      if (allProcedures.length > 0) {
+        const found = allProcedures.find(p => p.codigo === proc.codigo);
+        if (found) {
+          setLoadingFavoriteRvu(null);
+          return found;
+        }
+      }
 
+      // Si no está cargado, buscar en los CSVs por especialidad
       const folderStructure: Record<string, Record<string, string>> = {
         "Cardiovascular": {
           "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
@@ -198,30 +227,60 @@ const NewCase = () => {
         },
       };
 
-      const procedures: ProcedureData[] = [];
-
-      for (const [specialty, subcategories] of Object.entries(folderStructure)) {
-        for (const [subName, csvPath] of Object.entries(subcategories)) {
+      // Buscar solo en la especialidad del procedimiento
+      const subcategories = folderStructure[proc.especialidad];
+      if (subcategories) {
+        for (const csvPath of Object.values(subcategories)) {
           try {
             const csvContent = await loadCSV(csvPath);
-            csvContent.forEach((op: any) => {
-              procedures.push({
-                codigo: String(op.codigo || '').trim(),
-                cirugia: op.cirugia || '',
-                especialidad: specialty,
-                subespecialidad: subName,
-                grupo: op.grupo || '',
-                rvu: parseFloat(op.rvu) || 0
-              });
-            });
+            const found = csvContent.find((op: any) => 
+              String(op.codigo || '').trim() === proc.codigo
+            );
+
+            if (found) {
+              const fullProc: ProcedureData = {
+                codigo: String(found.codigo || '').trim(),
+                cirugia: found.cirugia || '',
+                especialidad: proc.especialidad,
+                grupo: found.grupo || '',
+                rvu: parseFloat(found.rvu) || 0
+              };
+              setLoadingFavoriteRvu(null);
+              return fullProc;
+            }
           } catch (err) {
             console.warn(`[CSV] Error cargando ${csvPath}`);
           }
         }
       }
 
-      setAllProcedures(procedures);
-      console.log(`[CSV] ✅ Cargados ${procedures.length} procedimientos`);
+      setLoadingFavoriteRvu(null);
+      return null;
+    } catch (error) {
+      console.error('[NewCase] Error loading favorite RVU:', error);
+      setLoadingFavoriteRvu(null);
+      return null;
+    }
+  };
+
+  // ✅ NUEVA FUNCIÓN: Agregar favorito con carga de RVU
+  const handleAddFavoriteProcedure = async (proc: ProcedureData) => {
+    // Si ya tiene RVU, agregarlo directamente
+    if (proc.rvu > 0) {
+      handleAddProcedure(proc);
+      return;
+    }
+
+    // Cargar RVU del CSV
+    const fullProc = await loadFavoriteRvu(proc);
+
+    if (fullProc && fullProc.rvu > 0) {
+      handleAddProcedure(fullProc);
+    } else {
+      toast.error(
+        'RVU no encontrado',
+        `No se pudo cargar el RVU para ${proc.cirugia}. Búscalo manualmente.`
+      );
     }
   };
 
@@ -622,41 +681,96 @@ const NewCase = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Buscar procedimientos por nombre, código o especialidad..."
-                  className="pl-10"
-                />
+              {/* 🔥 NUEVA SECCIÓN: Acceso Rápido a Favoritos */}
+              {favoriteProcedures.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold flex items-center gap-2">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      Procedimientos Frecuentes ({favoriteProcedures.length})
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowFavorites(!showFavorites)}
+                    >
+                      {showFavorites ? 'Ocultar' : 'Mostrar'}
+                    </Button>
+                  </div>
 
-                {showProcedureSearch && filteredProcedures.length > 0 && (
-                  <Card className="absolute z-10 mt-2 w-full max-h-80 overflow-y-auto">
-                    <CardContent className="p-2">
-                      {filteredProcedures.map((proc, index) => (
+                  {showFavorites && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      {favoriteProcedures.map((proc, idx) => (
                         <button
-                          key={index}
+                          key={idx}
                           type="button"
-                          onClick={() => handleAddProcedure(proc)}
-                          className="w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                          onClick={() => handleAddFavoriteProcedure(proc)}
+                          disabled={loadingFavoriteRvu === proc.codigo}
+                          className="text-left p-3 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors border border-transparent hover:border-yellow-300 disabled:opacity-50"
                         >
-                          <div className="font-medium">{proc.cirugia}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {proc.codigo} • {proc.especialidad} • RVU: {proc.rvu}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">{proc.cirugia}</div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {proc.codigo} • {proc.especialidad}
+                              </div>
+                            </div>
+                            {loadingFavoriteRvu === proc.codigo && (
+                              <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+                            )}
                           </div>
                         </button>
                       ))}
-                    </CardContent>
-                  </Card>
-                )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Búsqueda Manual */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Buscar Otros Procedimientos</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    placeholder="Buscar por nombre, código o especialidad..."
+                    className="pl-10"
+                  />
+
+                  {showProcedureSearch && filteredProcedures.length > 0 && (
+                    <Card className="absolute z-10 mt-2 w-full max-h-80 overflow-y-auto">
+                      <CardContent className="p-2">
+                        {filteredProcedures.map((proc, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => handleAddProcedure(proc)}
+                            className="w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
+                          >
+                            <div className="font-medium">{proc.cirugia}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {proc.codigo} • {proc.especialidad} • RVU: {proc.rvu}
+                            </div>
+                          </button>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               </div>
 
               {selectedProcedures.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>No hay procedimientos agregados aún</p>
-                  <p className="text-sm">Busca y agrega procedimientos arriba</p>
+                  <p className="text-sm">
+                    {favoriteProcedures.length > 0 
+                      ? 'Selecciona de tus favoritos o busca manualmente'
+                      : 'Busca y agrega procedimientos arriba'
+                    }
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
