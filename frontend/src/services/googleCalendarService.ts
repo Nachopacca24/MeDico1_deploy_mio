@@ -19,12 +19,14 @@ export interface CalendarEvent {
   description?: string;
   location?: string;
   start: {
-    dateTime: string;
-    timeZone: string;
+    dateTime?: string;
+    date?: string;
+    timeZone?: string;
   };
   end: {
-    dateTime: string;
-    timeZone: string;
+    dateTime?: string;
+    date?: string;
+    timeZone?: string;
   };
   attendees?: Array<{
     email: string;
@@ -153,8 +155,8 @@ class GoogleCalendarService {
   }
 
   async initialize(): Promise<void> {
-    if (this.gapiInited) {
-      console.log('✅ Google API ya inicializada');
+    if (this.gapiInited && (window as any).gapi?.client?.calendar) {
+      console.log('✅ Google API y Calendar ya inicializados');
       return;
     }
 
@@ -174,12 +176,27 @@ class GoogleCalendarService {
               apiKey: GOOGLE_API_KEY,
               discoveryDocs: [DISCOVERY_DOC],
             });
+            
+            // ✅ NUEVO: Carga explícita por si falla el discoveryDoc pero la API está habilitada
+            if (!(window as any).gapi.client.calendar) {
+              console.log('🔄 Intentando carga manual de la librería calendar...');
+              await (window as any).gapi.client.load('calendar', 'v3');
+            }
+
             this.gapiInited = true;
-            console.log('✅ GAPI inicializado');
+            console.log('✅ GAPI y Calendar inicializados');
             resolve();
-          } catch (error) {
+          } catch (error: any) {
             console.error('❌ Error inicializando GAPI:', error);
-            reject(error);
+            // Intentar cargar calendar directamente incluso si init falla
+            try {
+              console.log('🔄 Reintentando carga directa de calendar...');
+              await (window as any).gapi.client.load('calendar', 'v3');
+              this.gapiInited = true;
+              resolve();
+            } catch (innerError) {
+              reject(error);
+            }
           }
         });
       };
@@ -321,8 +338,12 @@ class GoogleCalendarService {
       throw new Error('No hay token de acceso disponible. Conéctate primero.');
     }
 
-    if (!(window as any).gapi?.client) {
+    if (!(window as any).gapi?.client?.calendar) {
       await this.initialize();
+    }
+
+    if (!(window as any).gapi?.client?.calendar) {
+      throw new Error('La librería de Google Calendar no pudo cargarse.');
     }
 
     (window as any).gapi.client.setToken({ access_token: token });
@@ -351,23 +372,63 @@ class GoogleCalendarService {
     try {
       await this.ensureToken();
 
-      const request: any = {
-        calendarId: 'primary',
-        timeMin: timeMin.toISOString(),
-        showDeleted: false,
-        singleEvents: true,
-        orderBy: 'startTime',
-      };
+      // 1. Obtener la lista de calendarios del usuario
+      const calendarListResponse = await (window as any).gapi.client.calendar.calendarList.list();
+      const calendars = calendarListResponse.result.items || [];
+      
+      console.log(`📅 Buscando en ${calendars.length} calendarios...`);
 
-      if (timeMax) {
-        request.timeMax = timeMax.toISOString();
+      const allEvents: CalendarEvent[] = [];
+      const eventIds = new Set<string>();
+
+      // 2. Buscar eventos en cada calendario
+      for (const calendar of calendars) {
+        // Buscar en calendarios donde el usuario tenga al menos acceso de lectura
+        // y no omitir los secundarios si el usuario los usa para sus reuniones
+        const isAccessible = calendar.accessRole === 'owner' || 
+                           calendar.accessRole === 'writer' || 
+                           calendar.accessRole === 'reader';
+        
+        if (!isAccessible) continue;
+
+        try {
+          const request: any = {
+            calendarId: calendar.id,
+            timeMin: timeMin.toISOString(),
+            showDeleted: false,
+            singleEvents: true,
+            orderBy: 'startTime',
+          };
+
+          if (timeMax) {
+            request.timeMax = timeMax.toISOString();
+          }
+
+          const response = await (window as any).gapi.client.calendar.events.list(request);
+          const items = response.result.items || [];
+          
+          console.log(`   ✅ [${calendar.summary}] -> ${items.length} eventos (ID: ${calendar.id})`);
+
+          for (const item of items) {
+            if (!eventIds.has(item.id)) {
+              eventIds.add(item.id);
+              allEvents.push(item);
+            }
+          }
+        } catch (calError) {
+          console.warn(`⚠️ No se pudieron obtener eventos del calendario ${calendar.summary}:`, calError);
+        }
       }
 
-      const response = await (window as any).gapi.client.calendar.events.list(request);
-      return response.result.items || [];
+      // Ordenar todos los eventos por fecha de inicio
+      return allEvents.sort((a, b) => {
+        const startA = new Date(a.start.dateTime || a.start.date || 0).getTime();
+        const startB = new Date(b.start.dateTime || b.start.date || 0).getTime();
+        return startA - startB;
+      });
     } catch (error) {
       await this.handleApiError(error);
-      return []; // Fallback
+      return [];
     }
   }
 

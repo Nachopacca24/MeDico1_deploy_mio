@@ -104,9 +104,9 @@ const CalendarPage = () => {
   const loadMonthEvents = async () => {
     setLoadingEvents(true);
     try {
-      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-      const fetchedEvents = await getEvents(startOfMonth, endOfMonth);
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1, 0, 0, 0, 0);
+      const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1, 23, 59, 59, 999);
+      const fetchedEvents = await getEvents(startOfMonth, nextMonth);
       console.log('📅 Eventos cargados:', fetchedEvents.length);
       setEvents(fetchedEvents);
     } catch (error) {
@@ -164,7 +164,18 @@ const CalendarPage = () => {
 
   const getEventsForDate = (date: Date): CalendarEvent[] => {
     return events.filter(event => {
-      const eventDate = new Date(event.start.dateTime);
+      // Si es un evento de todo el día (solo tiene .date), evitamos problemas de zona horaria
+      if (event.start.date && !event.start.dateTime) {
+        // El formato es YYYY-MM-DD
+        const [year, month, day] = event.start.date.split('-').map(Number);
+        // month - 1 porque en JS los meses son 0-11
+        const eventDate = new Date(year, month - 1, day);
+        return eventDate.toDateString() === date.toDateString();
+      }
+
+      const eventStart = event.start.dateTime;
+      if (!eventStart) return false;
+      const eventDate = new Date(eventStart);
       return eventDate.toDateString() === date.toDateString();
     });
   };
@@ -257,8 +268,14 @@ const CalendarPage = () => {
     }
   };
 
-  const formatTime = (dateTimeStr: string) => {
-    const date = new Date(dateTimeStr);
+  const formatTime = (event: CalendarEvent, type: 'start' | 'end') => {
+    const timeInfo = type === 'start' ? event.start : event.end;
+    if (timeInfo.date && !timeInfo.dateTime) {
+      return type === 'start' ? 'Todo el día' : '';
+    }
+    if (!timeInfo.dateTime) return '';
+    
+    const date = new Date(timeInfo.dateTime);
     return date.toLocaleTimeString('es-GT', { 
       hour: '2-digit', 
       minute: '2-digit',
@@ -266,9 +283,14 @@ const CalendarPage = () => {
     });
   };
 
-  const formatDuration = (start: string, end: string) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+  const formatDuration = (event: CalendarEvent) => {
+    if (event.start.date && !event.start.dateTime) {
+      return '24h';
+    }
+    if (!event.start.dateTime || !event.end.dateTime) return '';
+
+    const startDate = new Date(event.start.dateTime);
+    const endDate = new Date(event.end.dateTime);
     const diff = endDate.getTime() - startDate.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -416,6 +438,7 @@ const CalendarPage = () => {
                                 key={i}
                                 className="text-xs truncate bg-primary/10 text-primary px-1 rounded"
                               >
+                                <span className="font-bold mr-1">{formatTime(event, 'start')}</span>
                                 {event.summary}
                               </div>
                             ))}
@@ -477,11 +500,17 @@ const CalendarPage = () => {
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="w-4 h-4" />
-                        <span>{formatTime(event.start.dateTime)}</span>
-                        <span>-</span>
-                        <span>{formatTime(event.end.dateTime)}</span>
+                        {event.start.date && !event.start.dateTime ? (
+                          <span>Todo el día</span>
+                        ) : (
+                          <>
+                            <span>{formatTime(event, 'start')}</span>
+                            <span>-</span>
+                            <span>{formatTime(event, 'end')}</span>
+                          </>
+                        )}
                         <Badge variant="outline" className="ml-auto">
-                          {formatDuration(event.start.dateTime, event.end.dateTime)}
+                          {formatDuration(event)}
                         </Badge>
                       </div>
 

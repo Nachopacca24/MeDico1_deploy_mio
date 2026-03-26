@@ -61,8 +61,9 @@ export function WeekCalendarWidget() {
     setLoadingEvents(true);
     try {
       const weekStart = new Date(currentWeekStart);
+      weekStart.setHours(0, 0, 0, 0);
       const weekEnd = new Date(currentWeekStart);
-      weekEnd.setDate(weekEnd.getDate() + 6);
+      weekEnd.setDate(weekEnd.getDate() + 7); // Una semana completa
       weekEnd.setHours(23, 59, 59, 999);
       
       const fetchedEvents = await getEvents(weekStart, weekEnd);
@@ -97,7 +98,15 @@ export function WeekCalendarWidget() {
 
   const getEventsForDate = (date: Date): CalendarEvent[] => {
     return events.filter(event => {
-      const eventDate = new Date(event.start.dateTime);
+      if (event.start.date && !event.start.dateTime) {
+        const [year, month, day] = event.start.date.split('-').map(Number);
+        const eventDate = new Date(year, month - 1, day);
+        return eventDate.toDateString() === date.toDateString();
+      }
+
+      const eventStart = event.start.dateTime;
+      if (!eventStart) return false;
+      const eventDate = new Date(eventStart);
       return eventDate.toDateString() === date.toDateString();
     });
   };
@@ -118,8 +127,13 @@ export function WeekCalendarWidget() {
     setCurrentWeekStart(getWeekStart(new Date()));
   };
 
-  const formatTime = (dateTimeStr: string) => {
-    const date = new Date(dateTimeStr);
+  const formatTime = (event: CalendarEvent) => {
+    if (event.start.date && !event.start.dateTime) {
+      return 'Día completo';
+    }
+    if (!event.start.dateTime) return '';
+
+    const date = new Date(event.start.dateTime);
     return date.toLocaleTimeString('es-GT', { 
       hour: '2-digit', 
       minute: '2-digit',
@@ -144,25 +158,39 @@ export function WeekCalendarWidget() {
 
   if (!isConnected) {
     return (
-      <Card>
+      <Card className="border-none shadow-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
-                Esta Semana
+              <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                </div>
+                Tu Agenda
               </CardTitle>
-              <CardDescription>Conecta tu Google Calendar</CardDescription>
+              <CardDescription className="text-slate-500 font-medium">Sincroniza con Google Calendar</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-8">
-            <CalendarIcon className="h-12 w-12 text-muted-foreground mb-3 opacity-50" />
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              Conecta tu cuenta para ver tus eventos
+          <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+              <div className="relative bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700">
+                <CalendarIcon className="h-10 w-10 text-primary opacity-80" />
+              </div>
+            </div>
+            <h4 className="text-lg font-semibold mb-2">Eventos no disponibles</h4>
+            <p className="text-sm text-slate-500 max-w-xs mb-6 leading-relaxed">
+              Conecta tu calendario para visualizar tus citas y procedimientos programados aquí.
             </p>
-            <Button onClick={connect} disabled={isLoading} size="sm">
+            <Button 
+              onClick={connect} 
+              disabled={isLoading} 
+              size="lg"
+              className="px-8 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all rounded-xl"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -171,7 +199,7 @@ export function WeekCalendarWidget() {
               ) : (
                 <>
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  Conectar Calendar
+                  Conectar Ahora
                 </>
               )}
             </Button>
@@ -182,24 +210,29 @@ export function WeekCalendarWidget() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+    <Card className="border-none shadow-xl bg-white dark:bg-slate-900 overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+              </div>
               Esta Semana
             </CardTitle>
-            <CardDescription>{getMonthYearLabel()}</CardDescription>
+            <CardDescription className="text-slate-500 font-medium pl-11">
+              {getMonthYearLabel()}
+            </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={goToPreviousWeek} disabled={loadingEvents}>
+          <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 p-1 rounded-xl w-fit">
+            <Button variant="ghost" size="icon" onClick={goToPreviousWeek} disabled={loadingEvents} className="h-8 w-8 hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={goToCurrentWeek} disabled={loadingEvents}>
+            <Button variant="ghost" size="sm" onClick={goToCurrentWeek} disabled={loadingEvents} className="h-8 px-3 text-xs font-semibold hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
               Hoy
             </Button>
-            <Button variant="ghost" size="icon" onClick={goToNextWeek} disabled={loadingEvents}>
+            <Button variant="ghost" size="icon" onClick={goToNextWeek} disabled={loadingEvents} className="h-8 w-8 hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -207,8 +240,9 @@ export function WeekCalendarWidget() {
       </CardHeader>
       <CardContent>
         {loadingEvents ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <div className="flex flex-col items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary opacity-60 mb-2" />
+            <p className="text-xs text-muted-foreground animate-pulse">Sincronizando eventos...</p>
           </div>
         ) : (
           <div className="grid grid-cols-7 gap-2">
@@ -216,55 +250,69 @@ export function WeekCalendarWidget() {
               <div
                 key={index}
                 className={`
-                  flex flex-col items-center p-2 rounded-lg border transition-all
+                  flex flex-col items-center p-2 sm:p-3 rounded-2xl border transition-all duration-300
                   ${day.isToday 
-                    ? 'bg-primary/10 border-primary' 
-                    : 'bg-background hover:bg-accent'
+                    ? 'bg-primary/5 border-primary/30 ring-4 ring-primary/5 shadow-inner scale-[1.02]' 
+                    : 'bg-slate-50/50 dark:bg-slate-800/30 border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-md'
                   }
                 `}
               >
-                <span className="text-xs text-muted-foreground mb-1">
+                <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 ${day.isToday ? 'text-primary' : 'text-slate-400'}`}>
                   {day.dayName}
                 </span>
                 <span className={`
-                  text-lg font-semibold mb-2
-                  ${day.isToday ? 'text-primary' : ''}
+                  text-lg sm:text-xl font-black mb-3
+                  ${day.isToday ? 'text-primary' : 'text-slate-700 dark:text-slate-200'}
                 `}>
                   {day.dayNumber}
                 </span>
                 
-                {day.events.length > 0 && (
-                  <div className="w-full space-y-1">
-                    {day.events.slice(0, 2).map((event, i) => (
+                {day.events.length > 0 ? (
+                  <div className="w-full space-y-1.5 mt-auto">
+                    {day.events.slice(0, 3).map((event, i) => (
                       <div
                         key={i}
-                        className="text-[10px] truncate bg-primary/20 text-primary px-1 py-0.5 rounded text-center"
-                        title={`${event.summary} - ${formatTime(event.start.dateTime)}`}
+                        className="group/event relative overflow-hidden"
+                        title={`${event.summary} - ${formatTime(event)}`}
                       >
-                        {formatTime(event.start.dateTime)}
+                        <div className={`
+                          text-[10px] truncate px-1.5 py-1 rounded-lg border flex items-center justify-center font-bold tracking-tight
+                          ${day.isToday 
+                            ? 'bg-primary text-white border-primary shadow-sm' 
+                            : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-100 dark:border-slate-600 group-hover/event:border-primary/50 group-hover/event:text-primary'
+                          }
+                          transition-all duration-200
+                        `}>
+                          <div className="flex flex-col w-full overflow-hidden">
+                            <span className="text-[9px] opacity-80 leading-tight">{formatTime(event)}</span>
+                            <span className="truncate font-bold leading-tight">{event.summary}</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
-                    {day.events.length > 2 && (
-                      <Badge variant="secondary" className="w-full text-[10px] h-4 flex items-center justify-center">
-                        +{day.events.length - 2}
-                      </Badge>
+                    {day.events.length > 3 && (
+                      <div className="flex justify-center">
+                        <Badge variant="secondary" className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] hover:bg-primary hover:text-white border-none transition-colors h-4 cursor-pointer">
+                          +{day.events.length - 3}
+                        </Badge>
+                      </div>
                     )}
                   </div>
-                )}
-                
-                {day.events.length === 0 && (
-                  <div className="text-xs text-muted-foreground">-</div>
+                ) : (
+                  <div className="mt-auto py-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
+                  </div>
                 )}
               </div>
             ))}
           </div>
         )}
 
-        <div className="mt-4 pt-4 border-t">
-          <Button asChild variant="outline" size="sm" className="w-full">
-            <Link to="/calendar">
-              Ver Calendario Completo
-              <ExternalLink className="ml-2 h-4 w-4" />
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <Button asChild variant="ghost" className="w-full group hover:bg-primary/5 text-primary font-bold transition-all rounded-xl">
+            <Link to="/calendar" className="flex items-center justify-center">
+              Gestionar Calendario Completo
+              <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Button>
         </div>
