@@ -26,6 +26,16 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 WORKDIR /app/backend
 
+# Variables falsas (dummies) para que Django no colapse al leer settings/base.py durante la compilación
+ENV DB_NAME=dummy
+ENV DB_USER=dummy
+ENV DB_PASSWORD=dummy
+ENV DB_HOST=dummy
+ENV DB_PORT=5432
+ENV CLOUDINARY_CLOUD_NAME=dummy
+ENV CLOUDINARY_API_KEY=dummy
+ENV CLOUDINARY_API_SECRET=dummy
+
 # Bypass del DB check para collectstatic
 RUN DATABASE_URL=sqlite:///:memory: DJANGO_SECRET_KEY=dummy-key python manage.py collectstatic --noinput
 
