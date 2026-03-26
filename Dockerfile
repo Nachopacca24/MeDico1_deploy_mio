@@ -43,8 +43,8 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 WORKDIR /app/backend
 
 # Recopilar archivos estáticos (Gunicorn los servirá vía WhiteNoise)
-# Usamos una clave dummy solo para este paso de compilación
-RUN DJANGO_SECRET_KEY=collectstatic-dummy-key python manage.py collectstatic --noinput
+# Usamos una base de datos sqlite en memoria temporal para que Django no intente conectar a Supabase durante el build
+RUN DATABASE_URL=sqlite:///:memory: DJANGO_SECRET_KEY=collectstatic-dummy-key python manage.py collectstatic --noinput
 
 # Cloud Run usa el puerto 8080 por defecto
 EXPOSE 8080
