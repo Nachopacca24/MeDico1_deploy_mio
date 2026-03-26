@@ -12,6 +12,8 @@ from django.db.models import Q
 from datetime import timedelta
 import requests
 import uuid
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
@@ -754,15 +756,13 @@ class RemoveColleagueView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-# ============================================
 # SOCIAL AUTHENTICATION (GOOGLE)
 # ============================================
 
 class GoogleLoginView(APIView):
     """
     Inicia sesión o registra a un usuario mediante Google OAuth.
-    Recibe el token de Google, verifica su validez y genera
-    los tokens JWT nativos de MéDico.
+    Soporta tanto ID Tokens (JWT) como Access Tokens (OAuth2).
     """
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -776,31 +776,71 @@ class GoogleLoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
             
+        idinfo = None
+        
+        # 1. Intentar validar como ID Token (JWT)
         try:
-            # Validar token de Google
-            google_response = requests.get(
-                f'https://oauth2.googleapis.com/tokeninfo?id_token={token}'
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                settings.GOOGLE_CLIENT_ID
             )
-            
-            if not google_response.ok:
+            # Verificar el emisor para ID Token
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                idinfo = None
+        except Exception:
+            # Si falla, idinfo permanece None y probaremos como Access Token
+            pass
+
+        # 2. Si no es un ID Token válido, intentar como Access Token
+        if not idinfo:
+            try:
+                # Consultar el endpoint de usuario de Google usando el Access Token
+                response = requests.get(
+                    'https://www.googleapis.com/oauth2/v3/userinfo',
+                    headers={'Authorization': f'Bearer {token}'}
+                )
+                if response.status_code == 200:
+                    idinfo = response.json()
+                    # Normalizar nombres de campos para que coincidan con idinfo del ID Token
+                    if 'sub' in idinfo and 'email' in idinfo:
+                        # Éxito obteniendo info del Access Token
+                        pass
+                    else:
+                        idinfo = None
+                else:
+                    return Response(
+                        {'error': 'Token de Google inválido o expirado'},
+                        status=status.HTTP_401_UNAUTHORIZED
+                    )
+            except Exception as e:
                 return Response(
-                    {'error': 'Token de Google inválido'},
+                    {'error': f'Error verificando Access Token: {str(e)}'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-                
-            user_info = google_response.json()
-            email = user_info.get('email')
-            first_name = user_info.get('given_name', '')
-            last_name = user_info.get('family_name', '')
-            
-            if not email:
-                return Response(
-                    {'error': 'No se pudo obtener el email de Google'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
+
+        if not idinfo:
+            return Response(
+                {'error': 'No se pudo validar la identidad con Google'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        email = idinfo.get('email')
+        first_name = idinfo.get('given_name', idinfo.get('name', '').split(' ')[0])
+        last_name = idinfo.get('family_name', ' '.join(idinfo.get('name', '').split(' ')[1:]))
+        
+        if not email:
+            return Response(
+                {'error': 'No se pudo obtener el email de Google'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
             # Buscar o crear el usuario
-            if not User.objects.filter(email=email).exists():
+            user = User.objects.filter(email=email).first()
+            created = False
+            
+            if not user:
                 base_username = email.split('@')[0]
                 unique_username = f"{base_username}_{uuid.uuid4().hex[:6]}"
                 
@@ -813,16 +853,13 @@ class GoogleLoginView(APIView):
                     role=1
                 )
                 created = True
-            else:
-                user = User.objects.get(email=email)
-                created = False
-                
-            # Si el usuario ya existía pero no estaba verificado, verificarlo al acceder con Google.
-            if not created and not user.is_email_verified:
+            
+            # Autoverificar email si viene de Google
+            if not user.is_email_verified:
                 user.is_email_verified = True
                 user.save(update_fields=['is_email_verified'])
             
-            # Generar nuestros propios tokens
+            # Generar tokens nativos
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
             
@@ -838,6 +875,6 @@ class GoogleLoginView(APIView):
         except Exception as e:
             print(f"Error procesando login de Google: {e}")
             return Response(
-                {'error': f'Error validando autenticación con Google: {str(e)}'},
+                {'error': f'Error en la base de datos: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
