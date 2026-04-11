@@ -1,0 +1,124 @@
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/rest_framework/views.py", line 515, in dispatch
+2026-01-22 07:44:51.39
+c4743fde
+User
+response = self.handle_exception(exc)
+2026-01-22 07:44:51.39
+c4743fde
+User
+rest_framework.exceptions.ValidationError: {'procedures': [{}, {'calculated_value': [ErrorDetail(string='Asegúrese de que no haya más de 12 dígitos en total.', code='max_digits')]}]}
+2026-01-22 07:44:51.39
+c4743fde
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+2026-01-22 07:44:51.39
+c4743fde
+User
+response = handler(request, *args, **kwargs)
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/apps/medico/views/surgical_case.py", line 138, in create
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+2026-01-22 07:44:51.39
+c4743fde
+User
+return view_func(request, *args, **kwargs)
+2026-01-22 07:44:51.39
+c4743fde
+User
+serializer.is_valid(raise_exception=True)
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/rest_framework/serializers.py", line 233, in is_valid
+2026-01-22 07:44:51.39
+c4743fde
+User
+Traceback (most recent call last):
+2026-01-22 07:44:51.39
+c4743fde
+User
+Traceback (most recent call last):
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+2026-01-22 07:44:51.39
+c4743fde
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-01-22 07:44:51.39
+c4743fde
+User
+rest_framework.exceptions.ValidationError: {'procedures': [{}, {'calculated_value': [ErrorDetail(string='Asegúrese de que no haya más de 12 dígitos en total.', code='max_digits')]}]}
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/apps/medico/views/surgical_case.py", line 130, in create
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/rest_framework/views.py", line 515, in dispatch
+2026-01-22 07:44:51.39
+c4743fde
+User
+During handling of the above exception, another exception occurred:
+2026-01-22 07:44:51.39
+c4743fde
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-01-22 07:44:51.39
+c4743fde
+User
+serializer.is_valid(raise_exception=True)
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/rest_framework/views.py", line 512, in dispatch
+2026-01-22 07:44:51.39
+c4743fde
+User
+raise exc
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+2026-01-22 07:44:51.39
+c4743fde
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+2026-01-22 07:44:51.39
+c4743fde
+User
+raise ValidationError(self.errors)
+2026-01-22 07:44:51.39
+c4743fde
+User
+response = get_response(request)
+2026-01-22 07:44:51.39
+c4743fde
+User
+^^^^^^^^^^^^^^^^^^^^^
+2026-01-22 07:44:51.39
+c4743fde
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-01-22 07:44:51.39
+c4743fde
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-01-22 07:44:51.39
+c4743fde
+User
+ERROR 2026-01-22 13:44:51,391 log Internal Server Error: /api/v1/medico/cases/

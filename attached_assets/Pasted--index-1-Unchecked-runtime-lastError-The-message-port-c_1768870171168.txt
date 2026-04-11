@@ -1,0 +1,27 @@
+(index):1 Unchecked runtime.lastError: The message port closed before a response was received.
+index-C6wOFNLz.js:1 Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "text/html". Strict MIME type checking is enforced for module scripts per HTML spec.
+(index):1 Refused to apply style from 'https://me-dico-1--josepaccagnella.replit.app/assets/index-CYicCgL2.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.
+zotero_config.js:1 Uncaught SyntaxError: Identifier 'ZOTERO_CONFIG' has already been declared (at zotero_config.js:1:1)
+virtualOffscreenTranslate.js:121 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'addMessageListener')
+    at Proxy.addMessageListener (virtualOffscreenTranslate.js:121:27)
+    at Proxy.setHandler (virtualOffscreenTranslate.js:74:8)
+zotero.js:266 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'log')
+    at Object.debug (zotero.js:266:16)
+    at Object.logError (zotero.js:270:10)
+    at Object.onPageLoad (pageSaving.js:124:11)
+http.js:1 Uncaught SyntaxError: Identifier 'MAX_BACKOFF' has already been declared (at http.js:1:1)
+schema.js:1 Uncaught SyntaxError: Identifier 'Schema' has already been declared (at schema.js:1:1)
+translateWeb.js:1 Uncaught SyntaxError: Identifier 'TranslateWeb' has already been declared (at translateWeb.js:1:1)
+itemSaver.js:1 Uncaught SyntaxError: Identifier 'PRIMARY_ATTACHMENT_TYPES' has already been declared (at itemSaver.js:1:1)
+pageSaving.js:1 Uncaught SyntaxError: Identifier 'SITE_ACCESS_LIMIT_TRANSLATORS' has already been declared (at pageSaving.js:1:1)
+schema.js:2 Uncaught TypeError: Cannot read properties of undefined (reading 'init')
+    at schema.js:2:32
+messages.js:1 Uncaught SyntaxError: Identifier 'MESSAGE_SEPARATOR' has already been declared (at messages.js:1:1)
+messaging_inject.js:1 Uncaught SyntaxError: Identifier 'ZoteroFrame' has already been declared (at messaging_inject.js:1:1)
+progressWindow_inject.js:420 Uncaught TypeError: Cannot read properties of undefined (reading 'addMessageListener')
+    at progressWindow_inject.js:420:19
+    at progressWindow_inject.js:521:3
+messagingGeneric.js:1 Uncaught SyntaxError: Identifier 'MessagingGeneric' has already been declared (at messagingGeneric.js:1:1)
+singlefile.js:1 Uncaught SyntaxError: Identifier 'FETCH_REQUEST_EVENT' has already been declared (at singlefile.js:1:1)
+inject.js:1 Uncaught SyntaxError: Identifier 'isAllowedIframeContentType' has already been declared (at inject.js:1:1)
+(index):1 Refused to apply style from 'https://me-dico-1--josepaccagnella.replit.app/assets/index-CYicCgL2.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.
