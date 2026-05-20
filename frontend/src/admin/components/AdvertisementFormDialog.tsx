@@ -239,6 +239,18 @@ export function AdvertisementFormDialog({
     }
   };
 
+  // When the client changes, auto-fill ad dates with the client's contract dates
+  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (isReadOnly) return;
+    const clientId = parseInt(e.target.value);
+    const chosen = clients.find(c => c.id === clientId);
+    setFormData(prev => ({
+      ...prev,
+      client: e.target.value,
+      ...(chosen ? { start_date: chosen.start_date, end_date: chosen.end_date } : {}),
+    }));
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isReadOnly) return;
 
@@ -551,7 +563,7 @@ export function AdvertisementFormDialog({
                   <select
                     name="client"
                     value={formData.client}
-                    onChange={handleChange}
+                    onChange={handleClientChange}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
                   >
@@ -562,6 +574,11 @@ export function AdvertisementFormDialog({
                       </option>
                     ))}
                   </select>
+                  {selectedClient && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Contrato vigente: {formatDate(selectedClient.start_date)} → {formatDate(selectedClient.end_date)}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -769,6 +786,16 @@ export function AdvertisementFormDialog({
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Periodo de Visualización</h3>
 
+                {selectedClient && (
+                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+                    <span>
+                      Las fechas deben estar dentro del contrato del cliente
+                      ({formatDate(selectedClient.start_date)} → {formatDate(selectedClient.end_date)}).
+                      Fuera de ese rango el anuncio no se mostraría aunque esté activo.
+                    </span>
+                  </div>
+                )}
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-medium">Fecha de Inicio *</label>
@@ -777,6 +804,8 @@ export function AdvertisementFormDialog({
                       type="date"
                       value={formData.start_date}
                       onChange={handleChange}
+                      min={selectedClient?.start_date}
+                      max={selectedClient?.end_date}
                       required
                     />
                   </div>
@@ -787,6 +816,8 @@ export function AdvertisementFormDialog({
                       type="date"
                       value={formData.end_date}
                       onChange={handleChange}
+                      min={formData.start_date || selectedClient?.start_date}
+                      max={selectedClient?.end_date}
                       required
                     />
                   </div>

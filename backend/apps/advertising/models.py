@@ -90,6 +90,33 @@ class Client(models.Model):
         verbose_name="Estado"
     )
     
+    # Cupos negociados de anuncios por placement
+    quota_home_banner = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Cupo Banner Principal",
+        help_text="Máximo de anuncios Banner Principal contratados"
+    )
+    quota_popup = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Cupo Popup",
+        help_text="Máximo de anuncios Popup contratados"
+    )
+    quota_sidebar = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Cupo Barra Lateral",
+        help_text="Máximo de anuncios Barra Lateral contratados"
+    )
+    quota_between_content = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Cupo Entre Contenido",
+        help_text="Máximo de anuncios Entre Contenido contratados"
+    )
+    quota_footer = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Cupo Footer",
+        help_text="Máximo de anuncios Footer contratados"
+    )
+
     # Notas adicionales
     notes = models.TextField(
         blank=True,

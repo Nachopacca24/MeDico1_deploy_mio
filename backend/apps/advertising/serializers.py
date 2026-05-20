@@ -22,13 +22,16 @@ class ClientSerializer(serializers.ModelSerializer):
             'start_date', 'end_date', 'status', 'status_display',
             'notes', 'created_by', 'created_by_name',
             'created_at', 'updated_at',
-            'is_active', 'days_remaining', 'ad_count'
+            'is_active', 'days_remaining', 'ad_count',
+            'quota_home_banner', 'quota_popup', 'quota_sidebar',
+            'quota_between_content', 'quota_footer',
         ]
         read_only_fields = ['created_by', 'created_at', 'updated_at']
 
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     client_name = serializers.CharField(source='client.company_name', read_only=True)
+    client_plan = serializers.CharField(source='client.plan', read_only=True)
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
     placement_display = serializers.CharField(source='get_placement_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -39,7 +42,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         fields = [
-            'id', 'client', 'client_name', 'campaign_name', 'title', 'description',
+            'id', 'client', 'client_name', 'client_plan', 'campaign_name', 'title', 'description',
             'image', 'image_url', 'image_alt_text', 'redirect_url', 'open_in_new_tab',
             'placement', 'placement_display', 'priority',
             'start_date', 'end_date', 'status', 'status_display',
@@ -79,6 +82,28 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         if not isinstance(value, list):
             raise serializers.ValidationError("target_specialties debe ser una lista.")
         return value
+
+    def validate(self, data):
+        """Ensure ad dates fall within the client's contract period."""
+        client = data.get('client') or (self.instance.client if self.instance else None)
+        start_date = data.get('start_date') or (self.instance.start_date if self.instance else None)
+        end_date = data.get('end_date') or (self.instance.end_date if self.instance else None)
+
+        if client and start_date and start_date < client.start_date:
+            raise serializers.ValidationError({
+                'start_date': (
+                    f'La fecha de inicio no puede ser anterior al inicio del contrato '
+                    f'del cliente ({client.start_date}).'
+                )
+            })
+        if client and end_date and end_date > client.end_date:
+            raise serializers.ValidationError({
+                'end_date': (
+                    f'La fecha de fin no puede superar el fin del contrato '
+                    f'del cliente ({client.end_date}).'
+                )
+            })
+        return data
 
     def validate_redirect_url(self, value):
         """
@@ -127,6 +152,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 class AdvertisementListSerializer(serializers.ModelSerializer):
     """Serializer para listar anuncios - INCLUYE TODOS LOS CAMPOS"""
     client_name = serializers.CharField(source='client.company_name', read_only=True)
+    client_plan = serializers.CharField(source='client.plan', read_only=True)
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
     placement_display = serializers.CharField(source='get_placement_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -137,7 +163,7 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         fields = [
-            'id', 'client', 'client_name', 'campaign_name', 'title', 'description',
+            'id', 'client', 'client_name', 'client_plan', 'campaign_name', 'title', 'description',
             'image_url', 'image_alt_text', 'redirect_url', 'open_in_new_tab',
             'placement', 'placement_display', 'priority',
             'status', 'status_display',

@@ -8,6 +8,7 @@ export interface Advertisement {
   id: number;
   client: number;
   client_name: string;
+  client_plan?: 'bronze' | 'silver' | 'gold';
   campaign_name: string;
   title?: string;
   description?: string;

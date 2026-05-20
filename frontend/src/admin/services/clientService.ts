@@ -26,6 +26,12 @@ export interface Client {
   created_by_name?: string;
   created_at: string;
   updated_at: string;
+  // Cupos negociados por placement
+  quota_home_banner: number;
+  quota_popup: number;
+  quota_sidebar: number;
+  quota_between_content: number;
+  quota_footer: number;
 }
 
 export interface ClientCreateUpdate {
@@ -40,6 +46,12 @@ export interface ClientCreateUpdate {
   end_date: string;
   status?: 'active' | 'inactive' | 'pending' | 'expired';
   notes?: string;
+  // Cupos negociados por placement
+  quota_home_banner?: number;
+  quota_popup?: number;
+  quota_sidebar?: number;
+  quota_between_content?: number;
+  quota_footer?: number;
 }
 
 export interface ClientStats {

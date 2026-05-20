@@ -4,8 +4,25 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { X, Loader2, Save } from 'lucide-react';
+import { X, Loader2, Save, Package, Info } from 'lucide-react';
 import { clientService, type Client, type ClientCreateUpdate } from '@/admin/services/clientService';
+
+// Cupos sugeridos por plan — el admin puede cambiarlos libremente
+const PLAN_QUOTA_DEFAULTS: Record<string, Record<string, number>> = {
+  gold:   { quota_home_banner: 1, quota_popup: 1, quota_sidebar: 2, quota_between_content: 2, quota_footer: 1 },
+  silver: { quota_home_banner: 0, quota_popup: 0, quota_sidebar: 1, quota_between_content: 2, quota_footer: 1 },
+  bronze: { quota_home_banner: 0, quota_popup: 0, quota_sidebar: 0, quota_between_content: 1, quota_footer: 1 },
+};
+
+const PLACEMENT_INFO = [
+  { key: 'quota_home_banner',     label: 'Banner Principal', note: 'Solo plan Oro', planLock: ['gold'] },
+  { key: 'quota_popup',           label: 'Popup',            note: 'Solo plan Oro', planLock: ['gold'] },
+  { key: 'quota_sidebar',         label: 'Barra Lateral',    note: 'Oro y Plata',   planLock: ['gold', 'silver'] },
+  { key: 'quota_between_content', label: 'Entre Contenido',  note: 'Todos los planes', planLock: ['gold', 'silver', 'bronze'] },
+  { key: 'quota_footer',          label: 'Footer',           note: 'Todos los planes', planLock: ['gold', 'silver', 'bronze'] },
+] as const;
+
+type QuotaKey = typeof PLACEMENT_INFO[number]['key'];
 
 interface ClientFormDialogProps {
   open: boolean;
@@ -17,7 +34,9 @@ interface ClientFormDialogProps {
 export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFormDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
+  const defaultQuotas = PLAN_QUOTA_DEFAULTS.bronze;
+
   const [formData, setFormData] = useState<ClientCreateUpdate>({
     company_name: '',
     contact_name: '',
@@ -30,10 +49,12 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
     end_date: '',
     status: 'active',
     notes: '',
+    ...defaultQuotas,
   });
 
-  // Cargar datos del cliente si estamos editando
   useEffect(() => {
+    if (!open) return;
+
     if (client) {
       setFormData({
         company_name: client.company_name,
@@ -47,14 +68,16 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
         end_date: client.end_date,
         status: client.status,
         notes: client.notes || '',
+        quota_home_banner: client.quota_home_banner,
+        quota_popup: client.quota_popup,
+        quota_sidebar: client.quota_sidebar,
+        quota_between_content: client.quota_between_content,
+        quota_footer: client.quota_footer,
       });
     } else {
-      // Reset form para nuevo cliente
       const today = new Date().toISOString().split('T')[0];
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + 1);
-      const endDateStr = endDate.toISOString().split('T')[0];
-      
       setFormData({
         company_name: '',
         contact_name: '',
@@ -64,42 +87,55 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
         amount_paid: '',
         currency: 'GTQ',
         start_date: today,
-        end_date: endDateStr,
+        end_date: endDate.toISOString().split('T')[0],
         status: 'active',
         notes: '',
+        ...PLAN_QUOTA_DEFAULTS.bronze,
       });
     }
-  }, [client, open]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     setError(null);
-    setLoading(true);
-
-    try {
-      if (client) {
-        // Actualizar cliente existente
-        await clientService.updateClient(client.id, formData);
-      } else {
-        // Crear nuevo cliente
-        await clientService.createClient(formData);
-      }
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      console.error('Error saving client:', err);
-      setError(err.message || 'Error al guardar el cliente');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [client, open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // When the plan dropdown changes, auto-fill quotas with suggested defaults
+  // (only for new clients, or if user explicitly chose to reset)
+  const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPlan = e.target.value as 'bronze' | 'silver' | 'gold';
+    const defaults = PLAN_QUOTA_DEFAULTS[newPlan];
+    setFormData(prev => ({ ...prev, plan: newPlan, ...defaults }));
+  };
+
+  const handleQuotaChange = (key: QuotaKey, value: string) => {
+    const n = Math.max(0, parseInt(value) || 0);
+    setFormData(prev => ({ ...prev, [key]: n }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      if (client) {
+        await clientService.updateClient(client.id, formData);
+      } else {
+        await clientService.createClient(formData);
+      }
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Error al guardar el cliente');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!open) return null;
+
+  const currentPlan = formData.plan as string;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -129,14 +165,14 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
               {/* Información Básica */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Información Básica</h3>
-                
+
                 <div>
                   <label className="text-sm font-medium">Nombre de la Empresa *</label>
                   <Input
                     name="company_name"
                     value={formData.company_name}
                     onChange={handleChange}
-                    placeholder="Ej: Coca-Cola Guatemala"
+                    placeholder="Ej: Laboratorio Nacional"
                     required
                   />
                 </div>
@@ -178,14 +214,14 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
               {/* Plan y Pago */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Plan y Pago</h3>
-                
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-medium">Plan *</label>
                     <select
                       name="plan"
                       value={formData.plan}
-                      onChange={handleChange}
+                      onChange={handlePlanChange}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       required
                     >
@@ -193,6 +229,9 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
                       <option value="silver">Plata</option>
                       <option value="gold">Oro</option>
                     </select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Cambiar el plan actualiza los cupos sugeridos abajo
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium">Estado *</label>
@@ -237,10 +276,91 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
                 </div>
               </div>
 
+              {/* Cupos de Anuncios */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Cupos de Anuncios</h3>
+                </div>
+
+                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                  <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                  <p>
+                    Define cuántos anuncios tiene derecho a publicar este cliente en cada ubicación.
+                    Los valores se pre-llenan según el plan, pero puedes ajustarlos libremente para
+                    ofrecer paquetes personalizados.
+                  </p>
+                </div>
+
+                <div className="grid gap-3">
+                  {PLACEMENT_INFO.map(({ key, label, note, planLock }) => {
+                    const isAvailable = planLock.includes(currentPlan as any);
+                    const value = (formData[key] as number) ?? 0;
+
+                    return (
+                      <div
+                        key={key}
+                        className={`flex items-center gap-4 p-3 rounded-lg border ${
+                          isAvailable ? 'bg-background' : 'bg-muted/40 opacity-60'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium">{label}</div>
+                          <div className="text-xs text-muted-foreground">{note}</div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleQuotaChange(key, String(Math.max(0, value - 1)))}
+                            className="w-8 h-8 rounded-md border border-input bg-background flex items-center justify-center text-sm hover:bg-muted transition-colors"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min={0}
+                            value={value}
+                            onChange={(e) => handleQuotaChange(key, e.target.value)}
+                            className="w-14 h-8 text-center text-sm font-semibold rounded-md border border-input bg-background"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleQuotaChange(key, String(value + 1))}
+                            className="w-8 h-8 rounded-md border border-input bg-background flex items-center justify-center text-sm hover:bg-muted transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {!isAvailable && value > 0 && (
+                          <span className="text-xs text-orange-600 font-medium">
+                            requiere plan superior
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between text-sm pt-1">
+                  <span className="text-muted-foreground">Total cupos contratados:</span>
+                  <span className="font-bold text-primary text-lg">
+                    {[
+                      formData.quota_home_banner,
+                      formData.quota_popup,
+                      formData.quota_sidebar,
+                      formData.quota_between_content,
+                      formData.quota_footer,
+                    ].reduce((a, b) => (a || 0) + (b || 0), 0)}
+                  </span>
+                </div>
+              </div>
+
               {/* Periodo */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Periodo del Contrato</h3>
-                
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-medium">Fecha de Inicio *</label>
@@ -272,8 +392,8 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
-                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  placeholder="Información adicional sobre el cliente..."
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  placeholder="Condiciones especiales, descuentos negociados..."
                 />
               </div>
 
