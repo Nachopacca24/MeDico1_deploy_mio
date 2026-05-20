@@ -271,4 +271,4 @@ temp/
 # 4. node_modules/ NUNCA debe subirse (se regenera con npm install)
 # 5. venv/ NUNCA debe subirse (se regenera con python -m venv venv)
 
-# Fin del .gitignore
+# Fin del .gitignorebackend/run.ps1
