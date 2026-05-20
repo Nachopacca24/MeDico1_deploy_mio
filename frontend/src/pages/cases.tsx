@@ -55,6 +55,10 @@ function CaseStatusToggles({
   const [invoiceNumber, setInvoiceNumber] = useState(surgicalCase.invoice_number ?? '');
   const [savingInvoice, setSavingInvoice] = useState(false);
 
+  useEffect(() => {
+    setInvoiceNumber(surgicalCase.invoice_number ?? '');
+  }, [surgicalCase.invoice_number]);
+
   const isOperated = surgicalCase.is_operated ?? false;
   const isBilled = surgicalCase.is_billed ?? false;
   const isPaid = surgicalCase.is_paid ?? false;

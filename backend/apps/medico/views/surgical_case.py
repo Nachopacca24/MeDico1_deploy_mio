@@ -63,10 +63,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             )
 
         # Filtrar archivados (o mostrarlos si se pide explícitamente)
+        # Un caso "cobrado" (is_paid=True) también se considera archivado
         if show_archived:
-            queryset = queryset.filter(archived_at__isnull=False)
+            queryset = queryset.filter(Q(archived_at__isnull=False) | Q(is_paid=True))
         else:
-            queryset = queryset.filter(archived_at__isnull=True)
+            queryset = queryset.filter(archived_at__isnull=True, is_paid=False)
 
         # Optimizamos con select_related y prefetch_related para evitar el problema N+1
         queryset = queryset.select_related(
@@ -215,9 +216,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         Obtener casos donde el usuario actual es ayudante
         """
         cases = SurgicalCase.objects.filter(
-            assistant_doctor=request.user
+            assistant_doctor=request.user,
+            is_paid=False,
+            archived_at__isnull=True,
         ).select_related(
-            'hospital', 
+            'hospital',
             'created_by'
         ).prefetch_related('procedures')
 
