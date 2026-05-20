@@ -27,6 +27,7 @@ export interface Advertisement {
   clicks: number;
   ctr: number;
   is_active: boolean;
+  target_specialties: string[];
   created_by?: number;
   created_by_name?: string;
   created_at: string;
@@ -47,6 +48,7 @@ export interface AdvertisementCreate {
   start_date: string;
   end_date: string;
   status?: string;
+  target_specialties?: string[];
 }
 
 export interface ActiveAd {
@@ -57,6 +59,7 @@ export interface ActiveAd {
   redirect_url: string;
   open_in_new_tab: boolean;
   placement: string;
+  target_specialties: string[];
 }
 
 class AdvertisementService {
@@ -133,6 +136,9 @@ class AdvertisementService {
       formData.append('start_date', data.start_date);
       formData.append('end_date', data.end_date);
       formData.append('status', data.status || 'draft');
+      if (data.target_specialties !== undefined) {
+        formData.append('target_specialties', JSON.stringify(data.target_specialties));
+      }
 
       const response = await authService.authenticatedFetch(
         `${API_URL}/api/v1/advertising/advertisements/`,
@@ -165,6 +171,9 @@ class AdvertisementService {
       if (data.start_date) formData.append('start_date', data.start_date);
       if (data.end_date) formData.append('end_date', data.end_date);
       if (data.status) formData.append('status', data.status);
+      if (data.target_specialties !== undefined) {
+        formData.append('target_specialties', JSON.stringify(data.target_specialties));
+      }
 
       const response = await authService.authenticatedFetch(
         `${API_URL}/api/v1/advertising/advertisements/${id}/`,
@@ -198,16 +207,19 @@ class AdvertisementService {
     }
   }
 
-  async getActiveAds(placement: string = 'home_banner'): Promise<ActiveAd[]> {
+  async getActiveAds(placement: string = 'home_banner', specialty?: string): Promise<ActiveAd[]> {
     try {
+      const params = new URLSearchParams();
+      if (placement) params.append('placement', placement);
+      if (specialty) params.append('specialty', specialty);
       const response = await fetch(
-        `${API_URL}/api/v1/advertising/public/ads/?placement=${placement}`
+        `${API_URL}/api/v1/advertising/public/ads/?${params.toString()}`
       );
-      
+
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error('Error en getActiveAds:', error);

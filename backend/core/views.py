@@ -113,27 +113,58 @@ class IndexView(View):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def admin_stats(request):
-    """
-    Obtiene estadísticas del dashboard de administración con datos reales.
-    Requiere autenticación JWT y que el usuario sea staff.
-    """
-    
-    # Total de usuarios registrados
+    """Estadísticas generales del dashboard."""
+    from apps.advertising.models import Advertisement
+    from django.db.models import Sum
+
     total_users = User.objects.count()
-    
-    # Total de casos quirúrgicos
     total_cases = SurgicalCase.objects.count()
-    
-    # Casos de este mes
-    first_day_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    cases_this_month = SurgicalCase.objects.filter(
-        created_at__gte=first_day_of_month
-    ).count()
-    
+    first_day = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    cases_this_month = SurgicalCase.objects.filter(created_at__gte=first_day).count()
+
+    # Plan breakdown
+    premium_count = User.objects.filter(plan='premium').count()
+    free_count = User.objects.filter(plan='free').count()
+
+    # Specialty breakdown (top 10, skip null/blank)
+    specialty_stats = (
+        User.objects
+        .exclude(specialty__isnull=True)
+        .exclude(specialty='')
+        .values('specialty')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:10]
+    )
+
+    # Advertising stats
+    ad_agg = Advertisement.objects.aggregate(
+        total_impressions=Sum('impressions'),
+        total_clicks=Sum('clicks'),
+    )
+    total_impressions = ad_agg['total_impressions'] or 0
+    total_clicks = ad_agg['total_clicks'] or 0
+    active_ads = Advertisement.objects.filter(status='active').count()
+    top_ads = (
+        Advertisement.objects
+        .filter(impressions__gt=0)
+        .values('id', 'campaign_name', 'impressions', 'clicks')
+        .order_by('-impressions')[:5]
+    )
+
     return Response({
         'totalUsers': total_users,
         'totalCases': total_cases,
-        'casesThisMonth': cases_this_month
+        'casesThisMonth': cases_this_month,
+        'premiumUsers': premium_count,
+        'freeUsers': free_count,
+        'specialtyStats': list(specialty_stats),
+        'adStats': {
+            'activeAds': active_ads,
+            'totalImpressions': total_impressions,
+            'totalClicks': total_clicks,
+            'ctr': round((total_clicks / total_impressions * 100), 2) if total_impressions > 0 else 0,
+            'topAds': list(top_ads),
+        }
     })
 
 
@@ -197,53 +228,48 @@ def admin_activity(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def admin_users(request):
-    """
-    Obtiene lista completa de todos los usuarios del sistema.
-    Incluye información de casos creados por cada usuario.
-    Requiere autenticación JWT y que el usuario sea staff.
-    """
-    
-    # Obtener todos los usuarios con sus campos principales
+    """Lista completa de usuarios con plan, especialidad y conteo de casos."""
     users = User.objects.all().values(
-        'id', 
-        'username', 
-        'email', 
-        'first_name', 
-        'last_name', 
-        'is_staff', 
-        'is_active', 
-        'is_superuser',
-        'is_verified',  # ← AGREGADO
-        'date_joined', 
-        'last_login'
+        'id', 'username', 'email', 'first_name', 'last_name',
+        'is_staff', 'is_active', 'is_superuser', 'is_verified',
+        'date_joined', 'last_login', 'plan', 'specialty', 'phone',
     )
-    
-    # Convertir QuerySet a lista
-    users_list = list(users)
-    
-    # Enriquecer cada usuario con información adicional
-    for user in users_list:
-        # Formatear fechas a formato ISO para el frontend
+
+    # Contar casos en una sola consulta
+    case_counts = {
+        row['created_by_id']: row['total']
+        for row in SurgicalCase.objects.values('created_by_id').annotate(total=Count('id'))
+    }
+
+    users_list = []
+    for user in users:
         if user['date_joined']:
             user['date_joined'] = user['date_joined'].isoformat()
         if user['last_login']:
             user['last_login'] = user['last_login'].isoformat()
-        
-        # Crear nombre completo
         full_name = f"{user['first_name']} {user['last_name']}".strip()
         user['full_name'] = full_name if full_name else user['username']
-        
-        # Contar casos quirúrgicos creados por este usuario
-        user['total_cases'] = SurgicalCase.objects.filter(
-            created_by_id=user['id']
-        ).count()
-        
-        # Obtener el plan real del usuario desde la base de datos
-        user_obj = User.objects.get(id=user['id'])
-        user['plan'] = getattr(user_obj, 'plan')  
-        user['total_favorites'] = 0  
-    
+        user['total_cases'] = case_counts.get(user['id'], 0)
+        user['total_favorites'] = 0
+        users_list.append(user)
+
     return Response(users_list)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def update_user_plan(request, user_id):
+    """Cambiar el plan de un usuario (free/premium)."""
+    new_plan = request.data.get('plan')
+    if new_plan not in ('free', 'premium'):
+        return Response({'message': 'Plan inválido. Use free o premium.'}, status=400)
+    try:
+        target_user = User.objects.get(id=user_id)
+        target_user.plan = new_plan
+        target_user.save(update_fields=['plan'])
+        return Response({'success': True, 'plan': new_plan})
+    except User.DoesNotExist:
+        return Response({'message': 'Usuario no encontrado'}, status=404)
 
 
 @api_view(['GET'])

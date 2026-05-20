@@ -7,9 +7,9 @@ import { Input } from '@/shared/components/ui/input';
 import { Badge } from '@/shared/components/ui/badge';
 import { useToast } from '@/shared/hooks/useToast';
 import { adminService } from '@/admin/services/adminService';
-import { 
-  Search, 
-  Trash2, 
+import {
+  Search,
+  Trash2,
   Briefcase,
   Calendar,
   Mail,
@@ -17,7 +17,9 @@ import {
   Loader2,
   AlertCircle,
   Shield,
-  Award
+  Award,
+  Star,
+  StarOff,
 } from 'lucide-react';
 
 interface User {
@@ -32,7 +34,7 @@ interface User {
   is_staff: boolean;
   is_active: boolean;
   date_joined: string;
-  plan: 'bronze' | 'silver' | 'gold';
+  plan: 'free' | 'premium';
   total_cases: number;
   total_favorites: number;
 }
@@ -43,6 +45,7 @@ const UsersPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [updatingPlanId, setUpdatingPlanId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -58,6 +61,20 @@ const UsersPage = () => {
       toast.error('Error', 'No se pudieron cargar los usuarios');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTogglePlan = async (userId: number, currentPlan: string) => {
+    const newPlan = currentPlan === 'premium' ? 'free' : 'premium';
+    setUpdatingPlanId(userId);
+    try {
+      await adminService.updateUserPlan(userId, newPlan);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: newPlan as 'free' | 'premium' } : u));
+      toast.success('Plan actualizado', `Usuario cambiado a ${newPlan === 'premium' ? 'Premium ⭐' : 'Free'}`);
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudo cambiar el plan');
+    } finally {
+      setUpdatingPlanId(null);
     }
   };
 
@@ -99,11 +116,14 @@ const UsersPage = () => {
 
   const getPlanBadge = (plan: string) => {
     const config: Record<string, { color: string; label: string; icon: string }> = {
-      gold: { color: 'bg-yellow-500 text-white', label: 'Gold', icon: '👑' },
-      silver: { color: 'bg-gray-400 text-white', label: 'Silver', icon: '⭐' },
-      bronze: { color: 'bg-amber-700 text-white', label: 'Bronze', icon: '🥉' },
+      premium: { color: 'bg-yellow-500 text-white', label: 'Premium', icon: '⭐' },
+      free: { color: 'bg-slate-400 text-white', label: 'Free', icon: '🆓' },
+      // legacy values — safe fallback
+      gold: { color: 'bg-yellow-500 text-white', label: 'Premium', icon: '⭐' },
+      silver: { color: 'bg-slate-400 text-white', label: 'Free', icon: '🆓' },
+      bronze: { color: 'bg-slate-400 text-white', label: 'Free', icon: '🆓' },
     };
-    const { color, label, icon } = config[plan] || config.bronze;
+    const { color, label, icon } = config[plan] || config.free;
     return (
       <Badge className={`${color} flex items-center gap-1`}>
         <span>{icon}</span>
@@ -274,24 +294,36 @@ const UsersPage = () => {
                   <div className="text-center">
                     <Award className="h-6 w-6 mx-auto mb-1 text-purple-600" />
                     <div className="text-xs text-muted-foreground font-medium">
-                      {(user.plan || 'bronze').toUpperCase()}
+                      {(user.plan || 'free').toUpperCase()}
                     </div>
-                  </div>
-                </div>
-
-                {/* Plan Info - Solo lectura */}
-                <div className="p-4 bg-muted/50 rounded-lg border">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Award className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-sm font-medium">Plan Actual:</span>
-                    </div>
-                    {getPlanBadge(user.plan)}
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 border-t">
+                <div className="flex gap-2 pt-2 border-t flex-wrap">
+                  {/* Toggle plan button */}
+                  <Button
+                    variant={user.plan === 'premium' ? 'outline' : 'default'}
+                    size="sm"
+                    onClick={() => handleTogglePlan(user.id, user.plan)}
+                    disabled={updatingPlanId === user.id || user.is_superuser}
+                    className="flex-1"
+                  >
+                    {updatingPlanId === user.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : user.plan === 'premium' ? (
+                      <>
+                        <StarOff className="h-4 w-4 mr-2" />
+                        Quitar Premium
+                      </>
+                    ) : (
+                      <>
+                        <Star className="h-4 w-4 mr-2" />
+                        Hacer Premium
+                      </>
+                    )}
+                  </Button>
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -305,7 +337,7 @@ const UsersPage = () => {
                     ) : (
                       <>
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Eliminar Usuario
+                        Eliminar
                       </>
                     )}
                   </Button>

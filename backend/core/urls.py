@@ -4,13 +4,14 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import (
-    IndexView, 
-    admin_stats, 
-    admin_activity, 
+    IndexView,
+    admin_stats,
+    admin_activity,
     admin_users,
     admin_hospitals,
     admin_procedures,
-    delete_user
+    delete_user,
+    update_user_plan,
 )
 
 def trigger_error(request):
@@ -35,6 +36,7 @@ urlpatterns = [
     path('api/admin/activity/', admin_activity, name='admin_activity'),
     path('api/admin/users/', admin_users, name='admin_users'),
     path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'),
+    path('api/admin/users/<int:user_id>/plan/', update_user_plan, name='update_user_plan'),
     path('api/admin/hospitals/', admin_hospitals, name='admin_hospitals'),
     path('api/admin/procedures/', admin_procedures, name='admin_procedures'),
     

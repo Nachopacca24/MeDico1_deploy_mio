@@ -255,7 +255,15 @@ class Advertisement(models.Model):
         default='draft',
         verbose_name="Estado"
     )
-    
+
+    # Especialidades objetivo (lista de strings, vacío = todas)
+    target_specialties = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Especialidades Objetivo",
+        help_text="Lista de especialidades médicas. Vacío = mostrar a todos."
+    )
+
     # Métricas
     impressions = models.PositiveIntegerField(
         default=0,

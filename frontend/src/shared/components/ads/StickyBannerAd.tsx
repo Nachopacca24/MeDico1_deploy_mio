@@ -3,151 +3,137 @@
 import { useState, useEffect } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 interface StickyBannerAdProps {
-  /** Posición del banner: 'top' o 'bottom' */
   position?: 'top' | 'bottom';
-  /** Permitir que el usuario cierre el banner */
-  dismissible?: boolean;
+  /** Segundos antes de la primera aparición */
+  initialDelay?: number;
+  /** Segundos entre reapariciones tras cerrar */
+  interval?: number;
+  /** Máximo de apariciones por sesión */
+  maxPerSession?: number;
 }
 
-export function StickyBannerAd({ 
+function BannerImage({ ad }: { ad: ActiveAd }) {
+  const [failed, setFailed] = useState(false);
+  if (!ad.image_url || failed) return null;
+  return (
+    <img
+      src={ad.image_url}
+      alt={ad.image_alt_text || ad.title || 'Publicidad'}
+      className="h-14 w-20 object-cover rounded-lg shadow-sm flex-shrink-0"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+export function StickyBannerAd({
   position = 'bottom',
-  dismissible = true 
+  initialDelay = 20,
+  interval = 300,
+  maxPerSession = 3,
 }: StickyBannerAdProps) {
+  const { user } = useAuth();
+  const userSpecialty = user?.specialty ?? '';
+
   const [bannerAds, setBannerAds] = useState<ActiveAd[]>([]);
-  const [currentAdIndex, setCurrentAdIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [adIndex, setAdIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const [showCount, setShowCount] = useState(0);
 
+  // Load weighted rotation list from backend
   useEffect(() => {
-    const loadBannerAds = async () => {
-      try {
-        const ads = await advertisementService.getActiveAds('home_banner');
-        setBannerAds(ads);
-      } catch (error) {
-        console.error('Error loading banner ads:', error);
-      }
-    };
+    advertisementService
+      .getActiveAds('home_banner', userSpecialty)
+      .then(setBannerAds)
+      .catch(() => {});
+  }, [userSpecialty]);
 
-    loadBannerAds();
-  }, []);
-
-  // Rotar banners cada 15 segundos
+  // Schedule each appearance: initial delay, then interval after each dismiss
   useEffect(() => {
-    if (bannerAds.length <= 1) return;
+    if (bannerAds.length === 0 || isVisible || showCount >= maxPerSession) return;
 
-    const interval = setInterval(() => {
-      setCurrentAdIndex((prev) => (prev + 1) % bannerAds.length);
-    }, 15000);
+    const delay = showCount === 0 ? initialDelay : interval;
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+      setShowCount(c => c + 1);
+      setAdIndex(i => (i + 1) % bannerAds.length);
+    }, delay * 1000);
 
-    return () => clearInterval(interval);
-  }, [bannerAds.length]);
+    return () => clearTimeout(timer);
+  }, [bannerAds.length, isVisible, showCount, maxPerSession, initialDelay, interval]);
 
-  // Track impression cuando cambia el anuncio
+  // Track impression whenever a new ad becomes visible
   useEffect(() => {
-    if (bannerAds.length > 0 && bannerAds[currentAdIndex]) {
-      advertisementService.trackImpression(bannerAds[currentAdIndex].id);
+    if (isVisible && bannerAds[adIndex]) {
+      advertisementService.trackImpression(bannerAds[adIndex].id);
     }
-  }, [currentAdIndex, bannerAds]);
+  }, [isVisible, adIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleAdClick = async (ad: ActiveAd) => {
+  const handleDismiss = () => setIsVisible(false);
+
+  const handleClick = async (ad: ActiveAd) => {
     try {
       await advertisementService.trackClick(ad.id);
-      window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
-    } catch (error) {
-      console.error('Error tracking click:', error);
-    }
+    } catch { /* silent */ }
+    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
   };
 
-  const handleDismiss = () => {
-    setIsVisible(false);
-    setTimeout(() => setIsDismissed(true), 300);
-  };
+  if (!isVisible || bannerAds.length === 0) return null;
 
-  if (isDismissed || bannerAds.length === 0) return null;
-
-  const currentAd = bannerAds[currentAdIndex];
-  const positionClasses = position === 'top' 
-    ? 'top-0 border-b' 
-    : 'bottom-0 border-t';
+  const currentAd = bannerAds[adIndex % bannerAds.length];
+  const slideClass = position === 'top'
+    ? 'top-20 animate-in slide-in-from-top-4'
+    : 'bottom-4 animate-in slide-in-from-bottom-4';
 
   return (
-    <div
-      className={`fixed left-0 right-0 ${positionClasses} bg-gradient-to-r from-slate-50/95 via-gray-50/95 to-slate-50/95 dark:from-slate-900/95 dark:via-gray-900/95 dark:to-slate-900/95 backdrop-blur-md border-slate-200 dark:border-slate-700 shadow-lg z-[100] transition-all duration-300 ${
-        isVisible ? 'translate-y-0 opacity-100' : position === 'top' ? '-translate-y-full opacity-0' : 'translate-y-full opacity-0'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center gap-3 py-2.5 relative">
-          {/* Sponsored badge */}
-          <div className="flex-shrink-0">
-            <span className="px-2 py-1 bg-gradient-to-r from-slate-600 to-slate-700 text-white text-xs font-bold rounded-full shadow">
-              SILVER
-            </span>
+    <div className={`fixed right-4 md:right-6 left-4 md:left-auto md:max-w-sm ${slideClass} z-[90] duration-300`}>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
+        <div className="flex items-center gap-3 px-3 py-2.5">
+          <span className="flex-shrink-0 px-2 py-0.5 bg-slate-700 text-white text-[10px] font-bold rounded-full">
+            Patrocinado
+          </span>
+
+          <div className="hidden sm:block">
+            <BannerImage ad={currentAd} />
           </div>
 
-          {/* Ad content */}
-          <div 
-            className="flex-1 flex items-center gap-4 cursor-pointer group"
-            onClick={() => handleAdClick(currentAd)}
+          <div
+            className="flex-1 min-w-0 cursor-pointer group"
+            onClick={() => handleClick(currentAd)}
           >
-            {/* Image thumbnail */}
-            <div className="hidden sm:block flex-shrink-0">
-              <img
-                src={currentAd.image_url}
-                alt={currentAd.image_alt_text || currentAd.title || 'Advertisement'}
-                className="h-16 w-24 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-shadow"
-              />
-            </div>
-
-            {/* Text content */}
-            <div className="flex-1 min-w-0">
-              {currentAd.title && (
-                <h4 className="font-semibold text-sm md:text-base text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">
-                  {currentAd.title}
-                </h4>
-              )}
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                Click para más información
+            {currentAd.title && (
+              <p className="font-semibold text-sm text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                {currentAd.title}
               </p>
-            </div>
-
-            {/* CTA Icon */}
-            <div className="flex-shrink-0">
-              <ExternalLink className="h-5 w-5 text-primary group-hover:translate-x-1 transition-transform" />
+            )}
+            <div className="flex items-center gap-1 mt-0.5">
+              <ExternalLink className="h-3 w-3 text-primary flex-shrink-0" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Ver más información</span>
             </div>
           </div>
 
-          {/* Rotation indicator */}
           {bannerAds.length > 1 && (
-            <div className="hidden md:flex items-center gap-1 flex-shrink-0">
-              {bannerAds.map((_, index) => (
+            <div className="hidden md:flex gap-1 flex-shrink-0">
+              {bannerAds.slice(0, 5).map((_, i) => (
                 <div
-                  key={index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    index === currentAdIndex 
-                      ? 'w-6 bg-primary' 
-                      : 'w-1.5 bg-gray-300 dark:bg-gray-600'
+                  key={i}
+                  className={`h-1 rounded-full transition-all ${
+                    i === adIndex % bannerAds.length ? 'w-4 bg-primary' : 'w-1 bg-gray-300 dark:bg-gray-600'
                   }`}
                 />
               ))}
             </div>
           )}
 
-          {/* Close button */}
-          {dismissible && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDismiss();
-              }}
-              className="flex-shrink-0 p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-              aria-label="Cerrar anuncio"
-            >
-              <X className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
-            </button>
-          )}
+          <button
+            onClick={handleDismiss}
+            className="flex-shrink-0 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            aria-label="Cerrar anuncio"
+          >
+            <X className="h-4 w-4 text-gray-400" />
+          </button>
         </div>
       </div>
     </div>

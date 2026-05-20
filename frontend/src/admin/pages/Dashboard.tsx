@@ -1,8 +1,12 @@
-// AdminDashboard.tsx - CON DATOS REALES
+// AdminDashboard.tsx
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Users, Stethoscope, TrendingUp, Calendar, Loader2, AlertCircle } from 'lucide-react';
+import { Badge } from '@/shared/components/ui/badge';
+import {
+  Users, Stethoscope, TrendingUp, Calendar, Loader2, AlertCircle,
+  Star, Eye, MousePointerClick, Megaphone, Activity
+} from 'lucide-react';
 import { adminService } from '@/admin/services/adminService';
 import type { AdminStats, RecentActivity } from '@/admin/services/adminService';
 
@@ -20,17 +24,14 @@ const AdminDashboard = () => {
           adminService.getDashboardStats(),
           adminService.getRecentActivity()
         ]);
-        
         setStats(statsData);
         setActivities(activitiesData);
       } catch (err: any) {
-        console.error('Error loading dashboard:', err);
         setError(err.message || 'Error al cargar el dashboard');
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -59,113 +60,218 @@ const AdminDashboard = () => {
     );
   }
 
-  const statCards = [
-    {
-      title: 'Total Usuarios',
-      value: stats?.totalUsers || 0,
-      icon: Users,
-      description: 'Usuarios registrados en el sistema',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
-    },
-    {
-      title: 'Casos Totales',
-      value: stats?.totalCases || 0,
-      icon: Stethoscope,
-      description: `${stats?.casesThisMonth || 0} este mes`,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    }
-  ];
-
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'user':
-        return { color: 'bg-blue-500', label: 'Usuario' };
-      case 'case':
-        return { color: 'bg-green-500', label: 'Caso' };
-      case 'hospital':
-        return { color: 'bg-purple-500', label: 'Hospital' };
-      default:
-        return { color: 'bg-gray-500', label: 'Otro' };
+      case 'user': return { color: 'bg-blue-500', label: 'Usuario' };
+      case 'case': return { color: 'bg-green-500', label: 'Caso' };
+      case 'hospital': return { color: 'bg-purple-500', label: 'Hospital' };
+      default: return { color: 'bg-gray-500', label: 'Otro' };
     }
   };
 
   const formatTimeAgo = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    
+    const diff = Date.now() - new Date(timestamp).getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    
     if (days > 0) return `Hace ${days} día${days > 1 ? 's' : ''}`;
     if (hours > 0) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
     if (minutes > 0) return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
     return 'Justo ahora';
   };
 
+  const maxSpecialtyCount = Math.max(...(stats?.specialtyStats?.map(s => s.count) ?? [1]));
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard de Administración</h1>
-        <p className="text-muted-foreground mt-1">
-          Vista general del sistema y estadísticas principales
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Vista general del sistema</p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {statCards.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                  <Icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
+      {/* ─── Métricas principales ─── */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Total Médicos</CardTitle>
+            <div className="p-2 rounded-lg bg-blue-50">
+              <Users className="h-5 w-5 text-blue-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats?.totalUsers ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">usuarios registrados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Casos Totales</CardTitle>
+            <div className="p-2 rounded-lg bg-purple-50">
+              <Stethoscope className="h-5 w-5 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats?.totalCases ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">{stats?.casesThisMonth ?? 0} este mes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Premium</CardTitle>
+            <div className="p-2 rounded-lg bg-yellow-50">
+              <Star className="h-5 w-5 text-yellow-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats?.premiumUsers ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats?.freeUsers ?? 0} en plan Free
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Anuncios Activos</CardTitle>
+            <div className="p-2 rounded-lg bg-green-50">
+              <Megaphone className="h-5 w-5 text-green-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats?.adStats?.activeAds ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">campañas en curso</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* ─── Estadísticas de publicidad ─── */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Impresiones totales</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {(stats?.adStats?.totalImpressions ?? 0).toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Clicks totales</CardTitle>
+            <MousePointerClick className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {(stats?.adStats?.totalClicks ?? 0).toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">CTR Global</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.adStats?.ctr ?? 0}%</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* ─── Especialidades ─── */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Stethoscope className="h-5 w-5" />
+              Médicos por especialidad
+            </CardTitle>
+            <CardDescription>Top {stats?.specialtyStats?.length ?? 0} especialidades</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!stats?.specialtyStats?.length ? (
+              <p className="text-center text-muted-foreground py-6 text-sm">Sin datos de especialidad</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.specialtyStats.map(({ specialty, count }) => (
+                  <div key={specialty} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium truncate">{specialty}</span>
+                      <Badge variant="secondary" className="ml-2 flex-shrink-0">{count}</Badge>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all"
+                        style={{ width: `${(count / maxSpecialtyCount) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ─── Top anuncios ─── */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Megaphone className="h-5 w-5" />
+              Top anuncios
+            </CardTitle>
+            <CardDescription>Por impresiones</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!stats?.adStats?.topAds?.length ? (
+              <p className="text-center text-muted-foreground py-6 text-sm">Sin datos de anuncios</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.adStats.topAds.map((ad) => (
+                  <div key={ad.id} className="flex items-center justify-between text-sm border-b last:border-0 pb-2 last:pb-0">
+                    <span className="font-medium truncate flex-1 mr-3">{ad.campaign_name}</span>
+                    <div className="flex items-center gap-3 flex-shrink-0 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        {ad.impressions.toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MousePointerClick className="h-3 w-3" />
+                        {ad.clicks.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ─── Actividad reciente ─── */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Actividad Reciente
+            <Activity className="h-5 w-5" />
+            Actividad reciente
           </CardTitle>
-          <CardDescription>
-            Últimas acciones en el sistema
-          </CardDescription>
         </CardHeader>
         <CardContent>
           {activities.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No hay actividad reciente
-            </p>
+            <p className="text-center text-muted-foreground py-8">No hay actividad reciente</p>
           ) : (
             <div className="space-y-3">
-              {activities.slice(0, 5).map((activity) => {
-                const activityStyle = getActivityIcon(activity.type);
+              {activities.slice(0, 8).map((activity) => {
+                const style = getActivityIcon(activity.type);
                 return (
                   <div key={activity.id} className="flex items-center gap-3 text-sm">
-                    <div className={`w-2 h-2 ${activityStyle.color} rounded-full`} />
-                    <div className="flex-1">
-                      <p className="text-foreground">{activity.description}</p>
+                    <div className={`w-2 h-2 ${style.color} rounded-full flex-shrink-0`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground truncate">{activity.description}</p>
                       {activity.user_name && (
                         <p className="text-xs text-muted-foreground">{activity.user_name}</p>
                       )}

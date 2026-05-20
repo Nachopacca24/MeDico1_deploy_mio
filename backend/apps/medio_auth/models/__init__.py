@@ -79,15 +79,14 @@ class CustomUser(AbstractUser):
     
     # Plan de Suscripción
     PLAN_CHOICES = [
-        ('bronze', 'Bronze'),
-        ('silver', 'Silver'),
-        ('gold', 'Gold'),
+        ('free', 'Free'),
+        ('premium', 'Premium'),
     ]
-    
+
     plan = models.CharField(
         max_length=10,
         choices=PLAN_CHOICES,
-        default='bronze',
+        default='free',
         verbose_name="Plan de Suscripción",
         help_text="Plan actual del usuario"
     )

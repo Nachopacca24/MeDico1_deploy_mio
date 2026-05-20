@@ -8,6 +8,36 @@ import { X, Loader2, Save, Upload, Eye, TrendingUp } from 'lucide-react';
 import { advertisementService, type Advertisement } from '@/admin/services/advertisementService';
 import { clientService, type Client } from '@/admin/services/clientService';
 
+// Placements disponibles según plan del cliente publicitario
+const PLAN_PLACEMENTS: Record<string, { value: string; label: string }[]> = {
+  gold: [
+    { value: 'home_banner', label: 'Banner Principal (Gold)' },
+    { value: 'popup', label: 'Popup (Gold)' },
+    { value: 'sidebar', label: 'Barra Lateral' },
+    { value: 'between_content', label: 'Entre Contenido' },
+    { value: 'footer', label: 'Footer' },
+  ],
+  silver: [
+    { value: 'sidebar', label: 'Barra Lateral' },
+    { value: 'between_content', label: 'Entre Contenido' },
+    { value: 'footer', label: 'Footer' },
+  ],
+  bronze: [
+    { value: 'between_content', label: 'Entre Contenido' },
+    { value: 'footer', label: 'Footer' },
+  ],
+};
+
+const MEDICAL_SPECIALTIES = [
+  'Anestesiología', 'Cardiología', 'Cirugía General', 'Cirugía Plástica',
+  'Dermatología', 'Endocrinología', 'Gastroenterología', 'Geriatría',
+  'Ginecología', 'Hematología', 'Infectología', 'Medicina Interna',
+  'Nefrología', 'Neurología', 'Neurocirugía', 'Obstetricia',
+  'Oftalmología', 'Oncología', 'Ortopedia', 'Otorrinolaringología',
+  'Pediatría', 'Psiquiatría', 'Radiología', 'Reumatología',
+  'Traumatología', 'Urología',
+];
+
 interface AdvertisementFormDialogProps {
   open: boolean;
   onClose: () => void;
@@ -42,9 +72,15 @@ export function AdvertisementFormDialog({
     start_date: '',
     end_date: '',
     status: 'draft',
+    target_specialties: [] as string[],
   });
 
   const isReadOnly = mode === 'view';
+
+  // Plan del cliente seleccionado actualmente
+  const selectedClient = clients.find(c => c.id === parseInt(formData.client));
+  const clientPlan = selectedClient?.plan ?? 'bronze';
+  const availablePlacements = PLAN_PLACEMENTS[clientPlan] ?? PLAN_PLACEMENTS.bronze;
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -77,6 +113,7 @@ export function AdvertisementFormDialog({
           start_date: advertisement.start_date || '',
           end_date: advertisement.end_date || '',
           status: advertisement.status || 'draft',
+          target_specialties: advertisement.target_specialties || [],
         });
         setImagePreview(advertisement.image_url || null);
         setError(null);
@@ -100,12 +137,22 @@ export function AdvertisementFormDialog({
           start_date: today,
           end_date: endDateStr,
           status: 'draft',
+          target_specialties: [],
         });
         setImagePreview(null);
         setError(null);
       }
     }
   }, [advertisement, open, mode]);
+
+  // Si el placement actual no está disponible para el nuevo cliente, resetear al primero disponible
+  useEffect(() => {
+    if (isReadOnly || !formData.client) return;
+    const allowed = availablePlacements.map(p => p.value);
+    if (!allowed.includes(formData.placement)) {
+      setFormData(prev => ({ ...prev, placement: allowed[0] }));
+    }
+  }, [formData.client]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +183,7 @@ export function AdvertisementFormDialog({
           start_date: formData.start_date,
           end_date: formData.end_date,
           status: formData.status,
+          target_specialties: formData.target_specialties,
         };
 
         if (formData.image) {
@@ -151,7 +199,7 @@ export function AdvertisementFormDialog({
           campaign_name: formData.campaign_name,
           title: formData.title,
           description: formData.description,
-          image: formData.image,  // ← Incluir directamente aquí
+          image: formData.image,
           image_alt_text: formData.image_alt_text,
           redirect_url: formData.redirect_url,
           open_in_new_tab: formData.open_in_new_tab,
@@ -160,6 +208,7 @@ export function AdvertisementFormDialog({
           start_date: formData.start_date,
           end_date: formData.end_date,
           status: formData.status,
+          target_specialties: formData.target_specialties,
         };
 
         await advertisementService.createAdvertisement(submitData);
@@ -357,6 +406,19 @@ export function AdvertisementFormDialog({
                   </div>
                 </div>
               </div>
+
+              {advertisement.target_specialties && advertisement.target_specialties.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-lg border-b pb-2">Especialidades Objetivo</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {advertisement.target_specialties.map(s => (
+                      <span key={s} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg border-b pb-2">Periodo de Visualización</h3>
@@ -616,6 +678,14 @@ export function AdvertisementFormDialog({
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
                     <label className="text-sm font-medium">Ubicación *</label>
+                    {formData.client && (
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Plan <span className="font-semibold capitalize">{clientPlan}</span>
+                        {clientPlan === 'gold' && ' — acceso a todos los placements'}
+                        {clientPlan === 'silver' && ' — sin Banner ni Popup'}
+                        {clientPlan === 'bronze' && ' — solo Entre Contenido y Footer'}
+                      </p>
+                    )}
                     <select
                       name="placement"
                       value={formData.placement}
@@ -623,11 +693,9 @@ export function AdvertisementFormDialog({
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       required
                     >
-                      <option value="home_banner">Banner Principal</option>
-                      <option value="sidebar">Barra Lateral</option>
-                      <option value="footer">Footer</option>
-                      <option value="popup">Popup</option>
-                      <option value="between_content">Entre Contenido</option>
+                      {availablePlacements.map(p => (
+                        <option key={p.value} value={p.value}>{p.label}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -663,6 +731,39 @@ export function AdvertisementFormDialog({
                     </select>
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Especialidades Objetivo
+                  <span className="text-muted-foreground font-normal ml-1">(vacío = mostrar a todos)</span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto border border-input rounded-md p-2">
+                  {MEDICAL_SPECIALTIES.map((spec) => (
+                    <label key={spec} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="h-3.5 w-3.5 rounded"
+                        checked={formData.target_specialties.includes(spec)}
+                        onChange={(e) => {
+                          if (isReadOnly) return;
+                          setFormData(prev => ({
+                            ...prev,
+                            target_specialties: e.target.checked
+                              ? [...prev.target_specialties, spec]
+                              : prev.target_specialties.filter(s => s !== spec),
+                          }));
+                        }}
+                      />
+                      <span className="text-xs">{spec}</span>
+                    </label>
+                  ))}
+                </div>
+                {formData.target_specialties.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Seleccionadas: {formData.target_specialties.join(', ')}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-4">

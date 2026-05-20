@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
 import { Button } from '@/shared/components/ui/button';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 interface PopupAdManagerProps {
   initialDelay?: number;
@@ -11,11 +12,14 @@ interface PopupAdManagerProps {
   maxPerSession?: number;
 }
 
-export function PopupAdManager({ 
+export function PopupAdManager({
   initialDelay = 5,
   interval = 120,
-  maxPerSession = 3 
+  maxPerSession = 3
 }: PopupAdManagerProps) {
+  const { user } = useAuth();
+  const userSpecialty = user?.specialty ?? '';
+
   const [popupAds, setPopupAds] = useState<ActiveAd[]>([]);
   const [currentAd, setCurrentAd] = useState<ActiveAd | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -25,7 +29,7 @@ export function PopupAdManager({
   useEffect(() => {
     const loadPopupAds = async () => {
       try {
-        const ads = await advertisementService.getActiveAds('popup');
+        const ads = await advertisementService.getActiveAds('popup', userSpecialty);
         setPopupAds(ads);
       } catch (error) {
         console.error('Error loading popup ads:', error);
@@ -33,7 +37,7 @@ export function PopupAdManager({
     };
 
     loadPopupAds();
-  }, []);
+  }, [userSpecialty]);
 
   useEffect(() => {
     if (popupAds.length === 0 || popupCount >= maxPerSession) return;
@@ -84,17 +88,19 @@ export function PopupAdManager({
     }
   };
 
+  const [imgFailed, setImgFailed] = useState(false);
+
   if (!isVisible || !currentAd) return null;
 
   return (
     <>
-      <div 
+      <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in duration-300"
         onClick={handleClose}
       />
-      
+
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div 
+        <div
           className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full pointer-events-auto animate-in zoom-in-95 duration-300 overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
@@ -108,22 +114,31 @@ export function PopupAdManager({
           </Button>
 
           <div className="absolute top-3 left-3 z-10">
-            <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-xs font-bold rounded-full shadow-lg">
-              GOLD SPONSOR
+            <span className="px-3 py-1 bg-gradient-to-r from-primary to-primary/80 text-white text-xs font-bold rounded-full shadow-lg">
+              Patrocinado
             </span>
           </div>
 
-          <div 
+          <div
             className="cursor-pointer group"
             onClick={() => handleAdClick(currentAd)}
           >
             <div className="relative overflow-hidden">
-              <img
-                src={currentAd.image_url}
-                alt={currentAd.image_alt_text || currentAd.title || 'Advertisement'}
-                className="w-full h-auto max-h-[60vh] object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {currentAd.image_url && !imgFailed ? (
+                <>
+                  <img
+                    src={currentAd.image_url}
+                    alt={currentAd.image_alt_text || currentAd.title || 'Advertisement'}
+                    className="w-full h-auto max-h-[60vh] object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={() => setImgFailed(true)}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </>
+              ) : (
+                <div className="h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex items-center justify-center">
+                  <ExternalLink className="h-12 w-12 text-primary/40" />
+                </div>
+              )}
             </div>
 
             {currentAd.title && (
@@ -142,8 +157,8 @@ export function PopupAdManager({
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
-            <div 
-              className="h-full bg-gradient-to-r from-yellow-500 to-amber-600"
+            <div
+              className="h-full bg-primary"
               style={{ width: `${(popupCount / maxPerSession) * 100}%` }}
             />
           </div>

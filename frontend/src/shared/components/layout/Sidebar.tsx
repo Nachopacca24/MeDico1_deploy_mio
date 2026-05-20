@@ -11,6 +11,7 @@ import {
   LogOut,
   CalendarIcon
 } from "lucide-react";
+import { ForYouAds } from "@/shared/components/ads/ForYouAds";
 
 import {
   Sidebar,
@@ -105,8 +106,9 @@ const settingsItems = [
 
 export function AppSidebar() {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const userSpecialty = user?.specialty || '';
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -195,6 +197,13 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {/* Sección Para ti — specialty-targeted ads, all users */}
+        {userSpecialty && (
+          <>
+            <SidebarSeparator className="bg-sidebar-border" />
+            <ForYouAds specialty={userSpecialty} />
+          </>
+        )}
       </SidebarContent>
 
       {/* Footer con Settings y Logout */}

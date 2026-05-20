@@ -8,6 +8,16 @@ export interface AdminStats {
   totalUsers: number;
   totalCases: number;
   casesThisMonth: number;
+  premiumUsers: number;
+  freeUsers: number;
+  specialtyStats: { specialty: string; count: number }[];
+  adStats: {
+    activeAds: number;
+    totalImpressions: number;
+    totalClicks: number;
+    ctr: number;
+    topAds: { id: number; campaign_name: string; impressions: number; clicks: number }[];
+  };
 }
 
 export interface RecentActivity {
@@ -68,6 +78,22 @@ class AdminService {
       return await this.handleResponse(response);
     } catch (error) {
       console.error('Error en getUsers:', error);
+      throw error;
+    }
+  }
+
+  async updateUserPlan(userId: number, plan: 'free' | 'premium'): Promise<void> {
+    try {
+      const response = await authService.authenticatedFetch(
+        `${API_URL}/api/admin/users/${userId}/plan/`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan }) }
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al actualizar plan');
+      }
+    } catch (error) {
+      console.error('Error en updateUserPlan:', error);
       throw error;
     }
   }

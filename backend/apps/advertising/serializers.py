@@ -44,6 +44,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             'placement', 'placement_display', 'priority',
             'start_date', 'end_date', 'status', 'status_display',
             'impressions', 'clicks', 'ctr', 'is_active',
+            'target_specialties',
             'created_by', 'created_by_name', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_by', 'created_at', 'updated_at', 'impressions', 'clicks']
@@ -63,6 +64,21 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 print(f"DEBUG AD IMAGE ERROR: {str(e)}")
                 return None
         return None
+
+    def validate_target_specialties(self, value):
+        """Accept either a list or a JSON string (when submitted via FormData)."""
+        import json
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+                if not isinstance(parsed, list):
+                    raise serializers.ValidationError("target_specialties debe ser una lista.")
+                return parsed
+            except (json.JSONDecodeError, ValueError):
+                raise serializers.ValidationError("target_specialties contiene JSON inválido.")
+        if not isinstance(value, list):
+            raise serializers.ValidationError("target_specialties debe ser una lista.")
+        return value
 
     def validate_redirect_url(self, value):
         """
@@ -127,6 +143,7 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
             'status', 'status_display',
             'start_date', 'end_date',
             'impressions', 'clicks', 'ctr', 'is_active',
+            'target_specialties',
             'created_by_name', 'created_at', 'updated_at'
         ]
 
@@ -164,7 +181,8 @@ class ActiveAdvertisementSerializer(serializers.ModelSerializer):
             'image_alt_text',
             'redirect_url',
             'open_in_new_tab',
-            'placement'
+            'placement',
+            'target_specialties',
         ]
 
     def get_image_url(self, obj):

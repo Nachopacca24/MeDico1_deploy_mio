@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
-import { Calendar, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare } from "lucide-react";
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);
@@ -125,6 +125,7 @@ const Settings = () => {
           <TabsList className="inline-flex gap-1">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            <TabsTrigger value="plan">Mi Plan</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
@@ -249,6 +250,111 @@ const Settings = () => {
                 </Button>
               </CardFooter>
             </Card>
+          </TabsContent>
+
+          {/* Plan Tab */}
+          <TabsContent value="plan">
+            <div className="space-y-4">
+              {/* Current plan card */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Tu Plan Actual</CardTitle>
+                      <CardDescription>
+                        {user?.plan === 'premium'
+                          ? 'Estás disfrutando de MeDico Premium'
+                          : 'Estás en el plan gratuito de MeDico'}
+                      </CardDescription>
+                    </div>
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm ${
+                      user?.plan === 'premium'
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    }`}>
+                      {user?.plan === 'premium' ? <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" /> : null}
+                      {user?.plan === 'premium' ? 'Premium' : 'Free'}
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+
+              {/* Feature comparison */}
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Free */}
+                <Card className={user?.plan !== 'premium' ? 'border-primary ring-1 ring-primary' : ''}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Plan Free</CardTitle>
+                    <CardDescription>Para comenzar</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {[
+                      { icon: CheckCircle2, text: 'Gestión de casos quirúrgicos', ok: true },
+                      { icon: CheckCircle2, text: 'Colegas y ayudantes', ok: true },
+                      { icon: CheckCircle2, text: 'Hospitales y procedimientos', ok: true },
+                      { icon: CheckCircle2, text: 'Calculadora médica', ok: true },
+                      { icon: Eye, text: 'Anuncios en la app', ok: false },
+                      { icon: MessageSquare, text: 'Popups publicitarios', ok: false },
+                    ].map(({ icon: Icon, text, ok }) => (
+                      <div key={text} className="flex items-center gap-2 text-sm">
+                        <Icon className={`h-4 w-4 flex-shrink-0 ${ok ? 'text-green-600' : 'text-orange-400'}`} />
+                        <span className={ok ? '' : 'text-muted-foreground'}>{text}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Premium */}
+                <Card className={`relative overflow-hidden ${user?.plan === 'premium' ? 'border-yellow-400 ring-1 ring-yellow-400' : ''}`}>
+                  {user?.plan === 'premium' && (
+                    <div className="absolute top-3 right-3">
+                      <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Activo</span>
+                    </div>
+                  )}
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                      Premium
+                    </CardTitle>
+                    <CardDescription>Experiencia sin interrupciones</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {[
+                      'Gestión de casos quirúrgicos',
+                      'Colegas y ayudantes',
+                      'Hospitales y procedimientos',
+                      'Calculadora médica',
+                      'Sin anuncios en la app',
+                      'Sin popups publicitarios',
+                      'Solo contenido especializado "Para ti"',
+                    ].map((text) => (
+                      <div key={text} className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{text}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {user?.plan !== 'premium' && (
+                <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-900/10">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <Zap className="h-5 w-5 text-yellow-600 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">
+                          ¿Quieres Premium?
+                        </p>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                          Contacta a un administrador de MeDico para actualizar tu plan.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
 
           {/* Google Calendar Tab */}

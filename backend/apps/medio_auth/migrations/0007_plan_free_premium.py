@@ -1,0 +1,32 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('medio_auth', '0006_password_reset_fields'),
+    ]
+
+    operations = [
+        # Migrate existing data: bronze/silver → free, gold → premium
+        migrations.RunSQL(
+            sql="""
+                UPDATE medio_auth_customuser SET plan = 'free' WHERE plan IN ('bronze', 'silver');
+                UPDATE medio_auth_customuser SET plan = 'premium' WHERE plan = 'gold';
+            """,
+            reverse_sql="""
+                UPDATE medio_auth_customuser SET plan = 'bronze' WHERE plan = 'free';
+            """,
+        ),
+        migrations.AlterField(
+            model_name='customuser',
+            name='plan',
+            field=models.CharField(
+                choices=[('free', 'Free'), ('premium', 'Premium')],
+                default='free',
+                help_text='Plan actual del usuario',
+                max_length=10,
+                verbose_name='Plan de Suscripción',
+            ),
+        ),
+    ]

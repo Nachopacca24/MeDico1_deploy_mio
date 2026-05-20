@@ -26,7 +26,7 @@ export interface User {
   full_name: string;
   role: number;
   is_admin: boolean;
-  plan: string;
+  plan: 'free' | 'premium';
   friend_code: string;
   name: string;
   phone?: string;

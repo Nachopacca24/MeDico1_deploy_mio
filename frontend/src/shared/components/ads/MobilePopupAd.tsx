@@ -1,8 +1,9 @@
 // src/shared/components/ads/MobilePopupAd.tsx
 
 import { useState, useEffect } from 'react';
-import { X, ChevronRight } from 'lucide-react';
+import { X, ChevronRight, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 interface MobilePopupAdProps {
   initialDelay?: number;
@@ -11,12 +12,15 @@ interface MobilePopupAdProps {
   style?: 'full' | 'bottom-sheet';
 }
 
-export function MobilePopupAd({ 
+export function MobilePopupAd({
   initialDelay = 8,
   interval = 180,
   maxPerSession = 2,
   style = 'bottom-sheet'
 }: MobilePopupAdProps) {
+  const { user } = useAuth();
+  const userSpecialty = user?.specialty ?? '';
+
   const [popupAds, setPopupAds] = useState<ActiveAd[]>([]);
   const [currentAd, setCurrentAd] = useState<ActiveAd | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -28,7 +32,7 @@ export function MobilePopupAd({
   useEffect(() => {
     const loadPopupAds = async () => {
       try {
-        const ads = await advertisementService.getActiveAds('popup');
+        const ads = await advertisementService.getActiveAds('popup', userSpecialty);
         setPopupAds(ads);
       } catch (error) {
         console.error('Error loading popup ads:', error);
@@ -36,7 +40,7 @@ export function MobilePopupAd({
     };
 
     loadPopupAds();
-  }, []);
+  }, [userSpecialty]);
 
   useEffect(() => {
     if (popupAds.length === 0 || popupCount >= maxPerSession) return;
@@ -104,17 +108,19 @@ export function MobilePopupAd({
     }
   };
 
+  const [imgFailed, setImgFailed] = useState(false);
+
   if (!isVisible || !currentAd) return null;
 
   if (style === 'bottom-sheet') {
     return (
       <>
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-50 animate-in fade-in duration-200"
           onClick={handleClose}
         />
-        
-        <div 
+
+        <div
           className="fixed inset-x-0 bottom-0 z-50 animate-in slide-in-from-bottom duration-300"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -133,18 +139,25 @@ export function MobilePopupAd({
             </button>
 
             <div className="absolute top-6 left-4 z-10">
-              <span className="px-2.5 py-1 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-xs font-bold rounded-full shadow-lg">
-                GOLD
+              <span className="px-2.5 py-1 bg-primary text-white text-xs font-bold rounded-full shadow-lg">
+                Patrocinado
               </span>
             </div>
 
             <div className="overflow-y-auto max-h-[calc(85vh-60px)]">
               <div className="relative">
-                <img
-                  src={currentAd.image_url}
-                  alt={currentAd.image_alt_text || currentAd.title || 'Advertisement'}
-                  className="w-full h-auto object-cover"
-                />
+                {currentAd.image_url && !imgFailed ? (
+                  <img
+                    src={currentAd.image_url}
+                    alt={currentAd.image_alt_text || currentAd.title || 'Advertisement'}
+                    className="w-full h-auto object-cover"
+                    onError={() => setImgFailed(true)}
+                  />
+                ) : (
+                  <div className="h-40 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 flex items-center justify-center">
+                    <ExternalLink className="h-10 w-10 text-primary/40" />
+                  </div>
+                )}
               </div>
 
               <div className="p-6 space-y-4">
@@ -168,8 +181,8 @@ export function MobilePopupAd({
                       <div
                         key={i}
                         className={`h-1.5 rounded-full transition-all ${
-                          i < popupCount 
-                            ? 'w-8 bg-yellow-500' 
+                          i < popupCount
+                            ? 'w-8 bg-primary'
                             : 'w-1.5 bg-gray-300 dark:bg-gray-600'
                         }`}
                       />

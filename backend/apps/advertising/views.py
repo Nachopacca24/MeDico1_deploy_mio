@@ -1,6 +1,7 @@
 # apps/advertising/views.py
 
 import logging
+import random
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
@@ -10,6 +11,40 @@ from django.utils import timezone
 from django.db.models import Q, Sum
 from datetime import timedelta
 from core.throttles import AdTrackingThrottle
+
+# Slots base por plan del cliente publicitario
+_PLAN_SLOTS = {'gold': 3, 'silver': 2, 'bronze': 1}
+
+
+def build_rotation_schedule(ads, max_slots=9):
+    """
+    Construye una lista de rotación ponderada.
+    Clientes con plan gold aparecen ~3x más que bronze.
+    El campo priority (0-100) agrega hasta 50% de slots extra.
+    Se evitan repeticiones consecutivas del mismo anuncio.
+    """
+    if not ads:
+        return []
+
+    pool = []
+    for ad in ads:
+        plan = getattr(ad.client, 'plan', 'bronze')
+        base = _PLAN_SLOTS.get(plan, 1)
+        bonus = round(ad.priority / 100 * base * 0.5)
+        for _ in range(base + bonus):
+            pool.append(ad)
+
+    random.shuffle(pool)
+
+    # Eliminar repeticiones consecutivas
+    result = []
+    last_id = None
+    for ad in pool:
+        if ad.id != last_id:
+            result.append(ad)
+            last_id = ad.id
+
+    return result[:max_slots]
 
 logger = logging.getLogger(__name__)
 
@@ -152,35 +187,53 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
 def get_active_ads(request):
     """
     Endpoint público para obtener anuncios activos.
-
-    Filtros por placement:
-    - home_banner: Solo clientes GOLD
-    - sidebar: Clientes GOLD y SILVER
-    - between_content: Clientes GOLD y SILVER
-    - footer: Clientes GOLD y SILVER
-    - popup: Solo clientes GOLD
+    Parámetros:
+      placement  — ubicación del anuncio (default: home_banner)
+      specialty  — especialidad del usuario que solicita los anuncios.
+                   Si se envía vacío, solo retorna anuncios sin targeting.
+                   Si no se envía, retorna todos (legacy/fallback).
     """
-    placement = request.query_params.get('placement', 'home_banner')
+    placement = request.query_params.get('placement', 'home_banner').strip()
+    # Distinguish "not sent" (None) from "sent empty" ('')
+    specialty_raw = request.query_params.get('specialty', None)
+    specialty = specialty_raw.strip() if specialty_raw is not None else None
     today = timezone.now().date()
 
-    # Determinar qué planes son elegibles según el placement
-    if placement in ['home_banner', 'popup']:
-        # Solo Gold para ubicaciones premium
-        allowed_plans = ['gold']
-    else:
-        # Gold y Silver para otras ubicaciones
-        allowed_plans = ['gold', 'silver']
-
-    ads = Advertisement.objects.filter(
+    qs = Advertisement.objects.filter(
         status='active',
-        placement=placement,
         start_date__lte=today,
         end_date__gte=today,
-        client__plan__in=allowed_plans,
         client__status='active'
-    ).select_related('client').order_by('-priority')[:5]
+    ).select_related('client').order_by('-priority')
 
-    serializer = ActiveAdvertisementSerializer(ads, many=True, context={'request': request})
+    # Banner principal y popup son exclusivos para clientes Gold
+    if placement in ('home_banner', 'popup'):
+        qs = qs.filter(client__plan='gold')
+
+    # "Para ti" section: no placement restriction, only specialty-targeted ads
+    if specialty is not None and not placement:
+        ads = [
+            ad for ad in qs
+            if ad.target_specialties and specialty in ad.target_specialties
+        ][:5]
+    else:
+        qs = qs.filter(placement=placement)
+        if specialty is not None:
+            if specialty:
+                # User has a specialty: show ads with matching or no targeting
+                ads = [
+                    ad for ad in qs
+                    if not ad.target_specialties or specialty in ad.target_specialties
+                ][:5]
+            else:
+                # User has no specialty: only show non-targeted ads
+                ads = [ad for ad in qs if not ad.target_specialties][:5]
+        else:
+            # No specialty param at all: show everything (legacy fallback)
+            ads = list(qs[:5])
+
+    rotation = build_rotation_schedule(ads)
+    serializer = ActiveAdvertisementSerializer(rotation, many=True, context={'request': request})
     return Response(serializer.data)
 
 
