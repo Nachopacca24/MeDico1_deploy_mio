@@ -29,7 +29,7 @@ export function PopupAdManager({
   useEffect(() => {
     const loadPopupAds = async () => {
       try {
-        const ads = await advertisementService.getActiveAds('popup', userSpecialty);
+        const ads = await advertisementService.getActiveAds('popup');
         setPopupAds(ads);
       } catch (error) {
         console.error('Error loading popup ads:', error);

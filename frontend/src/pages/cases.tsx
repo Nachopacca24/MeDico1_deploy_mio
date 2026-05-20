@@ -289,25 +289,12 @@ const CasesPage = () => {
   const loadAds = async () => {
     try {
       setLoadingAds(true);
-      const promises = [];
-      
-      if (adSettings.showSidebarAds) {
-        promises.push(advertisementService.getActiveAds('sidebar'));
-      }
-      if (adSettings.showBetweenContent) {
-        promises.push(advertisementService.getActiveAds('between_content'));
-      }
-
-      const results = await Promise.all(promises);
-      
-      let resultIndex = 0;
-      if (adSettings.showSidebarAds) {
-        setSidebarAds(results[resultIndex] || []);
-        resultIndex++;
-      }
-      if (adSettings.showBetweenContent) {
-        setBetweenContentAds(results[resultIndex] || []);
-      }
+      const [sidebar, between] = await Promise.all([
+        advertisementService.getActiveAds('sidebar'),
+        advertisementService.getActiveAds('between_content'),
+      ]);
+      setSidebarAds(sidebar || []);
+      setBetweenContentAds(between || []);
     } catch (error) {
       console.error('Error loading ads:', error);
     } finally {

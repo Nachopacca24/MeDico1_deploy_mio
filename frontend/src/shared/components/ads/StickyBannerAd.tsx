@@ -45,7 +45,7 @@ export function StickyBannerAd({
   // Load weighted rotation list from backend
   useEffect(() => {
     advertisementService
-      .getActiveAds('home_banner', userSpecialty)
+      .getActiveAds('home_banner')
       .then(setBannerAds)
       .catch(() => {});
   }, [userSpecialty]);
