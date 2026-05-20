@@ -1,13 +1,17 @@
 # apps/advertising/views.py
 
+import logging
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Q
 from datetime import timedelta
+from core.throttles import AdTrackingThrottle
+
+logger = logging.getLogger(__name__)
 
 from .models import Client, Advertisement
 from .serializers import (
@@ -112,12 +116,6 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-priority', '-created_at')
 
     def perform_create(self, serializer):
-        print("=" * 80)
-        print("REQUEST DATA:", self.request.data)
-        print("REQUEST FILES:", self.request.FILES)
-        print("IMAGE en data:", self.request.data.get('image'))
-        print("IMAGE en FILES:", self.request.FILES.get('image'))
-        print("=" * 80)
         serializer.save(created_by=self.request.user)
 
     @action(detail=True, methods=['post'])
@@ -186,9 +184,12 @@ def get_active_ads(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AdTrackingThrottle])
 def track_ad_impression(request, ad_id):
     try:
         ad = Advertisement.objects.get(id=ad_id)
+        if not ad.is_active:
+            return Response({'status': 'ignored'})
         ad.increment_impressions()
         return Response({'status': 'success'})
     except Advertisement.DoesNotExist:
@@ -197,9 +198,12 @@ def track_ad_impression(request, ad_id):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AdTrackingThrottle])
 def track_ad_click(request, ad_id):
     try:
         ad = Advertisement.objects.get(id=ad_id)
+        if not ad.is_active:
+            return Response({'status': 'ignored'})
         ad.increment_clicks()
         return Response({'status': 'success'})
     except Advertisement.DoesNotExist:

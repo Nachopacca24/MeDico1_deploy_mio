@@ -15,7 +15,14 @@ env = environ.Env()
 environ.Env.read_env(BASE_DIR.parent / '.env', overwrite=False)
 
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    _is_debug = os.environ.get('DEBUG', 'False') == 'True'
+    if _is_debug:
+        SECRET_KEY = 'django-insecure-local-dev-only-not-for-production'
+    else:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured('DJANGO_SECRET_KEY must be set in production.')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
@@ -179,6 +186,17 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '1000/day',
+        'user': '10000/day',
+        'login': '5/min',
+        'register': '10/hour',
+        'ad_tracking': '60/hour',
+    },
 }
 
 # Configuración de Simple JWT

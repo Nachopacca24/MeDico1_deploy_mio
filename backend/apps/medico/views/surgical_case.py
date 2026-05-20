@@ -1,16 +1,19 @@
 # apps/medico/views/surgical_case.py
 
-"""
-ViewSets para casos quirúrgicos
-"""
+import logging
 from django.db.models import Sum, Count, Q
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils.dateparse import parse_date
 from rest_framework import viewsets, status
 from rest_framework import serializers as rest_serializers
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import IsAuthenticated
+from apps.medio_auth.permissions import IsEmailVerified
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from decimal import Decimal
+
+logger = logging.getLogger(__name__)
 
 from apps.medico.models import SurgicalCase, CaseProcedure
 from apps.medico.serializers import (
@@ -36,7 +39,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
     - POST /api/cases/{id}/accept-invitation/ - Aceptar invitación como ayudante
     - POST /api/cases/{id}/reject-invitation/ - Rechazar invitación como ayudante
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsEmailVerified]
 
     def get_queryset(self):
         """Retornar casos del usuario autenticado (propios + donde es ayudante)"""
@@ -74,15 +77,23 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         date_from = self.request.query_params.get('date_from', None)
         if date_from:
-            queryset = queryset.filter(surgery_date__gte=date_from)
+            parsed_from = parse_date(date_from)
+            if not parsed_from:
+                raise DRFValidationError({'date_from': 'Formato inválido. Use YYYY-MM-DD'})
+            queryset = queryset.filter(surgery_date__gte=parsed_from)
 
         date_to = self.request.query_params.get('date_to', None)
         if date_to:
-            queryset = queryset.filter(surgery_date__lte=date_to)
+            parsed_to = parse_date(date_to)
+            if not parsed_to:
+                raise DRFValidationError({'date_to': 'Formato inválido. Use YYYY-MM-DD'})
+            queryset = queryset.filter(surgery_date__lte=parsed_to)
 
         # Búsqueda por nombre de paciente
-        search = self.request.query_params.get('search', None)
+        search = self.request.query_params.get('search', '').strip()
         if search:
+            if len(search) > 100:
+                raise DRFValidationError({'search': 'Búsqueda demasiado larga (máximo 100 caracteres)'})
             queryset = queryset.filter(
                 Q(patient_name__icontains=search) |
                 Q(patient_id__icontains=search)
@@ -122,33 +133,22 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Crear un nuevo caso quirúrgico"""
-        import json
-        print(f"DEBUG CREATE DATA: {json.dumps(request.data)}")
-
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
             case = serializer.save(created_by=request.user)
 
-            # ✅ SOLUCIÓN: Refrescar el objeto completo con todas las relaciones
             case = SurgicalCase.objects.prefetch_related('procedures').select_related(
                 'hospital', 'created_by', 'assistant_doctor'
             ).get(pk=case.pk)
 
-            # 🔍 DEBUG: Verificar los valores antes de devolver
-            print(f"DEBUG RESPONSE: procedure_count={case.procedure_count}, total_rvu={case.total_rvu}, total_value={case.total_value}")
-            print(f"DEBUG PROCEDURES: {case.procedures.count()}")
-
-            # Usamos SurgicalCaseDetailSerializer para devolver la respuesta completa
             response_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except rest_serializers.ValidationError as e:
-            print(f"VALIDATION ERROR: {e.detail}")
+            logger.warning("Validation error creating case for user %s", request.user.id)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            import traceback
-            print(f"ERROR CREATING CASE: {str(e)}")
-            print(traceback.format_exc())
+            logger.exception("Error creating case for user %s", request.user.id)
             return Response(
                 {'error': 'Error al crear el caso', 'detail': str(e)},
                 status=status.HTTP_400_BAD_REQUEST

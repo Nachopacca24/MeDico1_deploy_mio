@@ -64,9 +64,20 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.MultiPartParser',  # ← IMPORTANTE para subir archivos
-        'rest_framework.parsers.FormParser',        # ← IMPORTANTE para subir archivos
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FormParser',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '10000/day',
+        'user': '100000/day',
+        'login': '20/min',
+        'register': '50/hour',
+        'ad_tracking': '500/hour',
+    },
 }
 
 # ============================================

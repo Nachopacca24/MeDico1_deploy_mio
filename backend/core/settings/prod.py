@@ -4,7 +4,10 @@ import os
 from .base import *
 
 DEBUG = False
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get(
+    'DJANGO_ALLOWED_HOSTS',
+    'medico1-h5lk.onrender.com,me-dico1.vercel.app'
+).split(',')
 
 # Append to existing CSRF_TRUSTED_ORIGINS from base.py
 CSRF_TRUSTED_ORIGINS += [
@@ -23,7 +26,10 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+# Render/Vercel terminan SSL en el proxy — no redirigir desde Django para evitar loops.
 SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True

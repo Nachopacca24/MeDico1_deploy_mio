@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import django; import os; os.environ['DJANGO_SETTINGS_MODULE']='core.settings.dev'; os.environ['DEBUG']='True'; os.environ['DJANGO_SECRET_KEY']='test-key'; django.setup\\(\\); print\\('OK'\\)\")",
+      "Bash(python -c ' *)",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\\\\commands\")",
+      "PowerShell(New-Item -ItemType File -Path \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\\\\__init__.py\" -ErrorAction SilentlyContinue)",
+      "PowerShell(New-Item -ItemType File -Path \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\\\\commands\\\\__init__.py\" -ErrorAction SilentlyContinue)"
+    ]
+  }
+}

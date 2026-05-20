@@ -798,7 +798,8 @@ class GoogleLoginView(APIView):
                 # Consultar el endpoint de usuario de Google usando el Access Token
                 response = requests.get(
                     'https://www.googleapis.com/oauth2/v3/userinfo',
-                    headers={'Authorization': f'Bearer {token}'}
+                    headers={'Authorization': f'Bearer {token}'},
+                    timeout=5
                 )
                 if response.status_code == 200:
                     idinfo = response.json()

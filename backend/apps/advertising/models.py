@@ -1,3 +1,4 @@
+import logging
 from django.db import models
 from django.conf import settings
 from django.core.validators import URLValidator
@@ -7,6 +8,8 @@ from decimal import Decimal
 import os
 from cloudinary.models import CloudinaryField
 import cloudinary.uploader
+
+logger = logging.getLogger(__name__)
 
 
 class Client(models.Model):
@@ -337,9 +340,9 @@ def delete_advertisement_image_on_delete(sender, instance, **kwargs):
         try:
             public_id = instance.image.public_id
             cloudinary.uploader.destroy(public_id)
-            print(f"✓ Imagen de Cloudinary eliminada: {public_id}")
+            logger.info("Cloudinary image deleted: %s", public_id)
         except Exception as e:
-            print(f"✗ Error al eliminar imagen de Cloudinary: {e}")
+            logger.warning("Failed to delete Cloudinary image: %s", e)
 
 
 @receiver(pre_save, sender=Advertisement)
@@ -357,10 +360,10 @@ def delete_old_image_on_update(sender, instance, **kwargs):
             try:
                 public_id = old_instance.image.public_id
                 cloudinary.uploader.destroy(public_id)
-                print(f"✓ Imagen antigua de Cloudinary eliminada: {public_id}")
+                logger.info("Old Cloudinary image deleted: %s", public_id)
             except Exception as e:
-                print(f"✗ Error al eliminar imagen antigua de Cloudinary: {e}")
+                logger.warning("Failed to delete old Cloudinary image: %s", e)
     except Advertisement.DoesNotExist:
         pass
     except Exception as e:
-        print(f"✗ Error en signal pre_save: {e}")
+        logger.warning("Error in pre_save signal: %s", e)
