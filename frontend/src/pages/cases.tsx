@@ -407,13 +407,19 @@ const CasesPage = () => {
   };
 
   const handleCaseUpdate = (updatedCase: SurgicalCase) => {
-    if (updatedCase.is_paid) {
-      setCases(cases.filter(c => c.id !== updatedCase.id));
-      setArchivedCases([]);  // invalidar caché del tab facturados
-      toast.success('Caso facturado', 'El caso se movió a la pestaña Facturados y se eliminará en 6 meses');
+    const existingCase = cases.find(c => c.id === updatedCase.id);
+    const justBecamePaid = updatedCase.is_paid && !existingCase?.is_paid;
+
+    if (justBecamePaid) {
+      setCases(prev => prev.filter(c => c.id !== updatedCase.id));
+      setArchivedCases([]);
+      toast.success('Caso cobrado', 'El caso se movió a la pestaña Cobrados y se eliminará en 6 meses');
     } else {
-      setCases(cases.map(c => c.id === updatedCase.id ? updatedCase : c));
-      toast.success('Actualizado', 'Estado actualizado correctamente');
+      setCases(prev => prev.map(c => c.id === updatedCase.id ? updatedCase : c));
+      const isInvoiceOnlyUpdate = updatedCase.invoice_number !== existingCase?.invoice_number;
+      if (!isInvoiceOnlyUpdate) {
+        toast.success('Actualizado', 'Estado actualizado correctamente');
+      }
     }
   };
 
