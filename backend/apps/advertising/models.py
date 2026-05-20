@@ -317,14 +317,12 @@ class Advertisement(models.Model):
         return 0.0
     
     def increment_impressions(self):
-        """Incrementa el contador de impresiones"""
-        self.impressions += 1
-        self.save(update_fields=['impressions'])
-    
+        Advertisement.objects.filter(pk=self.pk).update(impressions=models.F('impressions') + 1)
+        self.refresh_from_db(fields=['impressions'])
+
     def increment_clicks(self):
-        """Incrementa el contador de clicks"""
-        self.clicks += 1
-        self.save(update_fields=['clicks'])
+        Advertisement.objects.filter(pk=self.pk).update(clicks=models.F('clicks') + 1)
+        self.refresh_from_db(fields=['clicks'])
 
 
 # =============================================================================

@@ -15,6 +15,8 @@ import LoginPage from "@/pages/login";
 import SignupForm from "@/pages/signup";
 import LogoutPage from "@/pages/logout";
 import VerifyEmailPage from "@/pages/verify-email";
+import ForgotPasswordPage from "@/pages/forgot-password";
+import ResetPasswordPage from "@/pages/reset-password";
 
 // Main pages
 import Index from "@/pages/index";
@@ -40,6 +42,8 @@ export const AppRouter = () => {
       <Route path='/signup' element={<SignupForm />} />
       <Route path='/logout' element={<LogoutPage />} />
       <Route path='/verify-email' element={<VerifyEmailPage />} />
+      <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+      <Route path='/reset-password' element={<ResetPasswordPage />} />
 
       {/* Admin routes */}
       <Route

@@ -11,3 +11,7 @@ class RegisterRateThrottle(AnonRateThrottle):
 
 class AdTrackingThrottle(AnonRateThrottle):
     scope = 'ad_tracking'
+
+
+class PasswordResetThrottle(AnonRateThrottle):
+    scope = 'password_reset'

@@ -6,7 +6,12 @@
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\")",
       "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\\\\commands\")",
       "PowerShell(New-Item -ItemType File -Path \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\\\\__init__.py\" -ErrorAction SilentlyContinue)",
-      "PowerShell(New-Item -ItemType File -Path \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\\\\commands\\\\__init__.py\" -ErrorAction SilentlyContinue)"
+      "PowerShell(New-Item -ItemType File -Path \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\backend\\\\apps\\\\advertising\\\\management\\\\commands\\\\__init__.py\" -ErrorAction SilentlyContinue)",
+      "Bash(DJANGO_SETTINGS_MODULE=core.settings.dev DEBUG=True DJANGO_SECRET_KEY=test-key python manage.py makemigrations medio_auth --name password_reset_fields)",
+      "Bash(DJANGO_SETTINGS_MODULE=core.settings.dev DEBUG=True DJANGO_SECRET_KEY=test-key python manage.py makemigrations medico --name add_archived_at)",
+      "Bash(DJANGO_SETTINGS_MODULE=core.settings.dev DEBUG=True DJANGO_SECRET_KEY=test-key python manage.py migrate)",
+      "Bash(python manage.py showmigrations medio_auth)",
+      "Bash(\"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\venv\\\\Scripts\\\\python.exe\" manage.py makemigrations medico --name add_invoice_number)"
     ]
   }
 }

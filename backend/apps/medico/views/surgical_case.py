@@ -45,6 +45,9 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         """Retornar casos del usuario autenticado (propios + donde es ayudante)"""
         user = self.request.user
 
+        # Por defecto ocultar archivados; ?archived=true los muestra
+        show_archived = self.request.query_params.get('archived', 'false').lower() == 'true'
+
         # Verificar si se pide solo casos asistidos
         assisted_only = self.request.query_params.get('assisted_only', 'false').lower() == 'true'
 
@@ -58,6 +61,12 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             queryset = SurgicalCase.objects.filter(
                 Q(created_by=user) | Q(assistant_doctor=user)
             )
+
+        # Filtrar archivados (o mostrarlos si se pide explícitamente)
+        if show_archived:
+            queryset = queryset.filter(archived_at__isnull=False)
+        else:
+            queryset = queryset.filter(archived_at__isnull=True)
 
         # Optimizamos con select_related y prefetch_related para evitar el problema N+1
         queryset = queryset.select_related(
@@ -175,25 +184,30 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         return Response(detail_serializer.data)
 
     def destroy(self, request, *args, **kwargs):
-        """Eliminar caso (validando permisos)"""
+        """
+        Archivar caso en lugar de eliminarlo permanentemente.
+        Se marca como completado con fecha de archivado.
+        El management command purge_archived_cases lo borra definitivamente a los 6 meses.
+        """
         instance = self.get_object()
 
-        # Verificar permisos
-        if not instance.can_be_deleted_by(request.user):
+        if instance.created_by != request.user:
             return Response(
-                {'error': 'No tienes permiso para eliminar este caso'},
+                {'error': 'Solo el creador del caso puede archivarlo'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Intentar eliminar
-        try:
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except DjangoValidationError as e:
+        if instance.archived_at is not None:
             return Response(
-                {'error': str(e.message) if hasattr(e, 'message') else str(e)},
+                {'error': 'El caso ya está archivado'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        instance.archive()
+        return Response(
+            {'message': 'Caso archivado. Se eliminará permanentemente en 6 meses.'},
+            status=status.HTTP_200_OK
+        )
 
     @action(detail=False, methods=['get'], url_path='assisted')
     def get_assisted_cases(self, request):

@@ -9,13 +9,13 @@ from .views import (
     RefreshTokenView,
     UserProfileView,
     ChangePasswordView,
-    
+
     # Vistas de verificación de email
     SendVerificationEmailView,
     VerifyEmailView,
     ResendVerificationEmailView,
     CheckVerificationStatusView,
-    
+
     # Nuevas vistas de amistad/colegas
     SearchColleagueView,
     SendFriendRequestView,
@@ -24,9 +24,13 @@ from .views import (
     AcceptFriendRequestView,
     RejectFriendRequestView,
     RemoveColleagueView,
-    
+
     # Social Auth
     GoogleLoginView,
+
+    # Password Reset
+    ForgotPasswordView,
+    ResetPasswordView,
 )
 
 app_name = 'medio_auth'
@@ -42,6 +46,12 @@ urlpatterns = [
     path('me/', UserProfileView.as_view(), name='me'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('google/', GoogleLoginView.as_view(), name='google_login'),
+
+    # ============================================
+    # RUTAS DE RESETEO DE CONTRASEÑA
+    # ============================================
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset_password'),
     
     # ============================================
     # RUTAS DE VERIFICACIÓN DE EMAIL

@@ -196,6 +196,7 @@ REST_FRAMEWORK = {
         'login': '5/min',
         'register': '10/hour',
         'ad_tracking': '60/hour',
+        'password_reset': '3/hour',
     },
 }
 

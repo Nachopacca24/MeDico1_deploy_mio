@@ -66,7 +66,8 @@ export interface SurgicalCase {
   is_operated?: boolean;
   is_billed?: boolean;
   is_paid?: boolean;
-  
+  invoice_number?: string | null;
+
   // Campos de médico ayudante
   assistant_doctor?: number | null;
   assistant_doctor_name?: string | null;
@@ -118,8 +119,8 @@ export interface UpdateCaseData extends Partial<CreateCaseData> {
   is_operated?: boolean;
   is_billed?: boolean;
   is_paid?: boolean;
+  invoice_number?: string | null;
   calendar_event_id?: string | null;
-  
 }
 
 // Tipos para respuestas de invitaciones

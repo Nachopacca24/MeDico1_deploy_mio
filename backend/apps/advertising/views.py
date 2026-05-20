@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Sum
 from datetime import timedelta
 from core.throttles import AdTrackingThrottle
 
@@ -132,13 +132,15 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def stats(self, request):
-        total = Advertisement.objects.count()
-        active = Advertisement.objects.filter(status='active').count()
-        total_impressions = sum(ad.impressions for ad in Advertisement.objects.all())
-        total_clicks = sum(ad.clicks for ad in Advertisement.objects.all())
+        agg = Advertisement.objects.aggregate(
+            total_impressions=Sum('impressions'),
+            total_clicks=Sum('clicks'),
+        )
+        total_impressions = agg['total_impressions'] or 0
+        total_clicks = agg['total_clicks'] or 0
         return Response({
-            'total_ads': total,
-            'active_ads': active,
+            'total_ads': Advertisement.objects.count(),
+            'active_ads': Advertisement.objects.filter(status='active').count(),
             'total_impressions': total_impressions,
             'total_clicks': total_clicks,
             'overall_ctr': (total_clicks / total_impressions * 100) if total_impressions > 0 else 0,

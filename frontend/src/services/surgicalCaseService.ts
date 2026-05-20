@@ -58,6 +58,7 @@ class SurgicalCaseService {
     date_to?: string;
     search?: string;
     assisted_only?: boolean;
+    archived?: boolean;
   }): Promise<SurgicalCase[]> {
     try {
       const queryParams = new URLSearchParams();

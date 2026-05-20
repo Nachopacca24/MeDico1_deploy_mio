@@ -144,6 +144,22 @@ class SurgicalCase(models.Model):
         verbose_name="Notas Adicionales"
     )
     
+    # Número de factura
+    invoice_number = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="N° de Factura"
+    )
+
+    # Archivado (soft-delete: se purga definitivamente a los 6 meses)
+    archived_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Archivado el",
+        help_text="Si está completo, se elimina automáticamente a los 6 meses"
+    )
+
     # Metadatos
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -213,6 +229,9 @@ class SurgicalCase(models.Model):
                     # Si hay un nuevo ayudante, notificar
                     if self.assistant_doctor:
                         self.assistant_notified_at = timezone.now()
+                # Auto-archivar cuando se marca como cobrado
+                if not old_instance.is_paid and self.is_paid and not self.archived_at:
+                    self.archived_at = timezone.now()
             except SurgicalCase.DoesNotExist:
                 pass
         else:
@@ -223,6 +242,12 @@ class SurgicalCase(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
     
+    def archive(self):
+        """Mueve el caso a estado completado y registra la fecha de archivado."""
+        self.status = 'completed'
+        self.archived_at = timezone.now()
+        self.save(update_fields=['status', 'archived_at', 'updated_at'])
+
     def can_be_deleted(self):
         """
         Un caso puede eliminarse si:

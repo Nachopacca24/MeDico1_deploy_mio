@@ -12,6 +12,8 @@ const AUTH_ENDPOINTS = {
   me: `${API_URL}/api/auth/me/`,
   changePassword: `${API_URL}/api/auth/change-password/`,
   google: `${API_URL}/api/auth/google/`,
+  forgotPassword: `${API_URL}/api/auth/forgot-password/`,
+  resetPassword: `${API_URL}/api/auth/reset-password/`,
 };
 
 // Tipos TypeScript
@@ -377,6 +379,28 @@ class AuthService {
       body: JSON.stringify(data),
     });
 
+    if (!response.ok) {
+      throw await parseAuthError(response);
+    }
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const response = await fetch(AUTH_ENDPOINTS.forgotPassword, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      throw await parseAuthError(response);
+    }
+  }
+
+  async resetPassword(token: string, new_password: string, new_password2: string): Promise<void> {
+    const response = await fetch(AUTH_ENDPOINTS.resetPassword, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, new_password, confirm_password: new_password2 }),
+    });
     if (!response.ok) {
       throw await parseAuthError(response);
     }

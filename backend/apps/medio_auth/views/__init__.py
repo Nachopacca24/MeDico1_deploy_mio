@@ -5,9 +5,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password as django_validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
+from django.utils.html import escape
 from django.db.models import Q
 from datetime import timedelta
 import requests
@@ -16,6 +19,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle
 
 from ..serializers import (
     UserSerializer,
@@ -39,6 +43,7 @@ User = get_user_model()
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [RegisterRateThrottle]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -109,6 +114,7 @@ El equipo de MéDico
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [LoginRateThrottle]
 
     def post(self, request):
         serializer = LoginSerializer(
@@ -874,8 +880,129 @@ class GoogleLoginView(APIView):
             }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
             
         except Exception as e:
-            print(f"Error procesando login de Google: {e}")
             return Response(
                 {'error': f'Error en la base de datos: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+# ============================================
+# PASSWORD RESET
+# ============================================
+
+class ForgotPasswordView(APIView):
+    """
+    Paso 1: el usuario ingresa su email y recibe un link de reseteo.
+    Siempre responde 200 para no revelar si el email existe.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [PasswordResetThrottle]
+
+    def post(self, request):
+        email = request.data.get('email', '').strip().lower()
+        if not email:
+            return Response(
+                {'error': 'El email es requerido'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(email=email)
+            token = user.generate_password_reset_token()
+            reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+            display_name = escape(user.first_name or user.username)
+
+            send_mail(
+                subject='Restablecer contraseña — MéDico',
+                message=f'Usá este link para restablecer tu contraseña: {reset_url}\n\nExpira en 1 hora.',
+                html_message=f'''
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                    <h2 style="color: #2563eb;">Restablecer contraseña</h2>
+                    <p>Hola <strong>{display_name}</strong>,</p>
+                    <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en MéDico.</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{reset_url}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                            Restablecer contraseña
+                        </a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">Este link expira en <strong>1 hora</strong>.</p>
+                    <p style="color: #999; font-size: 12px;">Si no solicitaste esto, ignorá este correo.</p>
+                </div>
+                ''',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+        except User.DoesNotExist:
+            pass  # No revelar si el email existe
+
+        return Response(
+            {'message': 'Si ese email está registrado, recibirás instrucciones en breve.'},
+            status=status.HTTP_200_OK
+        )
+
+
+class ResetPasswordView(APIView):
+    """
+    Paso 2: el usuario envía el token y la nueva contraseña.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [PasswordResetThrottle]
+
+    def post(self, request):
+        token = request.data.get('token', '').strip()
+        new_password = request.data.get('new_password', '')
+        confirm_password = request.data.get('confirm_password', '')
+
+        if not token or not new_password:
+            return Response(
+                {'error': 'Token y nueva contraseña son requeridos'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if new_password != confirm_password:
+            return Response(
+                {'error': 'Las contraseñas no coinciden'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            django_validate_password(new_password)
+        except DjangoValidationError as e:
+            return Response(
+                {'error': ' '.join(e.messages)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(password_reset_token=token)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Token inválido o expirado'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verificar expiración (1 hora)
+        if not user.password_reset_sent_at:
+            return Response(
+                {'error': 'Token inválido o expirado'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        expiry = user.password_reset_sent_at + timedelta(hours=1)
+        if timezone.now() > expiry:
+            user.clear_password_reset_token()
+            return Response(
+                {'error': 'El token expiró. Solicitá uno nuevo.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.save(update_fields=['password'])
+        user.clear_password_reset_token()
+
+        return Response(
+            {'message': 'Contraseña restablecida exitosamente. Ya podés iniciar sesión.'},
+            status=status.HTTP_200_OK
+        )

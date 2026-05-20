@@ -181,6 +181,19 @@ class CustomUser(AbstractUser):
         full_name = f"{self.first_name} {self.last_name}".strip()
         return full_name if full_name else self.username
     
+    # Password Reset
+    password_reset_token = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Token de Reseteo de Contraseña",
+    )
+    password_reset_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de Envío del Token de Reset",
+    )
+
     def generate_verification_token(self):
         """
         Genera un token único para verificación de email.
@@ -230,6 +243,17 @@ class CustomUser(AbstractUser):
                 self.save()
                 return code
     
+    def generate_password_reset_token(self):
+        self.password_reset_token = secrets.token_urlsafe(32)
+        self.password_reset_sent_at = timezone.now()
+        self.save(update_fields=['password_reset_token', 'password_reset_sent_at'])
+        return self.password_reset_token
+
+    def clear_password_reset_token(self):
+        self.password_reset_token = None
+        self.password_reset_sent_at = None
+        self.save(update_fields=['password_reset_token', 'password_reset_sent_at'])
+
     def clear_verification_token(self):
         """Limpia el token de verificación después de usarlo"""
         self.email_verification_token = None

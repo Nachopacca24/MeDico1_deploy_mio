@@ -19,7 +19,8 @@ import { ReadOnlyBadge } from "@/pages/cases/ReadOnlyBadge";
 import { InvitationCard } from "@/pages/cases/InvitationCard";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
 import { Link } from "react-router-dom";
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, Archive } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
 import {
   Briefcase,
   Plus,
@@ -27,14 +28,11 @@ import {
   Hospital,
   Eye,
   Edit,
-  Trash2,
   AlertCircle,
   Search,
   Filter,
   ExternalLink,
   Loader2 as LoaderIcon,
-  Lock,
-  UserCheck,
   Users,
   Bell
 } from "lucide-react";
@@ -47,13 +45,15 @@ interface CaseStatusTogglesProps {
   compact?: boolean;
 }
 
-function CaseStatusToggles({ 
-  surgicalCase, 
-  onUpdate, 
+function CaseStatusToggles({
+  surgicalCase,
+  onUpdate,
   onError,
-  compact = false 
+  compact = false
 }: CaseStatusTogglesProps) {
   const [updating, setUpdating] = useState<'operated' | 'billed' | 'paid' | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState(surgicalCase.invoice_number ?? '');
+  const [savingInvoice, setSavingInvoice] = useState(false);
 
   const isOperated = surgicalCase.is_operated ?? false;
   const isBilled = surgicalCase.is_billed ?? false;
@@ -61,6 +61,19 @@ function CaseStatusToggles({
 
   // Verificar si puede editar
   const canEdit = surgicalCase.can_edit ?? true;
+
+  const handleSaveInvoice = async () => {
+    if (invoiceNumber === (surgicalCase.invoice_number ?? '')) return;
+    setSavingInvoice(true);
+    try {
+      const updated = await surgicalCaseService.updateCase(surgicalCase.id, { invoice_number: invoiceNumber || null });
+      onUpdate(updated);
+    } catch {
+      onError('Error al guardar el número de factura');
+    } finally {
+      setSavingInvoice(false);
+    }
+  };
 
   const handleToggle = async (
     type: 'operated' | 'billed' | 'paid',
@@ -109,54 +122,83 @@ function CaseStatusToggles({
   const iconSize = compact ? 'w-3 h-3' : 'w-4 h-4';
 
   return (
-    <div className={`flex ${compact ? 'gap-1' : 'gap-2'} flex-wrap`}>
-      <Button
-        variant={isOperated ? 'default' : 'outline'}
-        size={buttonSize}
-        onClick={() => handleToggle('operated', isOperated)}
-        disabled={updating !== null || !canEdit}
-        className={
-          isOperated 
-            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-            : 'hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
-        }
-      >
-        {updating === 'operated' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
-        {!updating && isOperated && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
-        <span>Operado</span>
-      </Button>
+    <div className="flex flex-col gap-2">
+      <div className={`flex ${compact ? 'gap-1' : 'gap-2'} flex-wrap`}>
+        <Button
+          variant={isOperated ? 'default' : 'outline'}
+          size={buttonSize}
+          onClick={() => handleToggle('operated', isOperated)}
+          disabled={updating !== null || !canEdit}
+          className={
+            isOperated
+              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
+          }
+        >
+          {updating === 'operated' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
+          {!updating && isOperated && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
+          <span>Operado</span>
+        </Button>
 
-      <Button
-        variant={isBilled ? 'default' : 'outline'}
-        size={buttonSize}
-        onClick={() => handleToggle('billed', isBilled)}
-        disabled={updating !== null || (!isOperated && !isBilled) || !canEdit}
-        className={
-          isBilled 
-            ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-            : 'hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300'
-        }
-      >
-        {updating === 'billed' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
-        {!updating && isBilled && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
-        <span>Facturado</span>
-      </Button>
+        <Button
+          variant={isBilled ? 'default' : 'outline'}
+          size={buttonSize}
+          onClick={() => handleToggle('billed', isBilled)}
+          disabled={updating !== null || (!isOperated && !isBilled) || !canEdit}
+          className={
+            isBilled
+              ? 'bg-purple-600 hover:bg-purple-700 text-white'
+              : 'hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300'
+          }
+        >
+          {updating === 'billed' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
+          {!updating && isBilled && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
+          <span>Facturado</span>
+        </Button>
 
-      <Button
-        variant={isPaid ? 'default' : 'outline'}
-        size={buttonSize}
-        onClick={() => handleToggle('paid', isPaid)}
-        disabled={updating !== null || (!isBilled && !isPaid) || !canEdit}
-        className={
-          isPaid 
-            ? 'bg-green-600 hover:bg-green-700 text-white' 
-            : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
-        }
-      >
-        {updating === 'paid' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
-        {!updating && isPaid && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
-        <span>Cobrado</span>
-      </Button>
+        <Button
+          variant={isPaid ? 'default' : 'outline'}
+          size={buttonSize}
+          onClick={() => handleToggle('paid', isPaid)}
+          disabled={updating !== null || (!isBilled && !isPaid) || !canEdit}
+          className={
+            isPaid
+              ? 'bg-green-600 hover:bg-green-700 text-white'
+              : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+          }
+        >
+          {updating === 'paid' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
+          {!updating && isPaid && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
+          <span>Cobrado</span>
+        </Button>
+      </div>
+
+      {isBilled && canEdit && (
+        <div className="flex items-center gap-1.5 mt-1">
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="N° de factura"
+            value={invoiceNumber}
+            onChange={(e) => setInvoiceNumber(e.target.value.replace(/\D/g, ''))}
+            onKeyDown={(e) => e.key === 'Enter' && handleSaveInvoice()}
+            disabled={savingInvoice}
+            className="flex-1 h-8 text-xs px-2 rounded border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+          />
+          <button
+            onClick={handleSaveInvoice}
+            disabled={savingInvoice || invoiceNumber === (surgicalCase.invoice_number ?? '')}
+            className="h-8 w-8 flex items-center justify-center rounded border border-input bg-background hover:bg-accent disabled:opacity-40 transition-colors shrink-0"
+            title="Guardar número de factura"
+          >
+            {savingInvoice
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+              : <Check className="w-3.5 h-3.5 text-green-600" />
+            }
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -172,6 +214,9 @@ const CasesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'activos' | 'facturados'>('activos');
+  const [archivedCases, setArchivedCases] = useState<SurgicalCase[]>([]);
+  const [loadingArchived, setLoadingArchived] = useState(false);
 
   // Estado para invitaciones
   const [invitations, setInvitations] = useState<AssistedCasesResponse>({
@@ -294,6 +339,26 @@ const CasesPage = () => {
     }
   };
 
+  const fetchArchivedCases = async () => {
+    try {
+      setLoadingArchived(true);
+      const data = await surgicalCaseService.getCases({ archived: true });
+      setArchivedCases(data);
+    } catch (err: any) {
+      toast.error('Error', 'No se pudieron cargar los casos facturados');
+    } finally {
+      setLoadingArchived(false);
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    const tab = value as 'activos' | 'facturados';
+    setActiveTab(tab);
+    if (tab === 'facturados' && archivedCases.length === 0) {
+      fetchArchivedCases();
+    }
+  };
+
   const handleDelete = async (id: number, patientName: string) => {
     const caseToDelete = cases.find(c => c.id === id);
     
@@ -338,8 +403,14 @@ const CasesPage = () => {
   };
 
   const handleCaseUpdate = (updatedCase: SurgicalCase) => {
-    setCases(cases.map(c => c.id === updatedCase.id ? updatedCase : c));
-    toast.success('Actualizado', 'Estado actualizado correctamente');
+    if (updatedCase.is_paid) {
+      setCases(cases.filter(c => c.id !== updatedCase.id));
+      setArchivedCases([]);  // invalidar caché del tab facturados
+      toast.success('Caso facturado', 'El caso se movió a la pestaña Facturados y se eliminará en 6 meses');
+    } else {
+      setCases(cases.map(c => c.id === updatedCase.id ? updatedCase : c));
+      toast.success('Actualizado', 'Estado actualizado correctamente');
+    }
   };
 
   const handleCaseError = (error: string) => {
@@ -492,9 +563,11 @@ const CasesPage = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight">Casos Quirúrgicos</h1>
-              <p className="text-muted-foreground text-sm">
-                {filteredCases.length} de {cases.length} caso{cases.length !== 1 ? 's' : ''}
-              </p>
+              {activeTab === 'activos' && (
+                <p className="text-muted-foreground text-sm">
+                  {filteredCases.length} de {cases.length} caso{cases.length !== 1 ? 's' : ''} activos
+                </p>
+              )}
             </div>
             <Button asChild className="w-full sm:w-auto">
               <Link to="/cases/new">
@@ -503,6 +576,29 @@ const CasesPage = () => {
               </Link>
             </Button>
           </div>
+
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="mb-2">
+              <TabsTrigger value="activos">
+                Activos
+                {cases.length > 0 && (
+                  <span className="ml-2 text-xs bg-primary/20 text-primary rounded-full px-1.5 py-0.5">
+                    {cases.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="facturados">
+                <Archive className="w-3.5 h-3.5 mr-1.5" />
+                Cobrados
+                {archivedCases.length > 0 && (
+                  <span className="ml-2 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5">
+                    {archivedCases.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="activos" className="space-y-6 mt-0">
 
           {/* SECCIÓN DE INVITACIONES PENDIENTES */}
           {!loadingInvitations && invitations.total_pending > 0 && (
@@ -748,24 +844,6 @@ const CasesPage = () => {
                               </Link>
                             </Button>
                           )}
-                          {canEdit && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(surgicalCase.id, surgicalCase.patient_name)}
-                              className="flex-1 hover:text-destructive"
-                              disabled={deletingId === surgicalCase.id || !(surgicalCase.is_paid ?? false)}
-                              title={!(surgicalCase.is_paid ?? false) ? 'Solo se puede eliminar después de cobrar' : 'Eliminar caso'}
-                            >
-                              {deletingId === surgicalCase.id ? (
-                                <div className="w-4 h-4 border-2 border-destructive border-t-transparent rounded-full animate-spin" />
-                              ) : !(surgicalCase.is_paid ?? false) ? (
-                                <Lock className="w-4 h-4" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -778,6 +856,88 @@ const CasesPage = () => {
               })}
             </div>
           )}
+            </TabsContent>
+
+            <TabsContent value="facturados" className="mt-0">
+              {loadingArchived ? (
+                <div className="flex items-center justify-center py-20">
+                  <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : archivedCases.length === 0 ? (
+                <Card className="border-2 border-dashed">
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <Archive className="w-20 h-20 text-gray-300 dark:text-gray-600 mb-4" />
+                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+                      Sin casos facturados
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-base text-center max-w-md">
+                      Los casos que marques como cobrados aparecerán aquí. Se eliminan automáticamente a los 6 meses.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {archivedCases.length} caso{archivedCases.length !== 1 ? 's' : ''} — se eliminan automáticamente a los 6 meses de ser facturados
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {archivedCases.map((surgicalCase) => (
+                      <Card key={surgicalCase.id} className="opacity-80 hover:opacity-100 transition-opacity">
+                        <CardHeader>
+                          <div className="flex items-center justify-between mb-1">
+                            <CardTitle className="text-lg font-semibold">{surgicalCase.patient_name}</CardTitle>
+                            <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                              Cobrado
+                            </span>
+                          </div>
+                          <CardDescription className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="p-1.5 bg-blue-500/10 rounded-lg">
+                                <Calendar className="w-4 h-4 text-blue-500" />
+                              </div>
+                              <span>{new Date(surgicalCase.surgery_date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="p-1.5 bg-purple-500/10 rounded-lg">
+                                <Hospital className="w-4 h-4 text-purple-500" />
+                              </div>
+                              <span className="truncate">{surgicalCase.hospital_name}</span>
+                            </div>
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t">
+                            <div>
+                              <div className="text-xs text-muted-foreground mb-1">Procedimientos</div>
+                              <div className="text-lg font-semibold">{surgicalCase.procedure_count || 0}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground mb-1">RVU Total</div>
+                              <div className="text-lg font-semibold">{surgicalCase.total_rvu || 0}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground mb-1">Valor</div>
+                              <div className="text-lg font-semibold">
+                                ${(surgicalCase.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 pt-2 border-t">
+                            <Button asChild variant="ghost" size="sm" className="flex-1">
+                              <Link to={`/cases/${surgicalCase.id}`}>
+                                <Eye className="w-4 h-4 mr-1" />
+                                Ver detalle
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
         {!loadingAds && adSettings.showSidebarAds && sidebarAds.length > 0 && (
