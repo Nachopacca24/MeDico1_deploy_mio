@@ -846,7 +846,7 @@ const CasesPage = () => {
                               Ver
                             </Link>
                           </Button>
-                          {canEdit && (
+                          {canEdit && !(surgicalCase.is_paid) && (
                             <Button asChild variant="ghost" size="sm" className="flex-1">
                               <Link to={`/cases/${surgicalCase.id}/edit`}>
                                 <Edit className="w-4 h-4 mr-1" />
@@ -913,6 +913,12 @@ const CasesPage = () => {
                               </div>
                               <span className="truncate">{surgicalCase.hospital_name}</span>
                             </div>
+                            {surgicalCase.invoice_number && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="text-xs text-muted-foreground">Factura:</span>
+                                <span className="text-xs font-medium">#{surgicalCase.invoice_number}</span>
+                              </div>
+                            )}
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">

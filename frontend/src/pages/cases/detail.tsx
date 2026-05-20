@@ -74,8 +74,10 @@ const CaseDetailPage = () => {
   // Verificar si el usuario es el ayudante (usando assistant_doctor directamente del caso)
   const isAssistant = surgicalCase?.can_edit === false && surgicalCase?.assistant_doctor;
 
-  // Determinar si se puede eliminar (solo si es dueño y el ayudante no ha aceptado)
-  const canDelete = isOwner && surgicalCase?.assistant_accepted !== true;
+  const isPaid = surgicalCase?.is_paid ?? false;
+
+  // Determinar si se puede eliminar (solo si es dueño, no cobrado, y el ayudante no ha aceptado)
+  const canDelete = isOwner && !isPaid && surgicalCase?.assistant_accepted !== true;
 
   const getStatusBadge = (status: string) => {
     const config: Record<string, { style: string; label: string }> = {
@@ -146,8 +148,8 @@ const CaseDetailPage = () => {
           <div className="flex items-center gap-3">
             {getStatusBadge(surgicalCase.status)}
             
-            {/* Solo mostrar Edit si es el dueño */}
-            {isOwner && (
+            {/* Solo mostrar Edit si es el dueño y no está cobrado */}
+            {isOwner && !isPaid && (
               <Button variant="outline" size="sm" asChild>
                 <Link to={`/cases/${surgicalCase.id}/edit`}>
                   <Edit className="w-4 h-4 mr-2" />
