@@ -70,7 +70,8 @@ const NewCase = () => {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [allProcedures, setAllProcedures] = useState<ProcedureData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingHospitals, setLoadingHospitals] = useState(true);
+  const [loadingColleagues, setLoadingColleagues] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   // Estados para favoritos
   const [favoriteProcedures, setFavoriteProcedures] = useState<ProcedureData[]>([]);
@@ -78,46 +79,32 @@ const NewCase = () => {
   const [loadingFavoriteRvu, setLoadingFavoriteRvu] = useState<string | null>(null);
   const [loadingAllProcedures, setLoadingAllProcedures] = useState(false);
 
-  // ✅ CARGA INICIAL: Hospitales, colegas Y favoritos (UNA VEZ)
+  // Cargar cada sección de forma independiente — el formulario se muestra de inmediato
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        console.log("[NewCase] Cargando datos iniciales...");
-        setLoading(true);
+    hospitalService.getHospitals()
+      .then(setHospitals)
+      .catch(() => toast.error('Error', 'No se pudieron cargar los hospitales'))
+      .finally(() => setLoadingHospitals(false));
 
-        // Cargar hospitales, colegas Y favoritos en paralelo
-        const [hospitalsData, colleaguesData, favoritesData] = await Promise.all([
-          hospitalService.getHospitals(),
-          colleaguesService.getColleagues(),
-          favoritesService.getFavorites()
-        ]);
+    colleaguesService.getColleagues()
+      .then(data => setColleagues(data.colleagues))
+      .catch(() => {}) // no crítico
+      .finally(() => setLoadingColleagues(false));
 
-        setHospitals(hospitalsData);
-        setColleagues(colleaguesData.colleagues);
-
-        // Convertir favoritos a formato de procedimientos
+    favoritesService.getFavorites()
+      .then(favoritesData => {
         const favProcs: ProcedureData[] = favoritesData.map(fav => ({
           codigo: fav.surgery_code,
           cirugia: fav.surgery_name || fav.surgery_code,
           especialidad: fav.specialty || 'General',
           subespecialidad: undefined,
           grupo: '',
-          rvu: 0 // Se cargará on-demand
+          rvu: 0,
         }));
-
         setFavoriteProcedures(favProcs);
-
-        console.log(`[NewCase] Datos iniciales cargados ✅ (${favProcs.length} favoritos)`);
-      } catch (error) {
-        console.error('[NewCase] Error:', error);
-        toast.error('Error', 'No se pudieron cargar los datos');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialData();
-  }, []); // ✅ Sin dependencias - solo se ejecuta UNA VEZ
+      })
+      .catch(() => {}); // no crítico
+  }, []);
 
   // Filtrado de procedimientos basado en búsqueda
   const filteredProcedures = useMemo(() => {
@@ -507,16 +494,6 @@ const NewCase = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </AppLayout>
-    );
-  }
-
   return (
     <AppLayout>
       <div className="mx-auto max-w-5xl space-y-8 pb-12 pt-4 px-4">
@@ -623,9 +600,12 @@ const NewCase = () => {
                   <Label htmlFor="hospital" className="text-sm font-semibold">
                     Hospital / Centro Médico <span className="text-destructive">*</span>
                   </Label>
-                  <Select value={hospitalId} onValueChange={setHospitalId} required>
+                  <Select value={hospitalId} onValueChange={setHospitalId} required disabled={loadingHospitals}>
                     <SelectTrigger id="hospital" className="h-11">
-                      <SelectValue placeholder="Selecciona un hospital" />
+                      {loadingHospitals
+                        ? <span className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Cargando hospitales...</span>
+                        : <SelectValue placeholder="Selecciona un hospital" />
+                      }
                     </SelectTrigger>
                     <SelectContent position="popper" sideOffset={5} className="w-[var(--radix-select-trigger-width)] max-h-[300px]">
                       {hospitals.length > 0 ? (
@@ -724,7 +704,11 @@ const NewCase = () => {
               {assistantType === 'colleague' && (
                 <div className="space-y-2">
                   <Label htmlFor="colleague">Seleccionar Colega</Label>
-                  {colleagues.length === 0 ? (
+                  {loadingColleagues ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground p-3 border rounded-lg">
+                      <Loader2 className="h-4 w-4 animate-spin" />Cargando colegas...
+                    </div>
+                  ) : colleagues.length === 0 ? (
                     <div className="text-sm text-muted-foreground p-4 border rounded-lg bg-muted/50">
                       No tienes colegas agregados.
                     </div>

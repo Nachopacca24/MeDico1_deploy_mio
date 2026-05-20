@@ -3,9 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import React from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
-import { PopupAdManager } from "@/shared/components/ads/PopupAdManager";
-import { MobilePopupAd } from "@/shared/components/ads/MobilePopupAd";
-import { StickyBannerAd } from "@/shared/components/ads/StickyBannerAd";
 import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -951,26 +948,6 @@ const CasesPage = () => {
       </div>
       </div>
 
-      {adSettings.showPopups && (
-        isMobile ? (
-          <MobilePopupAd 
-            initialDelay={adSettings.popupInitialDelay}
-            interval={adSettings.popupInterval}
-            maxPerSession={adSettings.popupMaxPerSession}
-            style={adSettings.popupStyle}
-          />
-        ) : (
-          <PopupAdManager 
-            initialDelay={adSettings.popupInitialDelay}
-            interval={adSettings.popupInterval}
-            maxPerSession={adSettings.popupMaxPerSession}
-          />
-        )
-      )}
-
-      {adSettings.showStickyBanner && (
-        <StickyBannerAd position="bottom" />
-      )}
     </AppLayout>
   );
 };

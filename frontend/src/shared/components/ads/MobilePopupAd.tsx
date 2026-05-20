@@ -26,6 +26,7 @@ export function MobilePopupAd({
   const [isVisible, setIsVisible] = useState(false);
   const [popupCount, setPopupCount] = useState(0);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [progress, setProgress] = useState(100);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
@@ -40,7 +41,7 @@ export function MobilePopupAd({
     };
 
     loadPopupAds();
-  }, [userSpecialty]);
+  }, []);
 
   useEffect(() => {
     if (popupAds.length === 0 || popupCount >= maxPerSession) return;
@@ -80,6 +81,21 @@ export function MobilePopupAd({
     setIsVisible(false);
     setTimeout(() => setCurrentAd(null), 300);
   };
+
+  // Auto-close countdown
+  useEffect(() => {
+    if (!isVisible) return;
+    setProgress(100);
+    const step = 100 / (8 * 20);
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.max(0, prev - step));
+    }, 50);
+    const closeTimer = setTimeout(handleClose, 8000);
+    return () => {
+      clearInterval(progressInterval);
+      clearTimeout(closeTimer);
+    };
+  }, [isVisible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAdClick = async (ad: ActiveAd) => {
     try {
@@ -175,21 +191,16 @@ export function MobilePopupAd({
                   <ChevronRight className="h-5 w-5" />
                 </button>
 
+                {/* Barra de cuenta regresiva */}
                 <div className="pt-2">
-                  <div className="flex justify-center gap-2">
-                    {Array.from({ length: maxPerSession }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-1.5 rounded-full transition-all ${
-                          i < popupCount
-                            ? 'w-8 bg-primary'
-                            : 'w-1.5 bg-gray-300 dark:bg-gray-600'
-                        }`}
-                      />
-                    ))}
+                  <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full"
+                      style={{ width: `${progress}%`, transition: 'width 50ms linear' }}
+                    />
                   </div>
-                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    {popupCount} de {maxPerSession} anuncios mostrados
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+                    Se cerrará automáticamente
                   </p>
                 </div>
               </div>

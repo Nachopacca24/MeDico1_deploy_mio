@@ -1,10 +1,9 @@
 // src/shared/components/ads/PopupAdManager.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
 import { Button } from '@/shared/components/ui/button';
-import { useAuth } from '@/shared/contexts/AuthContext';
 
 interface PopupAdManagerProps {
   initialDelay?: number;
@@ -12,66 +11,98 @@ interface PopupAdManagerProps {
   maxPerSession?: number;
 }
 
-export function PopupAdManager({
-  initialDelay = 5,
-  interval = 120,
-  maxPerSession = 3
-}: PopupAdManagerProps) {
-  const { user } = useAuth();
-  const userSpecialty = user?.specialty ?? '';
+/** Segundos que el popup permanece visible antes de cerrarse solo */
+const AUTO_CLOSE_SECONDS = 8;
 
+export function PopupAdManager({
+  initialDelay = 10,
+  interval = 120,
+  maxPerSession = 3,
+}: PopupAdManagerProps) {
   const [popupAds, setPopupAds] = useState<ActiveAd[]>([]);
   const [currentAd, setCurrentAd] = useState<ActiveAd | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const [popupCount, setPopupCount] = useState(0);
-  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [progress, setProgress] = useState(100);
 
+  // Refs to avoid stale closures inside setTimeout/setInterval
+  const popupAdsRef = useRef<ActiveAd[]>([]);
+  const adIndexRef = useRef(0);
+  const popupCountRef = useRef(0);
+  const isVisibleRef = useRef(false);
+
+  // Keep refs in sync with state
+  useEffect(() => { popupAdsRef.current = popupAds; }, [popupAds]);
+  useEffect(() => { popupCountRef.current = popupCount; }, [popupCount]);
+  useEffect(() => { isVisibleRef.current = isVisible; }, [isVisible]);
+
+  // Load once on mount — no specialty filtering for popup (Gold-only, shown to all)
   useEffect(() => {
-    const loadPopupAds = async () => {
-      try {
-        const ads = await advertisementService.getActiveAds('popup');
-        setPopupAds(ads);
-      } catch (error) {
-        console.error('Error loading popup ads:', error);
-      }
-    };
+    advertisementService
+      .getActiveAds('popup')
+      .then(setPopupAds)
+      .catch(() => {});
+  }, []);
 
-    loadPopupAds();
-  }, [userSpecialty]);
+  const showNextPopup = useCallback(() => {
+    const ads = popupAdsRef.current;
+    if (ads.length === 0 || popupCountRef.current >= maxPerSession) return;
 
-  useEffect(() => {
-    if (popupAds.length === 0 || popupCount >= maxPerSession) return;
+    const ad = ads[adIndexRef.current % ads.length];
+    adIndexRef.current += 1;
 
-    const initialTimer = setTimeout(() => {
-      showNextPopup();
-    }, initialDelay * 1000);
-
-    return () => clearTimeout(initialTimer);
-  }, [popupAds, initialDelay]);
-
-  useEffect(() => {
-    if (popupAds.length === 0 || popupCount >= maxPerSession || popupCount === 0) return;
-
-    const intervalTimer = setInterval(() => {
-      if (popupCount < maxPerSession && !isVisible) {
-        showNextPopup();
-      }
-    }, interval * 1000);
-
-    return () => clearInterval(intervalTimer);
-  }, [popupAds, interval, popupCount, isVisible]);
-
-  const showNextPopup = () => {
-    if (popupAds.length === 0 || popupCount >= maxPerSession) return;
-
-    const ad = popupAds[currentAdIndex % popupAds.length];
     setCurrentAd(ad);
     setIsVisible(true);
+    setImgFailed(false);
+    setProgress(100);
     setPopupCount(prev => prev + 1);
-    setCurrentAdIndex(prev => prev + 1);
 
-    advertisementService.trackImpression(ad.id);
-  };
+    advertisementService.trackImpression(ad.id).catch(() => {});
+  }, [maxPerSession]);
+
+  // Auto-close countdown when popup is visible
+  useEffect(() => {
+    if (!isVisible) return;
+
+    // Animate progress bar from 100 → 0 over AUTO_CLOSE_SECONDS
+    const step = 100 / (AUTO_CLOSE_SECONDS * 20); // update every 50ms
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev <= 0) return 0;
+        return prev - step;
+      });
+    }, 50);
+
+    // Auto-close after AUTO_CLOSE_SECONDS
+    const closeTimer = setTimeout(() => {
+      setIsVisible(false);
+      setCurrentAd(null);
+    }, AUTO_CLOSE_SECONDS * 1000);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearTimeout(closeTimer);
+    };
+  }, [isVisible]);
+
+  // Schedule popups once ads are loaded
+  useEffect(() => {
+    if (popupAds.length === 0) return;
+
+    // First appearance after initialDelay
+    const firstTimer = setTimeout(showNextPopup, initialDelay * 1000);
+    return () => clearTimeout(firstTimer);
+  }, [popupAds.length, initialDelay, showNextPopup]);
+
+  // Re-schedule after each dismiss
+  useEffect(() => {
+    if (isVisible || popupCount === 0 || popupAds.length === 0) return;
+    if (popupCount >= maxPerSession) return;
+
+    const nextTimer = setTimeout(showNextPopup, interval * 1000);
+    return () => clearTimeout(nextTimer);
+  }, [isVisible, popupCount, popupAds.length, interval, maxPerSession, showNextPopup]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -79,16 +110,10 @@ export function PopupAdManager({
   };
 
   const handleAdClick = async (ad: ActiveAd) => {
-    try {
-      await advertisementService.trackClick(ad.id);
-      window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
-      handleClose();
-    } catch (error) {
-      console.error('Error tracking click:', error);
-    }
+    await advertisementService.trackClick(ad.id).catch(() => {});
+    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    handleClose();
   };
-
-  const [imgFailed, setImgFailed] = useState(false);
 
   if (!isVisible || !currentAd) return null;
 
@@ -102,7 +127,7 @@ export function PopupAdManager({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
           className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full pointer-events-auto animate-in zoom-in-95 duration-300 overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           <Button
             variant="ghost"
@@ -119,10 +144,7 @@ export function PopupAdManager({
             </span>
           </div>
 
-          <div
-            className="cursor-pointer group"
-            onClick={() => handleAdClick(currentAd)}
-          >
+          <div className="cursor-pointer group" onClick={() => handleAdClick(currentAd)}>
             <div className="relative overflow-hidden">
               {currentAd.image_url && !imgFailed ? (
                 <>
@@ -147,19 +169,18 @@ export function PopupAdManager({
                   {currentAd.title}
                 </h3>
                 <div className="flex items-center justify-between">
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Click para más información
-                  </p>
+                  <p className="text-gray-600 dark:text-gray-300">Click para más información</p>
                   <ExternalLink className="h-6 w-6 text-primary group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             )}
           </div>
 
+          {/* Barra de cuenta regresiva — va de 100% a 0% */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
             <div
               className="h-full bg-primary"
-              style={{ width: `${(popupCount / maxPerSession) * 100}%` }}
+              style={{ width: `${progress}%`, transition: 'width 50ms linear' }}
             />
           </div>
         </div>
