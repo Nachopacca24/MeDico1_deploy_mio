@@ -969,10 +969,7 @@ const CasesPage = () => {
       )}
 
       {adSettings.showStickyBanner && (
-        <StickyBannerAd 
-          position="bottom"
-          dismissible={true}
-        />
+        <StickyBannerAd position="bottom" />
       )}
     </AppLayout>
   );
