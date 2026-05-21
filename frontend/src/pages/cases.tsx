@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import React from "react";
+import { useCrypto } from "@/shared/contexts/CryptoContext";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
 import { Button } from "@/shared/components/ui/button";
@@ -208,6 +209,7 @@ const CasesPage = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const adSettings = useAdSystem(isMobile);
+  const { decrypt } = useCrypto();
 
   const [cases, setCases] = useState<SurgicalCase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -314,11 +316,17 @@ const CasesPage = () => {
     }
   }, [currentSidebarAdIndex, sidebarAds]);
 
+  const decryptCase = async (c: SurgicalCase): Promise<SurgicalCase> => ({
+    ...c,
+    patient_name: await decrypt(c.patient_name),
+    patient_id: c.patient_id ? await decrypt(c.patient_id) : null,
+  });
+
   const fetchCases = async () => {
     try {
       setLoading(true);
       const data = await surgicalCaseService.getCases();
-      setCases(data);
+      setCases(await Promise.all(data.map(decryptCase)));
     } catch (err: any) {
       setError(err.message || 'Error al cargar casos');
       toast.error('Error', 'No se pudieron cargar los casos');
@@ -331,7 +339,7 @@ const CasesPage = () => {
     try {
       setLoadingArchived(true);
       const data = await surgicalCaseService.getCases({ archived: true });
-      setArchivedCases(data);
+      setArchivedCases(await Promise.all(data.map(decryptCase)));
     } catch (err: any) {
       toast.error('Error', 'No se pudieron cargar los casos facturados');
     } finally {
@@ -393,13 +401,17 @@ const CasesPage = () => {
   const handleCaseUpdate = (updatedCase: SurgicalCase) => {
     const existingCase = cases.find(c => c.id === updatedCase.id);
     const justBecamePaid = updatedCase.is_paid && !existingCase?.is_paid;
+    // Preserve already-decrypted sensitive fields — toggle operations don't change them
+    const merged: SurgicalCase = existingCase
+      ? { ...updatedCase, patient_name: existingCase.patient_name, patient_id: existingCase.patient_id }
+      : updatedCase;
 
     if (justBecamePaid) {
       setCases(prev => prev.filter(c => c.id !== updatedCase.id));
       setArchivedCases([]);
       toast.success('Caso cobrado', 'El caso se movió a la pestaña Cobrados y se eliminará en 6 meses');
     } else {
-      setCases(prev => prev.map(c => c.id === updatedCase.id ? updatedCase : c));
+      setCases(prev => prev.map(c => c.id === updatedCase.id ? merged : c));
       const isInvoiceOnlyUpdate = updatedCase.invoice_number !== existingCase?.invoice_number;
       if (!isInvoiceOnlyUpdate) {
         toast.success('Actualizado', 'Estado actualizado correctamente');

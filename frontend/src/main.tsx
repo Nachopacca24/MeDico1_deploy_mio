@@ -7,6 +7,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@/shared/components/layout/theme-provider";
 import { AuthProvider } from "@/shared/contexts/AuthContext";
+import { CryptoProviderConnected } from "@/shared/contexts/CryptoContext";
 import { FavoritesProvider } from "@/core/contexts/FavoritesContext";
 import { QueryProvider, TooltipProviderWrapper } from "@/core/providers";
 import { AppRouter } from "@/core/router";
@@ -38,11 +39,13 @@ createRoot(document.getElementById("root")!).render(
         <TooltipProviderWrapper>
           <ThemeProvider>
             <AuthProvider>
+              <CryptoProviderConnected>
               <FavoritesProvider>
                 <NotificationInitializer />
                 <AppRouter />
                 <ToastContainer />
               </FavoritesProvider>
+              </CryptoProviderConnected>
             </AuthProvider>
             <Sonner />
             <Toaster />

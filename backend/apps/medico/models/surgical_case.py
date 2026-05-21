@@ -25,12 +25,10 @@ class SurgicalCase(models.Model):
     ]
     
     # Información del paciente
-    patient_name = models.CharField(
-        max_length=255,
+    patient_name = models.TextField(
         verbose_name="Nombre del Paciente"
     )
-    patient_id = models.CharField(
-        max_length=100,
+    patient_id = models.TextField(
         blank=True,
         null=True,
         verbose_name="ID del Paciente",

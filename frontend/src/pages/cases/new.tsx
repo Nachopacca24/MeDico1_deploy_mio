@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCrypto } from '@/shared/contexts/CryptoContext';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -43,6 +44,7 @@ interface Colleague {
 const NewCase = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { encrypt } = useCrypto();
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -443,21 +445,24 @@ const NewCase = () => {
       const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
       const hospitalFactor = hospital?.rate_multiplier || 1;
 
-      // 🔍 DEBUG: Verificar procedimientos antes de enviar
-      console.log('📋 Procedimientos seleccionados:', selectedProcedures.length);
-      console.log('📊 Total RVU:', selectedProcedures.reduce((sum, p) => sum + p.rvu, 0));
+      const [encPatientName, encPatientId, encDiagnosis, encNotes] = await Promise.all([
+        encrypt(patientName),
+        encrypt(patientId),
+        encrypt(diagnosis),
+        encrypt(notes),
+      ]);
 
       const caseData: any = {
-        patient_name: patientName,
-        patient_id: patientId || undefined,
+        patient_name: encPatientName,
+        patient_id: encPatientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
         patient_gender: (patientGender || undefined) as PatientGender | undefined,
         hospital: parseInt(hospitalId),
         surgery_date: surgeryDate,
         surgery_time: surgeryTime || undefined,
         surgery_end_time: surgeryEndTime || undefined,
-        diagnosis: diagnosis || undefined,
-        notes: notes || undefined,
+        diagnosis: encDiagnosis || undefined,
+        notes: encNotes || undefined,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
           surgery_name: proc.surgery_name,

@@ -4,8 +4,11 @@
  */
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { authService, User, LoginCredentials, RegisterData } from '../services/authService';
+import { authService, User, LoginCredentials, RegisterData, type AuthResponse } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+
+// Keys used by CryptoContext — cleared here on logout to avoid coupling both contexts
+const E2EE_SS_KEYS = ['medico_e2ee_key', 'medico_e2ee_uid'] as const;
 
 interface AuthContextType {
   user: User | null;
@@ -13,7 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   accessToken: string | null;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   loginWithGoogle: (token: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
@@ -77,21 +80,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Login de usuario
    */
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
       const response = await authService.login(credentials);
       setUser(response.user);
 
       // Redirigir según el rol del usuario
       if (response.user.role === 0) {
-        // Es admin - redirigir al panel de administración
         navigate('/admin');
       } else {
-        // Es usuario normal - redirigir al dashboard
         navigate('/');
       }
+      // Return response so callers can access user.id + derive the E2EE key
+      return response;
     } catch (error) {
-      // Re-throw para que el componente pueda manejar el error
       throw error;
     }
   };
@@ -134,13 +136,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Logout de usuario
    */
   const logout = async () => {
+    E2EE_SS_KEYS.forEach(k => sessionStorage.removeItem(k));
     try {
       await authService.logout();
       setUser(null);
       navigate('/login');
     } catch (error) {
       console.error('Error durante logout:', error);
-      // Limpiar estado local incluso si falla la llamada al servidor
       setUser(null);
       navigate('/login');
     }

@@ -1,6 +1,7 @@
-//src/pages/cases/edit.tsx 
+//src/pages/cases/edit.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useCrypto } from '@/shared/contexts/CryptoContext';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -45,6 +46,7 @@ const EditCase = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { decrypt, encrypt } = useCrypto();
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -115,17 +117,24 @@ const EditCase = () => {
 
         setFavoriteProcedures(favProcs);
 
-        // Cargar datos del caso
-        setPatientName(caseData.patient_name);
-        setPatientId(caseData.patient_id || '');
+        // Decrypt sensitive fields before populating form
+        const [decPatientName, decPatientId, decDiagnosis, decNotes] = await Promise.all([
+          decrypt(caseData.patient_name),
+          decrypt(caseData.patient_id || ''),
+          decrypt(caseData.diagnosis || ''),
+          decrypt(caseData.notes || ''),
+        ]);
+
+        setPatientName(decPatientName);
+        setPatientId(decPatientId);
         setPatientAge(caseData.patient_age?.toString() || '');
         setPatientGender(caseData.patient_gender || '');
         setHospitalId(caseData.hospital?.toString() || '');
         setSurgeryDate(caseData.surgery_date);
         setSurgeryTime(caseData.surgery_time || '');
         setSurgeryEndTime(caseData.surgery_end_time || '');
-        setDiagnosis(caseData.diagnosis || '');
-        setNotes(caseData.notes || '');
+        setDiagnosis(decDiagnosis);
+        setNotes(decNotes);
         setStatus((caseData.status?.toLowerCase?.() || 'scheduled') as typeof status);
 
         // Cargar procedimientos del caso
@@ -488,24 +497,27 @@ const EditCase = () => {
     setSubmitting(true);
 
     try {
-      console.log('📝 EDITANDO CASO ID:', id);
-      console.log('📅 Nueva fecha:', surgeryDate);
-      console.log('🕐 Nueva hora:', surgeryTime);
-
       const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
       const hospitalFactor = hospital?.rate_multiplier || 1;
 
+      const [encPatientName, encPatientId, encDiagnosis, encNotes] = await Promise.all([
+        encrypt(patientName),
+        encrypt(patientId),
+        encrypt(diagnosis),
+        encrypt(notes),
+      ]);
+
       const caseData: any = {
-        patient_name: patientName,
-        patient_id: patientId || undefined,
+        patient_name: encPatientName,
+        patient_id: encPatientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
         patient_gender: (patientGender || undefined) as PatientGender | undefined,
         hospital: parseInt(hospitalId),
         surgery_date: surgeryDate,
         surgery_time: surgeryTime || undefined,
         surgery_end_time: surgeryEndTime || undefined,
-        diagnosis: diagnosis || undefined,
-        notes: notes || undefined,
+        diagnosis: encDiagnosis || undefined,
+        notes: encNotes || undefined,
         status: status,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
