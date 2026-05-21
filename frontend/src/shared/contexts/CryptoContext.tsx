@@ -168,21 +168,21 @@ export function CryptoProvider({ children, currentUserId }: CryptoProviderProps)
     fields: ReadonlyArray<keyof T>,
   ): Promise<T> => {
     if (!keyRef.current) return obj;
-    const result = { ...obj };
+    const result: Record<string, unknown> = { ...obj };
     for (const field of fields) {
       const val = result[field as string];
       if (typeof val === 'string' && val) {
         result[field as string] = await encryptField(keyRef.current, val);
       }
     }
-    return result;
+    return result as T;
   }, []);
 
   const decryptFields = useCallback(async <T extends Record<string, unknown>>(
     obj: T,
     fields: ReadonlyArray<keyof T>,
   ): Promise<T> => {
-    const result = { ...obj };
+    const result: Record<string, unknown> = { ...obj };
     for (const field of fields) {
       const val = result[field as string];
       if (typeof val !== 'string' || !val) continue;
@@ -199,7 +199,7 @@ export function CryptoProvider({ children, currentUserId }: CryptoProviderProps)
         result[field as string] = '⚠ Error al descifrar';
       }
     }
-    return result;
+    return result as T;
   }, []);
 
   return (
