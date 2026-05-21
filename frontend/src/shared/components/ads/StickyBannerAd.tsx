@@ -22,7 +22,7 @@ function BannerImage({ ad }: { ad: ActiveAd }) {
     <img
       src={ad.image_url}
       alt={ad.image_alt_text || ad.title || 'Publicidad'}
-      className="h-14 w-20 object-cover rounded-lg shadow-sm flex-shrink-0"
+      className="h-12 w-16 sm:h-14 sm:w-20 object-cover rounded-lg shadow-sm flex-shrink-0"
       onError={() => setFailed(true)}
     />
   );
@@ -42,12 +42,15 @@ export function StickyBannerAd({
   const [isVisible, setIsVisible] = useState(false);
   const [showCount, setShowCount] = useState(0);
 
-  // Load weighted rotation list from backend
+  // Load both home_banner (Gold) and footer ads, rotate through all of them
   useEffect(() => {
-    advertisementService
-      .getActiveAds('home_banner')
-      .then(setBannerAds)
-      .catch(() => {});
+    const specialty = userSpecialty || undefined;
+    Promise.all([
+      advertisementService.getActiveAds('home_banner', specialty).catch(() => []),
+      advertisementService.getActiveAds('footer', specialty).catch(() => []),
+    ]).then(([banners, footers]) => {
+      setBannerAds([...banners, ...footers]);
+    });
   }, [userSpecialty]);
 
   // Schedule each appearance: initial delay, then interval after each dismiss
@@ -95,9 +98,7 @@ export function StickyBannerAd({
             Patrocinado
           </span>
 
-          <div className="hidden sm:block">
-            <BannerImage ad={currentAd} />
-          </div>
+          <BannerImage ad={currentAd} />
 
           <div
             className="flex-1 min-w-0 cursor-pointer group"

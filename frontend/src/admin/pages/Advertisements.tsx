@@ -14,6 +14,16 @@ import { AdvertisementFormDialog } from '@/admin/components/AdvertisementFormDia
 
 type Tab = 'active' | 'expiring' | 'expired' | 'all';
 
+const CATEGORY_BADGE: Record<string, { label: string; emoji: string; cls: string }> = {
+  congreso:     { label: 'Congreso',       emoji: '🎓', cls: 'bg-purple-100 text-purple-700' },
+  casa_medica:  { label: 'Casa Médica',    emoji: '🏥', cls: 'bg-blue-100 text-blue-700' },
+  hospital:     { label: 'Hospital',       emoji: '🏨', cls: 'bg-teal-100 text-teal-700' },
+  tecnologia:   { label: 'Tecnología',     emoji: '💡', cls: 'bg-yellow-100 text-yellow-700' },
+  farmaceutica: { label: 'Farmacéutica',   emoji: '💊', cls: 'bg-green-100 text-green-700' },
+  educacion:    { label: 'Educación',      emoji: '📚', cls: 'bg-orange-100 text-orange-700' },
+  general:      { label: 'General',        emoji: '📋', cls: 'bg-slate-100 text-slate-600' },
+};
+
 const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
   gold:   { label: 'Oro',    cls: 'bg-yellow-100 text-yellow-800 border border-yellow-300' },
   silver: { label: 'Plata',  cls: 'bg-gray-100 text-gray-700 border border-gray-300' },
@@ -22,7 +32,9 @@ const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
 
 function getDaysRemaining(endDate: string): number {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const end = new Date(endDate); end.setHours(0, 0, 0, 0);
+  // Parse as local date to avoid UTC-offset shifting the day
+  const [y, m, d] = endDate.split('T')[0].split('-').map(Number);
+  const end = new Date(y, m - 1, d);
   return Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
@@ -40,7 +52,7 @@ function ExpiryBadge({ endDate }: { endDate: string }) {
       {days === 0 ? 'Expira hoy' : `${days}d restantes`}
     </span>
   );
-  if (days <= 30) return (
+  if (days <= 14) return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
       <Clock className="h-3 w-3" />
       {days}d restantes
@@ -55,6 +67,7 @@ const Advertisements = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [placementFilter, setPlacementFilter] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [activeTab, setActiveTab] = useState<Tab>('active');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null);
@@ -68,13 +81,14 @@ const Advertisements = () => {
     setImageLoadingStates(prev => ({ ...prev, [id]: 'error' }));
   }, []);
 
-  useEffect(() => { fetchAds(); }, [placementFilter]);
+  useEffect(() => { fetchAds(); }, [placementFilter, categoryFilter]);
 
   const fetchAds = async () => {
     try {
       setLoading(true);
       const data = await advertisementService.getAdvertisements({
         placement: placementFilter || undefined,
+        category: categoryFilter || undefined,
         search: search || undefined,
       });
       setAds(data);
@@ -94,7 +108,7 @@ const Advertisements = () => {
   const expiringList = useMemo(() =>
     ads.filter(ad => {
       const d = getDaysRemaining(ad.end_date);
-      return ad.status === 'active' && d >= 0 && d <= 30;
+      return ad.status === 'active' && d >= 0 && d <= 14;
     }), [ads]);
   const expiredList = useMemo(() =>
     ads.filter(ad => getDaysRemaining(ad.end_date) < 0), [ads]);
@@ -299,7 +313,21 @@ const Advertisements = () => {
               <option value="popup">Popup</option>
               <option value="sidebar">Barra Lateral</option>
               <option value="between_content">Entre Contenido</option>
-              <option value="footer">Footer</option>
+              <option value="footer">Footer / Sticky</option>
+            </select>
+            <select
+              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="">Todas las categorías</option>
+              <option value="congreso">🎓 Congreso</option>
+              <option value="casa_medica">🏥 Casa Médica</option>
+              <option value="hospital">🏨 Hospital</option>
+              <option value="tecnologia">💡 Tecnología</option>
+              <option value="farmaceutica">💊 Farmacéutica</option>
+              <option value="educacion">📚 Educación</option>
+              <option value="general">📋 General</option>
             </select>
           </div>
         </CardContent>
@@ -310,7 +338,7 @@ const Advertisements = () => {
         <div className="flex items-center gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg text-orange-800">
           <Clock className="h-5 w-5 shrink-0" />
           <p className="text-sm">
-            <strong>{expiringList.length} anuncio{expiringList.length > 1 ? 's' : ''}</strong> expira{expiringList.length === 1 ? '' : 'n'} en los próximos 30 días.
+            <strong>{expiringList.length} anuncio{expiringList.length > 1 ? 's' : ''}</strong> expira{expiringList.length === 1 ? '' : 'n'} en los próximos 14 días.
             Contacta a los clientes para renovar.
           </p>
         </div>
@@ -402,11 +430,16 @@ const Advertisements = () => {
                       </div>
                     )}
 
-                    {/* Placement + Expiry */}
+                    {/* Placement + Category + Expiry */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPlacementColor(ad.placement)}`}>
                         {ad.placement_display}
                       </span>
+                      {ad.category && CATEGORY_BADGE[ad.category] && (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_BADGE[ad.category].cls}`}>
+                          {CATEGORY_BADGE[ad.category].emoji} {CATEGORY_BADGE[ad.category].label}
+                        </span>
+                      )}
                       <ExpiryBadge endDate={ad.end_date} />
                     </div>
 

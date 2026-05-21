@@ -9,6 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import { notificationService } from "@/services/notificationService";
 import { advertisementService, type ActiveAd } from "@/admin/services/advertisementService";
@@ -205,11 +206,15 @@ function CaseStatusToggles({
   );
 }
 
+const FREE_CASE_LIMIT = 5;
+
 const CasesPage = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const adSettings = useAdSystem(isMobile);
   const { decrypt } = useCrypto();
+  const isFreePlan = user?.plan === 'free';
 
   const [cases, setCases] = useState<SurgicalCase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -572,15 +577,30 @@ const CasesPage = () => {
               {activeTab === 'activos' && (
                 <p className="text-muted-foreground text-sm">
                   {filteredCases.length} de {cases.length} caso{cases.length !== 1 ? 's' : ''} activos
+                  {isFreePlan && (
+                    <span className={`ml-2 font-medium ${cases.length >= FREE_CASE_LIMIT ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      · {cases.length}/{FREE_CASE_LIMIT} (plan gratuito)
+                    </span>
+                  )}
                 </p>
               )}
             </div>
-            <Button asChild className="w-full sm:w-auto">
-              <Link to="/cases/new">
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Caso
-              </Link>
-            </Button>
+            {isFreePlan && cases.length >= FREE_CASE_LIMIT ? (
+              <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
+                <Button disabled className="w-full sm:w-auto opacity-60 cursor-not-allowed">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nuevo Caso
+                </Button>
+                <span className="text-xs text-destructive">Límite alcanzado · Actualiza a Premium</span>
+              </div>
+            ) : (
+              <Button asChild className="w-full sm:w-auto">
+                <Link to="/cases/new">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nuevo Caso
+                </Link>
+              </Button>
+            )}
           </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>

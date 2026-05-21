@@ -143,6 +143,17 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Crear un nuevo caso quirúrgico"""
+        if request.user.plan == 'free':
+            active_count = SurgicalCase.objects.filter(
+                created_by=request.user,
+                archived_at__isnull=True,
+            ).count()
+            if active_count >= 5:
+                return Response(
+                    {'error': 'Plan gratuito: máximo 5 casos activos. Actualiza a Premium para casos ilimitados.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)

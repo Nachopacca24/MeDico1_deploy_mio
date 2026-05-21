@@ -1,6 +1,6 @@
 import {
   Calculator,
-  History,
+  Newspaper,
   Home,
   Settings,
   Star,
@@ -90,9 +90,9 @@ const toolsItems = [
     icon: Star,
   },
   {
-    title: "History",
-    url: "/history",
-    icon: History,
+    title: "Novedades",
+    url: "/novedades",
+    icon: Newspaper,
   },
 ];
 

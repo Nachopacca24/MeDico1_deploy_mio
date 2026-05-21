@@ -198,6 +198,16 @@ class Advertisement(models.Model):
         ('popup', 'Popup'),
         ('between_content', 'Entre Contenido'),
     ]
+
+    CATEGORY_CHOICES = [
+        ('general', 'General'),
+        ('congreso', 'Congreso'),
+        ('casa_medica', 'Casa Médica'),
+        ('hospital', 'Hospital'),
+        ('tecnologia', 'Tecnología Médica'),
+        ('farmaceutica', 'Farmacéutica'),
+        ('educacion', 'Educación Médica'),
+    ]
     
     # Relación con cliente
     client = models.ForeignKey(
@@ -281,6 +291,15 @@ class Advertisement(models.Model):
         choices=STATUS_CHOICES,
         default='draft',
         verbose_name="Estado"
+    )
+
+    # Categoría temática (para el feed de Novedades)
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES,
+        default='general',
+        verbose_name="Categoría",
+        help_text="Categoría temática para el feed de Novedades"
     )
 
     # Especialidades objetivo (lista de strings, vacío = todas)

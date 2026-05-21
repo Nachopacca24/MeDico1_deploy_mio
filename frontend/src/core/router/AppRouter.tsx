@@ -2,6 +2,7 @@
 
 import { Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/shared/components/auth/ProtectedRoute";
+import { PersistentAdSystem } from "@/shared/components/ads/PersistentAdSystem";
 
 // Admin components
 import { AdminLayout } from "@/admin/components/AdminLayout";
@@ -28,7 +29,7 @@ import Calculator from "@/pages/calculator";
 import Operations from "@/pages/operations";
 import HospitalsPage from "@/pages/hospitals";
 import Favorites from "@/pages/favorites";
-import HistoryPage from "@/pages/history";
+import NovedadesPage from "@/pages/novedades";
 import SettingsPage from "@/pages/settings";
 import DebugFavorites from "@/pages/debug-favorites";
 import ColleaguesPage from "@/pages/ColleaguesPage"; 
@@ -60,21 +61,23 @@ export const AppRouter = () => {
         <Route path='advertisements' element={<Advertisements />} />
       </Route>
 
-      {/* Protected routes */}
-      <Route path='/' element={<ProtectedRoute><Index /></ProtectedRoute>} />
-      <Route path='/cases' element={<ProtectedRoute><CasesPage /></ProtectedRoute>} />
-      <Route path='/cases/new' element={<ProtectedRoute><NewCase /></ProtectedRoute>} />
-      <Route path='/cases/:id' element={<ProtectedRoute><CaseDetail /></ProtectedRoute>} />
-      <Route path='/cases/:id/edit' element={<ProtectedRoute><EditCase /></ProtectedRoute>} />
-      <Route path='/calculator' element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
-      <Route path='/operations' element={<ProtectedRoute><Operations /></ProtectedRoute>} />
-      <Route path='/hospitals' element={<ProtectedRoute><HospitalsPage /></ProtectedRoute>} />
-      <Route path='/favorites' element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
-      <Route path='/colleagues' element={<ProtectedRoute><ColleaguesPage /></ProtectedRoute>} /> 
-      <Route path='/history' element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
-      <Route path='/settings' element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-      <Route path='/debug-favorites' element={<ProtectedRoute><DebugFavorites /></ProtectedRoute>} />
-      <Route path='/calendar' element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+      {/* Protected routes — wrapped in PersistentAdSystem so ad timers survive navigation */}
+      <Route element={<ProtectedRoute><PersistentAdSystem /></ProtectedRoute>}>
+        <Route path='/' element={<Index />} />
+        <Route path='/cases' element={<CasesPage />} />
+        <Route path='/cases/new' element={<NewCase />} />
+        <Route path='/cases/:id' element={<CaseDetail />} />
+        <Route path='/cases/:id/edit' element={<EditCase />} />
+        <Route path='/calculator' element={<Calculator />} />
+        <Route path='/operations' element={<Operations />} />
+        <Route path='/hospitals' element={<HospitalsPage />} />
+        <Route path='/favorites' element={<Favorites />} />
+        <Route path='/colleagues' element={<ColleaguesPage />} />
+        <Route path='/novedades' element={<NovedadesPage />} />
+        <Route path='/settings' element={<SettingsPage />} />
+        <Route path='/debug-favorites' element={<DebugFavorites />} />
+        <Route path='/calendar' element={<CalendarPage />} />
+      </Route>
     </Routes>
   );
 };

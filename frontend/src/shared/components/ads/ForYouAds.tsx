@@ -17,8 +17,7 @@ export function ForYouAds({ specialty }: ForYouAdsProps) {
 
     const load = async () => {
       try {
-        // Fetch without placement restriction — any active ad targeting this specialty
-        const results = await advertisementService.getActiveAds('', specialty);
+        const results = await advertisementService.getActiveAds('sidebar', specialty);
         setAds(results.slice(0, 2));
       } catch {
         // non-critical, fail silently

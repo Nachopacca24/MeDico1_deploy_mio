@@ -8,14 +8,16 @@ interface FriendRequestCardProps {
   onAccept?: (requestId: number) => void;
   onReject?: (requestId: number) => void;
   isProcessing: boolean;
+  atLimit?: boolean;
 }
 
-export function FriendRequestCard({ 
-  request, 
-  type, 
-  onAccept, 
-  onReject, 
-  isProcessing 
+export function FriendRequestCard({
+  request,
+  type,
+  onAccept,
+  onReject,
+  isProcessing,
+  atLimit = false,
 }: FriendRequestCardProps) {
   const user = type === 'received' ? request.from_user : request.to_user;
   const avatarUrl = user.avatar 
@@ -95,29 +97,36 @@ export function FriendRequestCard({
 
           {/* Acciones */}
           {type === 'received' && onAccept && onReject && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => onAccept(request.id)}
-                disabled={isProcessing}
-                className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isProcessing ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span className="font-medium">Aceptar</span>
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => onReject(request.id)}
-                disabled={isProcessing}
-                className="flex-1 flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <X className="w-4 h-4" />
-                <span className="font-medium">Rechazar</span>
-              </button>
+            <div className="flex flex-col gap-2">
+              {atLimit ? (
+                <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 text-center">
+                  Límite alcanzado · Actualiza a Premium para aceptar más colegas
+                </div>
+              ) : null}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onAccept(request.id)}
+                  disabled={isProcessing || atLimit}
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isProcessing ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span className="font-medium">Aceptar</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => onReject(request.id)}
+                  disabled={isProcessing}
+                  className="flex-1 flex items-center justify-center gap-2 bg-destructive/10 hover:bg-destructive/20 text-destructive py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="font-medium">Rechazar</span>
+                </button>
+              </div>
             </div>
           )}
 

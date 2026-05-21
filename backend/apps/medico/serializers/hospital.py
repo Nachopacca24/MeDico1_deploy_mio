@@ -86,6 +86,15 @@ class HospitalViewSet(viewsets.ReadOnlyModelViewSet):
     def favorite(self, request, pk=None):
         """Agregar hospital a favoritos"""
         hospital = self.get_object()
+
+        if request.user.plan == 'free':
+            current_count = FavoriteHospital.objects.filter(user=request.user).count()
+            if current_count >= 2:
+                return Response(
+                    {'error': 'Plan gratuito: máximo 2 hospitales favoritos. Actualiza a Premium para favoritos ilimitados.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         favorite, created = FavoriteHospital.objects.get_or_create(
             user=request.user,
             hospital=hospital

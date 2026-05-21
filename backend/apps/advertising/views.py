@@ -50,10 +50,11 @@ logger = logging.getLogger(__name__)
 
 from .models import Client, Advertisement
 from .serializers import (
-    ClientSerializer, 
+    ClientSerializer,
     AdvertisementSerializer,
     AdvertisementListSerializer,
-    ActiveAdvertisementSerializer
+    ActiveAdvertisementSerializer,
+    FeedAdvertisementSerializer,
 )
 
 
@@ -142,6 +143,9 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         placement = self.request.query_params.get('placement', None)
         if placement:
             queryset = queryset.filter(placement=placement)
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category=category)
         search = self.request.query_params.get('search', None)
         if search:
             queryset = queryset.filter(
@@ -234,6 +238,51 @@ def get_active_ads(request):
 
     rotation = build_rotation_schedule(ads)
     serializer = ActiveAdvertisementSerializer(rotation, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_feed(request):
+    """
+    Feed público de Novedades: todos los anuncios activos para explorar.
+    Parámetros:
+      category  — filtrar por categoría (general, congreso, casa_medica, hospital, tecnologia, farmaceutica, educacion)
+      specialty — filtrar por especialidad del médico
+      search    — búsqueda por título, descripción o empresa
+    """
+    category = request.query_params.get('category', '').strip()
+    specialty = request.query_params.get('specialty', '').strip()
+    search = request.query_params.get('search', '').strip()
+    today = timezone.now().date()
+
+    qs = Advertisement.objects.filter(
+        status='active',
+        start_date__lte=today,
+        end_date__gte=today,
+        client__status='active',
+    ).select_related('client').order_by('-priority', '-created_at')
+
+    if category:
+        qs = qs.filter(category=category)
+
+    if search:
+        qs = qs.filter(
+            Q(title__icontains=search) |
+            Q(description__icontains=search) |
+            Q(client__company_name__icontains=search)
+        )
+
+    ads = list(qs)
+
+    # Specialty filter: show ads targeted to the user's specialty or untargeted
+    if specialty:
+        ads = [
+            ad for ad in ads
+            if not ad.target_specialties or specialty in ad.target_specialties
+        ]
+
+    serializer = FeedAdvertisementSerializer(ads, many=True, context={'request': request})
     return Response(serializer.data)
 
 

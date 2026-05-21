@@ -6,8 +6,13 @@ import { Input } from "@/shared/components/ui/input";
 import { hospitalService, type Hospital } from "@/services/hospitalService";
 import { Building2, Search, Star, Loader2, AlertCircle, MapPin } from "lucide-react";
 import { toast } from "@/shared/hooks/use-toast";
+import { useAuth } from "@/shared/contexts/AuthContext";
+
+const FREE_HOSPITAL_FAV_LIMIT = 2;
 
 const HospitalsPage = () => {
+  const { user } = useAuth();
+  const isFreePlan = user?.plan === 'free';
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,30 +38,28 @@ const HospitalsPage = () => {
   };
 
   const handleToggleFavorite = async (hospitalId: number, isFavorite: boolean) => {
+    const currentFavCount = hospitals.filter(h => h.is_favorite).length;
+    if (!isFavorite && isFreePlan && currentFavCount >= FREE_HOSPITAL_FAV_LIMIT) {
+      toast({
+        title: 'Límite alcanzado',
+        description: `Plan gratuito: máximo ${FREE_HOSPITAL_FAV_LIMIT} hospitales favoritos. Actualiza a Premium para favoritos ilimitados.`,
+        variant: 'destructive'
+      });
+      return;
+    }
     setFavoritingId(hospitalId);
     try {
       if (isFavorite) {
         await hospitalService.unfavoriteHospital(hospitalId);
-        toast({
-          title: 'Removed from favorites',
-          description: 'Hospital removed from your favorites'
-        });
+        toast({ title: 'Eliminado de favoritos', description: 'Hospital quitado de tus favoritos' });
       } else {
         await hospitalService.favoriteHospital(hospitalId);
-        toast({
-          title: 'Added to favorites',
-          description: 'Hospital added to your favorites'
-        });
+        toast({ title: 'Agregado a favoritos', description: 'Hospital agregado a tus favoritos' });
       }
-      // Refresh the list to reflect changes
       await fetchHospitals();
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update favorites',
-        variant: 'destructive'
-      });
+    } catch (error: any) {
+      const msg = error?.response?.data?.error || 'Error al actualizar favoritos';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
     } finally {
       setFavoritingId(null);
     }
@@ -227,7 +230,16 @@ const HospitalsPage = () => {
           <div>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-              Favorites ({categorizedHospitals.favorites.length})
+              Favoritos ({categorizedHospitals.favorites.length})
+              {isFreePlan && (
+                <span className={`ml-2 text-sm font-bold px-3 py-1 rounded-full ${
+                  categorizedHospitals.favorites.length >= FREE_HOSPITAL_FAV_LIMIT
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {categorizedHospitals.favorites.length}/{FREE_HOSPITAL_FAV_LIMIT} · plan gratuito
+                </span>
+              )}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categorizedHospitals.favorites.map(renderHospitalCard)}

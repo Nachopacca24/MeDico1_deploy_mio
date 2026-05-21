@@ -7,6 +7,9 @@ import { loadCSV } from "@/shared/utils/csvLoader";
 import { Star, Trash2, StarOff, AlertCircle, Calculator } from "lucide-react";
 import { favoritesService, Favorite } from "@/services/favoritesService";
 import { useFavorites } from "@/core/contexts/FavoritesContext";
+import { useAuth } from "@/shared/contexts/AuthContext";
+
+const FREE_SURGERY_FAV_LIMIT = 5;
 
 // IMPORTANTE: Esta estructura debe coincidir EXACTAMENTE con operations.tsx
 const folderStructure = {
@@ -142,13 +145,15 @@ function FavoriteOperationCard({
 }
 
 const FavoritesPage = () => {
+  const { user } = useAuth();
+  const isFreePlan = user?.plan === 'free';
   const [favoritesData, setFavoritesData] = useState<Favorite[]>([]);
   const [favoriteOperations, setFavoriteOperations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [removing, setRemoving] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
+
   // Usar el contexto de favoritos
   const { refreshFavorites } = useFavorites();
 
@@ -283,20 +288,31 @@ const FavoritesPage = () => {
         {/* Minimal Header */}
         <div className="flex items-center justify-between pb-4 border-b">
           <div>
-            <h1 className="text-3xl font-semibold mb-1 tracking-tight">Favorite Surgeries</h1>
+            <h1 className="text-3xl font-semibold mb-1 tracking-tight">Cirugías Favoritas</h1>
             <p className="text-muted-foreground">
-              {favoritesData.length} saved procedure{favoritesData.length !== 1 ? 's' : ''}
+              {favoritesData.length} procedimiento{favoritesData.length !== 1 ? 's' : ''} guardado{favoritesData.length !== 1 ? 's' : ''}
             </p>
           </div>
-          {favoritesData.length > 0 && (
-            <button
-              onClick={clearAllFavorites}
-              className="flex items-center gap-2 px-4 py-2 text-destructive hover:bg-destructive/10 rounded transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Clear All
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {isFreePlan && (
+              <span className={`text-sm font-bold px-3 py-1 rounded-full ${
+                favoritesData.length >= FREE_SURGERY_FAV_LIMIT
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                  : 'bg-muted text-muted-foreground'
+              }`}>
+                {favoritesData.length}/{FREE_SURGERY_FAV_LIMIT} · plan gratuito
+              </span>
+            )}
+            {favoritesData.length > 0 && (
+              <button
+                onClick={clearAllFavorites}
+                className="flex items-center gap-2 px-4 py-2 text-destructive hover:bg-destructive/10 rounded transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Eliminar todos
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Contador */}

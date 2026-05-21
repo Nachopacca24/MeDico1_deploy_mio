@@ -42,9 +42,17 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Crear un nuevo favorito"""
+        if request.user.plan == 'free':
+            current_count = self.get_queryset().count()
+            if current_count >= 5:
+                return Response(
+                    {'error': 'Plan gratuito: máximo 5 favoritos. Actualiza a Premium para favoritos ilimitados.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         # Añadir el usuario al favorito
         serializer.save(user=request.user)
         

@@ -116,108 +116,79 @@ const Index = () => {
         {/* Email Verification Banner */}
         <EmailVerificationBanner />
 
-        {/* Carrusel de Anuncios Gold */}
-        {loadingAds ? (
-          <Card className="overflow-hidden border-amber-200">
-            <CardContent className="py-12">
-              <div className="flex flex-col items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-amber-600 mb-2" />
-                <p className="text-sm text-muted-foreground">Loading sponsors...</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : goldAds.length > 0 ? (
-          <Card className="overflow-hidden bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950 border-amber-200">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span className="text-amber-600">⭐</span>
-                  Premium Sponsors
-                </CardTitle>
-                <span className="text-xs bg-amber-600 text-white px-2 py-1 rounded-full font-medium">
-                  GOLD
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
-                {/* Imagen del Anuncio */}
-                <div
-                  className="relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer group"
-                  onClick={() => currentAd && handleAdClick(currentAd)}
-                >
-                  {currentAd && (
-                    <>
-                      <img
-                        src={currentAd.image_url}
-                        alt={currentAd.image_alt_text || currentAd.title || 'Advertisement'}
-                        className="w-full h-auto max-h-[400px] object-contain transition-transform duration-300 group-hover:scale-105"
-                      />
-
-                      {/* Overlay en hover */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                        <ExternalLink className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-8 w-8" />
-                      </div>
-
-                      {/* Título del anuncio (si existe) */}
-                      {currentAd.title && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                          <h3 className="text-white font-semibold text-lg">
-                            {currentAd.title}
-                          </h3>
-                        </div>
-                      )}
-                    </>
+        {/* Carrusel de Anuncios */}
+        {!loadingAds && goldAds.length > 0 && (
+          <div className="relative rounded-xl overflow-hidden bg-black">
+            {/* Imagen con blurred backdrop */}
+            <div
+              className="relative h-[380px] cursor-pointer group overflow-hidden"
+              onClick={() => currentAd && handleAdClick(currentAd)}
+            >
+              {currentAd && (
+                <>
+                  {/* Fondo borroso */}
+                  <img
+                    src={currentAd.image_url}
+                    aria-hidden
+                    className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50 pointer-events-none"
+                  />
+                  {/* Imagen principal centrada */}
+                  <img
+                    src={currentAd.image_url}
+                    alt={currentAd.image_alt_text || currentAd.title || 'Publicidad'}
+                    className="relative z-10 h-full w-full object-contain"
+                  />
+                  <div className="absolute inset-0 z-20 bg-black/0 group-hover:bg-black/15 transition-colors duration-300 flex items-center justify-center">
+                    <ExternalLink className="text-white opacity-0 group-hover:opacity-80 transition-opacity duration-300 h-8 w-8 drop-shadow-lg" />
+                  </div>
+                  {currentAd.title && (
+                    <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/75 to-transparent px-5 py-4">
+                      <p className="text-white font-semibold text-base leading-snug">{currentAd.title}</p>
+                    </div>
                   )}
+                </>
+              )}
+            </div>
+
+            {/* Etiqueta discreta */}
+            <span className="absolute top-3 right-3 z-30 text-[10px] text-white/50 bg-black/30 px-2 py-0.5 rounded-full tracking-wide">
+              Publicidad
+            </span>
+
+            {/* Controles de carrusel */}
+            {goldAds.length > 1 && (
+              <>
+                <button
+                  onClick={goToPrevious}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/60 p-2 rounded-full backdrop-blur-sm transition-all"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft className="h-5 w-5 text-white" />
+                </button>
+                <button
+                  onClick={goToNext}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/60 p-2 rounded-full backdrop-blur-sm transition-all"
+                  aria-label="Siguiente"
+                >
+                  <ChevronRight className="h-5 w-5 text-white" />
+                </button>
+
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex gap-1.5">
+                  {goldAds.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        index === currentAdIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/60'
+                      }`}
+                      aria-label={`Ir al anuncio ${index + 1}`}
+                    />
+                  ))}
                 </div>
-
-                {/* Controles del Carrusel */}
-                {goldAds.length > 1 && (
-                  <>
-                    <button
-                      onClick={goToPrevious}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
-                      aria-label="Previous ad"
-                    >
-                      <ChevronLeft className="h-5 w-5 text-gray-800" />
-                    </button>
-
-                    <button
-                      onClick={goToNext}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all"
-                      aria-label="Next ad"
-                    >
-                      <ChevronRight className="h-5 w-5 text-gray-800" />
-                    </button>
-
-                    <div className="flex justify-center gap-2 mt-4">
-                      {goldAds.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => goToSlide(index)}
-                          className={`h-2 rounded-full transition-all ${index === currentAdIndex
-                            ? 'w-8 bg-amber-600'
-                            : 'w-2 bg-amber-300 hover:bg-amber-400'
-                            }`}
-                          aria-label={`Go to slide ${index + 1}`}
-                        />
-                      ))}
-                    </div>
-
-                    <div className="flex justify-center mt-3">
-                      <button
-                        onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                        className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-1"
-                      >
-                        {isAutoPlaying ? '⏸️ Pause' : '▶️ Play'} auto-rotation
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
+              </>
+            )}
+          </div>
+        )}
 
         {/* Hero Section */}
         <div className="relative mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">

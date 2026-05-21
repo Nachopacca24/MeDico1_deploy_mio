@@ -550,7 +550,18 @@ class SendFriendRequestView(APIView):
                 {'error': 'No puedes enviarte una solicitud a ti mismo'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+        # Límite de plan gratuito
+        if request.user.plan == 'free':
+            colleague_count = Friendship.objects.filter(
+                Q(user=request.user) | Q(friend=request.user)
+            ).count()
+            if colleague_count >= 3:
+                return Response(
+                    {'error': 'Plan gratuito: máximo 3 colegas. Actualiza a Premium para colegas ilimitados.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         try:
             to_user = User.objects.get(friend_code=friend_code)
         except User.DoesNotExist:
@@ -683,10 +694,21 @@ class AcceptFriendRequestView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
+        # Verificar límite de plan gratuito del usuario que acepta
+        if request.user.plan == 'free':
+            colleague_count = Friendship.objects.filter(
+                Q(user=request.user) | Q(friend=request.user)
+            ).count()
+            if colleague_count >= 3:
+                return Response(
+                    {'error': 'Plan gratuito: máximo 3 colegas. Actualiza a Premium para aceptar más colegas.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
         # Marcar solicitud como aceptada
         friend_request.status = 'accepted'
         friend_request.save()
-        
+
         # Crear la amistad bidireccional
         Friendship.objects.create(
             user=friend_request.from_user,

@@ -9,33 +9,52 @@ import { advertisementService, type Advertisement } from '@/admin/services/adver
 import { clientService, type Client } from '@/admin/services/clientService';
 
 // Placements disponibles según plan del cliente publicitario
-const PLAN_PLACEMENTS: Record<string, { value: string; label: string }[]> = {
+const PLAN_PLACEMENTS: Record<string, { value: string; label: string; hint: string }[]> = {
   gold: [
-    { value: 'home_banner', label: 'Banner Principal (Gold)' },
-    { value: 'popup', label: 'Popup (Gold)' },
-    { value: 'sidebar', label: 'Barra Lateral' },
-    { value: 'between_content', label: 'Entre Contenido' },
-    { value: 'footer', label: 'Footer' },
+    { value: 'home_banner', label: 'Banner Flotante (Gold)', hint: 'Barra deslizable en la esquina inferior' },
+    { value: 'popup', label: 'Popup Modal (Gold)', hint: 'Ventana emergente centrada en pantalla' },
+    { value: 'sidebar', label: 'Barra Lateral', hint: 'Tarjetas "Para ti" en el menú lateral' },
+    { value: 'between_content', label: 'Entre Contenido', hint: 'Aparece entre elementos de listas' },
+    { value: 'footer', label: 'Footer / Sticky', hint: 'Barra flotante inferior (solo sticky, sin banner grande)' },
   ],
   silver: [
-    { value: 'sidebar', label: 'Barra Lateral' },
-    { value: 'between_content', label: 'Entre Contenido' },
-    { value: 'footer', label: 'Footer' },
+    { value: 'sidebar', label: 'Barra Lateral', hint: 'Tarjetas "Para ti" en el menú lateral' },
+    { value: 'between_content', label: 'Entre Contenido', hint: 'Aparece entre elementos de listas' },
+    { value: 'footer', label: 'Footer / Sticky', hint: 'Barra flotante inferior (solo sticky, sin banner grande)' },
   ],
   bronze: [
-    { value: 'between_content', label: 'Entre Contenido' },
-    { value: 'footer', label: 'Footer' },
+    { value: 'between_content', label: 'Entre Contenido', hint: 'Aparece entre elementos de listas' },
+    { value: 'footer', label: 'Footer / Sticky', hint: 'Barra flotante inferior (solo sticky, sin banner grande)' },
   ],
 };
 
+const CATEGORIES = [
+  { value: 'general', label: 'General' },
+  { value: 'congreso', label: 'Congreso' },
+  { value: 'casa_medica', label: 'Casa Médica' },
+  { value: 'hospital', label: 'Hospital' },
+  { value: 'tecnologia', label: 'Tecnología Médica' },
+  { value: 'farmaceutica', label: 'Farmacéutica' },
+  { value: 'educacion', label: 'Educación Médica' },
+];
+
+// Must match the SPECIALTIES list in signup.tsx exactly — these are the values stored in user.specialty
 const MEDICAL_SPECIALTIES = [
-  'Anestesiología', 'Cardiología', 'Cirugía General', 'Cirugía Plástica',
-  'Dermatología', 'Endocrinología', 'Gastroenterología', 'Geriatría',
-  'Ginecología', 'Hematología', 'Infectología', 'Medicina Interna',
-  'Nefrología', 'Neurología', 'Neurocirugía', 'Obstetricia',
-  'Oftalmología', 'Oncología', 'Ortopedia', 'Otorrinolaringología',
-  'Pediatría', 'Psiquiatría', 'Radiología', 'Reumatología',
-  'Traumatología', 'Urología',
+  'Cardiovascular',
+  'Dermatología',
+  'Digestivo',
+  'Endocrino',
+  'Ginecología',
+  'Mama',
+  'Maxilofacial',
+  'Neurocirugía',
+  'Obstetricia',
+  'Oftalmología',
+  'Ortopedia',
+  'Otorrinolaringología',
+  'Plástica',
+  'Procesos variados',
+  'Urología',
 ];
 
 interface AdvertisementFormDialogProps {
@@ -68,6 +87,7 @@ export function AdvertisementFormDialog({
     redirect_url: '',
     open_in_new_tab: true,
     placement: 'home_banner',
+    category: 'general',
     priority: 0,
     start_date: '',
     end_date: '',
@@ -109,6 +129,7 @@ export function AdvertisementFormDialog({
           redirect_url: advertisement.redirect_url || '',
           open_in_new_tab: advertisement.open_in_new_tab ?? true,
           placement: advertisement.placement || 'home_banner',
+          category: advertisement.category || 'general',
           priority: advertisement.priority || 0,
           start_date: advertisement.start_date || '',
           end_date: advertisement.end_date || '',
@@ -133,6 +154,7 @@ export function AdvertisementFormDialog({
           redirect_url: '',
           open_in_new_tab: true,
           placement: 'home_banner',
+          category: 'general',
           priority: 0,
           start_date: today,
           end_date: endDateStr,
@@ -179,6 +201,7 @@ export function AdvertisementFormDialog({
           redirect_url: formData.redirect_url,
           open_in_new_tab: formData.open_in_new_tab,
           placement: formData.placement,
+          category: formData.category,
           priority: formData.priority,
           start_date: formData.start_date,
           end_date: formData.end_date,
@@ -204,6 +227,7 @@ export function AdvertisementFormDialog({
           redirect_url: formData.redirect_url,
           open_in_new_tab: formData.open_in_new_tab,
           placement: formData.placement,
+          category: formData.category,
           priority: formData.priority,
           start_date: formData.start_date,
           end_date: formData.end_date,
@@ -714,6 +738,12 @@ export function AdvertisementFormDialog({
                         <option key={p.value} value={p.value}>{p.label}</option>
                       ))}
                     </select>
+                    {(() => {
+                      const current = availablePlacements.find(p => p.value === formData.placement);
+                      return current?.hint ? (
+                        <p className="text-xs text-muted-foreground mt-1">{current.hint}</p>
+                      ) : null;
+                    })()}
                   </div>
 
                   <div>
@@ -748,6 +778,23 @@ export function AdvertisementFormDialog({
                     </select>
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Categoría (feed Novedades)</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
+                >
+                  {CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Define cómo aparece este anuncio en la sección Novedades del médico
+                </p>
               </div>
 
               <div className="space-y-2">

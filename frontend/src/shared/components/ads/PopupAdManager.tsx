@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import { Button } from '@/shared/components/ui/button';
 
 interface PopupAdManagerProps {
@@ -19,6 +20,8 @@ export function PopupAdManager({
   interval = 120,
   maxPerSession = 3,
 }: PopupAdManagerProps) {
+  const { user } = useAuth();
+  const userSpecialty = user?.specialty ?? '';
   const [popupAds, setPopupAds] = useState<ActiveAd[]>([]);
   const [currentAd, setCurrentAd] = useState<ActiveAd | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -37,13 +40,12 @@ export function PopupAdManager({
   useEffect(() => { popupCountRef.current = popupCount; }, [popupCount]);
   useEffect(() => { isVisibleRef.current = isVisible; }, [isVisible]);
 
-  // Load once on mount — no specialty filtering for popup (Gold-only, shown to all)
   useEffect(() => {
     advertisementService
-      .getActiveAds('popup')
+      .getActiveAds('popup', userSpecialty || undefined)
       .then(setPopupAds)
       .catch(() => {});
-  }, []);
+  }, [userSpecialty]);
 
   const showNextPopup = useCallback(() => {
     const ads = popupAdsRef.current;

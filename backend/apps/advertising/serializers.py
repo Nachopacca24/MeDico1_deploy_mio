@@ -46,6 +46,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             'image', 'image_url', 'image_alt_text', 'redirect_url', 'open_in_new_tab',
             'placement', 'placement_display', 'priority',
             'start_date', 'end_date', 'status', 'status_display',
+            'category',
             'impressions', 'clicks', 'ctr', 'is_active',
             'target_specialties',
             'created_by', 'created_by_name', 'created_at', 'updated_at'
@@ -168,6 +169,7 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
             'placement', 'placement_display', 'priority',
             'status', 'status_display',
             'start_date', 'end_date',
+            'category',
             'impressions', 'clicks', 'ctr', 'is_active',
             'target_specialties',
             'created_by_name', 'created_at', 'updated_at'
@@ -192,29 +194,49 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
 
 class ActiveAdvertisementSerializer(serializers.ModelSerializer):
     """
-    Serializer público para anuncios activos.
+    Serializer público para anuncios activos (banners/popups).
     Solo expone información mínima necesaria.
-    NO expone información sensible del cliente.
     """
     image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Advertisement
         fields = [
-            'id',
-            'title',
-            'image_url',
-            'image_alt_text',
-            'redirect_url',
-            'open_in_new_tab',
-            'placement',
-            'target_specialties',
+            'id', 'title', 'image_url', 'image_alt_text',
+            'redirect_url', 'open_in_new_tab',
+            'placement', 'category', 'target_specialties',
         ]
 
     def get_image_url(self, obj):
         if obj.image:
-            # CloudinaryField returns a CloudinaryResource which has a .url property
-            # For Cloudinary, we don't need build_absolute_uri as the URL is already absolute
+            url = obj.image.url
+            if url.startswith('http://'):
+                url = url.replace('http://', 'https://', 1)
+            return url
+        return None
+
+
+class FeedAdvertisementSerializer(serializers.ModelSerializer):
+    """
+    Serializer público para el feed de Novedades.
+    Incluye descripción, categoría y nombre del cliente (empresa).
+    """
+    image_url = serializers.SerializerMethodField()
+    client_name = serializers.CharField(source='client.company_name', read_only=True)
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+
+    class Meta:
+        model = Advertisement
+        fields = [
+            'id', 'title', 'description',
+            'image_url', 'image_alt_text',
+            'redirect_url', 'open_in_new_tab',
+            'category', 'category_display',
+            'target_specialties', 'client_name',
+        ]
+
+    def get_image_url(self, obj):
+        if obj.image:
             url = obj.image.url
             if url.startswith('http://'):
                 url = url.replace('http://', 'https://', 1)

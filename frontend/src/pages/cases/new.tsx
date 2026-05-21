@@ -491,9 +491,9 @@ const NewCase = () => {
       );
 
       navigate('/cases');
-    } catch (error) {
-      console.error('Error creating case:', error);
-      toast.error('Error al crear caso', 'Por favor intenta de nuevo.');
+    } catch (error: any) {
+      const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';
+      toast.error('Error al crear caso', msg);
     } finally {
       setSubmitting(false);
     }

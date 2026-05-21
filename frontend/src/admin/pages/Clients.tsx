@@ -300,7 +300,7 @@ const Clients = () => {
                     {client.is_active && (
                       <div className="text-sm">
                         <span className="text-muted-foreground">Días restantes: </span>
-                        <span className={`font-medium ${client.days_remaining < 30 ? 'text-orange-600' : 'text-green-600'}`}>
+                        <span className={`font-medium ${client.days_remaining <= 7 ? 'text-red-600' : client.days_remaining <= 14 ? 'text-orange-600' : 'text-green-600'}`}>
                           {client.days_remaining}
                         </span>
                       </div>

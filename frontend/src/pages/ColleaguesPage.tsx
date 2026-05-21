@@ -22,8 +22,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
+const FREE_COLLEAGUE_LIMIT = 3;
+
 export default function ColleaguesPage() {
   const { user } = useAuth();
+  const isFreePlan = user?.plan === 'free';
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
@@ -217,9 +220,20 @@ export default function ColleaguesPage() {
 
         {/* Buscar colega */}
         <div className="bg-card border rounded-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <UserPlus className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-semibold">Agregar Nuevo Colega</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary" />
+              <h2 className="text-xl font-semibold">Agregar Nuevo Colega</h2>
+            </div>
+            {isFreePlan && (
+              <span className={`text-sm font-bold px-3 py-1 rounded-full ${
+                colleagues.length >= FREE_COLLEAGUE_LIMIT
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                  : 'bg-muted text-muted-foreground'
+              }`}>
+                {colleagues.length}/{FREE_COLLEAGUE_LIMIT} colegas · plan gratuito
+              </span>
+            )}
           </div>
 
           <form onSubmit={handleSearch} className="space-y-4">
@@ -292,6 +306,10 @@ export default function ColleaguesPage() {
                     ) : searchResult.pending_request ? (
                       <div className="mt-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg px-3 py-2 text-sm text-yellow-700 dark:text-yellow-300">
                         Ya existe una solicitud pendiente
+                      </div>
+                    ) : isFreePlan && colleagues.length >= FREE_COLLEAGUE_LIMIT ? (
+                      <div className="mt-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                        Límite alcanzado ({FREE_COLLEAGUE_LIMIT}/{FREE_COLLEAGUE_LIMIT}) · Actualiza a Premium para más colegas
                       </div>
                     ) : (
                       <button
@@ -418,6 +436,7 @@ export default function ColleaguesPage() {
                     onAccept={handleAcceptRequest}
                     onReject={handleRejectRequest}
                     isProcessing={processingRequestId === request.id}
+                    atLimit={isFreePlan && colleagues.length >= FREE_COLLEAGUE_LIMIT}
                   />
                 ))}
               </div>

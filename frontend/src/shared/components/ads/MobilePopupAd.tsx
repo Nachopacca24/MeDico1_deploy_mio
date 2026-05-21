@@ -33,7 +33,7 @@ export function MobilePopupAd({
   useEffect(() => {
     const loadPopupAds = async () => {
       try {
-        const ads = await advertisementService.getActiveAds('popup');
+        const ads = await advertisementService.getActiveAds('popup', userSpecialty || undefined);
         setPopupAds(ads);
       } catch (error) {
         console.error('Error loading popup ads:', error);
@@ -41,7 +41,7 @@ export function MobilePopupAd({
     };
 
     loadPopupAds();
-  }, []);
+  }, [userSpecialty]);
 
   useEffect(() => {
     if (popupAds.length === 0 || popupCount >= maxPerSession) return;

@@ -19,6 +19,7 @@ export interface Advertisement {
   open_in_new_tab: boolean;
   placement: 'home_banner' | 'sidebar' | 'footer' | 'popup' | 'between_content';
   placement_display: string;
+  category: AdCategory;
   priority: number;
   start_date: string;
   end_date: string;
@@ -45,12 +46,15 @@ export interface AdvertisementCreate {
   redirect_url: string;
   open_in_new_tab?: boolean;
   placement: string;
+  category?: string;
   priority?: number;
   start_date: string;
   end_date: string;
   status?: string;
   target_specialties?: string[];
 }
+
+export type AdCategory = 'general' | 'congreso' | 'casa_medica' | 'hospital' | 'tecnologia' | 'farmaceutica' | 'educacion';
 
 export interface ActiveAd {
   id: number;
@@ -60,10 +64,29 @@ export interface ActiveAd {
   redirect_url: string;
   open_in_new_tab: boolean;
   placement: string;
+  category?: AdCategory;
   target_specialties: string[];
 }
 
+export interface FeedAd {
+  id: number;
+  title?: string;
+  description?: string;
+  image_url: string;
+  image_alt_text?: string;
+  redirect_url: string;
+  open_in_new_tab: boolean;
+  category: AdCategory;
+  category_display: string;
+  target_specialties: string[];
+  client_name: string;
+}
+
 class AdvertisementService {
+  // Module-level cache so re-fetches within 5 min are instant
+  private static adCache = new Map<string, { data: ActiveAd[]; fetchedAt: number }>();
+  private static readonly CACHE_TTL_MS = 5 * 60 * 1000;
+
   private async handleResponse(response: Response) {
     const contentType = response.headers.get('content-type');
     
@@ -91,6 +114,7 @@ class AdvertisementService {
     client?: number;
     status?: string;
     placement?: string;
+    category?: string;
     search?: string;
   }): Promise<Advertisement[]> {
     try {
@@ -98,6 +122,7 @@ class AdvertisementService {
       if (params?.client) queryParams.append('client', params.client.toString());
       if (params?.status) queryParams.append('status', params.status);
       if (params?.placement) queryParams.append('placement', params.placement);
+      if (params?.category) queryParams.append('category', params.category);
       if (params?.search) queryParams.append('search', params.search);
 
       const url = `${API_URL}/api/v1/advertising/advertisements/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
@@ -133,6 +158,7 @@ class AdvertisementService {
       formData.append('redirect_url', data.redirect_url);
       formData.append('open_in_new_tab', data.open_in_new_tab ? 'true' : 'false');
       formData.append('placement', data.placement);
+      if (data.category) formData.append('category', data.category);
       formData.append('priority', (data.priority || 0).toString());
       formData.append('start_date', data.start_date);
       formData.append('end_date', data.end_date);
@@ -168,6 +194,7 @@ class AdvertisementService {
       if (data.redirect_url) formData.append('redirect_url', data.redirect_url);
       if (data.open_in_new_tab !== undefined) formData.append('open_in_new_tab', data.open_in_new_tab ? 'true' : 'false');
       if (data.placement) formData.append('placement', data.placement);
+      if (data.category) formData.append('category', data.category);
       if (data.priority !== undefined) formData.append('priority', data.priority.toString());
       if (data.start_date) formData.append('start_date', data.start_date);
       if (data.end_date) formData.append('end_date', data.end_date);
@@ -209,6 +236,12 @@ class AdvertisementService {
   }
 
   async getActiveAds(placement: string = 'home_banner', specialty?: string): Promise<ActiveAd[]> {
+    const cacheKey = `${placement}:${specialty ?? ''}`;
+    const cached = AdvertisementService.adCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < AdvertisementService.CACHE_TTL_MS) {
+      return cached.data;
+    }
+
     try {
       const params = new URLSearchParams();
       if (placement) params.append('placement', placement);
@@ -217,13 +250,37 @@ class AdvertisementService {
         `${API_URL}/api/v1/advertising/public/ads/?${params.toString()}`
       );
 
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
-      return await response.json();
+      const data: ActiveAd[] = await response.json();
+      AdvertisementService.adCache.set(cacheKey, { data, fetchedAt: Date.now() });
+
+      // Preload images so they appear instantly when the ad timer fires
+      data.forEach(ad => {
+        if (ad.image_url) {
+          const img = new Image();
+          img.src = ad.image_url;
+        }
+      });
+
+      return data;
     } catch (error) {
       console.error('Error en getActiveAds:', error);
+      return [];
+    }
+  }
+
+  async getFeed(params?: { category?: string; specialty?: string; search?: string }): Promise<FeedAd[]> {
+    try {
+      const query = new URLSearchParams();
+      if (params?.category) query.append('category', params.category);
+      if (params?.specialty) query.append('specialty', params.specialty);
+      if (params?.search) query.append('search', params.search);
+      const response = await fetch(`${API_URL}/api/v1/advertising/public/feed/?${query.toString()}`);
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error en getFeed:', error);
       return [];
     }
   }
