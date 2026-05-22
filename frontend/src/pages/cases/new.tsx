@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCrypto } from '@/shared/contexts/CryptoContext';
+import { encryptForAssistant } from '@/shared/utils/crypto';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
+import { BetweenContentAd } from '@/shared/components/ads/BetweenContentAd';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -440,13 +442,15 @@ const NewCase = () => {
     try {
       const hospitalFactor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
 
-      const [encryptedPatientName, encryptedPatientId] = await Promise.all([
+      const [encryptedPatientName, encryptedPatientId, encryptedForAssistant] = await Promise.all([
         encrypt(patientName),
         patientId ? encrypt(patientId) : Promise.resolve(''),
+        encryptForAssistant(patientName),
       ]);
 
       const caseData: any = {
         patient_name: encryptedPatientName,
+        patient_name_for_assistant: encryptedForAssistant,
         patient_id: encryptedPatientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
         patient_gender: (patientGender || undefined) as PatientGender | undefined,
@@ -982,6 +986,8 @@ const NewCase = () => {
             </Button>
           </div>
         </form>
+
+        <BetweenContentAd className="mt-2" />
       </div>
     </AppLayout>
   );

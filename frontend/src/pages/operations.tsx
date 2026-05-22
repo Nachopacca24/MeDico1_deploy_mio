@@ -5,6 +5,8 @@ import { loadCSV } from "@/shared/utils/csvLoader";
 import { ChevronDown, ChevronRight, Folder, FolderOpen, Search, Star, Stethoscope } from "lucide-react";
 import { useFavorites } from "@/core/contexts/FavoritesContext";
 import { ScrollToTop } from "@/shared/components/ui/scroll-to-top";
+import { useToast } from "@/shared/hooks/useToast";
+import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
 
 // Tipo para las operaciones del CSV
 interface CSVOperation {
@@ -109,7 +111,7 @@ export function SimpleOperationCard({
           onClick={onToggleFavorite}
           disabled={isLoading}
           className="p-1.5 hover:bg-accent rounded transition-colors disabled:opacity-50"
-          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
         >
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
@@ -134,11 +136,11 @@ export function SimpleOperationCard({
       
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Specialty</span>
+          <span className="text-muted-foreground">Especialidad</span>
           <span className="font-medium">{especialidad}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Group</span>
+          <span className="text-muted-foreground">Grupo</span>
           <span className="font-medium">{grupo}</span>
         </div>
         <div className="flex items-center justify-between pt-2 border-t">
@@ -165,20 +167,21 @@ const Operations = () => {
 
   // Usar el contexto de favoritos
   const { favorites, toggleFavorite: toggleFavoriteContext } = useFavorites();
+  const { toast } = useToast();
 
   // Toggle favorito usando el contexto
   const handleToggleFavorite = async (codigo: string, operation: any) => {
     const normalizedCode = String(codigo).trim();
     setLoadingFavorite(normalizedCode);
-    
+
     try {
       await toggleFavoriteContext(
         normalizedCode,
         operation?.cirugia || '',
         operation?.especialidad || ''
       );
-    } catch (error) {
-      alert('Error al actualizar favorito. Por favor intenta de nuevo.');
+    } catch (error: any) {
+      toast.error('Límite alcanzado', error?.message || 'Error al actualizar favorito.');
     } finally {
       setLoadingFavorite(null);
     }
@@ -294,26 +297,26 @@ const Operations = () => {
         <div className="space-y-4 pb-4 border-b">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-semibold mb-1 tracking-tight">Surgery Database</h1>
+              <h1 className="text-3xl font-semibold mb-1 tracking-tight">Base de Procedimientos</h1>
               <div className="flex items-center gap-4 flex-wrap text-muted-foreground">
-                <span>{Object.values(csvData).reduce((total, ops) => total + ops.length, 0)} procedures</span>
+                <span>{Object.values(csvData).reduce((total, ops) => total + ops.length, 0)} procedimientos</span>
                 {favorites.size > 0 && (
                   <span className="flex items-center gap-1.5">
                     <Star className="w-4 h-4" />
-                    {favorites.size} favorite{favorites.size !== 1 ? 's' : ''}
+                    {favorites.size} favorito{favorites.size !== 1 ? 's' : ''}
                   </span>
                 )}
               </div>
             </div>
           </div>
-          
-          {/* Search and Filters */}
+
+          {/* Búsqueda y Filtros */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search all procedures..."
+                placeholder="Buscar procedimientos..."
                 value={globalSearch}
                 onChange={(e) => {
                   setGlobalSearch(e.target.value);
@@ -330,7 +333,7 @@ const Operations = () => {
               }}
               className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
             >
-              <option value="all">All Specialties</option>
+              <option value="all">Todas las Especialidades</option>
               {Object.keys(folderStructure).map(specialty => (
                 <option key={specialty} value={specialty}>{specialty}</option>
               ))}
@@ -359,7 +362,7 @@ const Operations = () => {
             return !hasSearchResults;
           }) && (
             <div className="text-center py-12 text-muted-foreground">
-              No procedures found
+              No se encontraron procedimientos
             </div>
           )}
 
@@ -418,7 +421,7 @@ const Operations = () => {
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold mb-1">{specialty}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {totalOpsInSpecialty} procedure{totalOpsInSpecialty !== 1 ? 's' : ''} • {Object.keys(subcategories).length} categor{Object.keys(subcategories).length !== 1 ? 'ies' : 'y'}
+                          {totalOpsInSpecialty} procedimiento{totalOpsInSpecialty !== 1 ? 's' : ''} • {Object.keys(subcategories).length} categoría{Object.keys(subcategories).length !== 1 ? 's' : ''}
                         </p>
                       </div>
                       {expandedSpecialties[specialty] ? (
@@ -463,7 +466,7 @@ const Operations = () => {
                                 <div className="flex-1 min-w-0">
                                   <h4 className="font-medium text-sm mb-1 truncate">{subName}</h4>
                                   <p className="text-xs text-muted-foreground">
-                                    {operations.length} procedure{operations.length !== 1 ? 's' : ''}
+                                    {operations.length} procedimiento{operations.length !== 1 ? 's' : ''}
                                   </p>
                                 </div>
                                 {expandedSubcategories[subKey] ? (
@@ -530,6 +533,7 @@ const Operations = () => {
         </div>
       </div>
 
+      <BetweenContentAd className="mt-6" />
       <ScrollToTop />
     </AppLayout>
   );

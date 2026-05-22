@@ -49,13 +49,13 @@ export default function Login() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
-      newErrors.email = "Email is required";
+      newErrors.email = "El correo es requerido";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = "Ingresa un correo válido";
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = "La contraseña es requerida";
     }
 
     setErrors(newErrors);
@@ -192,7 +192,7 @@ export default function Login() {
           <form onSubmit={handleSubmit}>
             <CardContent className='space-y-4'>
               <div className='space-y-2'>
-                <Label htmlFor='email'>Email</Label>
+                <Label htmlFor='email'>Correo electrónico</Label>
                 <Input
                   id='email'
                   name='email'
@@ -208,9 +208,9 @@ export default function Login() {
 
               <div className='space-y-2'>
                 <div className='flex items-center justify-between'>
-                  <Label htmlFor='password'>Password</Label>
+                  <Label htmlFor='password'>Contraseña</Label>
                   <Link to='/forgot-password' className='text-sm text-primary underline-offset-4 hover:underline'>
-                    Forgot password?
+                    ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
                 <Input
@@ -228,7 +228,7 @@ export default function Login() {
               <div className='flex items-center space-x-2'>
                 <Checkbox id='rememberMe' checked={formData.rememberMe} onCheckedChange={handleCheckboxChange} />
                 <Label htmlFor='rememberMe' className='text-sm font-normal'>
-                  Remember me
+                  Recuérdame
                 </Label>
               </div>
             </CardContent>

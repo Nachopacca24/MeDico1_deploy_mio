@@ -78,6 +78,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'patient_name',
+            'patient_name_for_assistant',
             'surgery_date',
             'surgery_time',
             'surgery_end_time',
@@ -148,6 +149,7 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'patient_name',
+            'patient_name_for_assistant',
             'patient_id',
             'patient_age',
             'patient_gender',
@@ -236,6 +238,7 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'patient_name',
+            'patient_name_for_assistant',
             'patient_id',
             'patient_age',
             'patient_gender',

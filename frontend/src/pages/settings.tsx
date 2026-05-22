@@ -62,13 +62,13 @@ const Settings = () => {
     setSaving(true);
     try {
       toast({
-        title: "Profile updated",
-        description: "Your profile information has been saved.",
+        title: "Perfil actualizado",
+        description: "Tu información de perfil fue guardada.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update profile.",
+        description: "No se pudo actualizar el perfil.",
         variant: "destructive"
       });
     } finally {
@@ -87,13 +87,13 @@ const Settings = () => {
       }
       
       toast({
-        title: "Preferences saved",
-        description: "Your application preferences have been updated.",
+        title: "Preferencias guardadas",
+        description: "Tus preferencias fueron actualizadas.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save preferences.",
+        description: "No se pudieron guardar las preferencias.",
         variant: "destructive"
       });
     } finally {
@@ -115,33 +115,33 @@ const Settings = () => {
     <AppLayout>
       <div className="space-y-6">
         <div className="pb-4 border-b">
-          <h1 className="text-3xl font-semibold mb-1 tracking-tight">Settings</h1>
+          <h1 className="text-3xl font-semibold mb-1 tracking-tight">Configuración</h1>
           <p className="text-muted-foreground">
-            Manage your account settings and preferences
+            Administra tu cuenta y preferencias
           </p>
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="inline-flex gap-1">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            <TabsTrigger value="profile">Perfil</TabsTrigger>
+            <TabsTrigger value="preferences">Preferencias</TabsTrigger>
             <TabsTrigger value="plan">Mi Plan</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="calendar">Calendario</TabsTrigger>
+            <TabsTrigger value="security">Seguridad</TabsTrigger>
           </TabsList>
           
           {/* Profile Tab */}
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+                <CardTitle>Información de Perfil</CardTitle>
                 <CardDescription>
-                  Update your personal information
+                  Actualiza tu información personal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">Nombre</Label>
                   <Input
                     id="name"
                     name="name"
@@ -151,7 +151,7 @@ const Settings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Correo electrónico</Label>
                   <Input
                     id="email"
                     name="email"
@@ -161,7 +161,7 @@ const Settings = () => {
                     disabled
                   />
                   <p className="text-xs text-muted-foreground">
-                    Email address cannot be changed
+                    El correo electrónico no puede modificarse
                   </p>
                 </div>
               </CardContent>
@@ -173,10 +173,10 @@ const Settings = () => {
                   {saving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      Guardando...
                     </>
                   ) : (
-                    "Save Changes"
+                    "Guardar Cambios"
                   )}
                 </Button>
               </CardFooter>
@@ -187,17 +187,17 @@ const Settings = () => {
           <TabsContent value="preferences">
             <Card>
               <CardHeader>
-                <CardTitle>Application Preferences</CardTitle>
+                <CardTitle>Preferencias de la Aplicación</CardTitle>
                 <CardDescription>
-                  Customize your application experience
+                  Personaliza tu experiencia
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="darkMode">Dark Mode</Label>
+                    <Label htmlFor="darkMode">Modo Oscuro</Label>
                     <p className="text-sm text-muted-foreground">
-                      Enable dark theme for the application
+                      Activa el tema oscuro
                     </p>
                   </div>
                   <Switch
@@ -209,9 +209,9 @@ const Settings = () => {
                 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="notifications">Notifications</Label>
+                    <Label htmlFor="notifications">Notificaciones</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receive notifications about updates
+                      Recibir notificaciones sobre actualizaciones
                     </p>
                   </div>
                   <Switch
@@ -222,7 +222,7 @@ const Settings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="defaultCurrency">Default Currency</Label>
+                  <Label htmlFor="defaultCurrency">Moneda Predeterminada</Label>
                   <Input
                     id="defaultCurrency"
                     name="defaultCurrency"
@@ -230,7 +230,7 @@ const Settings = () => {
                     onChange={handleChange}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Currency code (e.g., GTQ for Guatemalan Quetzal)
+                    Código de moneda (ej: GTQ para Quetzal guatemalteco)
                   </p>
                 </div>
               </CardContent>
@@ -242,10 +242,10 @@ const Settings = () => {
                   {saving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      Guardando...
                     </>
                   ) : (
-                    "Save Preferences"
+                    "Guardar Preferencias"
                   )}
                 </Button>
               </CardFooter>
@@ -478,49 +478,49 @@ const Settings = () => {
           <TabsContent value="security">
             <Card>
               <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
+                <CardTitle>Seguridad</CardTitle>
                 <CardDescription>
-                  Manage your security preferences
+                  Administra tu contraseña y sesión
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Label htmlFor="currentPassword">Contraseña Actual</Label>
                   <Input
                     id="currentPassword"
                     name="currentPassword"
                     type="password"
-                    placeholder="Enter current password"
+                    placeholder="Ingresa tu contraseña actual"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword">Nueva Contraseña</Label>
                   <Input
                     id="newPassword"
                     name="newPassword"
                     type="password"
-                    placeholder="Enter new password"
+                    placeholder="Ingresa la nueva contraseña"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
-                    placeholder="Confirm new password"
+                    placeholder="Confirma la nueva contraseña"
                   />
                 </div>
-                
+
                 <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-2">Session Management</h4>
+                  <h4 className="text-sm font-medium mb-2">Gestión de Sesión</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    You are currently logged in on this device
+                    Estás conectado en este dispositivo
                   </p>
                   <Button variant="outline" size="sm">
-                    Sign out from all devices
+                    Cerrar sesión en todos los dispositivos
                   </Button>
                 </div>
               </CardContent>
@@ -529,10 +529,10 @@ const Settings = () => {
                   {saving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
+                      Actualizando...
                     </>
                   ) : (
-                    "Update Password"
+                    "Actualizar Contraseña"
                   )}
                 </Button>
               </CardFooter>

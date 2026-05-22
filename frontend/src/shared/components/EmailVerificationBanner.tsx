@@ -5,13 +5,14 @@ import { useAuth } from '@/shared/contexts/AuthContext';
 import { emailVerificationService } from '@/shared/services/emailVerificationService';
 import { Button } from '@/shared/components/ui/button';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { Mail, Loader2, X } from 'lucide-react';
+import { Mail, Loader2, X, RefreshCw } from 'lucide-react';
 import { useToast } from '@/shared/hooks/use-toast';
 
 export function EmailVerificationBanner() {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, refreshUser } = useAuth();
   const { toast } = useToast();
   const [isResending, setIsResending] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
   // Solo mostrar si el usuario no ha verificado su email y no ha sido descartado
@@ -48,6 +49,17 @@ export function EmailVerificationBanner() {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshUser();
+    } catch {
+      // silently ignore
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleDismiss = () => {
     setIsDismissed(true);
   };
@@ -59,22 +71,38 @@ export function EmailVerificationBanner() {
         <span className='text-sm text-amber-900 dark:text-amber-100'>
           <strong>Verifica tu email</strong> para acceder a todas las funciones de MéDico.
         </span>
-        <Button
-          size='sm'
-          variant='outline'
-          onClick={handleResend}
-          disabled={isResending}
-          className='ml-4 border-amber-600 text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900'
-        >
-          {isResending ? (
-            <>
-              <Loader2 className='mr-2 h-3 w-3 animate-spin' />
-              Enviando...
-            </>
-          ) : (
-            'Reenviar email'
-          )}
-        </Button>
+        <div className='flex gap-2 ml-4'>
+          <Button
+            size='sm'
+            variant='ghost'
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className='border-amber-600 text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900'
+            title='Ya verifiqué mi email'
+          >
+            {isRefreshing ? (
+              <Loader2 className='h-3 w-3 animate-spin' />
+            ) : (
+              <RefreshCw className='h-3 w-3' />
+            )}
+          </Button>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={handleResend}
+            disabled={isResending}
+            className='border-amber-600 text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900'
+          >
+            {isResending ? (
+              <>
+                <Loader2 className='mr-2 h-3 w-3 animate-spin' />
+                Enviando...
+              </>
+            ) : (
+              'Reenviar email'
+            )}
+          </Button>
+        </div>
       </AlertDescription>
       <button
         onClick={handleDismiss}

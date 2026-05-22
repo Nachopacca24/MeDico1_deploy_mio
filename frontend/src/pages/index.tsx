@@ -22,11 +22,14 @@ import { useEffect, useState } from "react";
 import { useCrypto } from "@/shared/contexts/CryptoContext";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import { advertisementService, type ActiveAd } from "@/admin/services/advertisementService";
+import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
+import { useIsMobile } from "@/shared/hooks/useAdSystem";
 import type { CaseStats } from "@/types/surgical-case";
 
 const Index = () => {
   const { user } = useAuth();
   const { decrypt } = useCrypto();
+  const isMobile = useIsMobile();
   const [stats, setStats] = useState<CaseStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
@@ -309,6 +312,9 @@ const Index = () => {
             </Link>
           </div>
         </div>
+
+        {/* Between-content ad */}
+        <BetweenContentAd />
 
         {/* Recent Cases */}
         {stats?.recent_cases && stats.recent_cases.length > 0 && (

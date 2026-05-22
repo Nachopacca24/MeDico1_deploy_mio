@@ -3,8 +3,10 @@
 import { useEffect, useState, useMemo } from "react";
 import React from "react";
 import { useCrypto } from "@/shared/contexts/CryptoContext";
+import { decryptAsAssistant } from "@/shared/utils/crypto";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
+import { CASE_INVITATIONS_EVENT } from "@/shared/hooks/useInvitationBadges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
@@ -217,6 +219,8 @@ const CasesPage = () => {
   const isFreePlan = user?.plan === 'free';
 
   const [cases, setCases] = useState<SurgicalCase[]>([]);
+  // Casos propios + asistidos aceptados cuentan para el límite del plan
+  const countForLimit = cases.filter(c => c.is_owner !== false || c.assistant_accepted === true).length;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -244,6 +248,7 @@ const CasesPage = () => {
     fetchCases();
     fetchInvitations();
     loadAds();
+    window.dispatchEvent(new CustomEvent(CASE_INVITATIONS_EVENT));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -260,7 +265,12 @@ const CasesPage = () => {
       setLoadingInvitations(true);
       const data = await surgicalCaseService.getAssistedCases();
       const decryptList = (list: SurgicalCase[]) =>
-        Promise.all(list.map(async c => ({ ...c, patient_name: await decrypt(c.patient_name) })));
+        Promise.all(list.map(async c => ({
+          ...c,
+          patient_name: c.patient_name_for_assistant
+            ? await decryptAsAssistant(c.patient_name_for_assistant)
+            : await decrypt(c.patient_name),
+        })));
       data.pending_invitations = await decryptList(data.pending_invitations);
       data.accepted_cases = await decryptList(data.accepted_cases);
       setInvitations(data);
@@ -280,19 +290,20 @@ const CasesPage = () => {
         total_pending: invitations.total_pending - 1,
         total_accepted: invitations.total_accepted + 1,
       });
-      // Refrescar casos
+      // Refrescar para reflejar el caso aceptado en la lista principal
       fetchCases();
-      toast.success('Invitación aceptada', 'El caso ahora aparece en tu lista');
     }
   };
 
   const handleInvitationRejected = (caseId: number) => {
-    setInvitations({
-      ...invitations,
-      pending_invitations: invitations.pending_invitations.filter(c => c.id !== caseId),
-      total_pending: invitations.total_pending - 1,
-    });
-    toast.info('Invitación rechazada', 'El médico principal será notificado');
+    // Quitar de invitaciones pendientes
+    setInvitations(prev => ({
+      ...prev,
+      pending_invitations: prev.pending_invitations.filter(c => c.id !== caseId),
+      total_pending: prev.total_pending - 1,
+    }));
+    // Quitar también de la lista principal de casos
+    setCases(prev => prev.filter(c => c.id !== caseId));
   };
 
   const loadAds = async () => {
@@ -329,8 +340,10 @@ const CasesPage = () => {
   const decryptCases = async (data: SurgicalCase[]) =>
     Promise.all(data.map(async c => ({
       ...c,
-      patient_name: await decrypt(c.patient_name),
-      patient_id: c.patient_id ? await decrypt(c.patient_id) : c.patient_id,
+      patient_name: (!c.is_owner && c.patient_name_for_assistant)
+        ? await decryptAsAssistant(c.patient_name_for_assistant)
+        : await decrypt(c.patient_name),
+      patient_id: (c.is_owner && c.patient_id) ? await decrypt(c.patient_id) : c.patient_id,
     })));
 
   const fetchCases = async () => {
@@ -474,7 +487,7 @@ const CasesPage = () => {
         <Card className="overflow-hidden border-silver-200 bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Sponsored</span>
+              <span className="text-xs font-medium text-muted-foreground">Patrocinado</span>
               {sidebarAds.length > 1 && (
                 <span className="text-xs bg-slate-600 text-white px-2 py-0.5 rounded-full font-medium">
                   {currentSidebarAdIndex + 1}/{sidebarAds.length}
@@ -508,12 +521,16 @@ const CasesPage = () => {
   };
 
   const BetweenContentAd = ({ index }: { index: number }) => {
-    if (!adSettings.showBetweenContent || !betweenContentAds.length) return null;
-    const ad = betweenContentAds[index % betweenContentAds.length];
+    const ad = betweenContentAds.length
+      ? betweenContentAds[index % betweenContentAds.length]
+      : null;
 
     useEffect(() => {
+      if (!ad || !adSettings.showBetweenContent) return;
       advertisementService.trackImpression(ad.id);
-    }, [ad.id]);
+    }, [ad, adSettings.showBetweenContent]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (!adSettings.showBetweenContent || !ad) return null;
 
     return (
       <Card 
@@ -532,7 +549,7 @@ const CasesPage = () => {
             <div className="flex-1 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
                 <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">
-                  Sponsored
+                  Patrocinado
                 </span>
               </div>
               {ad.title && (
@@ -584,14 +601,14 @@ const CasesPage = () => {
                 <p className="text-muted-foreground text-sm">
                   {filteredCases.length} de {cases.length} caso{cases.length !== 1 ? 's' : ''} activos
                   {isFreePlan && (
-                    <span className={`ml-2 font-medium ${cases.length >= FREE_CASE_LIMIT ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      · {cases.length}/{FREE_CASE_LIMIT} (plan gratuito)
+                    <span className={`ml-2 font-medium ${countForLimit >= FREE_CASE_LIMIT ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      · {countForLimit}/{FREE_CASE_LIMIT} (plan gratuito)
                     </span>
                   )}
                 </p>
               )}
             </div>
-            {isFreePlan && cases.length >= FREE_CASE_LIMIT ? (
+            {isFreePlan && countForLimit >= FREE_CASE_LIMIT ? (
               <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
                 <Button disabled className="w-full sm:w-auto opacity-60 cursor-not-allowed">
                   <Plus className="w-4 h-4 mr-2" />

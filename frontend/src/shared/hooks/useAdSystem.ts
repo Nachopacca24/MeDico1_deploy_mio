@@ -25,19 +25,18 @@ interface AdSystemSettings {
 export function useAdSystem(isMobile: boolean = false): AdSystemSettings {
   const { user } = useAuth();
   const isPremium = user?.plan === 'premium';
-  const isAdmin = user?.is_admin ?? false;
   const userSpecialty = user?.specialty || '';
 
   return {
-    showPopups: !isPremium || isAdmin,
-    showStickyBanner: true,
-    showSidebarAds: (!isPremium || isAdmin) && !isMobile,
-    showBetweenContent: !isPremium || isAdmin,
+    showPopups: !isPremium,
+    showStickyBanner: !isPremium,
+    showSidebarAds: !isPremium && !isMobile,
+    showBetweenContent: !isPremium,
     showForYouSection: true,
     popupStyle: isMobile ? 'bottom-sheet' : 'full',
-    popupInitialDelay: isMobile ? 8 : 10,
-    popupInterval: isMobile ? 180 : 120,
-    popupMaxPerSession: isMobile ? 2 : 3,
+    popupInitialDelay: 6,
+    popupInterval: 15,
+    popupMaxPerSession: 20,
     userSpecialty,
     isPremium,
   };

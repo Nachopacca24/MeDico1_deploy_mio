@@ -45,6 +45,12 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         """Retornar casos del usuario autenticado (propios + donde es ayudante)"""
         user = self.request.user
 
+        # accept/reject necesitan ver invitaciones pendientes para poder procesarlas
+        if self.action in ('accept_invitation', 'reject_invitation', 'retrieve'):
+            return SurgicalCase.objects.filter(
+                Q(created_by=user) | Q(assistant_doctor=user)
+            ).select_related('hospital', 'created_by', 'assistant_doctor').prefetch_related('procedures').distinct()
+
         # Por defecto ocultar archivados; ?archived=true los muestra
         show_archived = self.request.query_params.get('archived', 'false').lower() == 'true'
 
@@ -52,14 +58,16 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         assisted_only = self.request.query_params.get('assisted_only', 'false').lower() == 'true'
 
         if assisted_only:
-            # Solo casos donde soy ayudante
+            # Solo casos aceptados donde soy ayudante
             queryset = SurgicalCase.objects.filter(
-                assistant_doctor=user
+                assistant_doctor=user, assistant_accepted=True
             )
         else:
-            # Casos propios O donde soy ayudante
+            # Casos propios O donde fui aceptado como ayudante
+            # Las invitaciones pendientes NO aparecen aquí — solo en /assisted/
             queryset = SurgicalCase.objects.filter(
-                Q(created_by=user) | Q(assistant_doctor=user)
+                Q(created_by=user) |
+                Q(assistant_doctor=user, assistant_accepted=True)
             )
 
         # El filtro de archivado solo aplica en el listado, no en detalle/edición
@@ -278,6 +286,25 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK
             )
 
+        # Verificar límite de casos para plan gratuito
+        if request.user.plan == 'free':
+            own_cases = SurgicalCase.objects.filter(
+                created_by=request.user,
+                archived_at__isnull=True,
+                is_paid=False,
+            ).count()
+            accepted_assisted = SurgicalCase.objects.filter(
+                assistant_doctor=request.user,
+                assistant_accepted=True,
+                archived_at__isnull=True,
+                is_paid=False,
+            ).count()
+            if own_cases + accepted_assisted >= 5:
+                return Response(
+                    {'error': f'Alcanzaste el límite de 5 casos activos del plan gratuito (tienes {own_cases + accepted_assisted}). Archiva o elimina un caso existente, o actualiza a Premium para tener casos ilimitados.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         # Aceptar invitación
         case.assistant_accepted = True
         case.save()
@@ -302,12 +329,14 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Rechazar invitación
-        case.assistant_accepted = False
-        case.save()
+        # Rechazar invitación — limpiar la asignación completamente
+        # para que el médico principal pueda invitar a alguien más
+        case.assistant_doctor = None
+        case.assistant_accepted = None
+        case.save(update_fields=['assistant_doctor', 'assistant_accepted'])
 
         return Response({
-            'message': 'Invitación rechazada. El creador del caso será notificado.'
+            'message': 'Invitación rechazada.'
         }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='stats')

@@ -8,20 +8,34 @@ import { Button } from '@/shared/components/ui/button';
 
 interface PopupAdManagerProps {
   initialDelay?: number;
-  interval?: number;
   maxPerSession?: number;
 }
 
-/** Segundos que el popup permanece visible antes de cerrarse solo */
 const AUTO_CLOSE_SECONDS = 8;
 
+// Fisher-Yates shuffle
+const shuffle = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+// Variable interval: 50% short (6-9s), 50% long (10-13s)
+const nextIntervalMs = (): number => {
+  if (Math.random() < 0.5) return (6 + Math.random() * 3) * 1000;
+  return (10 + Math.random() * 3) * 1000;
+};
+
 export function PopupAdManager({
-  initialDelay = 10,
-  interval = 120,
-  maxPerSession = 3,
+  initialDelay = 5,
+  maxPerSession = 10,
 }: PopupAdManagerProps) {
   const { user } = useAuth();
   const userSpecialty = user?.specialty ?? '';
+
   const [popupAds, setPopupAds] = useState<ActiveAd[]>([]);
   const [currentAd, setCurrentAd] = useState<ActiveAd | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -29,13 +43,11 @@ export function PopupAdManager({
   const [popupCount, setPopupCount] = useState(0);
   const [progress, setProgress] = useState(100);
 
-  // Refs to avoid stale closures inside setTimeout/setInterval
   const popupAdsRef = useRef<ActiveAd[]>([]);
   const adIndexRef = useRef(0);
   const popupCountRef = useRef(0);
   const isVisibleRef = useRef(false);
 
-  // Keep refs in sync with state
   useEffect(() => { popupAdsRef.current = popupAds; }, [popupAds]);
   useEffect(() => { popupCountRef.current = popupCount; }, [popupCount]);
   useEffect(() => { isVisibleRef.current = isVisible; }, [isVisible]);
@@ -43,15 +55,27 @@ export function PopupAdManager({
   useEffect(() => {
     advertisementService
       .getActiveAds('popup', userSpecialty || undefined)
-      .then(setPopupAds)
+      .then(ads => {
+        const shuffled = shuffle(ads);
+        setPopupAds(shuffled);
+      })
       .catch(() => {});
   }, [userSpecialty]);
 
   const showNextPopup = useCallback(() => {
-    const ads = popupAdsRef.current;
+    let ads = popupAdsRef.current;
     if (ads.length === 0 || popupCountRef.current >= maxPerSession) return;
 
-    const ad = ads[adIndexRef.current % ads.length];
+    // Re-shuffle when we've cycled through all ads
+    if (adIndexRef.current >= ads.length) {
+      const reshuffled = shuffle(ads);
+      popupAdsRef.current = reshuffled;
+      setPopupAds(reshuffled);
+      adIndexRef.current = 0;
+      ads = reshuffled;
+    }
+
+    const ad = ads[adIndexRef.current];
     adIndexRef.current += 1;
 
     setCurrentAd(ad);
@@ -63,20 +87,15 @@ export function PopupAdManager({
     advertisementService.trackImpression(ad.id).catch(() => {});
   }, [maxPerSession]);
 
-  // Auto-close countdown when popup is visible
+  // Auto-close countdown
   useEffect(() => {
     if (!isVisible) return;
 
-    // Animate progress bar from 100 → 0 over AUTO_CLOSE_SECONDS
-    const step = 100 / (AUTO_CLOSE_SECONDS * 20); // update every 50ms
+    const step = 100 / (AUTO_CLOSE_SECONDS * 20);
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev <= 0) return 0;
-        return prev - step;
-      });
+      setProgress(prev => (prev <= 0 ? 0 : prev - step));
     }, 50);
 
-    // Auto-close after AUTO_CLOSE_SECONDS
     const closeTimer = setTimeout(() => {
       setIsVisible(false);
       setCurrentAd(null);
@@ -88,23 +107,21 @@ export function PopupAdManager({
     };
   }, [isVisible]);
 
-  // Schedule popups once ads are loaded
+  // First popup after initial delay
   useEffect(() => {
     if (popupAds.length === 0) return;
-
-    // First appearance after initialDelay
-    const firstTimer = setTimeout(showNextPopup, initialDelay * 1000);
-    return () => clearTimeout(firstTimer);
+    const t = setTimeout(showNextPopup, initialDelay * 1000);
+    return () => clearTimeout(t);
   }, [popupAds.length, initialDelay, showNextPopup]);
 
-  // Re-schedule after each dismiss
+  // Next popup with variable interval after each close
   useEffect(() => {
     if (isVisible || popupCount === 0 || popupAds.length === 0) return;
     if (popupCount >= maxPerSession) return;
 
-    const nextTimer = setTimeout(showNextPopup, interval * 1000);
-    return () => clearTimeout(nextTimer);
-  }, [isVisible, popupCount, popupAds.length, interval, maxPerSession, showNextPopup]);
+    const t = setTimeout(showNextPopup, nextIntervalMs());
+    return () => clearTimeout(t);
+  }, [isVisible, popupCount, popupAds.length, maxPerSession, showNextPopup]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -178,7 +195,6 @@ export function PopupAdManager({
             )}
           </div>
 
-          {/* Barra de cuenta regresiva — va de 100% a 0% */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
             <div
               className="h-full bg-primary"

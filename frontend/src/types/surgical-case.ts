@@ -45,6 +45,7 @@ export interface Procedure {
 export interface SurgicalCase {
   id: number;
   patient_name: string;
+  patient_name_for_assistant?: string;
   patient_id?: string;
   patient_age?: number;
   patient_gender?: PatientGender;

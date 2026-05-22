@@ -1,21 +1,36 @@
 // src/shared/components/ads/MobilePopupAd.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ChevronRight, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
 interface MobilePopupAdProps {
   initialDelay?: number;
-  interval?: number;
   maxPerSession?: number;
   style?: 'full' | 'bottom-sheet';
 }
 
+const AUTO_CLOSE_MS = 8000;
+
+const shuffle = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+// Variable interval: 50% short (6-9s), 50% long (10-13s)
+const nextIntervalMs = (): number => {
+  if (Math.random() < 0.5) return (6 + Math.random() * 3) * 1000;
+  return (10 + Math.random() * 3) * 1000;
+};
+
 export function MobilePopupAd({
-  initialDelay = 8,
-  interval = 180,
-  maxPerSession = 2,
+  initialDelay = 5,
+  maxPerSession = 10,
   style = 'bottom-sheet'
 }: MobilePopupAdProps) {
   const { user } = useAuth();
@@ -24,58 +39,71 @@ export function MobilePopupAd({
   const [popupAds, setPopupAds] = useState<ActiveAd[]>([]);
   const [currentAd, setCurrentAd] = useState<ActiveAd | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const [popupCount, setPopupCount] = useState(0);
-  const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [progress, setProgress] = useState(100);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  useEffect(() => {
-    const loadPopupAds = async () => {
-      try {
-        const ads = await advertisementService.getActiveAds('popup', userSpecialty || undefined);
-        setPopupAds(ads);
-      } catch (error) {
-        console.error('Error loading popup ads:', error);
-      }
-    };
+  const popupAdsRef = useRef<ActiveAd[]>([]);
+  const adIndexRef = useRef(0);
+  const popupCountRef = useRef(0);
+  const isVisibleRef = useRef(false);
 
-    loadPopupAds();
+  useEffect(() => { popupAdsRef.current = popupAds; }, [popupAds]);
+  useEffect(() => { popupCountRef.current = popupCount; }, [popupCount]);
+  useEffect(() => { isVisibleRef.current = isVisible; }, [isVisible]);
+
+  useEffect(() => {
+    advertisementService
+      .getActiveAds('popup', userSpecialty || undefined)
+      .then(ads => {
+        const shuffled = shuffle(ads);
+        setPopupAds(shuffled);
+      })
+      .catch(() => {});
   }, [userSpecialty]);
 
-  useEffect(() => {
-    if (popupAds.length === 0 || popupCount >= maxPerSession) return;
-
-    const initialTimer = setTimeout(() => {
-      showNextPopup();
-    }, initialDelay * 1000);
-
-    return () => clearTimeout(initialTimer);
-  }, [popupAds, initialDelay]);
-
-  useEffect(() => {
-    if (popupAds.length === 0 || popupCount >= maxPerSession || popupCount === 0) return;
-
-    const intervalTimer = setInterval(() => {
-      if (popupCount < maxPerSession && !isVisible) {
-        showNextPopup();
-      }
-    }, interval * 1000);
-
-    return () => clearInterval(intervalTimer);
-  }, [popupAds, interval, popupCount, isVisible]);
-
   const showNextPopup = () => {
-    if (popupAds.length === 0 || popupCount >= maxPerSession) return;
+    let ads = popupAdsRef.current;
+    if (ads.length === 0 || popupCountRef.current >= maxPerSession) return;
 
-    const ad = popupAds[currentAdIndex % popupAds.length];
+    // Re-shuffle when we've cycled through all ads
+    if (adIndexRef.current >= ads.length) {
+      const reshuffled = shuffle(ads);
+      popupAdsRef.current = reshuffled;
+      setPopupAds(reshuffled);
+      adIndexRef.current = 0;
+      ads = reshuffled;
+    }
+
+    const ad = ads[adIndexRef.current];
+    adIndexRef.current += 1;
+
     setCurrentAd(ad);
     setIsVisible(true);
+    setImgFailed(false);
+    setProgress(100);
     setPopupCount(prev => prev + 1);
-    setCurrentAdIndex(prev => prev + 1);
 
-    advertisementService.trackImpression(ad.id);
+    advertisementService.trackImpression(ad.id).catch(() => {});
   };
+
+  // First popup
+  useEffect(() => {
+    if (popupAds.length === 0) return;
+    const t = setTimeout(showNextPopup, initialDelay * 1000);
+    return () => clearTimeout(t);
+  }, [popupAds.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Next popup with variable interval after each close
+  useEffect(() => {
+    if (isVisible || popupCount === 0 || popupAds.length === 0) return;
+    if (popupCount >= maxPerSession) return;
+
+    const t = setTimeout(showNextPopup, nextIntervalMs());
+    return () => clearTimeout(t);
+  }, [isVisible, popupCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClose = () => {
     setIsVisible(false);
@@ -86,11 +114,11 @@ export function MobilePopupAd({
   useEffect(() => {
     if (!isVisible) return;
     setProgress(100);
-    const step = 100 / (8 * 20);
+    const step = 100 / (AUTO_CLOSE_MS / 50);
     const progressInterval = setInterval(() => {
       setProgress(prev => Math.max(0, prev - step));
     }, 50);
-    const closeTimer = setTimeout(handleClose, 8000);
+    const closeTimer = setTimeout(handleClose, AUTO_CLOSE_MS);
     return () => {
       clearInterval(progressInterval);
       clearTimeout(closeTimer);
@@ -98,13 +126,9 @@ export function MobilePopupAd({
   }, [isVisible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAdClick = async (ad: ActiveAd) => {
-    try {
-      await advertisementService.trackClick(ad.id);
-      window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
-      handleClose();
-    } catch (error) {
-      console.error('Error tracking click:', error);
-    }
+    await advertisementService.trackClick(ad.id).catch(() => {});
+    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    handleClose();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -119,12 +143,8 @@ export function MobilePopupAd({
 
   const handleTouchEnd = () => {
     if (style !== 'bottom-sheet') return;
-    if (touchStart - touchEnd < -100) {
-      handleClose();
-    }
+    if (touchStart - touchEnd < -100) handleClose();
   };
-
-  const [imgFailed, setImgFailed] = useState(false);
 
   if (!isVisible || !currentAd) return null;
 
@@ -191,7 +211,6 @@ export function MobilePopupAd({
                   <ChevronRight className="h-5 w-5" />
                 </button>
 
-                {/* Barra de cuenta regresiva */}
                 <div className="pt-2">
                   <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div

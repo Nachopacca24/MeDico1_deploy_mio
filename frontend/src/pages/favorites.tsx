@@ -104,7 +104,7 @@ function FavoriteOperationCard({
           onClick={onToggleFavorite}
           disabled={isRemoving}
           className="p-1.5 hover:bg-accent rounded transition-colors disabled:opacity-50"
-          title="Remove from favorites"
+          title="Quitar de favoritos"
         >
           {isRemoving ? (
             <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
@@ -123,11 +123,11 @@ function FavoriteOperationCard({
       
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Specialty</span>
+          <span className="text-muted-foreground">Especialidad</span>
           <span className="font-medium">{especialidad}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Group</span>
+          <span className="text-muted-foreground">Grupo</span>
           <span className="font-medium">{grupo}</span>
         </div>
         <div className="flex items-center justify-between pt-2 border-t">
@@ -328,7 +328,7 @@ const FavoritesPage = () => {
               No tienes favoritos aún
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-lg max-w-md mx-auto">
-              Agrega cirugías a favoritos desde Operations haciendo clic en la estrella
+              Agrega cirugías a favoritos desde Procedimientos haciendo clic en la estrella
             </p>
           </div>
         ) : favoriteOperations.length > 0 ? (

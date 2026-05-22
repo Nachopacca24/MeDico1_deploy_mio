@@ -127,8 +127,13 @@ class FavoritesService {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Error al alternar favorito');
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || errorData.detail || 'Error al alternar favorito');
+        } catch (parseError) {
+          if (parseError instanceof Error && parseError.message !== 'Error al alternar favorito') throw parseError;
+          throw new Error('Error al alternar favorito');
+        }
       }
 
       const result = await response.json();

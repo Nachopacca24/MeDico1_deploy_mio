@@ -28,6 +28,12 @@ class SurgicalCase(models.Model):
     patient_name = models.TextField(
         verbose_name="Nombre del Paciente"
     )
+    patient_name_for_assistant = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Nombre del Paciente (para ayudante)",
+        help_text="Nombre cifrado con clave compartida para que el médico ayudante pueda leerlo"
+    )
     patient_id = models.TextField(
         blank=True,
         null=True,

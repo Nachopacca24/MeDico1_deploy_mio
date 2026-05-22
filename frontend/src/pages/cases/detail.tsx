@@ -46,7 +46,7 @@ const CaseDetailPage = () => {
         patient_id: data.patient_id ? await decrypt(data.patient_id) : data.patient_id,
       });
     } catch (err: any) {
-      setError(err.message || 'Error loading case');
+      setError(err.message || 'Error al cargar el caso');
     } finally {
       setLoading(false);
     }

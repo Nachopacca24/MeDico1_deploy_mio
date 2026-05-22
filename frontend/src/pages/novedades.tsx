@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { advertisementService, type FeedAd, type AdCategory } from "@/admin/services/advertisementService";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { useNovedadesNew } from "@/shared/hooks/useNovedadesNew";
 import { Search, ExternalLink, Loader2, Newspaper } from "lucide-react";
 
 const CATEGORIES: { value: AdCategory | ''; label: string; emoji: string }[] = [
@@ -92,12 +93,16 @@ function AdCard({ ad }: { ad: FeedAd }) {
 const NovedadesPage = () => {
   const { user } = useAuth();
   const specialty = user?.specialty || '';
+  const { markAsSeen } = useNovedadesNew();
 
   const [allAds, setAllAds] = useState<FeedAd[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<AdCategory | ''>('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Mark novedades as seen when page is visited
+  useEffect(() => { markAsSeen(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounce search input
   useEffect(() => {

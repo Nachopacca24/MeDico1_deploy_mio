@@ -23,13 +23,11 @@ export function PersistentAdSystem() {
         isMobile
           ? <MobilePopupAd
               initialDelay={adSettings.popupInitialDelay}
-              interval={adSettings.popupInterval}
               maxPerSession={adSettings.popupMaxPerSession}
               style={adSettings.popupStyle}
             />
           : <PopupAdManager
               initialDelay={adSettings.popupInitialDelay}
-              interval={adSettings.popupInterval}
               maxPerSession={adSettings.popupMaxPerSession}
             />
       )}

@@ -38,12 +38,14 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { useNovedadesNew } from "@/shared/hooks/useNovedadesNew";
+import { useInvitationBadges } from "@/shared/hooks/useInvitationBadges";
 import { useState } from "react";
 
 // Organizar items por secciones
 const mainItems = [
   {
-    title: "Dashboard",
+    title: "Panel",
     url: "/",
     icon: Home,
   },
@@ -51,22 +53,22 @@ const mainItems = [
 
 const workItems = [
   {
-    title: "Cases",
+    title: "Casos",
     url: "/cases",
     icon: Briefcase,
   },
   {
-    title: "Operations",
+    title: "Procedimientos",
     url: "/operations",
     icon: Stethoscope,
   },
   {
-    title: "Hospitals",
+    title: "Hospitales",
     url: "/hospitals",
     icon: Building2,
   },
   {
-    title: "Colleagues",
+    title: "Colegas",
     url: "/colleagues",
     icon: Users,
   },
@@ -74,12 +76,12 @@ const workItems = [
 
 const toolsItems = [
   {
-    title: "Calendar",
+    title: "Calendario",
     url: "/calendar",
     icon: CalendarIcon,
   },
   {
-    title: "Favorites",
+    title: "Favoritos",
     url: "/favorites",
     icon: Star,
   },
@@ -92,7 +94,7 @@ const toolsItems = [
 
 const settingsItems = [
   {
-    title: "Settings",
+    title: "Configuración",
     url: "/settings",
     icon: Settings,
   },
@@ -101,6 +103,8 @@ const settingsItems = [
 export function AppSidebar() {
   const location = useLocation();
   const { logout, user } = useAuth();
+  const { hasNew: novedadesHasNew } = useNovedadesNew();
+  const { hasPendingCases, hasPendingColleagues } = useInvitationBadges();
   const [isOpen, setIsOpen] = useState(false);
   const userSpecialty = user?.specialty || '';
 
@@ -157,16 +161,29 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/70">Trabajo</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {workItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url} className="text-sidebar-foreground hover:bg-sidebar-accent">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {workItems.map((item) => {
+                const isCases = item.url === '/cases';
+                const isColleagues = item.url === '/colleagues';
+                const showBadge = (isCases && hasPendingCases) || (isColleagues && hasPendingColleagues);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="text-sidebar-foreground hover:bg-sidebar-accent relative">
+                        <div className="relative">
+                          <item.icon className={`h-4 w-4 ${showBadge ? 'animate-pulse text-primary' : ''}`} />
+                          {showBadge && (
+                            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
+                            </span>
+                          )}
+                        </div>
+                        <span className={showBadge ? 'font-semibold text-primary' : ''}>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -178,16 +195,28 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/70">Herramientas</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {toolsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url} className="text-sidebar-foreground hover:bg-sidebar-accent">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {toolsItems.map((item) => {
+                const isNovedades = item.url === '/novedades';
+                const showBadge = isNovedades && novedadesHasNew;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="text-sidebar-foreground hover:bg-sidebar-accent relative">
+                        <div className="relative">
+                          <item.icon className={`h-4 w-4 ${showBadge ? 'animate-pulse text-primary' : ''}`} />
+                          {showBadge && (
+                            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
+                            </span>
+                          )}
+                        </div>
+                        <span className={showBadge ? 'font-semibold text-primary' : ''}>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -205,8 +234,8 @@ export function AppSidebar() {
         <SidebarMenu>
           {settingsItems.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                <Link to={item.url} className="text-sidebar-foreground hover:bg-sidebar-accent">
+              <SidebarMenuButton asChild isActive={isActive(item.url)} className="focus-visible:ring-0 focus-visible:outline-none">
+                <Link to={item.url} className="text-sidebar-foreground hover:bg-sidebar-accent focus-visible:ring-0 focus-visible:outline-none">
                   <item.icon className="h-4 w-4" />
                   <span>{item.title}</span>
                 </Link>
@@ -218,7 +247,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
               <AlertDialogTrigger asChild>
-                <SidebarMenuButton className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive w-full cursor-pointer">
+                <SidebarMenuButton className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive w-full cursor-pointer focus-visible:ring-0 focus-visible:outline-none">
                   <LogOut className="h-4 w-4" />
                   <span>Cerrar sesión</span>
                 </SidebarMenuButton>

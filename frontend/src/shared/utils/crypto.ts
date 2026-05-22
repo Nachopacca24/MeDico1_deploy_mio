@@ -129,6 +129,40 @@ export async function decryptField(key: CryptoKey, value: string): Promise<strin
   return new TextDecoder().decode(plaintext);
 }
 
+// ─── Assistant shared key ─────────────────────────────────────────────────────
+// A deterministic key shared between case owner and assistant.
+// Both sides derive it the same way — no secret needed beyond API auth.
+
+const ASSISTANT_SHARE_PASSWORD = 'MeDico-assistant-view-2026';
+const ASSISTANT_SHARE_SALT = 'medico-case-assistant-salt-v1';
+let _assistantKey: CryptoKey | null = null;
+
+async function getAssistantKey(): Promise<CryptoKey> {
+  if (_assistantKey) return _assistantKey;
+  _assistantKey = await deriveKey(ASSISTANT_SHARE_PASSWORD, ASSISTANT_SHARE_SALT);
+  return _assistantKey;
+}
+
+/** Encrypt patient name so the assigned assistant doctor can read it. */
+export async function encryptForAssistant(plaintext: string): Promise<string> {
+  if (!plaintext) return plaintext;
+  return encryptField(await getAssistantKey(), plaintext);
+}
+
+/**
+ * Decrypt a patient name that was encrypted with the shared assistant key.
+ * Returns the original value unchanged if it was never encrypted.
+ */
+export async function decryptAsAssistant(value: string): Promise<string> {
+  if (!value) return value;
+  if (!isEncrypted(value)) return value;
+  try {
+    return await decryptField(await getAssistantKey(), value);
+  } catch {
+    return '⚠ Error al descifrar';
+  }
+}
+
 /**
  * Re-encrypt all encrypted fields in an object from oldKey → newKey.
  * Used during password change.

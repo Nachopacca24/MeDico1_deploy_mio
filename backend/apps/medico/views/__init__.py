@@ -116,6 +116,15 @@ class FavoriteViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK
             )
         else:
+            # Verificar límite antes de agregar
+            if request.user.plan == 'free':
+                current_count = self.get_queryset().count()
+                if current_count >= 5:
+                    return Response(
+                        {'error': 'Plan gratuito: máximo 5 favoritos. Actualiza a Premium para favoritos ilimitados.'},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
             # Si no existe, crear
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)

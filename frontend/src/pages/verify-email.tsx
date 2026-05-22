@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { emailVerificationService } from '@/shared/services/emailVerificationService';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { CheckCircle2, XCircle, Loader2, Mail } from 'lucide-react';
@@ -13,6 +14,7 @@ type VerificationState = 'loading' | 'success' | 'error';
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isAuthenticated, refreshUser } = useAuth();
   const [state, setState] = useState<VerificationState>('loading');
   const [message, setMessage] = useState('');
   const [userInfo, setUserInfo] = useState<{ email?: string; username?: string }>({});
@@ -36,14 +38,17 @@ const VerifyEmailPage = () => {
           username: response.username,
         });
 
-        // Redirigir al login después de 3 segundos
-        setTimeout(() => {
-          navigate('/login', { 
-            state: { 
-              message: '¡Email verificado! Ahora puedes iniciar sesión.' 
-            } 
-          });
-        }, 3000);
+        // Si el usuario ya está autenticado, refrescar contexto y redirigir al dashboard
+        if (isAuthenticated) {
+          try { await refreshUser(); } catch { /* ignorar si falla */ }
+          setTimeout(() => navigate('/'), 3000);
+        } else {
+          setTimeout(() => {
+            navigate('/login', {
+              state: { message: '¡Email verificado! Ahora puedes iniciar sesión.' },
+            });
+          }, 3000);
+        }
       } catch (error: any) {
         setState('error');
         setMessage(error.message || 'Error al verificar el email. El token puede haber expirado.');
@@ -51,7 +56,7 @@ const VerifyEmailPage = () => {
     };
 
     verifyEmail();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, isAuthenticated, refreshUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
@@ -131,13 +136,15 @@ const VerifyEmailPage = () => {
           {state === 'success' && (
             <div className="space-y-3">
               <div className="text-center text-sm text-muted-foreground">
-                Serás redirigido al login en 3 segundos...
+                {isAuthenticated
+                  ? 'Serás redirigido al inicio en 3 segundos...'
+                  : 'Serás redirigido al login en 3 segundos...'}
               </div>
-              <Button 
-                onClick={() => navigate('/login')} 
+              <Button
+                onClick={() => isAuthenticated ? navigate('/') : navigate('/login')}
                 className="w-full"
               >
-                Ir al Login ahora
+                {isAuthenticated ? 'Ir al inicio ahora' : 'Ir al Login ahora'}
               </Button>
             </div>
           )}

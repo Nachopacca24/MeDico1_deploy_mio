@@ -9,6 +9,8 @@ import { toast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 
 const FREE_HOSPITAL_FAV_LIMIT = 2;
+const CACHE_KEY = 'medico_hospitals_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
 const HospitalsPage = () => {
   const { user } = useAuth();
@@ -23,15 +25,30 @@ const HospitalsPage = () => {
     fetchHospitals();
   }, []);
 
-  const fetchHospitals = async () => {
+  const fetchHospitals = async (skipCache = false) => {
+    if (!skipCache) {
+      try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < CACHE_TTL) {
+            setHospitals(data);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {}
+    }
+
     try {
       setLoading(true);
       const data = await hospitalService.getHospitals();
       setHospitals(data);
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
       setError(null);
     } catch (err: any) {
       console.error('Error fetching hospitals:', err);
-      setError(err.message || 'Error loading hospitals');
+      setError(err.message || 'Error al cargar hospitales');
     } finally {
       setLoading(false);
     }
@@ -47,7 +64,14 @@ const HospitalsPage = () => {
       });
       return;
     }
+
     setFavoritingId(hospitalId);
+
+    // Actualización optimista — sin refetch
+    setHospitals(prev => prev.map(h =>
+      h.id === hospitalId ? { ...h, is_favorite: !isFavorite } : h
+    ));
+
     try {
       if (isFavorite) {
         await hospitalService.unfavoriteHospital(hospitalId);
@@ -56,8 +80,13 @@ const HospitalsPage = () => {
         await hospitalService.favoriteHospital(hospitalId);
         toast({ title: 'Agregado a favoritos', description: 'Hospital agregado a tus favoritos' });
       }
-      await fetchHospitals();
+      // Invalida caché para que la próxima visita traiga datos frescos
+      sessionStorage.removeItem(CACHE_KEY);
     } catch (error: any) {
+      // Revierte en caso de error
+      setHospitals(prev => prev.map(h =>
+        h.id === hospitalId ? { ...h, is_favorite: isFavorite } : h
+      ));
       const msg = error?.response?.data?.error || 'Error al actualizar favoritos';
       toast({ title: 'Error', description: msg, variant: 'destructive' });
     } finally {
@@ -65,10 +94,8 @@ const HospitalsPage = () => {
     }
   };
 
-  // Filter hospitals based on search
   const filteredHospitals = useMemo(() => {
     if (!searchQuery) return hospitals;
-    
     const query = searchQuery.toLowerCase();
     return hospitals.filter(hospital =>
       hospital.name.toLowerCase().includes(query) ||
@@ -76,18 +103,15 @@ const HospitalsPage = () => {
     );
   }, [hospitals, searchQuery]);
 
-  // Categorize hospitals
   const categorizedHospitals = useMemo(() => {
     const favorites: Hospital[] = [];
     const publicHospitals: Hospital[] = [];
     const igssHospitals: Hospital[] = [];
     const privateHospitals: Hospital[] = [];
-    
+
     filteredHospitals.forEach(hospital => {
-      if (hospital.is_favorite) {
-        favorites.push(hospital);
-      }
-      
+      if (hospital.is_favorite) favorites.push(hospital);
+
       if (hospital.name.toLowerCase().includes('igss')) {
         igssHospitals.push(hospital);
       } else if (
@@ -100,7 +124,7 @@ const HospitalsPage = () => {
         privateHospitals.push(hospital);
       }
     });
-    
+
     return { favorites, publicHospitals, igssHospitals, privateHospitals };
   }, [filteredHospitals]);
 
@@ -136,9 +160,9 @@ const HospitalsPage = () => {
         <Card className="border-destructive">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="w-16 h-16 text-destructive mb-4" />
-            <h2 className="text-2xl font-semibold mb-2">Error loading hospitals</h2>
+            <h2 className="text-2xl font-semibold mb-2">Error al cargar hospitales</h2>
             <p className="text-muted-foreground mb-6">{error}</p>
-            <Button onClick={fetchHospitals}>Try Again</Button>
+            <Button onClick={() => fetchHospitals(true)}>Reintentar</Button>
           </CardContent>
         </Card>
       </AppLayout>
@@ -190,20 +214,20 @@ const HospitalsPage = () => {
         <div className="pb-4 border-b">
           <h1 className="text-3xl font-semibold mb-1 tracking-tight flex items-center gap-2">
             <Building2 className="h-8 w-8" />
-            Hospitals
+            Hospitales
           </h1>
           <p className="text-muted-foreground">
-            {filteredHospitals.length} of {hospitals.length} hospital{hospitals.length !== 1 ? 's' : ''}
+            {filteredHospitals.length} de {hospitals.length} hospital{hospitals.length !== 1 ? 'es' : ''}
           </p>
         </div>
 
-        {/* Search */}
+        {/* Búsqueda */}
         {hospitals.length > 0 && (
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               type="text"
-              placeholder="Search by hospital name or location..."
+              placeholder="Buscar por nombre o ubicación..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -211,7 +235,7 @@ const HospitalsPage = () => {
           </div>
         )}
 
-        {/* Favorites Section */}
+        {/* Favoritos */}
         {categorizedHospitals.favorites.length > 0 && (
           <div>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -233,11 +257,11 @@ const HospitalsPage = () => {
           </div>
         )}
 
-        {/* Public Hospitals */}
+        {/* Hospitales Públicos */}
         {categorizedHospitals.publicHospitals.length > 0 && (
           <div>
             <h2 className="text-xl font-semibold mb-4">
-              Public Hospitals ({categorizedHospitals.publicHospitals.length})
+              Hospitales Públicos ({categorizedHospitals.publicHospitals.length})
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categorizedHospitals.publicHospitals.map(renderHospitalCard)}
@@ -245,11 +269,11 @@ const HospitalsPage = () => {
           </div>
         )}
 
-        {/* IGSS Hospitals */}
+        {/* Hospitales IGSS */}
         {categorizedHospitals.igssHospitals.length > 0 && (
           <div>
             <h2 className="text-xl font-semibold mb-4">
-              IGSS Hospitals ({categorizedHospitals.igssHospitals.length})
+              Hospitales IGSS ({categorizedHospitals.igssHospitals.length})
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categorizedHospitals.igssHospitals.map(renderHospitalCard)}
@@ -257,11 +281,11 @@ const HospitalsPage = () => {
           </div>
         )}
 
-        {/* Private Hospitals */}
+        {/* Hospitales Privados */}
         {categorizedHospitals.privateHospitals.length > 0 && (
           <div>
             <h2 className="text-xl font-semibold mb-4">
-              Private Hospitals ({categorizedHospitals.privateHospitals.length})
+              Hospitales Privados ({categorizedHospitals.privateHospitals.length})
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {categorizedHospitals.privateHospitals.map(renderHospitalCard)}
@@ -269,14 +293,14 @@ const HospitalsPage = () => {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Estado vacío */}
         {filteredHospitals.length === 0 && (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Search className="w-16 h-16 text-muted-foreground mb-4 opacity-50" />
-              <h2 className="text-2xl font-semibold mb-2">No hospitals found</h2>
+              <h2 className="text-2xl font-semibold mb-2">No se encontraron hospitales</h2>
               <p className="text-muted-foreground">
-                {searchQuery ? 'Try adjusting your search terms' : 'No hospitals available'}
+                {searchQuery ? 'Intenta ajustar tu búsqueda' : 'No hay hospitales disponibles'}
               </p>
             </CardContent>
           </Card>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
+import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
@@ -633,6 +634,8 @@ const CalendarPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <BetweenContentAd className="mt-2" />
     </AppLayout>
   );
 };

@@ -1,5 +1,6 @@
 // pages/ColleaguesPage.tsx
 import { useState, useEffect } from 'react';
+import { COLLEAGUE_REQUESTS_EVENT } from '@/shared/hooks/useInvitationBadges';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { ColleagueCard } from '@/shared/components/ColleagueCard';
 import { FriendRequestCard } from '@/shared/components/FriendRequestCard';
@@ -44,6 +45,7 @@ export default function ColleaguesPage() {
 
   useEffect(() => {
     loadData();
+    window.dispatchEvent(new CustomEvent(COLLEAGUE_REQUESTS_EVENT));
   }, []);
 
   const loadData = async () => {

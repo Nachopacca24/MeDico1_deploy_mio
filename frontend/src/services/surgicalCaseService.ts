@@ -38,12 +38,14 @@ class SurgicalCaseService {
     }
 
     if (!response.ok) {
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
       try {
         const errorData = await response.json();
-        throw new Error(errorData.detail || errorData.message || `Error ${response.status}: ${response.statusText}`);
-      } catch (e) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        errorMessage = errorData.error || errorData.detail || errorData.message || errorMessage;
+      } catch {
+        // JSON parse failed, use default message
       }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
