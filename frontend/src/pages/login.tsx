@@ -2,7 +2,6 @@ import type React from "react";
 import { useState } from "react";
 import { useNavigate, Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
-import { useCrypto } from "@/shared/contexts/CryptoContext";
 import { AuthError } from '@/shared/services/authErrors';
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -25,7 +24,6 @@ export default function Login() {
   const location = useLocation();
   const { toast } = useToast();
   const { login, isAuthenticated, isAdmin, loginWithGoogle } = useAuth();
-  const { initKey } = useCrypto();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -74,9 +72,6 @@ export default function Login() {
         email: formData.email,
         password: formData.password,
       });
-
-      // Derive E2EE key from password — fire-and-forget, completes before network responses
-      initKey(formData.password, response.user.id).catch(() => {});
 
       toast({
         title: "¡Bienvenido!",

@@ -1,8 +1,7 @@
 //src/pages/cases/edit.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useCrypto } from '@/shared/contexts/CryptoContext';
-import { useAuth } from '@/shared/contexts/AuthContext';
+import { hashPatientField, isPatientHash, formatPatientHash } from '@/shared/utils/patientHash';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -47,8 +46,7 @@ const EditCase = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const { decrypt, encrypt, isKeyReady, initKey } = useCrypto();
-  const { user } = useAuth();
+  const [newPatientName, setNewPatientName] = useState('');
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -87,24 +85,6 @@ const EditCase = () => {
   const [loadingFavoriteRvu, setLoadingFavoriteRvu] = useState<string | null>(null);
   const [loadingAllProcedures, setLoadingAllProcedures] = useState(false);
 
-  // Encryption passphrase setup (for Google-login users who have no password)
-  const [encPassphrase, setEncPassphrase] = useState('');
-  const [settingKey, setSettingKey] = useState(false);
-
-  const handleSetPassphrase = async () => {
-    if (!encPassphrase.trim() || !user?.id) return;
-    setSettingKey(true);
-    try {
-      await initKey(encPassphrase, user.id);
-      setEncPassphrase('');
-      toast.success('Cifrado activado', 'Tus datos de paciente estarán cifrados');
-    } catch {
-      toast.error('Error', 'No se pudo activar el cifrado');
-    } finally {
-      setSettingKey(false);
-    }
-  };
-
   // ✅ CARGA INICIAL: Hospitales, colegas, favoritos Y caso (UNA VEZ)
   useEffect(() => {
     const loadInitialData = async () => {
@@ -137,24 +117,16 @@ const EditCase = () => {
 
         setFavoriteProcedures(favProcs);
 
-        // Decrypt sensitive fields before populating form
-        const [decPatientName, decPatientId, decDiagnosis, decNotes] = await Promise.all([
-          decrypt(caseData.patient_name),
-          decrypt(caseData.patient_id || ''),
-          decrypt(caseData.diagnosis || ''),
-          decrypt(caseData.notes || ''),
-        ]);
-
-        setPatientName(decPatientName);
-        setPatientId(decPatientId);
+        setPatientName(caseData.patient_name);
+        setPatientId(caseData.patient_id || '');
         setPatientAge(caseData.patient_age?.toString() || '');
         setPatientGender(caseData.patient_gender || '');
         setHospitalId(caseData.hospital?.toString() || '');
         setSurgeryDate(caseData.surgery_date);
         setSurgeryTime(caseData.surgery_time || '');
         setSurgeryEndTime(caseData.surgery_end_time || '');
-        setDiagnosis(decDiagnosis);
-        setNotes(decNotes);
+        setDiagnosis(caseData.diagnosis || '');
+        setNotes(caseData.notes || '');
         setStatus((caseData.status?.toLowerCase?.() || 'scheduled') as typeof status);
 
         // Cargar procedimientos del caso
@@ -181,7 +153,7 @@ const EditCase = () => {
     };
 
     loadInitialData();
-  }, [id, isKeyReady]); // re-run when key becomes ready to decrypt form fields
+  }, [id]);
 
   // Filtrado de procedimientos basado en búsqueda
   const filteredProcedures = useMemo(() => {
@@ -494,11 +466,6 @@ const EditCase = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isKeyReady) {
-      toast.error('Cifrado no configurado', 'Configura tu clave de cifrado antes de guardar datos del paciente.');
-      return;
-    }
-
     if (!patientName.trim()) {
       toast.error('Error de validación', 'El nombre del paciente es requerido');
       return;
@@ -525,24 +492,23 @@ const EditCase = () => {
       const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
       const hospitalFactor = hospital?.rate_multiplier || 1;
 
-      const [encPatientName, encPatientId, encDiagnosis, encNotes] = await Promise.all([
-        encrypt(patientName),
-        encrypt(patientId),
-        encrypt(diagnosis),
-        encrypt(notes),
-      ]);
+      // If doctor entered a new name, hash it; otherwise keep existing hash
+      const nameToStore = newPatientName.trim()
+        ? await hashPatientField(newPatientName.trim())
+        : isPatientHash(patientName) ? patientName : await hashPatientField(patientName);
+      const idToStore = isPatientHash(patientId) ? patientId : await hashPatientField(patientId);
 
       const caseData: any = {
-        patient_name: encPatientName,
-        patient_id: encPatientId || undefined,
+        patient_name: nameToStore,
+        patient_id: idToStore || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
         patient_gender: (patientGender || undefined) as PatientGender | undefined,
         hospital: parseInt(hospitalId),
         surgery_date: surgeryDate,
         surgery_time: surgeryTime || undefined,
         surgery_end_time: surgeryEndTime || undefined,
-        diagnosis: encDiagnosis || undefined,
-        notes: encNotes || undefined,
+        diagnosis: diagnosis || undefined,
+        notes: notes || undefined,
         status: status,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
@@ -624,42 +590,6 @@ const EditCase = () => {
           </div>
         </div>
 
-        {!isKeyReady && (
-          <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                🔐 Configura tu clave de cifrado
-              </CardTitle>
-              <CardDescription>
-                Los datos del paciente están cifrados. Ingresa tu frase de seguridad para descifrarlos y poder editar.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
-                <Input
-                  type="password"
-                  placeholder="Frase de seguridad..."
-                  value={encPassphrase}
-                  onChange={(e) => setEncPassphrase(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSetPassphrase()}
-                  className="h-10"
-                />
-                <Button
-                  type="button"
-                  onClick={handleSetPassphrase}
-                  disabled={settingKey || !encPassphrase.trim()}
-                  className="whitespace-nowrap"
-                >
-                  {settingKey ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Descifrar'}
-                </Button>
-              </div>
-              <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
-                Usa la misma frase que configuraste al crear el caso.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* Patient Information */}
           <Card className="shadow-sm border-slate-200">
@@ -675,28 +605,24 @@ const EditCase = () => {
             <CardContent className="space-y-6 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="patientName" className="text-sm font-semibold">
-                    Nombre Completo <span className="text-destructive">*</span>
-                  </Label>
+                  <Label className="text-sm font-semibold">Paciente</Label>
+                  <div className="flex items-center gap-2 h-11 px-3 border rounded-md bg-muted/50 font-mono text-sm">
+                    {formatPatientHash(patientName)}
+                  </div>
                   <Input
-                    id="patientName"
-                    value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    placeholder="Ej: Juan Pérez"
-                    className="h-11"
-                    required
+                    id="newPatientName"
+                    value={newPatientName}
+                    onChange={(e) => setNewPatientName(e.target.value)}
+                    placeholder="Nuevo nombre (solo si deseas cambiarlo)"
+                    className="h-9 text-sm"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="patientId" className="text-sm font-semibold">ID / No. Expediente</Label>
-                  <Input
-                    id="patientId"
-                    value={patientId}
-                    onChange={(e) => setPatientId(e.target.value)}
-                    placeholder="Ej: 12345-6"
-                    className="h-11"
-                  />
+                  <Label className="text-sm font-semibold">ID / No. Expediente</Label>
+                  <div className="flex items-center h-11 px-3 border rounded-md bg-muted/50 font-mono text-sm">
+                    {patientId ? formatPatientHash(patientId) : <span className="text-muted-foreground">—</span>}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

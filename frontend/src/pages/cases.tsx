@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import React from "react";
-import { useCrypto } from "@/shared/contexts/CryptoContext";
+import { formatPatientHash } from "@/shared/utils/patientHash";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
 import { Button } from "@/shared/components/ui/button";
@@ -213,7 +213,6 @@ const CasesPage = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const adSettings = useAdSystem(isMobile);
-  const { decrypt } = useCrypto();
   const isFreePlan = user?.plan === 'free';
 
   const [cases, setCases] = useState<SurgicalCase[]>([]);
@@ -321,17 +320,11 @@ const CasesPage = () => {
     }
   }, [currentSidebarAdIndex, sidebarAds]);
 
-  const decryptCase = async (c: SurgicalCase): Promise<SurgicalCase> => ({
-    ...c,
-    patient_name: await decrypt(c.patient_name),
-    patient_id: c.patient_id ? await decrypt(c.patient_id) : null,
-  });
-
   const fetchCases = async () => {
     try {
       setLoading(true);
       const data = await surgicalCaseService.getCases();
-      setCases(await Promise.all(data.map(decryptCase)));
+      setCases(data);
     } catch (err: any) {
       setError(err.message || 'Error al cargar casos');
       toast.error('Error', 'No se pudieron cargar los casos');
@@ -344,7 +337,7 @@ const CasesPage = () => {
     try {
       setLoadingArchived(true);
       const data = await surgicalCaseService.getCases({ archived: true });
-      setArchivedCases(await Promise.all(data.map(decryptCase)));
+      setArchivedCases(data);
     } catch (err: any) {
       toast.error('Error', 'No se pudieron cargar los casos facturados');
     } finally {
@@ -385,7 +378,7 @@ const CasesPage = () => {
     }
     
     const confirmed = window.confirm(
-      `¿Estás seguro de eliminar el caso de ${patientName}?\n\nEsta acción no se puede deshacer.`
+      `¿Estás seguro de eliminar el caso ${formatPatientHash(patientName)}?\n\nEsta acción no se puede deshacer.`
     );
     
     if (!confirmed) return;
@@ -395,7 +388,7 @@ const CasesPage = () => {
       await surgicalCaseService.deleteCase(id);
       notificationService.cancelNotification(id);
       setCases(cases.filter(c => c.id !== id));
-      toast.success('Caso eliminado', `El caso de ${patientName} fue eliminado exitosamente`);
+      toast.success('Caso eliminado', `El caso ${formatPatientHash(patientName)} fue eliminado exitosamente`);
     } catch (err: any) {
       toast.error('Error', 'No se pudo eliminar el caso');
     } finally {
@@ -406,7 +399,7 @@ const CasesPage = () => {
   const handleCaseUpdate = (updatedCase: SurgicalCase) => {
     const existingCase = cases.find(c => c.id === updatedCase.id);
     const justBecamePaid = updatedCase.is_paid && !existingCase?.is_paid;
-    // Preserve already-decrypted sensitive fields — toggle operations don't change them
+    // Preserve patient fields from the already-loaded case — toggle operations don't change them
     const merged: SurgicalCase = existingCase
       ? { ...updatedCase, patient_name: existingCase.patient_name, patient_id: existingCase.patient_id }
       : updatedCase;
@@ -744,7 +737,7 @@ const CasesPage = () => {
                     <Card className="hover:border-primary transition-colors">
                       <CardHeader>
                         <div className="flex items-center justify-between mb-2">
-                          <CardTitle className="text-lg font-semibold">{surgicalCase.patient_name}</CardTitle>
+                          <CardTitle className="text-lg font-semibold font-mono">{formatPatientHash(surgicalCase.patient_name)}</CardTitle>
                           <div className="flex items-center gap-2">
                             {getStatusBadge(surgicalCase.status)}
                           </div>
@@ -911,7 +904,7 @@ const CasesPage = () => {
                       <Card key={surgicalCase.id} className="opacity-80 hover:opacity-100 transition-opacity">
                         <CardHeader>
                           <div className="flex items-center justify-between mb-1">
-                            <CardTitle className="text-lg font-semibold">{surgicalCase.patient_name}</CardTitle>
+                            <CardTitle className="text-lg font-semibold font-mono">{formatPatientHash(surgicalCase.patient_name)}</CardTitle>
                             <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                               Cobrado
                             </span>

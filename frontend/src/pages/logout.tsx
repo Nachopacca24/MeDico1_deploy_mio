@@ -1,19 +1,16 @@
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
-import { useCrypto } from "@/shared/contexts/CryptoContext";
 import { Loader2 } from "lucide-react";
 
 export default function Logout() {
   const { logout, isAuthenticated, loading } = useAuth();
-  const { clearKey } = useCrypto();
 
   useEffect(() => {
     if (isAuthenticated && !loading) {
-      clearKey();
       logout();
     }
-  }, [isAuthenticated, loading, logout, clearKey]);
+  }, [isAuthenticated, loading, logout]);
 
   if (loading || isAuthenticated) {
     return (

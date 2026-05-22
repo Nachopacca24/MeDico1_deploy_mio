@@ -1,6 +1,6 @@
 //src/pages/cases/detail.tsx
 import { useEffect, useState } from "react";
-import { useCrypto } from "@/shared/contexts/CryptoContext";
+import { formatPatientHash } from "@/shared/utils/patientHash";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -31,25 +31,14 @@ const CaseDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const { decrypt } = useCrypto();
-
   useEffect(() => {
-    if (id) {
-      fetchCase();
-    }
+    if (id) fetchCase();
   }, [id]);
 
   const fetchCase = async () => {
     try {
       setLoading(true);
-      const data = await surgicalCaseService.getCase(parseInt(id!));
-      setSurgicalCase({
-        ...data,
-        patient_name: await decrypt(data.patient_name),
-        patient_id: data.patient_id ? await decrypt(data.patient_id) : null,
-        diagnosis: data.diagnosis ? await decrypt(data.diagnosis) : null,
-        notes: data.notes ? await decrypt(data.notes) : null,
-      });
+      setSurgicalCase(await surgicalCaseService.getCase(parseInt(id!)));
     } catch (err: any) {
       setError(err.message || 'Error loading case');
     } finally {
@@ -61,7 +50,7 @@ const CaseDetailPage = () => {
     if (!surgicalCase) return;
     
     const confirmed = window.confirm(
-      `¿Estás seguro de eliminar el caso de ${surgicalCase.patient_name}?\n\nEsta acción no se puede deshacer.`
+      `¿Estás seguro de eliminar el caso ${formatPatientHash(surgicalCase.patient_name)}?\n\nEsta acción no se puede deshacer.`
     );
     
     if (!confirmed) return;
@@ -144,8 +133,8 @@ const CaseDetailPage = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-semibold mb-1 tracking-tight">
-                {surgicalCase.patient_name}
+              <h1 className="text-3xl font-semibold mb-1 tracking-tight font-mono">
+                {formatPatientHash(surgicalCase.patient_name)}
               </h1>
               <p className="text-muted-foreground">
                 Caso #{surgicalCase.id}
@@ -201,8 +190,8 @@ const CaseDetailPage = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-sm text-muted-foreground mb-1">Nombre Completo</div>
-                    <div className="font-medium">{surgicalCase.patient_name}</div>
+                    <div className="text-sm text-muted-foreground mb-1">Código del Paciente</div>
+                    <div className="font-medium font-mono">{formatPatientHash(surgicalCase.patient_name)}</div>
                   </div>
                   {surgicalCase.patient_id && (
                     <div>
@@ -210,7 +199,7 @@ const CaseDetailPage = () => {
                         <CreditCard className="w-4 h-4" />
                         ID del Paciente
                       </div>
-                      <div className="font-medium">{surgicalCase.patient_id}</div>
+                      <div className="font-medium font-mono">{formatPatientHash(surgicalCase.patient_id)}</div>
                     </div>
                   )}
                   {surgicalCase.patient_age && (
