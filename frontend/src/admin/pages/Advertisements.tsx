@@ -157,8 +157,10 @@ const Advertisements = () => {
     }
   };
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('es-GT', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formatDate = (d: string) => {
+    const [y, m, day] = d.split('T')[0].split('-').map(Number);
+    return new Date(y, m - 1, day).toLocaleDateString('es-GT', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
 
   const tabs: { id: Tab; label: string; count: number; urgent?: boolean }[] = [
     { id: 'active',   label: 'Activos',     count: activeList.length },
@@ -397,8 +399,8 @@ const Advertisements = () => {
                         </span>
                       </div>
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs font-medium shrink-0 ${getStatusColor(ad.status)}`}>
-                      {ad.status_display}
+                    <span className={`px-2 py-1 rounded text-xs font-medium shrink-0 ${days < 0 ? 'bg-red-100 text-red-800' : getStatusColor(ad.status)}`}>
+                      {days < 0 ? 'Expirado' : ad.status_display}
                     </span>
                   </div>
                 </CardHeader>

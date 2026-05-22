@@ -196,13 +196,10 @@ def admin_activity(request):
         # Obtener el nombre del médico que creó el caso
         doctor_name = case.created_by.get_full_name() or case.created_by.username if case.created_by else 'Sistema'
         
-        # Crear descripción con información del caso
-        description = f'Nuevo caso quirúrgico: {case.patient_name} en {case.hospital.name}'
-        
         activities.append({
             'id': f'case-{case.id}',
             'type': 'case',
-            'description': description,
+            'description': f'Nuevo caso quirúrgico en {case.hospital.name}',
             'timestamp': case.created_at.isoformat(),
             'user_name': doctor_name
         })
