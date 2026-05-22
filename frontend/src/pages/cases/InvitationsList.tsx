@@ -1,6 +1,7 @@
 // src/components/cases/InvitationsList.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useCrypto } from '@/shared/contexts/CryptoContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { InvitationCard } from '@/pages/cases/InvitationCard';
@@ -13,6 +14,7 @@ import { Badge } from '@/shared/components/ui/badge';
 
 
 export function InvitationsList() {
+  const { decrypt } = useCrypto();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AssistedCasesResponse>({
@@ -31,6 +33,10 @@ export function InvitationsList() {
       setLoading(true);
       setError(null);
       const response = await surgicalCaseService.getAssistedCases();
+      const decryptCaseList = (list: SurgicalCase[]) =>
+        Promise.all(list.map(async c => ({ ...c, patient_name: await decrypt(c.patient_name) })));
+      response.pending_invitations = await decryptCaseList(response.pending_invitations);
+      response.accepted_cases = await decryptCaseList(response.accepted_cases);
       setData(response);
     } catch (err: any) {
       setError(err.message || 'Error al cargar invitaciones');

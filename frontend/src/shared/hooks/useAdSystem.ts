@@ -25,13 +25,14 @@ interface AdSystemSettings {
 export function useAdSystem(isMobile: boolean = false): AdSystemSettings {
   const { user } = useAuth();
   const isPremium = user?.plan === 'premium';
+  const isAdmin = user?.is_admin ?? false;
   const userSpecialty = user?.specialty || '';
 
   return {
-    showPopups: !isPremium,
+    showPopups: !isPremium || isAdmin,
     showStickyBanner: true,
-    showSidebarAds: !isPremium && !isMobile,
-    showBetweenContent: !isPremium,
+    showSidebarAds: (!isPremium || isAdmin) && !isMobile,
+    showBetweenContent: !isPremium || isAdmin,
     showForYouSection: true,
     popupStyle: isMobile ? 'bottom-sheet' : 'full',
     popupInitialDelay: isMobile ? 8 : 10,

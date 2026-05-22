@@ -253,7 +253,9 @@ class AdvertisementService {
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
       const data: ActiveAd[] = await response.json();
-      AdvertisementService.adCache.set(cacheKey, { data, fetchedAt: Date.now() });
+      if (data.length > 0) {
+        AdvertisementService.adCache.set(cacheKey, { data, fetchedAt: Date.now() });
+      }
 
       // Preload images so they appear instantly when the ad timer fires
       data.forEach(ad => {

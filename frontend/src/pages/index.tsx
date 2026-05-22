@@ -19,12 +19,14 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useCrypto } from "@/shared/contexts/CryptoContext";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import { advertisementService, type ActiveAd } from "@/admin/services/advertisementService";
 import type { CaseStats } from "@/types/surgical-case";
 
 const Index = () => {
   const { user } = useAuth();
+  const { decrypt } = useCrypto();
   const [stats, setStats] = useState<CaseStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
@@ -38,6 +40,14 @@ const Index = () => {
     const fetchStats = async () => {
       try {
         const data = await surgicalCaseService.getStats();
+        if (data.recent_cases) {
+          data.recent_cases = await Promise.all(
+            data.recent_cases.map(async c => ({
+              ...c,
+              patient_name: await decrypt(c.patient_name),
+            }))
+          );
+        }
         setStats(data);
       } catch (error) {
         console.error('Error fetching stats:', error);

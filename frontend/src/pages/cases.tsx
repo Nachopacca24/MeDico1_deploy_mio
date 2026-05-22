@@ -244,6 +244,7 @@ const CasesPage = () => {
     fetchCases();
     fetchInvitations();
     loadAds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -258,6 +259,10 @@ const CasesPage = () => {
     try {
       setLoadingInvitations(true);
       const data = await surgicalCaseService.getAssistedCases();
+      const decryptList = (list: SurgicalCase[]) =>
+        Promise.all(list.map(async c => ({ ...c, patient_name: await decrypt(c.patient_name) })));
+      data.pending_invitations = await decryptList(data.pending_invitations);
+      data.accepted_cases = await decryptList(data.accepted_cases);
       setInvitations(data);
     } catch (err: any) {
       console.error('Error fetching invitations:', err);
