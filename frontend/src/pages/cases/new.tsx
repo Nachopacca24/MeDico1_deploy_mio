@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCrypto } from '@/shared/contexts/CryptoContext';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -44,7 +45,26 @@ interface Colleague {
 const NewCase = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { encrypt } = useCrypto();
+  const { encrypt, isKeyReady, initKey } = useCrypto();
+  const { user } = useAuth();
+
+  // Encryption passphrase setup (for Google-login users who have no password)
+  const [encPassphrase, setEncPassphrase] = useState('');
+  const [settingKey, setSettingKey] = useState(false);
+
+  const handleSetPassphrase = async () => {
+    if (!encPassphrase.trim() || !user?.id) return;
+    setSettingKey(true);
+    try {
+      await initKey(encPassphrase, user.id);
+      setEncPassphrase('');
+      toast.success('Cifrado activado', 'Tus datos de paciente estarán cifrados');
+    } catch {
+      toast.error('Error', 'No se pudo activar el cifrado');
+    } finally {
+      setSettingKey(false);
+    }
+  };
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -419,6 +439,11 @@ const NewCase = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!isKeyReady) {
+      toast.error('Cifrado no configurado', 'Configura tu clave de cifrado antes de guardar datos del paciente.');
+      return;
+    }
+
     if (!patientName.trim()) {
       toast.error('Error de validación', 'El nombre del paciente es requerido');
       return;
@@ -506,6 +531,42 @@ const NewCase = () => {
           <h1 className="text-3xl font-bold mb-2 tracking-tight">Nuevo Caso Quirúrgico</h1>
           <p className="text-muted-foreground text-lg">Ingresa los detalles del procedimiento quirúrgico</p>
         </div>
+
+        {!isKeyReady && (
+          <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                🔐 Configura tu clave de cifrado
+              </CardTitle>
+              <CardDescription>
+                Los datos del paciente se cifran en tu dispositivo antes de guardarse. Necesitas una frase de seguridad que solo tú conoces — nunca se envía al servidor.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  placeholder="Frase de seguridad..."
+                  value={encPassphrase}
+                  onChange={(e) => setEncPassphrase(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSetPassphrase()}
+                  className="h-10"
+                />
+                <Button
+                  type="button"
+                  onClick={handleSetPassphrase}
+                  disabled={settingKey || !encPassphrase.trim()}
+                  className="whitespace-nowrap"
+                >
+                  {settingKey ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Activar cifrado'}
+                </Button>
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
+                Guarda esta frase — la necesitarás cada vez que inicies sesión para ver tus casos.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* Patient Information */}

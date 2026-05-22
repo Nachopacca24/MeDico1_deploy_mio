@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCrypto } from '@/shared/contexts/CryptoContext';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -46,7 +47,8 @@ const EditCase = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const { decrypt, encrypt } = useCrypto();
+  const { decrypt, encrypt, isKeyReady, initKey } = useCrypto();
+  const { user } = useAuth();
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -84,6 +86,24 @@ const EditCase = () => {
   const [showFavorites, setShowFavorites] = useState(true);
   const [loadingFavoriteRvu, setLoadingFavoriteRvu] = useState<string | null>(null);
   const [loadingAllProcedures, setLoadingAllProcedures] = useState(false);
+
+  // Encryption passphrase setup (for Google-login users who have no password)
+  const [encPassphrase, setEncPassphrase] = useState('');
+  const [settingKey, setSettingKey] = useState(false);
+
+  const handleSetPassphrase = async () => {
+    if (!encPassphrase.trim() || !user?.id) return;
+    setSettingKey(true);
+    try {
+      await initKey(encPassphrase, user.id);
+      setEncPassphrase('');
+      toast.success('Cifrado activado', 'Tus datos de paciente estarán cifrados');
+    } catch {
+      toast.error('Error', 'No se pudo activar el cifrado');
+    } finally {
+      setSettingKey(false);
+    }
+  };
 
   // ✅ CARGA INICIAL: Hospitales, colegas, favoritos Y caso (UNA VEZ)
   useEffect(() => {
@@ -161,7 +181,7 @@ const EditCase = () => {
     };
 
     loadInitialData();
-  }, [id]);
+  }, [id, isKeyReady]); // re-run when key becomes ready to decrypt form fields
 
   // Filtrado de procedimientos basado en búsqueda
   const filteredProcedures = useMemo(() => {
@@ -474,6 +494,11 @@ const EditCase = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!isKeyReady) {
+      toast.error('Cifrado no configurado', 'Configura tu clave de cifrado antes de guardar datos del paciente.');
+      return;
+    }
+
     if (!patientName.trim()) {
       toast.error('Error de validación', 'El nombre del paciente es requerido');
       return;
@@ -598,6 +623,42 @@ const EditCase = () => {
             <p className="text-muted-foreground text-lg">Actualiza los detalles del procedimiento quirúrgico</p>
           </div>
         </div>
+
+        {!isKeyReady && (
+          <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                🔐 Configura tu clave de cifrado
+              </CardTitle>
+              <CardDescription>
+                Los datos del paciente están cifrados. Ingresa tu frase de seguridad para descifrarlos y poder editar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  placeholder="Frase de seguridad..."
+                  value={encPassphrase}
+                  onChange={(e) => setEncPassphrase(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSetPassphrase()}
+                  className="h-10"
+                />
+                <Button
+                  type="button"
+                  onClick={handleSetPassphrase}
+                  disabled={settingKey || !encPassphrase.trim()}
+                  className="whitespace-nowrap"
+                >
+                  {settingKey ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Descifrar'}
+                </Button>
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
+                Usa la misma frase que configuraste al crear el caso.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* Patient Information */}
