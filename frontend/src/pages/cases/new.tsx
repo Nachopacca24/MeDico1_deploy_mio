@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { hashPatientField } from '@/shared/utils/patientHash';
+import { useCrypto } from '@/shared/contexts/CryptoContext';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -44,6 +44,7 @@ interface Colleague {
 const NewCase = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { encrypt } = useCrypto();
   // Form state
   const [patientName, setPatientName] = useState('');
   const [patientId, setPatientId] = useState('');
@@ -53,6 +54,7 @@ const NewCase = () => {
   const [surgeryDate, setSurgeryDate] = useState('');
   const [surgeryTime, setSurgeryTime] = useState('');
   const [surgeryEndTime, setSurgeryEndTime] = useState('');
+  const [rateMultiplier, setRateMultiplier] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -375,14 +377,10 @@ const NewCase = () => {
   };
 
   const { totalRvu, totalValue } = useMemo(() => {
-    const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
-    const factor = hospital?.rate_multiplier || 1;
-
+    const factor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
     const rvu = selectedProcedures.reduce((sum, proc) => sum + proc.rvu, 0);
-    const value = rvu * factor;
-
-    return { totalRvu: rvu, totalValue: value };
-  }, [selectedProcedures, hospitalId, hospitals]);
+    return { totalRvu: rvu, totalValue: rvu * factor };
+  }, [selectedProcedures, rateMultiplier]);
 
   const handleAddProcedure = (proc: ProcedureData) => {
     const newProcedure: SelectedProcedure = {
@@ -440,17 +438,16 @@ const NewCase = () => {
     setSubmitting(true);
 
     try {
-      const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
-      const hospitalFactor = hospital?.rate_multiplier || 1;
+      const hospitalFactor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
 
-      const [hashedPatientName, hashedPatientId] = await Promise.all([
-        hashPatientField(patientName),
-        hashPatientField(patientId),
+      const [encryptedPatientName, encryptedPatientId] = await Promise.all([
+        encrypt(patientName),
+        patientId ? encrypt(patientId) : Promise.resolve(''),
       ]);
 
       const caseData: any = {
-        patient_name: hashedPatientName,
-        patient_id: hashedPatientId || undefined,
+        patient_name: encryptedPatientName,
+        patient_id: encryptedPatientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
         patient_gender: (patientGender || undefined) as PatientGender | undefined,
         hospital: parseInt(hospitalId),
@@ -618,9 +615,6 @@ const NewCase = () => {
                               )}
                               <Building2 className="h-4 w-4" />
                               <span className="font-medium">{hospital.name}</span>
-                              <span className="text-xs text-muted-foreground ml-1">
-                                ({hospital.rate_multiplier}x)
-                              </span>
                             </div>
                           </SelectItem>
                         ))
@@ -667,6 +661,23 @@ const NewCase = () => {
                     onChange={(e) => setSurgeryEndTime(e.target.value)}
                     className="h-11"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="rateMultiplier" className="text-sm font-semibold">Multiplicador (Q/RVU)</Label>
+                  <Input
+                    id="rateMultiplier"
+                    type="number"
+                    value={rateMultiplier}
+                    onChange={(e) => setRateMultiplier(e.target.value)}
+                    placeholder="Por defecto: 1 (total en RVU)"
+                    className="h-11"
+                    min="0"
+                    step="0.01"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Si ingresas un valor, el total se calculará en Quetzales (Q)
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -911,18 +922,20 @@ const NewCase = () => {
                 </div>
               )}
 
-              {selectedProcedures.length > 0 && hospitalId && (
+              {selectedProcedures.length > 0 && (
                 <div className="pt-4 border-t space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">RVU Total:</span>
                     <span className="font-medium">{totalRvu.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Valor Estimado:</span>
-                    <span className="text-lg font-semibold text-primary">
-                      ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
+                  {rateMultiplier && (
+                    <div className="flex justify-between">
+                      <span className="font-medium">Total Quetzales (Q):</span>
+                      <span className="text-lg font-semibold text-primary">
+                        Q {totalValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

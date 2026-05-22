@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import React from "react";
-import { formatPatientHash } from "@/shared/utils/patientHash";
+import { useCrypto } from "@/shared/contexts/CryptoContext";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
 import { Button } from "@/shared/components/ui/button";
@@ -211,6 +211,7 @@ const FREE_CASE_LIMIT = 5;
 const CasesPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { decrypt } = useCrypto();
   const isMobile = useIsMobile();
   const adSettings = useAdSystem(isMobile);
   const isFreePlan = user?.plan === 'free';
@@ -320,11 +321,18 @@ const CasesPage = () => {
     }
   }, [currentSidebarAdIndex, sidebarAds]);
 
+  const decryptCases = async (data: SurgicalCase[]) =>
+    Promise.all(data.map(async c => ({
+      ...c,
+      patient_name: await decrypt(c.patient_name),
+      patient_id: c.patient_id ? await decrypt(c.patient_id) : c.patient_id,
+    })));
+
   const fetchCases = async () => {
     try {
       setLoading(true);
       const data = await surgicalCaseService.getCases();
-      setCases(data);
+      setCases(await decryptCases(data));
     } catch (err: any) {
       setError(err.message || 'Error al cargar casos');
       toast.error('Error', 'No se pudieron cargar los casos');
@@ -337,7 +345,7 @@ const CasesPage = () => {
     try {
       setLoadingArchived(true);
       const data = await surgicalCaseService.getCases({ archived: true });
-      setArchivedCases(data);
+      setArchivedCases(await decryptCases(data));
     } catch (err: any) {
       toast.error('Error', 'No se pudieron cargar los casos facturados');
     } finally {
@@ -378,7 +386,7 @@ const CasesPage = () => {
     }
     
     const confirmed = window.confirm(
-      `¿Estás seguro de eliminar el caso ${formatPatientHash(patientName)}?\n\nEsta acción no se puede deshacer.`
+      `¿Estás seguro de eliminar el caso ${patientName}?\n\nEsta acción no se puede deshacer.`
     );
     
     if (!confirmed) return;
@@ -388,7 +396,7 @@ const CasesPage = () => {
       await surgicalCaseService.deleteCase(id);
       notificationService.cancelNotification(id);
       setCases(cases.filter(c => c.id !== id));
-      toast.success('Caso eliminado', `El caso ${formatPatientHash(patientName)} fue eliminado exitosamente`);
+      toast.success('Caso eliminado', `El caso ${patientName} fue eliminado exitosamente`);
     } catch (err: any) {
       toast.error('Error', 'No se pudo eliminar el caso');
     } finally {
@@ -737,7 +745,7 @@ const CasesPage = () => {
                     <Card className="hover:border-primary transition-colors">
                       <CardHeader>
                         <div className="flex items-center justify-between mb-2">
-                          <CardTitle className="text-lg font-semibold font-mono">{formatPatientHash(surgicalCase.patient_name)}</CardTitle>
+                          <CardTitle className="text-lg font-semibold">{surgicalCase.patient_name}</CardTitle>
                           <div className="flex items-center gap-2">
                             {getStatusBadge(surgicalCase.status)}
                           </div>
@@ -779,18 +787,20 @@ const CasesPage = () => {
                             </div>
                             <div className="flex items-center gap-2 flex-1">
                               <span className="text-xs truncate">Ayudante: {surgicalCase.assistant_display_name}</span>
-                              {surgicalCase.assistant_accepted === true ? (
-                                <Badge variant="default" className="bg-green-600 text-white text-xs">
-                                  ✓ Aceptó
-                                </Badge>
-                              ) : surgicalCase.assistant_accepted === false ? (
-                                <Badge variant="destructive" className="bg-red-600 text-white text-xs">
-                                  ✗ Rechazó
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="bg-yellow-600 text-white text-xs">
-                                  ⏳ Pendiente
-                                </Badge>
+                              {surgicalCase.assistant_doctor && (
+                                surgicalCase.assistant_accepted === true ? (
+                                  <Badge variant="default" className="bg-green-600 text-white text-xs">
+                                    ✓ Aceptó
+                                  </Badge>
+                                ) : surgicalCase.assistant_accepted === false ? (
+                                  <Badge variant="destructive" className="bg-red-600 text-white text-xs">
+                                    ✗ Rechazó
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="bg-yellow-600 text-white text-xs">
+                                    ⏳ Pendiente
+                                  </Badge>
+                                )
                               )}
                             </div>
                           </div>
@@ -822,7 +832,7 @@ const CasesPage = () => {
                             <div>
                               <div className="text-xs text-muted-foreground mb-1">Valor</div>
                               <div className="text-lg font-semibold">
-                                ${(surgicalCase.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </div>
                             </div>
                           </div>
@@ -904,7 +914,7 @@ const CasesPage = () => {
                       <Card key={surgicalCase.id} className="opacity-80 hover:opacity-100 transition-opacity">
                         <CardHeader>
                           <div className="flex items-center justify-between mb-1">
-                            <CardTitle className="text-lg font-semibold font-mono">{formatPatientHash(surgicalCase.patient_name)}</CardTitle>
+                            <CardTitle className="text-lg font-semibold">{surgicalCase.patient_name}</CardTitle>
                             <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                               Cobrado
                             </span>
@@ -943,7 +953,7 @@ const CasesPage = () => {
                             <div>
                               <div className="text-xs text-muted-foreground mb-1">Valor</div>
                               <div className="text-lg font-semibold">
-                                ${(surgicalCase.total_value || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </div>
                             </div>
                           </div>

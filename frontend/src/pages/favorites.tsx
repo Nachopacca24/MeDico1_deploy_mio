@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { loadCSV } from "@/shared/utils/csvLoader";
-import { Star, Trash2, StarOff, AlertCircle, Calculator } from "lucide-react";
+import { Star, Trash2, StarOff, AlertCircle } from "lucide-react";
 import { favoritesService, Favorite } from "@/services/favoritesService";
 import { useFavorites } from "@/core/contexts/FavoritesContext";
 import { useAuth } from "@/shared/contexts/AuthContext";
@@ -136,10 +136,6 @@ function FavoriteOperationCard({
         </div>
       </div>
 
-      <button className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2">
-        <Calculator className="w-4 h-4" />
-        Calculate Value
-      </button>
     </div>
   );
 }

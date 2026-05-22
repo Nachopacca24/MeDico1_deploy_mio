@@ -50,7 +50,6 @@ export interface SurgicalCase {
   patient_gender?: PatientGender;
   hospital: number;
   hospital_name?: string;
-  hospital_rate_multiplier?: number;
   surgery_date: string;
   surgery_time?: string;
   surgery_end_time?: string;       

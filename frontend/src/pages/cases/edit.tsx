@@ -1,7 +1,7 @@
 //src/pages/cases/edit.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { hashPatientField, isPatientHash, formatPatientHash } from '@/shared/utils/patientHash';
+import { useCrypto } from '@/shared/contexts/CryptoContext';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -46,7 +46,7 @@ const EditCase = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const [newPatientName, setNewPatientName] = useState('');
+  const { encrypt, decrypt } = useCrypto();
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -57,6 +57,7 @@ const EditCase = () => {
   const [surgeryDate, setSurgeryDate] = useState('');
   const [surgeryTime, setSurgeryTime] = useState('');
   const [surgeryEndTime, setSurgeryEndTime] = useState('');
+  const [rateMultiplier, setRateMultiplier] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<'scheduled' | 'completed' | 'billed' | 'paid' | 'cancelled'>('scheduled');
@@ -117,8 +118,8 @@ const EditCase = () => {
 
         setFavoriteProcedures(favProcs);
 
-        setPatientName(caseData.patient_name);
-        setPatientId(caseData.patient_id || '');
+        setPatientName(await decrypt(caseData.patient_name));
+        setPatientId(caseData.patient_id ? await decrypt(caseData.patient_id) : '');
         setPatientAge(caseData.patient_age?.toString() || '');
         setPatientGender(caseData.patient_gender || '');
         setHospitalId(caseData.hospital?.toString() || '');
@@ -424,14 +425,10 @@ const EditCase = () => {
   };
 
   const { totalRvu, totalValue } = useMemo(() => {
-    const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
-    const factor = hospital?.rate_multiplier || 1;
-
+    const factor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
     const rvu = selectedProcedures.reduce((sum, proc) => sum + proc.rvu, 0);
-    const value = rvu * factor;
-
-    return { totalRvu: rvu, totalValue: value };
-  }, [selectedProcedures, hospitalId, hospitals]);
+    return { totalRvu: rvu, totalValue: rvu * factor };
+  }, [selectedProcedures, rateMultiplier]);
 
   const handleAddProcedure = (proc: ProcedureData) => {
     const newProcedure: SelectedProcedure = {
@@ -489,18 +486,16 @@ const EditCase = () => {
     setSubmitting(true);
 
     try {
-      const hospital = hospitals.find(h => h.id === parseInt(hospitalId));
-      const hospitalFactor = hospital?.rate_multiplier || 1;
+      const hospitalFactor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
 
-      // If doctor entered a new name, hash it; otherwise keep existing hash
-      const nameToStore = newPatientName.trim()
-        ? await hashPatientField(newPatientName.trim())
-        : isPatientHash(patientName) ? patientName : await hashPatientField(patientName);
-      const idToStore = isPatientHash(patientId) ? patientId : await hashPatientField(patientId);
+      const [encryptedPatientName, encryptedPatientId] = await Promise.all([
+        encrypt(patientName),
+        patientId ? encrypt(patientId) : Promise.resolve(''),
+      ]);
 
       const caseData: any = {
-        patient_name: nameToStore,
-        patient_id: idToStore || undefined,
+        patient_name: encryptedPatientName,
+        patient_id: encryptedPatientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
         patient_gender: (patientGender || undefined) as PatientGender | undefined,
         hospital: parseInt(hospitalId),
@@ -605,24 +600,25 @@ const EditCase = () => {
             <CardContent className="space-y-6 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Paciente</Label>
-                  <div className="flex items-center gap-2 h-11 px-3 border rounded-md bg-muted/50 font-mono text-sm">
-                    {formatPatientHash(patientName)}
-                  </div>
+                  <Label htmlFor="patientName" className="text-sm font-semibold">Paciente</Label>
                   <Input
-                    id="newPatientName"
-                    value={newPatientName}
-                    onChange={(e) => setNewPatientName(e.target.value)}
-                    placeholder="Nuevo nombre (solo si deseas cambiarlo)"
-                    className="h-9 text-sm"
+                    id="patientName"
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                    placeholder="Nombre del paciente"
+                    className="h-11"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold">ID / No. Expediente</Label>
-                  <div className="flex items-center h-11 px-3 border rounded-md bg-muted/50 font-mono text-sm">
-                    {patientId ? formatPatientHash(patientId) : <span className="text-muted-foreground">—</span>}
-                  </div>
+                  <Label htmlFor="patientId" className="text-sm font-semibold">ID / No. Expediente</Label>
+                  <Input
+                    id="patientId"
+                    value={patientId}
+                    onChange={(e) => setPatientId(e.target.value)}
+                    placeholder="Número de expediente (opcional)"
+                    className="h-11"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -698,9 +694,6 @@ const EditCase = () => {
                               )}
                               <Building2 className="h-4 w-4" />
                               <span className="font-medium">{hospital.name}</span>
-                              <span className="text-xs text-muted-foreground ml-1">
-                                ({hospital.rate_multiplier}x)
-                              </span>
                             </div>
                           </SelectItem>
                         ))
@@ -747,6 +740,23 @@ const EditCase = () => {
                     onChange={(e) => setSurgeryEndTime(e.target.value)}
                     className="h-11"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="rateMultiplier" className="text-sm font-semibold">Multiplicador (Q/RVU)</Label>
+                  <Input
+                    id="rateMultiplier"
+                    type="number"
+                    value={rateMultiplier}
+                    onChange={(e) => setRateMultiplier(e.target.value)}
+                    placeholder="Por defecto: 1 (total en RVU)"
+                    className="h-11"
+                    min="0"
+                    step="0.01"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Si ingresas un valor, el total se calculará en Quetzales (Q)
+                  </p>
                 </div>
               </div>
               </CardContent>
@@ -987,18 +997,20 @@ const EditCase = () => {
                 </div>
               )}
 
-              {selectedProcedures.length > 0 && hospitalId && (
+              {selectedProcedures.length > 0 && (
                 <div className="pt-4 border-t space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">RVU Total:</span>
                     <span className="font-medium">{totalRvu.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Valor Estimado:</span>
-                    <span className="text-lg font-semibold text-primary">
-                      ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
+                  {rateMultiplier && (
+                    <div className="flex justify-between">
+                      <span className="font-medium">Total Quetzales (Q):</span>
+                      <span className="text-lg font-semibold text-primary">
+                        Q {totalValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
               </CardContent>

@@ -21,6 +21,7 @@ const CATEGORY_BADGE: Record<string, { label: string; emoji: string; cls: string
   tecnologia:   { label: 'Tecnología',     emoji: '💡', cls: 'bg-yellow-100 text-yellow-700' },
   farmaceutica: { label: 'Farmacéutica',   emoji: '💊', cls: 'bg-green-100 text-green-700' },
   educacion:    { label: 'Educación',      emoji: '📚', cls: 'bg-orange-100 text-orange-700' },
+  clinica:      { label: 'Clínica',        emoji: '🩺', cls: 'bg-pink-100 text-pink-700' },
   general:      { label: 'General',        emoji: '📋', cls: 'bg-slate-100 text-slate-600' },
 };
 
@@ -327,6 +328,7 @@ const Advertisements = () => {
               <option value="tecnologia">💡 Tecnología</option>
               <option value="farmaceutica">💊 Farmacéutica</option>
               <option value="educacion">📚 Educación</option>
+              <option value="clinica">🩺 Clínica</option>
               <option value="general">📋 General</option>
             </select>
           </div>

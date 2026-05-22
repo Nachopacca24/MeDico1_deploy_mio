@@ -286,21 +286,16 @@ def admin_hospitals(request):
         'id',
         'name',
         'location',
-        'rate_multiplier',
         'cases_count',
         'created_at'
     )
-    
+
     hospitals_list = list(hospitals)
-    
-    # Formatear fechas
+
     for hospital in hospitals_list:
         if hospital['created_at']:
             hospital['created_at'] = hospital['created_at'].isoformat()
-        # Convertir Decimal a float para JSON
-        if hospital['rate_multiplier']:
-            hospital['rate_multiplier'] = float(hospital['rate_multiplier'])
-    
+
     return Response(hospitals_list)
 
 

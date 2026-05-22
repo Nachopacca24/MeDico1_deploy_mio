@@ -145,7 +145,6 @@ class Command(BaseCommand):
                 name=hospital_name,
                 defaults={
                     'location': 'Guatemala',
-                    'rate_multiplier': 1.0
                 }
             )
             if created:
@@ -154,14 +153,13 @@ class Command(BaseCommand):
             else:
                 updated_count += 1
                 self.stdout.write(self.style.WARNING(f'→ Ya existe: {hospital_name}'))
-        
+
         # Crear hospitales IGSS
         for hospital_name in igss_hospitals:
             hospital, created = Hospital.objects.get_or_create(
                 name=hospital_name,
                 defaults={
                     'location': 'Guatemala',
-                    'rate_multiplier': 1.2
                 }
             )
             if created:
@@ -170,33 +168,17 @@ class Command(BaseCommand):
             else:
                 updated_count += 1
                 self.stdout.write(self.style.WARNING(f'→ Ya existe: {hospital_name}'))
-        
-        # Crear hospitales privados con diferentes multiplicadores
-        # Los más prestigiosos tienen multiplicadores más altos
-        premium_hospitals = [
-            "Hospital Herrera Llerandi",
-            "Hospital Centro Médico",
-            "Hospital Universitario Esperanza",
-            "Hospital El Pilar",
-            "Hospital Ángeles",
-        ]
-        
+
         for hospital_name in private_hospitals:
-            if hospital_name in premium_hospitals:
-                multiplier = 2.5  # Hospitales premium
-            else:
-                multiplier = 1.8  # Hospitales privados estándar
-                
             hospital, created = Hospital.objects.get_or_create(
                 name=hospital_name,
                 defaults={
                     'location': 'Guatemala',
-                    'rate_multiplier': multiplier
                 }
             )
             if created:
                 created_count += 1
-                self.stdout.write(self.style.SUCCESS(f'✓ Creado: {hospital_name} (x{multiplier})'))
+                self.stdout.write(self.style.SUCCESS(f'✓ Creado: {hospital_name}'))
             else:
                 updated_count += 1
                 self.stdout.write(self.style.WARNING(f'→ Ya existe: {hospital_name}'))

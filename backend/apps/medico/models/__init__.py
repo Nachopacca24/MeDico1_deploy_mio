@@ -43,13 +43,6 @@ class Hospital(models.Model):
         null=True,
         verbose_name="Ubicación"
     )
-    rate_multiplier = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=1.00,
-        verbose_name="Multiplicador de Tarifa",
-        help_text="Factor de multiplicación para cálculo de costos"
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

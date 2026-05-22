@@ -36,6 +36,7 @@ const CATEGORIES = [
   { value: 'tecnologia', label: 'Tecnología Médica' },
   { value: 'farmaceutica', label: 'Farmacéutica' },
   { value: 'educacion', label: 'Educación Médica' },
+  { value: 'clinica', label: 'Clínica' },
 ];
 
 // Must match the SPECIALTIES list in signup.tsx exactly — these are the values stored in user.specialty

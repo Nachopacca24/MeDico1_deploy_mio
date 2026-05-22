@@ -4,7 +4,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { SearchBar } from "@/shared/components/ui/SearchBar";
-import { Loader2, Calculator, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import {
@@ -93,10 +93,6 @@ const History = () => {
     }
   };
 
-  const handleRecalculate = (operationId: number) => {
-    navigate(`/calculator?operationId=${operationId}`);
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('es-GT', {
@@ -140,11 +136,11 @@ const History = () => {
                     : "No results match your search criteria."}
                 </p>
                 {calculations.length === 0 && (
-                  <Button 
+                  <Button
                     className="mt-4"
-                    onClick={() => navigate("/calculator")}
+                    onClick={() => navigate("/operations")}
                   >
-                    Start Calculating
+                    Ver Procedimientos
                   </Button>
                 )}
               </div>
@@ -184,15 +180,6 @@ const History = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRecalculate(calc.operationId)}
-                              title="Recalculate"
-                            >
-                              <Calculator className="h-4 w-4" />
-                            </Button>
-                            
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button

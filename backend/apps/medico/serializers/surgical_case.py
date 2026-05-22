@@ -126,12 +126,6 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
 
     procedures = CaseProcedureSerializer(many=True, read_only=True)
     hospital_name = serializers.CharField(source='hospital.name', read_only=True)
-    hospital_rate_multiplier = serializers.DecimalField(
-        source='hospital.rate_multiplier',
-        max_digits=5,
-        decimal_places=2,
-        read_only=True
-    )
     total_rvu = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     total_value = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     procedure_count = serializers.IntegerField(read_only=True)
@@ -159,7 +153,6 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
             'patient_gender',
             'hospital',
             'hospital_name',
-            'hospital_rate_multiplier',
             'surgery_date',
             'surgery_time',
             'surgery_end_time',
@@ -358,9 +351,8 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         if 'assistant_accepted' not in validated_data or validated_data['assistant_accepted'] is None:
             validated_data['assistant_accepted'] = None
 
-        hospital = validated_data.get('hospital')
         from decimal import Decimal
-        hospital_factor = hospital.rate_multiplier if hospital else Decimal('1.00')
+        hospital_factor = Decimal('1.00')
 
         print(f"🏥 Hospital factor: {hospital_factor}")
 

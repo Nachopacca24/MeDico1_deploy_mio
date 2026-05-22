@@ -14,7 +14,7 @@ class HospitalSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Hospital
-        fields = ['id', 'name', 'location', 'rate_multiplier', 'created_at', 'updated_at', 'is_favorite']
+        fields = ['id', 'name', 'location', 'created_at', 'updated_at', 'is_favorite']
         read_only_fields = ['id', 'created_at', 'updated_at', 'is_favorite']
     
     def get_is_favorite(self, obj):

@@ -1,5 +1,4 @@
 import {
-  Calculator,
   Newspaper,
   Home,
   Settings,
@@ -78,11 +77,6 @@ const toolsItems = [
     title: "Calendar",
     url: "/calendar",
     icon: CalendarIcon,
-  },
-  {
-    title: "Calculator",
-    url: "/calculator",
-    icon: Calculator,
   },
   {
     title: "Favorites",

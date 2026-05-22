@@ -25,7 +25,6 @@ import CasesPage from "@/pages/cases";
 import NewCase from "@/pages/cases/new";
 import CaseDetail from "@/pages/cases/detail";
 import EditCase from "@/pages/cases/edit";
-import Calculator from "@/pages/calculator";
 import Operations from "@/pages/operations";
 import HospitalsPage from "@/pages/hospitals";
 import Favorites from "@/pages/favorites";
@@ -68,7 +67,6 @@ export const AppRouter = () => {
         <Route path='/cases/new' element={<NewCase />} />
         <Route path='/cases/:id' element={<CaseDetail />} />
         <Route path='/cases/:id/edit' element={<EditCase />} />
-        <Route path='/calculator' element={<Calculator />} />
         <Route path='/operations' element={<Operations />} />
         <Route path='/hospitals' element={<HospitalsPage />} />
         <Route path='/favorites' element={<Favorites />} />

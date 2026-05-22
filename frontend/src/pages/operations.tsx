@@ -2,10 +2,9 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { loadCSV } from "@/shared/utils/csvLoader";
-import { ChevronDown, ChevronRight, Folder, FolderOpen, Calculator, Star, Stethoscope, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Folder, FolderOpen, Search, Star, Stethoscope } from "lucide-react";
 import { useFavorites } from "@/core/contexts/FavoritesContext";
 import { ScrollToTop } from "@/shared/components/ui/scroll-to-top";
-import { hospitalService, type Hospital } from "@/services/hospitalService";
 
 // Tipo para las operaciones del CSV
 interface CSVOperation {
@@ -84,20 +83,18 @@ const folderStructure = {
 };
 
 // Tarjeta de operación
-export function SimpleOperationCard({ 
-  operation, 
-  index, 
-  isFavorite, 
+export function SimpleOperationCard({
+  operation,
+  index,
+  isFavorite,
   isLoading,
   onToggleFavorite,
-  onCalculate
-}: { 
-  operation: any; 
+}: {
+  operation: any;
   index: number;
   isFavorite: boolean;
   isLoading: boolean;
   onToggleFavorite: () => void;
-  onCalculate: () => void;
 }) {
   const codigo = String(operation?.codigo || 'N/A').trim();
   const cirugia = operation?.cirugia || 'Sin nombre';
@@ -150,13 +147,6 @@ export function SimpleOperationCard({
         </div>
       </div>
 
-      <button 
-        onClick={onCalculate}
-        className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2"
-      >
-        <Calculator className="w-4 h-4" />
-        Calculate Value
-      </button>
     </div>
   );
 }
@@ -172,15 +162,7 @@ const Operations = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
   const itemsPerPage = 24;
-  
-  // Estados para el modal de cálculo
-  const [showCalculateModal, setShowCalculateModal] = useState(false);
-  const [selectedOperation, setSelectedOperation] = useState<any>(null);
-  const [hospitals, setHospitals] = useState<Hospital[]>([]);
-  const [selectedHospitalId, setSelectedHospitalId] = useState<string>("");
-  const [loadingHospitals, setLoadingHospitals] = useState(false);
-  const [calculatedValue, setCalculatedValue] = useState<number | null>(null);
-  
+
   // Usar el contexto de favoritos
   const { favorites, toggleFavorite: toggleFavoriteContext } = useFavorites();
 
@@ -201,49 +183,6 @@ const Operations = () => {
       setLoadingFavorite(null);
     }
   };
-
-  // Abrir modal de cálculo
-  const handleCalculateValue = async (operation: any) => {
-    setSelectedOperation(operation);
-    setShowCalculateModal(true);
-    setCalculatedValue(null);
-    setSelectedHospitalId("");
-    
-    // Cargar hospitales si aún no están cargados
-    if (hospitals.length === 0) {
-      setLoadingHospitals(true);
-      try {
-        const data = await hospitalService.getHospitals();
-        setHospitals(data);
-      } catch (error) {
-        console.error('Error loading hospitals:', error);
-        alert('Error loading hospitals');
-      } finally {
-        setLoadingHospitals(false);
-      }
-    }
-  };
-
-  // Calcular valor
-  const calculateValue = () => {
-    if (!selectedHospitalId || !selectedOperation) return;
-    
-    const hospital = hospitals.find(h => h.id === parseInt(selectedHospitalId));
-    if (!hospital) return;
-    
-    const rvu = parseFloat(selectedOperation.rvu || 0);
-    const multiplier = parseFloat(hospital.rate_multiplier?.toString() || "1");
-    const value = rvu * multiplier;
-    
-    setCalculatedValue(value);
-  };
-
-  // Efecto para calcular automáticamente cuando se selecciona un hospital
-  useEffect(() => {
-    if (selectedHospitalId && selectedOperation) {
-      calculateValue();
-    }
-  }, [selectedHospitalId, selectedOperation]);
 
   useEffect(() => {
     async function fetchAllCSV() {
@@ -371,7 +310,7 @@ const Operations = () => {
           {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Calculator className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search all procedures..."
@@ -575,7 +514,6 @@ const Operations = () => {
                                     isFavorite={isFav}
                                     isLoading={loadingFavorite === codigo}
                                     onToggleFavorite={() => handleToggleFavorite(codigo, op)}
-                                    onCalculate={() => handleCalculateValue(op)}
                                   />
                                 );
                               })}
@@ -591,89 +529,6 @@ const Operations = () => {
           </div>
         </div>
       </div>
-
-      {/* Calculate Value Modal */}
-      {showCalculateModal && selectedOperation && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg shadow-xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Calculate Value</h2>
-              <button
-                onClick={() => setShowCalculateModal(false)}
-                className="p-1 hover:bg-accent rounded transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-medium mb-1">{selectedOperation.cirugia}</h3>
-                <p className="text-sm text-muted-foreground">Code: {selectedOperation.codigo}</p>
-              </div>
-
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Base RVU</span>
-                  <span className="text-lg font-semibold">{selectedOperation.rvu}</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Select Hospital
-                </label>
-                {loadingHospitals ? (
-                  <div className="flex items-center justify-center py-4">
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : (
-                  <select
-                    value={selectedHospitalId}
-                    onChange={(e) => setSelectedHospitalId(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                  >
-                    <option value="">Choose a hospital...</option>
-                    {hospitals.map(hospital => (
-                      <option key={hospital.id} value={hospital.id}>
-                        {hospital.name} ({hospital.rate_multiplier}x)
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              {calculatedValue !== null && (
-                <div className="p-6 bg-primary/10 rounded-lg border-2 border-primary">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-1">Calculated Value</p>
-                    <p className="text-3xl font-bold text-primary">
-                      ${calculatedValue.toLocaleString('en-US', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
-                    </p>
-                    {selectedHospitalId && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {selectedOperation.rvu} RVU × {hospitals.find(h => h.id === parseInt(selectedHospitalId))?.rate_multiplier}x
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowCalculateModal(false)}
-                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-accent transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <ScrollToTop />
     </AppLayout>

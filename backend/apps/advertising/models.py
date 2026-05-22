@@ -207,6 +207,7 @@ class Advertisement(models.Model):
         ('tecnologia', 'Tecnología Médica'),
         ('farmaceutica', 'Farmacéutica'),
         ('educacion', 'Educación Médica'),
+        ('clinica', 'Clínica'),
     ]
     
     # Relación con cliente

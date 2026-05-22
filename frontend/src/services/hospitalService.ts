@@ -9,7 +9,6 @@ export interface Hospital {
   id: number;
   name: string;
   location?: string;
-  rate_multiplier: number;
   is_favorite?: boolean;
   created_at: string;
   updated_at: string;

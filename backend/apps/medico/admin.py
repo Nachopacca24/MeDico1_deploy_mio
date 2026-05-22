@@ -20,9 +20,8 @@ class SpecialtyAdmin(admin.ModelAdmin):
 
 @admin.register(Hospital)
 class HospitalAdmin(admin.ModelAdmin):
-    list_display = ['name', 'location', 'rate_multiplier', 'created_at']
+    list_display = ['name', 'location', 'created_at']
     search_fields = ['name', 'location']
-    list_filter = ['rate_multiplier']
     ordering = ['name']
 
 

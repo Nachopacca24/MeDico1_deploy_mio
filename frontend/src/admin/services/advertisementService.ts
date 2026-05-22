@@ -54,7 +54,7 @@ export interface AdvertisementCreate {
   target_specialties?: string[];
 }
 
-export type AdCategory = 'general' | 'congreso' | 'casa_medica' | 'hospital' | 'tecnologia' | 'farmaceutica' | 'educacion';
+export type AdCategory = 'general' | 'congreso' | 'casa_medica' | 'hospital' | 'tecnologia' | 'farmaceutica' | 'educacion' | 'clinica';
 
 export interface ActiveAd {
   id: number;

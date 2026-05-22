@@ -247,7 +247,7 @@ def get_feed(request):
     """
     Feed público de Novedades: todos los anuncios activos para explorar.
     Parámetros:
-      category  — filtrar por categoría (general, congreso, casa_medica, hospital, tecnologia, farmaceutica, educacion)
+      category  — filtrar por categoría (general, congreso, casa_medica, hospital, tecnologia, farmaceutica, educacion, clinica)
       specialty — filtrar por especialidad del médico
       search    — búsqueda por título, descripción o empresa
     """

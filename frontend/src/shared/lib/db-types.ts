@@ -15,7 +15,6 @@ export type Schema = {
     id?: number;
     name: string;
     location?: string | null;
-    rate_multiplier?: number;  // Django usa snake_case
     created_at?: string;
     updated_at?: string;
   };

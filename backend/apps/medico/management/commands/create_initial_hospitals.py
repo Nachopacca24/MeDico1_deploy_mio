@@ -13,27 +13,22 @@ class Command(BaseCommand):
             {
                 'name': 'Clínica Santa María',
                 'location': 'Bogotá',
-                'rate_multiplier': 1.00,
             },
             {
                 'name': 'Hospital San José',
                 'location': 'Medellín',
-                'rate_multiplier': 1.20,
             },
             {
                 'name': 'Clínica Los Andes',
                 'location': 'Cali',
-                'rate_multiplier': 1.15,
             },
             {
                 'name': 'Hospital Universitario',
                 'location': 'Barranquilla',
-                'rate_multiplier': 0.95,
             },
             {
                 'name': 'Centro Médico Del Norte',
                 'location': 'Cartagena',
-                'rate_multiplier': 1.10,
             },
         ]
 

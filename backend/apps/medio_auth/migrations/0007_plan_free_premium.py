@@ -8,16 +8,22 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Drop old check constraint first so we can insert 'free'/'premium' values
+        migrations.RunSQL(
+            sql="ALTER TABLE medio_auth_customuser DROP CONSTRAINT IF EXISTS check_plan_choices;",
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         # Migrate existing data: bronze/silver → free, gold → premium
         migrations.RunSQL(
             sql="""
-                UPDATE medio_auth_customuser SET plan = 'free' WHERE plan IN ('bronze', 'silver');
+                UPDATE medio_auth_customuser SET plan = 'free' WHERE plan IN ('bronze', 'silver', 'free');
                 UPDATE medio_auth_customuser SET plan = 'premium' WHERE plan = 'gold';
             """,
             reverse_sql="""
                 UPDATE medio_auth_customuser SET plan = 'bronze' WHERE plan = 'free';
             """,
         ),
+        # Now add the new constraint with only the new choices
         migrations.AlterField(
             model_name='customuser',
             name='plan',

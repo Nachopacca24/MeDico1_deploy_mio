@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Star, Calculator, StarOff } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Star, StarOff } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/shared/lib/utils";
 import type { Schema } from "@/shared/lib/db-types";
 
@@ -22,7 +21,6 @@ export function OperationCard({
 }: OperationCardProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const handleFavoriteToggle = async () => {
@@ -49,10 +47,6 @@ export function OperationCard({
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCalculate = () => {
-    navigate(`/calculator?operationId=${operation.id}`);
   };
 
   return (
@@ -115,16 +109,6 @@ export function OperationCard({
           )}
         </div>
       </CardContent>
-      <CardFooter>
-        <Button 
-          className="w-full" 
-          onClick={handleCalculate}
-          variant="default"
-        >
-          <Calculator className="mr-2 h-4 w-4" />
-          Calculate Value
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

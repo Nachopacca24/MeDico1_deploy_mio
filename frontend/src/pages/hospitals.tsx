@@ -104,13 +104,6 @@ const HospitalsPage = () => {
     return { favorites, publicHospitals, igssHospitals, privateHospitals };
   }, [filteredHospitals]);
 
-  const getMultiplierColor = (multiplier: number) => {
-    if (multiplier >= 2.5) return 'text-purple-600 dark:text-purple-400';
-    if (multiplier >= 1.8) return 'text-blue-600 dark:text-blue-400';
-    if (multiplier >= 1.2) return 'text-green-600 dark:text-green-400';
-    return 'text-gray-600 dark:text-gray-400';
-  };
-
   if (loading) {
     return (
       <AppLayout>
@@ -186,14 +179,7 @@ const HospitalsPage = () => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Rate Multiplier:</span>
-          <span className={`font-semibold ${getMultiplierColor(hospital.rate_multiplier)}`}>
-            {hospital.rate_multiplier}x
-          </span>
-        </div>
-      </CardContent>
+      <CardContent className="pt-0" />
     </Card>
   );
 
