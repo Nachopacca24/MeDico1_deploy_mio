@@ -41,10 +41,8 @@ export function useGoogleCalendar() {
     if (connected) {
       const email = googleCalendarService.getUserEmail();
       setUserEmail(email);
-      console.log(`✅ Google Calendar conectado para usuario: ${user.email}`);
     } else {
       setUserEmail(null);
-      console.log(`⚠️ Google Calendar NO conectado para usuario: ${user.email}`);
     }
   }, [getCurrentUser]);
 
@@ -62,8 +60,7 @@ export function useGoogleCalendar() {
 
       // Si se desconectó, notificar al usuario
       if (wasConnected && !nowConnected) {
-        console.warn('⚠️ Google Calendar se desconectó');
-        toast({
+          toast({
           variant: "destructive",
           title: "Google Calendar desconectado",
           description: "Tu sesión de Google Calendar expiró. Por favor, reconéctate.",
@@ -92,7 +89,6 @@ export function useGoogleCalendar() {
 
     setIsLoading(true);
     try {
-      console.log(`🔗 Iniciando conexión a Google Calendar para: ${user.email}`);
       await googleCalendarService.connect();
 
       // Verificar conexión exitosa
@@ -106,7 +102,6 @@ export function useGoogleCalendar() {
           title: "¡Conectado!",
           description: `Google Calendar conectado exitosamente`,
         });
-        console.log(`✅ Conectado exitosamente a Google Calendar`);
       }
     } catch (error) {
       console.error('❌ Error al conectar:', error);
@@ -125,8 +120,6 @@ export function useGoogleCalendar() {
    */
   const disconnect = useCallback(async () => {
     const user = getCurrentUser();
-    console.log(`🔌 Desconectando Google Calendar para: ${user?.email || 'unknown'}`);
-
     try {
       await googleCalendarService.disconnect();
       setIsConnected(false);
@@ -135,7 +128,6 @@ export function useGoogleCalendar() {
         title: "Desconectado",
         description: "Tu cuenta de Google Calendar ha sido desconectada",
       });
-      console.log('✅ Desconectado exitosamente');
     } catch (error) {
       console.error('❌ Error al desconectar:', error);
       toast({
@@ -177,7 +169,6 @@ export function useGoogleCalendar() {
         title: "Evento creado",
         description: "El evento ha sido agregado a tu Google Calendar",
       });
-      console.log(`✅ Evento creado: ${eventId}`);
       return eventId;
     } catch (error: any) {
       console.error('❌ Error al crear evento:', error);
@@ -236,7 +227,6 @@ export function useGoogleCalendar() {
         title: "Evento actualizado",
         description: "El evento ha sido actualizado en tu Google Calendar",
       });
-      console.log(`✅ Evento actualizado: ${eventId}`);
       return true;
     } catch (error: any) {
       console.error('❌ Error al actualizar evento:', error);
@@ -285,7 +275,6 @@ export function useGoogleCalendar() {
         title: "Evento eliminado",
         description: "El evento ha sido eliminado de tu Google Calendar",
       });
-      console.log(`✅ Evento eliminado: ${eventId}`);
       return true;
     } catch (error: any) {
       console.error('❌ Error al eliminar evento:', error);
@@ -320,20 +309,16 @@ export function useGoogleCalendar() {
     const user = getCurrentUser();
 
     if (!user) {
-      console.warn('⚠️ No hay usuario autenticado');
       return [];
     }
 
     if (!isConnected) {
-      console.warn('⚠️ Google Calendar no está conectado');
       return [];
     }
 
     setIsLoading(true);
     try {
-      const events = await googleCalendarService.getEvents(startDate, endDate);
-      console.log(`✅ Eventos obtenidos: ${events.length}`);
-      return events;
+      return await googleCalendarService.getEvents(startDate, endDate);
     } catch (error: any) {
       console.error('❌ Error al obtener eventos:', error);
 
