@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
-import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink } from "lucide-react";
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);
@@ -128,6 +128,7 @@ const Settings = () => {
             <TabsTrigger value="plan">Mi Plan</TabsTrigger>
             <TabsTrigger value="calendar">Calendario</TabsTrigger>
             <TabsTrigger value="security">Seguridad</TabsTrigger>
+            <TabsTrigger value="legal">Legal</TabsTrigger>
           </TabsList>
           
           {/* Profile Tab */}
@@ -537,6 +538,70 @@ const Settings = () => {
                 </Button>
               </CardFooter>
             </Card>
+          </TabsContent>
+          {/* Legal Tab */}
+          <TabsContent value="legal">
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Documentos Legales</CardTitle>
+                  <CardDescription>
+                    Términos de uso y política de privacidad de MéDico App
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <a
+                    href="/terms.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Términos de Uso</p>
+                        <p className="text-xs text-muted-foreground">Condiciones de uso del servicio · Última actualización: Mayo 2026</p>
+                      </div>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </a>
+
+                  <a
+                    href="/privacy.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Política de Privacidad</p>
+                        <p className="text-xs text-muted-foreground">Cómo protegemos y usamos tus datos · Última actualización: Mayo 2026</p>
+                      </div>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </a>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Sobre el Cifrado de tus Datos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Los datos sensibles de tus pacientes (nombre, ID, diagnóstico, notas) están cifrados con <strong className="text-foreground">AES-256-GCM</strong> directamente en tu navegador. Ni siquiera MéDico puede leerlos. La clave es tu contraseña — guárdala en un lugar seguro.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Para consultas sobre privacidad: <a href="mailto:contacto@medicoapp.app" className="text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors">contacto@medicoapp.app</a>
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

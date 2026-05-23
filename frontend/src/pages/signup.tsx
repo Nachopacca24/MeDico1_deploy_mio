@@ -391,6 +391,17 @@ export default function SignupForm() {
                   Inicia sesión aquí
                 </Link>
               </p>
+
+              <p className='text-center text-xs text-muted-foreground/70 pt-2 border-t border-slate-100 dark:border-slate-800'>
+                Al crear tu cuenta aceptas nuestros{" "}
+                <a href='/terms.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
+                  Términos de Uso
+                </a>{" "}
+                y{" "}
+                <a href='/privacy.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
+                  Política de Privacidad
+                </a>
+              </p>
             </CardFooter>
           </form>
         </Card>
