@@ -102,6 +102,14 @@
     }
     a { color: #2563eb; text-decoration: none; }
     a:hover { text-decoration: underline; }
+    code {
+      background: #f3f4f6;
+      color: #1d4ed8;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
     .contact-card {
       background: #f9fafb;
       border: 1px solid #e5e7eb;
@@ -160,7 +168,7 @@
         <li><a href="#s4">Cifrado de datos sensibles (E2EE)</a></li>
         <li><a href="#s5">Almacenamiento Local y Cookies</a></li>
         <li><a href="#s6">Compartición de datos con terceros</a></li>
-        <li><a href="#s7">Google Calendar</a></li>
+        <li><a href="#s7">Google API Services — Política de Uso Limitado</a></li>
         <li><a href="#s8">Publicidad dentro de la app</a></li>
         <li><a href="#s9">Retención de datos</a></li>
         <li><a href="#s10">Tus derechos</a></li>
@@ -383,15 +391,46 @@
     <p>Podemos divulgar información si así lo exige una orden judicial, requerimiento legal o para proteger derechos, propiedad o seguridad de usuarios y terceros.</p>
 
     <!-- 7 -->
-    <h2 id="s7">7. Google Calendar</h2>
-    <p>La integración con Google Calendar es completamente opcional y requiere tu autorización explícita. Al conectar tu cuenta de Google:</p>
+    <h2 id="s7">7. Google API Services — Política de Uso Limitado</h2>
+
+    <div class="highlight-box">
+      <strong>Declaración de cumplimiento obligatoria:</strong> El uso por parte de MéDico App de la información recibida de las APIs de Google —incluyendo Google Calendar API y Google OAuth— cumple con la <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Política de Datos de Usuario de los Servicios de API de Google</a>, incluyendo los requisitos de Uso Limitado (<em>Limited Use</em>).
+    </div>
+
+    <p><strong>Integración con Google Calendar (opcional)</strong></p>
+    <p>La integración con Google Calendar es completamente voluntaria y requiere tu autorización explícita mediante el flujo de consentimiento de Google OAuth 2.0. La app solo solicita los permisos estrictamente necesarios:</p>
     <ul>
-      <li>La app solicita permiso para leer y crear eventos en tu Google Calendar</li>
-      <li>Este permiso se usa exclusivamente para sincronizar tus casos quirúrgicos como eventos de calendario</li>
-      <li>Los tokens de acceso a Google Calendar se almacenan únicamente en el almacenamiento local de tu navegador — no son enviados ni almacenados en nuestros servidores</li>
-      <li>Puedes revocar este permiso en cualquier momento desde la Configuración de MéDico App o directamente desde <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Permisos de tu cuenta de Google</a></li>
+      <li><code>https://www.googleapis.com/auth/calendar.events</code> — crear y leer eventos en tu Google Calendar, exclusivamente para sincronizar tus casos quirúrgicos</li>
     </ul>
-    <p>El uso de datos de Google Calendar por parte de MéDico App se limita estrictamente a lo necesario para proveer la función de sincronización. No usamos ni compartimos estos datos para ninguna otra finalidad.</p>
+
+    <p><strong>Cómo usamos los datos de Google:</strong></p>
+    <ul>
+      <li>Única finalidad: crear eventos en tu Google Calendar correspondientes a tus casos quirúrgicos registrados en MéDico App</li>
+      <li>No accedemos, leemos ni procesamos ningún evento de calendario que no haya sido creado por MéDico App</li>
+      <li>Los tokens de acceso a Google Calendar se almacenan únicamente en el almacenamiento local de tu navegador (<em>localStorage</em>) — nunca son enviados ni almacenados en nuestros servidores</li>
+      <li>Conservamos los tokens de acceso solo mientras mantienes la integración activa; se eliminan inmediatamente al desconectar la cuenta desde la Configuración</li>
+    </ul>
+
+    <p><strong>Lo que NO hacemos con los datos de Google:</strong></p>
+    <ul>
+      <li>No transferimos datos obtenidos de Google APIs a terceros</li>
+      <li>No usamos datos de Google APIs para mostrar publicidad personalizada</li>
+      <li>No usamos datos de Google APIs para crear perfiles de usuario</li>
+      <li>No usamos datos de Google APIs para ninguna finalidad diferente a la sincronización de casos quirúrgicos</li>
+      <li>No almacenamos datos de Google en nuestros servidores</li>
+      <li>No leemos el contenido de eventos de calendario que no hayan sido creados por MéDico App</li>
+    </ul>
+
+    <p><strong>Inicio de sesión con Google (OAuth):</strong></p>
+    <p>Si eliges registrarte o iniciar sesión con tu cuenta de Google, únicamente accedemos a tu nombre, dirección de correo electrónico y foto de perfil públicos para crear o identificar tu cuenta en MéDico App. No accedemos a ningún otro dato de tu cuenta de Google.</p>
+
+    <p><strong>Cómo revocar el acceso:</strong></p>
+    <ul>
+      <li>Desde MéDico App: Configuración → Calendario → Desconectar Google Calendar</li>
+      <li>Directamente desde Google: <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">myaccount.google.com/permissions</a></li>
+    </ul>
+
+    <p>La revocación es inmediata. Tras revocar el acceso, no conservamos ningún token ni dato de Google Calendar.</p>
 
     <!-- 8 -->
     <h2 id="s8">8. Publicidad dentro de la App</h2>
