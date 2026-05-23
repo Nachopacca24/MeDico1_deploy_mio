@@ -1,15 +1,15 @@
 // src/shared/components/ads/StickyBannerAd.tsx
-// Shows max 2 ads at a time (1 on mobile).
-// Dismissing removes only that card — no instant replacement.
-// Timer rotates to next batch every ROTATE_MS.
+// Máximo 2 cuadritos simultáneos (1 en móvil).
+// Rotan cada ROTATE_MS. Al cerrar con X vuelven luego de DISMISS_HIDE_MS.
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useIsMobile } from '@/shared/hooks/useAdSystem';
 
-const ROTATE_MS = 12_000;
+const ROTATE_MS = 13_000;       // Rotación cada 13s
+const DISMISS_HIDE_MS = 13_000; // Al cerrar con X, vuelve en 13s
 
 const shuffle = <T,>(arr: T[]): T[] => {
   const a = [...arr];
@@ -102,66 +102,82 @@ export function StickyBannerAd({ position = 'bottom', initialDelay = 5 }: Sticky
   const isMobile = useIsMobile();
   const slotCount = isMobile ? 1 : 2;
 
-  // Full shuffled pool loaded once
   const [pool, setPool] = useState<ActiveAd[]>([]);
-  // Explicitly tracked: which ads are currently visible in their slots
   const [visible, setVisible] = useState<ActiveAd[]>([]);
   const [ready, setReady] = useState(false);
 
-  // Pool pointer — tracks where we are in the cycling pool
+  // useRef para que pickNext siempre vea el pool más actualizado (evita stale closure)
+  const poolRef = useRef<ActiveAd[]>([]);
+  const slotCountRef = useRef(slotCount);
   const ptrRef = useRef(0);
-  // Dismissed ad IDs — never show again this session
-  const dismissedRef = useRef<Set<number>>(new Set());
+  // Mapa de id → timestamp en que el anuncio vuelve a estar disponible
+  const dismissedUntilRef = useRef<Map<number, number>>(new Map());
   const trackedRef = useRef<Set<number>>(new Set());
 
-  // Pick next `n` non-dismissed ads from pool, advancing pointer
-  const pickNext = (n: number): ActiveAd[] => {
-    const result: ActiveAd[] = [];
-    let attempts = 0;
-    while (result.length < n && attempts < pool.length) {
-      const ad = pool[ptrRef.current % pool.length];
-      ptrRef.current = (ptrRef.current + 1) % pool.length;
-      attempts++;
-      if (!dismissedRef.current.has(ad.id)) {
-        result.push(ad);
-      }
-    }
-    return result;
-  };
+  useEffect(() => { poolRef.current = pool; }, [pool]);
+  useEffect(() => { slotCountRef.current = slotCount; }, [slotCount]);
 
-  // Load pool on mount
+  // Cargar pool desde API
   useEffect(() => {
     const specialty = user?.specialty || undefined;
     Promise.all([
       advertisementService.getActiveAds('home_banner', specialty).catch(() => [] as ActiveAd[]),
       advertisementService.getActiveAds('footer', specialty).catch(() => [] as ActiveAd[]),
     ]).then(([banners, footers]) => {
-      const all = shuffle([...banners, ...footers]);
-      setPool(all);
+      // Deduplicar por id — si el mismo anuncio está en ambos placements, solo aparece una vez
+      const seen = new Set<number>();
+      const unique = [...banners, ...footers].filter(ad => {
+        if (seen.has(ad.id)) return false;
+        seen.add(ad.id);
+        return true;
+      });
+      setPool(shuffle(unique));
     });
   }, [user?.specialty]);
 
-  // Once pool is ready, show initial batch after delay
+  // Selecciona los próximos n anuncios disponibles del pool
+  const pickNext = useCallback((n: number): ActiveAd[] => {
+    const p = poolRef.current;
+    if (p.length === 0) return [];
+    const now = Date.now();
+    const result: ActiveAd[] = [];
+    const usedIds = new Set<number>(); // evita duplicados en el mismo batch
+    let attempts = 0;
+    while (result.length < n && attempts < p.length) {
+      const ad = p[ptrRef.current % p.length];
+      ptrRef.current = (ptrRef.current + 1) % p.length;
+      attempts++;
+      const hideUntil = dismissedUntilRef.current.get(ad.id) ?? 0;
+      if (now >= hideUntil && !usedIds.has(ad.id)) {
+        result.push(ad);
+        usedIds.add(ad.id);
+      }
+    }
+    return result.slice(0, n); // cap defensivo
+  }, []);
+
+  // Mostrar batch inicial después del delay
   useEffect(() => {
     if (pool.length === 0) return;
     ptrRef.current = 0;
+    dismissedUntilRef.current.clear();
     const t = setTimeout(() => {
-      setVisible(pickNext(slotCount));
+      setVisible(pickNext(slotCountRef.current));
       setReady(true);
     }, initialDelay * 1000);
     return () => clearTimeout(t);
-  }, [pool]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pool, initialDelay, pickNext]);
 
-  // Rotation timer: only fires when there are more ads than slots
+  // Timer de rotación — siempre activo cuando hay anuncios
   useEffect(() => {
-    if (!ready || pool.length <= slotCount) return;
+    if (!ready || pool.length === 0) return;
     const t = setInterval(() => {
-      setVisible(pickNext(slotCount));
+      setVisible(pickNext(slotCountRef.current));
     }, ROTATE_MS);
     return () => clearInterval(t);
-  }, [ready, pool, slotCount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready, pool.length, pickNext]);
 
-  // Track impressions for currently visible ads
+  // Registrar impresiones de los anuncios visibles
   useEffect(() => {
     if (!ready) return;
     visible.forEach(ad => {
@@ -173,9 +189,8 @@ export function StickyBannerAd({ position = 'bottom', initialDelay = 5 }: Sticky
   }, [ready, visible]);
 
   const handleDismiss = (adId: number) => {
-    // Mark dismissed so pickNext skips it
-    dismissedRef.current.add(adId);
-    // Remove only this card — no instant replacement
+    // Oculta el anuncio durante DISMISS_HIDE_MS, luego vuelve a ser elegible
+    dismissedUntilRef.current.set(adId, Date.now() + DISMISS_HIDE_MS);
     setVisible(prev => prev.filter(a => a.id !== adId));
   };
 
@@ -185,7 +200,8 @@ export function StickyBannerAd({ position = 'bottom', initialDelay = 5 }: Sticky
 
   return (
     <div className={`fixed ${positionClass} right-4 z-[90] flex flex-col sm:flex-row gap-3 items-end`}>
-      {visible.map(ad => (
+      {/* slice(0, slotCount) garantiza máximo 2 cards sin importar el estado */}
+      {visible.slice(0, slotCount).map(ad => (
         <AdCard key={ad.id} ad={ad} onDismiss={() => handleDismiss(ad.id)} />
       ))}
     </div>

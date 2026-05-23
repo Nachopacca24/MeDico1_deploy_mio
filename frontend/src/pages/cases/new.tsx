@@ -139,7 +139,6 @@ const NewCase = () => {
   // Solo cargar CSVs la primera vez que se busca
   if (allProcedures.length === 0) {
     setLoadingAllProcedures(true);
-    console.log("[CSV] Primera búsqueda - cargando todos los CSVs...");
 
     const folderStructure: Record<string, Record<string, string>> = {
       "Cardiovascular": {
@@ -234,7 +233,6 @@ const NewCase = () => {
 
     setAllProcedures(procedures);
     setLoadingAllProcedures(false);
-    console.log(`[CSV] ✅ Cargados ${procedures.length} procedimientos`);
   }
 };
   // ✅ NUEVA FUNCIÓN: Cargar RVU de un favorito específico
@@ -430,6 +428,22 @@ const NewCase = () => {
     if (!surgeryDate) {
       toast.error('Error de validación', 'La fecha de cirugía es requerida');
       return;
+    }
+
+    if (patientAge) {
+      const age = parseInt(patientAge);
+      if (isNaN(age) || age < 0 || age > 120) {
+        toast.error('Error de validación', 'La edad debe estar entre 0 y 120 años');
+        return;
+      }
+    }
+
+    if (rateMultiplier) {
+      const rate = parseFloat(rateMultiplier);
+      if (isNaN(rate) || rate <= 0) {
+        toast.error('Error de validación', 'El multiplicador debe ser un número mayor a 0');
+        return;
+      }
     }
 
     if (selectedProcedures.length === 0) {

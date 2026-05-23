@@ -36,14 +36,14 @@ export function CalculatorForm() {
         // TODO: Implementar fetch de operación desde Django API
         setOperation(null);
         toast({
-          title: "Coming Soon",
-          description: "Operation details will be loaded from the API soon.",
+          title: "Próximamente",
+          description: "Los detalles del procedimiento se cargarán desde la API pronto.",
         });
       } catch (error) {
         console.error("Failed to fetch operation:", error);
         toast({
           title: "Error",
-          description: "Failed to load operation details.",
+          description: "No se pudieron cargar los detalles del procedimiento.",
           variant: "destructive"
         });
       } finally {
@@ -78,8 +78,8 @@ export function CalculatorForm() {
   const handleCalculate = () => {
     if (!operation || !selectedHospital) {
       toast({
-        title: "Missing information",
-        description: "Please select both an operation and a hospital.",
+        title: "Información incompleta",
+        description: "Por favor selecciona un procedimiento y un hospital.",
         variant: "destructive"
       });
       return;
@@ -108,13 +108,13 @@ export function CalculatorForm() {
       setCalculatedValue(value);
       
       toast({
-        title: "Calculation complete",
-        description: `The value of this operation is Q${value.toFixed(2)}.`,
+        title: "Cálculo completado",
+        description: `El valor del procedimiento es Q${value.toFixed(2)}.`,
       });
     } catch (error) {
       toast({
-        title: "Calculation error",
-        description: "Failed to calculate operation value.",
+        title: "Error de cálculo",
+        description: "No se pudo calcular el valor del procedimiento.",
         variant: "destructive"
       });
     } finally {
@@ -125,26 +125,26 @@ export function CalculatorForm() {
   const handleSaveCalculation = async () => {
     if (!operation?.id || !selectedHospital || calculatedValue === null || !user?.id) {
       toast({
-        title: "Cannot save",
-        description: "Please complete the calculation first.",
+        title: "No se puede guardar",
+        description: "Por favor completa el cálculo primero.",
         variant: "destructive"
       });
       return;
     }
-    
+
     setSaving(true);
     try {
       // TODO: Implementar guardado de cálculo en Django API
       toast({
-        title: "Coming Soon",
-        description: "Save to history will be available soon.",
+        title: "Próximamente",
+        description: "Guardar en historial estará disponible pronto.",
       });
-      
+
       // navigate("/history");
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save calculation.",
+        description: "No se pudo guardar el cálculo.",
         variant: "destructive"
       });
     } finally {
@@ -156,7 +156,7 @@ export function CalculatorForm() {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Loading operation details...</CardTitle>
+          <CardTitle>Cargando detalles del procedimiento...</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center p-6">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -169,14 +169,14 @@ export function CalculatorForm() {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Operation not found</CardTitle>
+          <CardTitle>Procedimiento no encontrado</CardTitle>
           <CardDescription>
-            The operation you're looking for doesn't exist or has been removed.
+            El procedimiento que buscas no existe o fue eliminado.
           </CardDescription>
         </CardHeader>
         <CardFooter>
           <Button onClick={() => navigate("/operations")}>
-            Browse Operations
+            Ver Procedimientos
           </Button>
         </CardFooter>
       </Card>
@@ -186,9 +186,9 @@ export function CalculatorForm() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Operation Value Calculator</CardTitle>
+        <CardTitle>Calculadora de Procedimientos</CardTitle>
         <CardDescription>
-          Calculate the value of medical operations based on hospital rates
+          Calcula el valor de procedimientos médicos según tarifas del hospital
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -196,11 +196,11 @@ export function CalculatorForm() {
           <div className="rounded-lg bg-primary/5 p-4">
             <h3 className="text-lg font-medium">{operation.name}</h3>
             {operation.code && (
-              <p className="text-sm text-muted-foreground">Code: {operation.code}</p>
+              <p className="text-sm text-muted-foreground">Código: {operation.code}</p>
             )}
             <div className="mt-2 flex flex-wrap gap-2">
               <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium">
-                {operation.base_points} base points
+                {operation.base_points} puntos base
               </span>
               {operation.specialtyName && (
                 <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium">
@@ -208,7 +208,7 @@ export function CalculatorForm() {
                 </span>
               )}
               <span className="rounded-full bg-accent px-2 py-1 text-xs font-medium">
-                Complexity: {operation.complexity || 1}
+                Complejidad: {operation.complexity || 1}
               </span>
             </div>
             {operation.description && (
@@ -218,20 +218,20 @@ export function CalculatorForm() {
         ) : (
           <div className="rounded-lg border border-dashed p-4 text-center">
             <p className="text-muted-foreground">
-              No operation selected. Please select an operation from the operations page.
+              Ningún procedimiento seleccionado. Por favor selecciona uno desde la página de procedimientos.
             </p>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="mt-4"
               onClick={() => navigate("/operations")}
             >
-              Browse Operations
+              Ver Procedimientos
             </Button>
           </div>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="hospital">Select Hospital</Label>
+          <Label htmlFor="hospital">Seleccionar Hospital</Label>
           <HospitalSelector 
             onSelect={setSelectedHospital} 
             selectedId={selectedHospital}
@@ -242,23 +242,23 @@ export function CalculatorForm() {
           <>
             <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
               <h3 className="text-lg font-medium text-green-800 dark:text-green-300">
-                Calculated Value
+                Valor Calculado
               </h3>
               <p className="mt-2 text-3xl font-bold text-green-700 dark:text-green-400">
                 Q{calculatedValue.toFixed(2)}
               </p>
               <p className="mt-1 text-sm text-green-600 dark:text-green-300">
-                {operation?.base_points || 0} points × 
-                {hospitalRate ? ` Q${hospitalRate.currency_per_point.toFixed(2)}` : " default rate"} × 
-                complexity factor
+                {operation?.base_points || 0} puntos ×
+                {hospitalRate ? ` Q${hospitalRate.currency_per_point.toFixed(2)}` : " tarifa base"} ×
+                factor de complejidad
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
+              <Label htmlFor="notes">Notas (opcional)</Label>
               <Textarea
                 id="notes"
-                placeholder="Add any notes about this calculation..."
+                placeholder="Agrega notas sobre este cálculo..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -273,7 +273,7 @@ export function CalculatorForm() {
           className="w-full sm:w-auto"
         >
           <Calculator className="mr-2 h-4 w-4" />
-          {calculating ? "Calculating..." : "Calculate Value"}
+          {calculating ? "Calculando..." : "Calcular Valor"}
         </Button>
         
         {calculatedValue !== null && (
@@ -284,7 +284,7 @@ export function CalculatorForm() {
             className="w-full sm:w-auto"
           >
             <Save className="mr-2 h-4 w-4" />
-            {saving ? "Saving..." : "Save to History"}
+            {saving ? "Guardando..." : "Guardar en Historial"}
           </Button>
         )}
       </CardFooter>

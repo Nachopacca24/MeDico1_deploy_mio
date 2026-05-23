@@ -107,8 +107,7 @@ class AuthService {
 
     // Si el usuario cambió, limpiar tokens de Google Calendar
     if (previousUserId && previousUserId !== currentUserId) {
-      console.log(`🔄 Usuario cambió de ${previousUserId} a ${currentUserId}, limpiando Google Calendar`);
-      googleCalendarService.clearTokens();
+        googleCalendarService.clearTokens();
     }
 
     localStorage.setItem(TOKEN_STORAGE_KEYS.user, JSON.stringify(user));
@@ -141,8 +140,6 @@ class AuthService {
    * 🔒 Limpiar todos los datos de autenticación
    */
   clearAuth(): void {
-    console.log('🧹 Limpiando todos los datos de autenticación');
-
     // Limpiar tokens de autenticación
     localStorage.removeItem(TOKEN_STORAGE_KEYS.access);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.refresh);
@@ -215,7 +212,6 @@ class AuthService {
       this.saveTokens(result.tokens);
       this.saveUser(result.user);
 
-      console.log(`✅ Login exitoso para usuario: ${result.user.email}`);
 
       return result;
     } catch (error) {
@@ -248,7 +244,6 @@ class AuthService {
       this.saveTokens(result.tokens);
       this.saveUser(result.user);
 
-      console.log(`✅ Login con Google exitoso para usuario: ${result.user.email}`);
 
       return result;
     } catch (error) {
@@ -266,7 +261,6 @@ class AuthService {
     const refreshToken = this.getRefreshToken();
     const currentUser = this.getCurrentUser();
 
-    console.log(`🚪 Logout de usuario: ${currentUser?.email || 'unknown'}`);
 
     if (refreshToken) {
       try {
@@ -286,7 +280,6 @@ class AuthService {
     // 🔒 CRÍTICO: Limpiar TODOS los datos (incluyendo Google Calendar)
     this.clearAuth();
 
-    console.log('✅ Logout completado');
   }
 
   /**
