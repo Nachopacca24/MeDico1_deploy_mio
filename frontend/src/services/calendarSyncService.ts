@@ -174,23 +174,46 @@ class CalendarSyncService {
   }
 
   /**
-   * Sync cases that are missing a Google Calendar event.
-   * Only processes cases with status 'scheduled' that have a surgery_date but no calendar_event_id.
-   * Errors for individual cases are caught so the whole batch never aborts.
+   * Sync active cases that are missing a Google Calendar event.
+   *
+   * Filters:
+   *   - is_owner === true (the user is the case creator — non-owners can't write calendar_event_id)
+   *   - status not in CLOSED_STATUSES
+   *   - surgery_date is set
+   *   - calendar_event_id is absent
+   *
+   * Checks the token before every iteration. If it expires mid-sync the loop
+   * stops early and returns paused: true so the caller can prompt reconnect.
    */
-  async syncMissingCases(cases: SurgicalCase[]): Promise<{ synced: number; failed: number }> {
+  async syncMissingCases(
+    cases: SurgicalCase[]
+  ): Promise<{ synced: number; failed: number; paused: boolean; message?: string }> {
     if (!googleCalendarService.isConnected()) {
-      return { synced: 0, failed: 0 };
+      return { synced: 0, failed: 0, paused: false };
     }
 
     const toSync = cases.filter(
-      c => c.surgery_date && !CLOSED_STATUSES.includes(c.status) && !c.calendar_event_id
+      c =>
+        c.is_owner &&
+        c.surgery_date &&
+        !CLOSED_STATUSES.includes(c.status) &&
+        !c.calendar_event_id
     );
 
     let synced = 0;
     let failed = 0;
 
     for (const surgicalCase of toSync) {
+      // Check token before each case — it may have expired mid-loop
+      if (!googleCalendarService.isConnected()) {
+        return {
+          synced,
+          failed,
+          paused: true,
+          message: 'Sincronización pausada: reconecta Google Calendar para continuar',
+        };
+      }
+
       try {
         const eventId = await this.createEventForCase(surgicalCase);
         if (!eventId) {
@@ -198,8 +221,8 @@ class CalendarSyncService {
           continue;
         }
         await authService.authenticatedFetch(
-          `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/`,
-          { method: 'PATCH', body: JSON.stringify({ calendar_event_id: eventId }) }
+          `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/sync-calendar/`,
+          { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
         );
         synced++;
       } catch {
@@ -207,7 +230,7 @@ class CalendarSyncService {
       }
     }
 
-    return { synced, failed };
+    return { synced, failed, paused: false };
   }
 
   /**

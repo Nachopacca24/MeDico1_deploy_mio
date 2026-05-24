@@ -116,15 +116,25 @@ const CalendarPage = () => {
     setSyncing(true);
     try {
       const cases = await surgicalCaseService.getCases();
-      const { synced, failed } = await calendarSyncService.syncMissingCases(cases);
-      if (synced > 0) {
+      const result = await calendarSyncService.syncMissingCases(cases);
+
+      if (result.paused) {
+        toast.warning(
+          'Sincronización pausada',
+          result.message ?? 'Reconecta Google Calendar para continuar'
+        );
+        return;
+      }
+
+      if (result.synced > 0) {
+        const n = result.synced;
         toast.success(
           'Sincronización completada',
-          `${synced} caso${synced !== 1 ? 's' : ''} activo${synced !== 1 ? 's' : ''} sincronizado${synced !== 1 ? 's' : ''} con Google Calendar`
+          `${n} caso${n !== 1 ? 's' : ''} activo${n !== 1 ? 's' : ''} sincronizado${n !== 1 ? 's' : ''} con Google Calendar`
         );
       } else if (showResultAlways) {
-        if (failed > 0) {
-          toast.error('Sincronización', `No se pudo sincronizar ${failed} caso${failed !== 1 ? 's' : ''}`);
+        if (result.failed > 0) {
+          toast.error('Sincronización', `No se pudo sincronizar ${result.failed} caso${result.failed !== 1 ? 's' : ''}`);
         } else {
           toast.success('Sincronización', 'Todos los casos ya están sincronizados');
         }

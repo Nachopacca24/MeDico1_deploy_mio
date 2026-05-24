@@ -476,6 +476,33 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+    @action(detail=True, methods=['post'], url_path='sync-calendar')
+    def sync_calendar(self, request, pk=None):
+        """
+        Persist the Google Calendar event ID for a case.
+        Only the case owner can call this; only calendar_event_id is written.
+        """
+        case = self.get_object()
+
+        if case.created_by != request.user:
+            return Response(
+                {'error': 'Solo el creador del caso puede sincronizar el calendario'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        calendar_event_id = request.data.get('calendar_event_id')
+        if not calendar_event_id or not isinstance(calendar_event_id, str):
+            return Response(
+                {'error': 'calendar_event_id es requerido'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Direct DB update — bypasses full_clean() / business-logic validators
+        # that are irrelevant for this single-field write.
+        SurgicalCase.objects.filter(pk=case.pk).update(calendar_event_id=calendar_event_id)
+
+        return Response({'calendar_event_id': calendar_event_id}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['patch'], url_path='update-status')
     def update_status(self, request, pk=None):
         """
