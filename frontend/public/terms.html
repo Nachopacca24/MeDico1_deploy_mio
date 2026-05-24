@@ -258,7 +258,7 @@
     <!-- 7 -->
     <h2 id="s7">7. Cifrado y Advertencia sobre Contraseña</h2>
     <div class="highlight-box">
-      <strong>Advertencia importante sobre cifrado:</strong> Los campos sensibles de tus registros (nombre del paciente, identificación, diagnóstico y notas clínicas) se cifran con AES-256-GCM directamente en tu navegador usando tu contraseña como clave. Si pierdes o restableces tu contraseña sin recuperar la clave de cifrado, esos datos serán <strong>permanente e irrecuperablemente inaccesibles</strong>. Esto es consecuencia del diseño de seguridad real del sistema. Guarda tus credenciales en un gestor de contraseñas seguro.
+      <strong>Advertencia importante sobre cifrado:</strong> Los campos sensibles de tus registros (nombre del paciente, identificación, diagnóstico y notas clínicas) se cifran con AES-256 (Fernet) en el servidor antes de ser almacenados. Guarda tus credenciales en un gestor de contraseñas seguro.
     </div>
 
     <!-- 8 -->
