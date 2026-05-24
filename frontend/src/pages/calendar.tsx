@@ -84,8 +84,7 @@ const CalendarPage = () => {
           toast.success('¡Conectado!', 'Google Calendar conectado exitosamente');
           window.location.reload();
         }
-      } catch (error) {
-        console.error('Error en callback:', error);
+      } catch {
         toast.error('Error', 'No se pudo completar la conexión');
       }
     };
@@ -108,10 +107,8 @@ const CalendarPage = () => {
       const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1, 0, 0, 0, 0);
       const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1, 23, 59, 59, 999);
       const fetchedEvents = await getEvents(startOfMonth, nextMonth);
-      console.log('📅 Eventos cargados:', fetchedEvents.length);
       setEvents(fetchedEvents);
-    } catch (error) {
-      console.error('Error loading events:', error);
+    } catch {
       toast.error('Error', 'No se pudieron cargar los eventos');
     } finally {
       setLoadingEvents(false);
@@ -247,8 +244,7 @@ const CalendarPage = () => {
       });
       setShowCreateDialog(false);
       await loadMonthEvents();
-    } catch (error) {
-      console.error('Error creating event:', error);
+    } catch {
       toast.error('Error', 'No se pudo crear el evento');
     } finally {
       setCreating(false);
@@ -263,8 +259,7 @@ const CalendarPage = () => {
       await googleCalendarService.deleteEvent(eventId);
       toast.success('Evento eliminado', 'El evento se eliminó correctamente');
       await loadMonthEvents();
-    } catch (error) {
-      console.error('Error deleting event:', error);
+    } catch {
       toast.error('Error', 'No se pudo eliminar el evento');
     }
   };

@@ -104,8 +104,7 @@ export function useGoogleCalendar() {
         });
       }
     } catch (error) {
-      console.error('❌ Error al conectar:', error);
-      toast({
+            toast({
         variant: "destructive",
         title: "Error",
         description: "No se pudo iniciar la conexión con Google Calendar",
@@ -129,7 +128,6 @@ export function useGoogleCalendar() {
         description: "Tu cuenta de Google Calendar ha sido desconectada",
       });
     } catch (error) {
-      console.error('❌ Error al desconectar:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -171,7 +169,6 @@ export function useGoogleCalendar() {
       });
       return eventId;
     } catch (error: any) {
-      console.error('❌ Error al crear evento:', error);
 
       // ✅ Detectar token expirado
       if (error.message?.includes('expirada')) {
@@ -229,7 +226,6 @@ export function useGoogleCalendar() {
       });
       return true;
     } catch (error: any) {
-      console.error('❌ Error al actualizar evento:', error);
 
       // ✅ Detectar token expirado
       if (error.message?.includes('expirada')) {
@@ -277,7 +273,6 @@ export function useGoogleCalendar() {
       });
       return true;
     } catch (error: any) {
-      console.error('❌ Error al eliminar evento:', error);
 
       // ✅ Detectar token expirado
       if (error.message?.includes('expirada')) {
@@ -320,7 +315,6 @@ export function useGoogleCalendar() {
     try {
       return await googleCalendarService.getEvents(startDate, endDate);
     } catch (error: any) {
-      console.error('❌ Error al obtener eventos:', error);
 
       // ✅ Detectar token expirado
       if (error.message?.includes('expirada')) {
