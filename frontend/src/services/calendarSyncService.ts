@@ -15,16 +15,19 @@ class CalendarSyncService {
     }
 
     try {
-      // Construir fecha/hora de inicio
       const startDateTime = this.buildDateTime(
         surgicalCase.surgery_date,
-        surgicalCase.surgery_time || '08:00'
+        surgicalCase.surgery_time
       );
 
-      // Construir fecha/hora de fin
-      const endDateTime = surgicalCase.surgery_end_time
+      let endDateTime = this.isValidTime(surgicalCase.surgery_end_time)
         ? this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_end_time)
-        : this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_time || '08:00', 2);
+        : this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_time, 2);
+
+      // Guard: end must be strictly after start
+      if (endDateTime <= startDateTime) {
+        endDateTime = new Date(new Date(startDateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+      }
 
       // Construir descripción
       const description = this.buildEventDescription(surgicalCase);
@@ -86,19 +89,19 @@ class CalendarSyncService {
       console.log('🕐 Nueva hora inicio:', surgicalCase.surgery_time);
       console.log('🕐 Nueva hora fin:', surgicalCase.surgery_end_time);
 
-      // ✅ IMPORTANTE: Construir fechas CORRECTAMENTE
       const startDateTime = this.buildDateTime(
         surgicalCase.surgery_date,
-        surgicalCase.surgery_time || '08:00'
+        surgicalCase.surgery_time
       );
 
-      const endDateTime = surgicalCase.surgery_end_time
+      let endDateTime = this.isValidTime(surgicalCase.surgery_end_time)
         ? this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_end_time)
-        : this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_time || '08:00', 2);
+        : this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_time, 2);
 
-      console.log('✅ Fecha/hora construidas:');
-      console.log('   Inicio:', startDateTime);
-      console.log('   Fin:', endDateTime);
+      // Guard: end must be strictly after start
+      if (endDateTime <= startDateTime) {
+        endDateTime = new Date(new Date(startDateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+      }
 
       const description = this.buildEventDescription(surgicalCase);
 
@@ -167,30 +170,27 @@ class CalendarSyncService {
   }
 
   /**
-   * ✅ CRÍTICO: Construcción correcta de fecha/hora en formato ISO
+   * Validate that a time string is a proper "HH:MM" value.
    */
-  private buildDateTime(date: string, time: string, addHours: number = 0): string {
-    try {
-      // Parsear la fecha (formato YYYY-MM-DD)
-      const [year, month, day] = date.split('-').map(Number);
+  private isValidTime(time: string | null | undefined): time is string {
+    if (!time || typeof time !== 'string') return false;
+    const match = time.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return false;
+    const h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+  }
 
-      // Parsear la hora (formato HH:MM)
-      const [hours, minutes] = time.split(':').map(Number);
-
-      // ✅ Crear fecha en zona horaria local de Guatemala
-      const dateTime = new Date(year, month - 1, day, hours + addHours, minutes, 0, 0);
-
-      // ✅ Convertir a ISO string
-      const isoString = dateTime.toISOString();
-
-      console.log(`📅 Construyendo fecha/hora: ${date} ${time} (+${addHours}h) -> ${isoString}`);
-
-      return isoString;
-    } catch (error) {
-      console.error('❌ Error construyendo fecha/hora:', error);
-      // Fallback: usar fecha actual
-      return new Date().toISOString();
-    }
+  /**
+   * Build an ISO datetime string from a date + time.
+   * addHours is applied after parsing. Falls back to 08:00 if time is invalid.
+   */
+  private buildDateTime(date: string, time: string | null | undefined, addHours: number = 0): string {
+    const [year, month, day] = date.split('-').map(Number);
+    const safeTime = this.isValidTime(time) ? time : '08:00';
+    const [hours, minutes] = safeTime.split(':').map(Number);
+    const dateTime = new Date(year, month - 1, day, hours + addHours, minutes, 0, 0);
+    return dateTime.toISOString();
   }
 
   /**

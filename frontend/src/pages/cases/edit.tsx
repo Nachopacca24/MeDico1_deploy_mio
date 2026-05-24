@@ -482,6 +482,18 @@ const EditCase = () => {
       return;
     }
 
+    if (rateMultiplier) {
+      const rate = parseFloat(rateMultiplier);
+      if (isNaN(rate) || rate <= 0) {
+        toast.error('Error de validación', 'El multiplicador debe ser un número mayor a 0');
+        return;
+      }
+      if (rate > 999.99) {
+        toast.error('Error de validación', 'El multiplicador no puede superar 999.99');
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
