@@ -1,7 +1,6 @@
 // src/services/googleCalendarService.ts
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 const REDIRECT_URI = window.location.origin + '/calendar';
@@ -116,9 +115,8 @@ class GoogleCalendarService {
         (window as any).gapi.load('client', async () => {
           try {
             await (window as any).gapi.client.init({
-              apiKey: GOOGLE_API_KEY,
               discoveryDocs: [DISCOVERY_DOC],
-            });
+                });
 
             if (!(window as any).gapi.client.calendar) {
               await (window as any).gapi.client.load('calendar', 'v3');
