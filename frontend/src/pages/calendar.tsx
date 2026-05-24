@@ -9,7 +9,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -19,10 +19,12 @@ import {
 } from "@/shared/components/ui/dialog";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
 import { googleCalendarService, type CalendarEvent } from "@/services/googleCalendarService";
+import { calendarSyncService } from "@/services/calendarSyncService";
+import { surgicalCaseService } from "@/services/surgicalCaseService";
 import { useToast } from "@/shared/hooks/useToast";
-import { 
-  Calendar as CalendarIcon, 
-  ChevronLeft, 
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
   ChevronRight,
   AlertCircle,
   Loader2,
@@ -63,7 +65,9 @@ const CalendarPage = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
+  const hasSyncedRef = useRef(false);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -97,9 +101,42 @@ const CalendarPage = () => {
     }
   }, [currentDate, isConnected]);
 
+  // Auto-sync once when the calendar first becomes connected
+  useEffect(() => {
+    if (!isConnected || hasSyncedRef.current) return;
+    hasSyncedRef.current = true;
+    runSync(false);
+  }, [isConnected]);
+
   useEffect(() => {
     generateCalendarDays();
   }, [currentDate, events]);
+
+  const runSync = async (showResultAlways: boolean) => {
+    setSyncing(true);
+    try {
+      const cases = await surgicalCaseService.getCases();
+      const { synced, failed } = await calendarSyncService.syncMissingCases(cases);
+      if (synced > 0) {
+        toast.success(
+          'Sincronización completada',
+          `${synced} caso${synced !== 1 ? 's' : ''} activo${synced !== 1 ? 's' : ''} sincronizado${synced !== 1 ? 's' : ''} con Google Calendar`
+        );
+      } else if (showResultAlways) {
+        if (failed > 0) {
+          toast.error('Sincronización', `No se pudo sincronizar ${failed} caso${failed !== 1 ? 's' : ''}`);
+        } else {
+          toast.success('Sincronización', 'Todos los casos ya están sincronizados');
+        }
+      }
+    } catch {
+      if (showResultAlways) {
+        toast.error('Error', 'No se pudieron sincronizar los casos');
+      }
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const loadMonthEvents = async () => {
     setLoadingEvents(true);
@@ -352,6 +389,10 @@ const CalendarPage = () => {
               </p>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => runSync(true)} disabled={syncing || loadingEvents}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? 'Sincronizando...' : 'Sincronizar casos'}
+              </Button>
               <Button variant="outline" onClick={loadMonthEvents} disabled={loadingEvents}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${loadingEvents ? 'animate-spin' : ''}`} />
                 Actualizar

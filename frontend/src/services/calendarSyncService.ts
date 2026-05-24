@@ -1,7 +1,11 @@
-// src/services/calendarSyncService.ts - VERSIÓN MEJORADA
-
 import { googleCalendarService, type CalendarEvent } from './googleCalendarService';
-import type { SurgicalCase } from '@/types/surgical-case';
+import { authService } from '@/shared/services/authService';
+import type { SurgicalCase, CaseStatus } from '@/types/surgical-case';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// Statuses that mean the surgery is finished or cancelled — skip calendar sync
+const CLOSED_STATUSES: CaseStatus[] = ['completed', 'billed', 'paid', 'cancelled'];
 
 class CalendarSyncService {
   /**
@@ -167,6 +171,43 @@ class CalendarSyncService {
 
       return false;
     }
+  }
+
+  /**
+   * Sync cases that are missing a Google Calendar event.
+   * Only processes cases with status 'scheduled' that have a surgery_date but no calendar_event_id.
+   * Errors for individual cases are caught so the whole batch never aborts.
+   */
+  async syncMissingCases(cases: SurgicalCase[]): Promise<{ synced: number; failed: number }> {
+    if (!googleCalendarService.isConnected()) {
+      return { synced: 0, failed: 0 };
+    }
+
+    const toSync = cases.filter(
+      c => c.surgery_date && !CLOSED_STATUSES.includes(c.status) && !c.calendar_event_id
+    );
+
+    let synced = 0;
+    let failed = 0;
+
+    for (const surgicalCase of toSync) {
+      try {
+        const eventId = await this.createEventForCase(surgicalCase);
+        if (!eventId) {
+          failed++;
+          continue;
+        }
+        await authService.authenticatedFetch(
+          `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/`,
+          { method: 'PATCH', body: JSON.stringify({ calendar_event_id: eventId }) }
+        );
+        synced++;
+      } catch {
+        failed++;
+      }
+    }
+
+    return { synced, failed };
   }
 
   /**
