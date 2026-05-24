@@ -7,9 +7,6 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { authService, User, LoginCredentials, RegisterData, type AuthResponse } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 
-// Keys used by CryptoContext — cleared here on logout to avoid coupling both contexts
-const E2EE_SS_KEYS = ['medico_e2ee_key', 'medico_e2ee_uid'] as const;
-
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -101,7 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Login con Google
    */
-  const loginWithGoogle = async (token: string) => {
+  const loginWithGoogle = async (token: string): Promise<void> => {
     try {
       const response = await authService.loginWithGoogle(token);
       setUser(response.user);
@@ -136,7 +133,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Logout de usuario
    */
   const logout = async () => {
-    E2EE_SS_KEYS.forEach(k => sessionStorage.removeItem(k));
     try {
       await authService.logout();
       setUser(null);

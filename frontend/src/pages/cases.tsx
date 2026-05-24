@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useMemo } from "react";
 import React from "react";
-import { useCrypto } from "@/shared/contexts/CryptoContext";
-import { decryptAsAssistant } from "@/shared/utils/crypto";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
 import { CASE_INVITATIONS_EVENT } from "@/shared/hooks/useInvitationBadges";
@@ -213,7 +211,6 @@ const FREE_CASE_LIMIT = 5;
 const CasesPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { decrypt } = useCrypto();
   const isMobile = useIsMobile();
   const adSettings = useAdSystem(isMobile);
   const isFreePlan = user?.plan === 'free';
@@ -264,15 +261,14 @@ const CasesPage = () => {
     try {
       setLoadingInvitations(true);
       const data = await surgicalCaseService.getAssistedCases();
-      const decryptList = (list: SurgicalCase[]) =>
-        Promise.all(list.map(async c => ({
-          ...c,
-          patient_name: c.patient_name_for_assistant
-            ? await decryptAsAssistant(c.patient_name_for_assistant)
-            : await decrypt(c.patient_name),
-        })));
-      data.pending_invitations = await decryptList(data.pending_invitations);
-      data.accepted_cases = await decryptList(data.accepted_cases);
+      data.pending_invitations = data.pending_invitations.map(c => ({
+        ...c,
+        patient_name: c.patient_name_for_assistant || c.patient_name,
+      }));
+      data.accepted_cases = data.accepted_cases.map(c => ({
+        ...c,
+        patient_name: c.patient_name_for_assistant || c.patient_name,
+      }));
       setInvitations(data);
     } catch (err: any) {
       console.error('Error fetching invitations:', err);
@@ -337,20 +333,11 @@ const CasesPage = () => {
     }
   }, [currentSidebarAdIndex, sidebarAds]);
 
-  const decryptCases = async (data: SurgicalCase[]) =>
-    Promise.all(data.map(async c => ({
-      ...c,
-      patient_name: (!c.is_owner && c.patient_name_for_assistant)
-        ? await decryptAsAssistant(c.patient_name_for_assistant)
-        : await decrypt(c.patient_name),
-      patient_id: (c.is_owner && c.patient_id) ? await decrypt(c.patient_id) : c.patient_id,
-    })));
-
   const fetchCases = async () => {
     try {
       setLoading(true);
       const data = await surgicalCaseService.getCases();
-      setCases(await decryptCases(data));
+      setCases(data);
     } catch (err: any) {
       setError(err.message || 'Error al cargar casos');
       toast.error('Error', 'No se pudieron cargar los casos');
@@ -363,7 +350,7 @@ const CasesPage = () => {
     try {
       setLoadingArchived(true);
       const data = await surgicalCaseService.getCases({ archived: true });
-      setArchivedCases(await decryptCases(data));
+      setArchivedCases(data);
     } catch (err: any) {
       toast.error('Error', 'No se pudieron cargar los casos facturados');
     } finally {

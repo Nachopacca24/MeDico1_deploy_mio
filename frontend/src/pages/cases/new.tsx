@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCrypto } from '@/shared/contexts/CryptoContext';
-import { encryptForAssistant } from '@/shared/utils/crypto';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { BetweenContentAd } from '@/shared/components/ads/BetweenContentAd';
 import { Button } from '@/shared/components/ui/button';
@@ -46,7 +44,6 @@ interface Colleague {
 const NewCase = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { encrypt } = useCrypto();
   // Form state
   const [patientName, setPatientName] = useState('');
   const [patientId, setPatientId] = useState('');
@@ -456,16 +453,10 @@ const NewCase = () => {
     try {
       const hospitalFactor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
 
-      const [encryptedPatientName, encryptedPatientId, encryptedForAssistant] = await Promise.all([
-        encrypt(patientName),
-        patientId ? encrypt(patientId) : Promise.resolve(''),
-        encryptForAssistant(patientName),
-      ]);
-
       const caseData: any = {
-        patient_name: encryptedPatientName,
-        patient_name_for_assistant: encryptedForAssistant,
-        patient_id: encryptedPatientId || undefined,
+        patient_name: patientName,
+        patient_name_for_assistant: patientName,
+        patient_id: patientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
         patient_gender: (patientGender || undefined) as PatientGender | undefined,
         hospital: parseInt(hospitalId),

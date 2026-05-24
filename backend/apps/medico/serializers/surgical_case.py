@@ -6,6 +6,7 @@ Serializers para casos quirúrgicos y procedimientos
 from rest_framework import serializers
 from apps.medico.models import SurgicalCase, CaseProcedure
 from django.contrib.auth import get_user_model
+from apps.medico.crypto_utils import encrypt_field, decrypt_field
 import copy
 
 User = get_user_model()
@@ -107,15 +108,19 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['patient_name'] = decrypt_field(data.get('patient_name'))
+        data['patient_name_for_assistant'] = decrypt_field(data.get('patient_name_for_assistant'))
+        return data
+
     def get_can_edit(self, obj):
-        """Verificar si el usuario actual puede editar"""
         request = self.context.get('request')
         if not request or not request.user:
             return False
         return obj.can_be_edited_by(request.user)
 
     def get_is_owner(self, obj):
-        """Verificar si el usuario actual es el dueño"""
         request = self.context.get('request')
         if not request or not request.user:
             return False
@@ -185,15 +190,22 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['patient_name'] = decrypt_field(data.get('patient_name'))
+        data['patient_id'] = decrypt_field(data.get('patient_id'))
+        data['diagnosis'] = decrypt_field(data.get('diagnosis'))
+        data['notes'] = decrypt_field(data.get('notes'))
+        data['patient_name_for_assistant'] = decrypt_field(data.get('patient_name_for_assistant'))
+        return data
+
     def get_can_edit(self, obj):
-        """Verificar si el usuario actual puede editar"""
         request = self.context.get('request')
         if not request or not request.user:
             return False
         return obj.can_be_edited_by(request.user)
 
     def get_is_owner(self, obj):
-        """Verificar si el usuario actual es el dueño"""
         request = self.context.get('request')
         if not request or not request.user:
             return False
@@ -293,8 +305,16 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(cleaned_data)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['patient_name'] = decrypt_field(data.get('patient_name'))
+        data['patient_id'] = decrypt_field(data.get('patient_id'))
+        data['diagnosis'] = decrypt_field(data.get('diagnosis'))
+        data['notes'] = decrypt_field(data.get('notes'))
+        data['patient_name_for_assistant'] = decrypt_field(data.get('patient_name_for_assistant'))
+        return data
+
     def validate_patient_name(self, value):
-        """Validar que el nombre no esté vacío"""
         if not value or not value.strip():
             raise serializers.ValidationError("El nombre del paciente es requerido")
         return value.strip()
@@ -344,43 +364,43 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
 
         return data
 
+    def _encrypt_sensitive_fields(self, data: dict) -> dict:
+        """Encrypt patient-sensitive fields before writing to DB."""
+        for field in ('patient_name', 'patient_id', 'diagnosis', 'notes', 'patient_name_for_assistant'):
+            if data.get(field):
+                data[field] = encrypt_field(data[field])
+        return data
+
     def create(self, validated_data):
         """Crear caso con procedimientos anidados"""
-        print("🆕 CREATE - Iniciando...")
-
         procedures_data = validated_data.pop('procedures', [])
-        print(f"📋 Procedures recibidos: {len(procedures_data)}")
 
         if 'assistant_accepted' not in validated_data or validated_data['assistant_accepted'] is None:
             validated_data['assistant_accepted'] = None
 
+        # Auto-fill patient_name_for_assistant with same value as patient_name
+        if not validated_data.get('patient_name_for_assistant') and validated_data.get('patient_name'):
+            validated_data['patient_name_for_assistant'] = validated_data['patient_name']
+
+        self._encrypt_sensitive_fields(validated_data)
+
         from decimal import Decimal
         hospital_factor = Decimal('1.00')
 
-        print(f"🏥 Hospital factor: {hospital_factor}")
-
         try:
             case = SurgicalCase.objects.create(**validated_data)
-            print(f"✅ Caso creado ID: {case.id}")
         except Exception as e:
             import traceback
-            print(f"❌ Error creando caso: {str(e)}")
-            print(traceback.format_exc())
             raise serializers.ValidationError(f"Error al crear el caso: {str(e)}")
 
         if procedures_data:
-            print(f"🔄 Creando {len(procedures_data)} procedimientos...")
             for index, proc_data in enumerate(procedures_data):
-                print(f"  Procedimiento {index + 1}: {proc_data.get('surgery_name', 'N/A')[:30]}")
-
                 rvu = Decimal(str(proc_data.get('rvu', 0)))
                 factor = Decimal(str(proc_data.get('hospital_factor', hospital_factor)))
-
                 if 'calculated_value' not in proc_data or not proc_data['calculated_value']:
                     calculated_value = rvu * factor
                 else:
                     calculated_value = Decimal(str(proc_data['calculated_value']))
-
                 CaseProcedure.objects.create(
                     case=case,
                     surgery_code=proc_data['surgery_code'],
@@ -393,15 +413,19 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
                     notes=proc_data.get('notes', ''),
                     order=proc_data.get('order', index)
                 )
-                print(f"    ✅ Creado")
 
         case.refresh_from_db()
-        print(f"✅ Total procedimientos guardados: {case.procedures.count()}")
         return case
 
     def update(self, instance, validated_data):
         """Actualizar caso y sus procedimientos"""
         procedures_data = validated_data.pop('procedures', None)
+
+        # Auto-fill patient_name_for_assistant if not provided
+        if not validated_data.get('patient_name_for_assistant') and validated_data.get('patient_name'):
+            validated_data['patient_name_for_assistant'] = validated_data['patient_name']
+
+        self._encrypt_sensitive_fields(validated_data)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

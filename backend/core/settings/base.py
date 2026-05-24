@@ -163,6 +163,13 @@ MEDIA_URL = '/media/'
 # FIN CLOUDINARY CONFIGURATION
 # ============================================
 
+# ============================================
+# CIFRADO DE CAMPOS SENSIBLES (server-side)
+# ============================================
+# Generar con: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', '')
+
+# ============================================
 # GOOGLE CALENDAR CONFIGURATION
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')

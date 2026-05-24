@@ -1,6 +1,5 @@
 //src/pages/cases/detail.tsx
 import { useEffect, useState } from "react";
-import { useCrypto } from "@/shared/contexts/CryptoContext";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -27,7 +26,6 @@ import {
 const CaseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { decrypt } = useCrypto();
   const [surgicalCase, setSurgicalCase] = useState<SurgicalCase | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,11 +38,7 @@ const CaseDetailPage = () => {
     try {
       setLoading(true);
       const data = await surgicalCaseService.getCase(parseInt(id!));
-      setSurgicalCase({
-        ...data,
-        patient_name: await decrypt(data.patient_name),
-        patient_id: data.patient_id ? await decrypt(data.patient_id) : data.patient_id,
-      });
+      setSurgicalCase(data);
     } catch (err: any) {
       setError(err.message || 'Error al cargar el caso');
     } finally {

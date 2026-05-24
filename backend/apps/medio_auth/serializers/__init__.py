@@ -20,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'name',
             'role', 'is_admin', 'plan', 'friend_code',
             'phone', 'specialty', 'license_number', 'hospital_default',
-            'avatar', 'signature_image', 
+            'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
             'theme_preference',
             'is_profile_complete', 'created_at', 'updated_at'
