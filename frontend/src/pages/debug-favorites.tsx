@@ -156,7 +156,7 @@ export default function DebugFavorites() {
         <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 text-sm">
           <h3 className="font-bold mb-2">📋 Información del Sistema:</h3>
           <ul className="space-y-1 text-gray-700">
-            <li>• API Base URL: http://localhost:8000/api/v1/medico/favorites</li>
+            <li>• API Base URL: {import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/medico/favorites</li>
             <li>• Token en localStorage: {localStorage.getItem('medico_access_token') ? '✅ Sí' : '❌ No'}</li>
             <li>• Usuario guardado: {localStorage.getItem('medico_user') ? '✅ Sí' : '❌ No'}</li>
             <li>• Refresh token: {localStorage.getItem('medico_refresh_token') ? '✅ Sí' : '❌ No'}</li>
