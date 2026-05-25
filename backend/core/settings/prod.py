@@ -6,14 +6,22 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = os.environ.get(
     'DJANGO_ALLOWED_HOSTS',
-    'medico1-h5lk.onrender.com,me-dico1.vercel.app'
+    'medico1deploymio-production.up.railway.app,medicoapp.app,localhost,127.0.0.1'
 ).split(',')
 
 # Append to existing CSRF_TRUSTED_ORIGINS from base.py
 CSRF_TRUSTED_ORIGINS += [
+    'https://medicoapp.app',
+    'https://medico1deploymio-production.up.railway.app',
     'https://*.replit.app',
     'https://*.replit.dev',
 ]
+
+# Append production origins to CORS (Capacitor origins already added in base.py)
+CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS + [
+    'https://medicoapp.app',
+    'https://medico1deploymio-production.up.railway.app',
+]))
 
 if os.environ.get('DATABASE_URL'):
     DATABASES = {

@@ -254,15 +254,25 @@ AUTHENTICATION_BACKENDS = [
 
 
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    'DJANGO_CORS_ORIGINS', 
+
+# Origins from env var + Capacitor/Ionic origins always included for mobile app
+_cors_env = os.environ.get(
+    'DJANGO_CORS_ORIGINS',
     'https://me-dico1.vercel.app,https://medico1-h5lk.onrender.com,http://localhost:5173,http://127.0.0.1:5173'
 ).split(',')
+
+CORS_ALLOWED_ORIGINS = list(set(_cors_env + [
+    'capacitor://localhost',
+    'ionic://localhost',
+    'http://localhost',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]))
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = os.environ.get(
-    'DJANGO_CSRF_TRUSTED_ORIGINS', 
+    'DJANGO_CSRF_TRUSTED_ORIGINS',
     'https://me-dico1.vercel.app,https://medico1-h5lk.onrender.com,http://localhost:5173,http://127.0.0.1:5173'
 ).split(',')
 
