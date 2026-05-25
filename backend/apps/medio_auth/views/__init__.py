@@ -1,5 +1,8 @@
 # apps/medio_auth/views/__init__.py
 
+import logging
+logger = logging.getLogger(__name__)
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -950,10 +953,13 @@ class ForgotPasswordView(APIView):
             reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}&email={user.email}"
             display_name = escape(user.first_name or user.username)
 
-            send_mail(
-                subject='Restablecer contraseña — MéDico',
-                message=f'Usá este link para restablecer tu contraseña: {reset_url}\n\nExpira en 1 hora.',
-                html_message=f'''
+            logger.info("Sending password reset email to %s (backend: %s, host: %s)",
+                        user.email, settings.EMAIL_BACKEND, settings.EMAIL_HOST)
+            try:
+                send_mail(
+                    subject='Restablecer contraseña — MéDico',
+                    message=f'Usá este link para restablecer tu contraseña: {reset_url}\n\nExpira en 1 hora.',
+                    html_message=f'''
 <div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
     <div style="background-color:#00BCD4;padding:28px;text-align:center;">
@@ -973,11 +979,15 @@ class ForgotPasswordView(APIView):
     </div>
   </div>
 </div>
-                ''',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=True,
-            )
+                    ''',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+                logger.info("Password reset email sent successfully to %s", user.email)
+            except Exception as mail_error:
+                logger.error("Failed to send password reset email to %s: %s",
+                             user.email, str(mail_error), exc_info=True)
         except User.DoesNotExist:
             pass  # No revelar si el email existe
 
