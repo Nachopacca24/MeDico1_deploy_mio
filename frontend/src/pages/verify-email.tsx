@@ -1,7 +1,7 @@
 // src/pages/verify-email.tsx
 // src/pages/verify-email.tsx
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { emailVerificationService } from '@/shared/services/emailVerificationService';
 import { useAuth } from '@/shared/contexts/AuthContext';
@@ -18,8 +18,12 @@ const VerifyEmailPage = () => {
   const [state, setState] = useState<VerificationState>('loading');
   const [message, setMessage] = useState('');
   const [userInfo, setUserInfo] = useState<{ email?: string; username?: string }>({});
+  const hasVerified = useRef(false);
 
   useEffect(() => {
+    if (hasVerified.current) return;
+    hasVerified.current = true;
+
     const verifyEmail = async () => {
       const token = searchParams.get('token');
 
@@ -38,7 +42,6 @@ const VerifyEmailPage = () => {
           username: response.username,
         });
 
-        // Si el usuario ya está autenticado, refrescar contexto y redirigir al dashboard
         if (isAuthenticated) {
           try { await refreshUser(); } catch { /* ignorar si falla */ }
           setTimeout(() => navigate('/'), 3000);
