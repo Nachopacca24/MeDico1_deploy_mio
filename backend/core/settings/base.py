@@ -226,25 +226,17 @@ SIMPLE_JWT = {
 # CONFIGURACIÓN DE EMAIL (Zoho Mail SMTP)
 # ============================================
 
-# Usar SMTP si hay credenciales Zoho configuradas; si no, consola (dev local)
-if os.environ.get('ZOHO_EMAIL') or os.environ.get('EMAIL_HOST_USER'):
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Resend (HTTP API) si hay RESEND_API_KEY → nunca bloqueado por firewalls
+# Fallback: consola para dev local sin credenciales
+_resend_key = os.environ.get('RESEND_API_KEY', '')
+if _resend_key:
+    EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
+    ANYMAIL = {'RESEND_API_KEY': _resend_key}
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Zoho SMTP — credenciales vía ZOHO_EMAIL / ZOHO_PASSWORD
-# Puerto 465 + SSL para Railway (587/STARTTLS suele estar bloqueado en PaaS)
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.zoho.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '465'))
-EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'True') == 'True'
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False') == 'True'
-EMAIL_HOST_USER = os.environ.get('ZOHO_EMAIL', os.environ.get('EMAIL_HOST_USER', ''))
-EMAIL_HOST_PASSWORD = os.environ.get('ZOHO_PASSWORD', os.environ.get('EMAIL_HOST_PASSWORD', ''))
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'MéDico <contacto@medicoapp.app>')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-
-# Timeout para envío de emails
-EMAIL_TIMEOUT = 15
 
 # URL del frontend para enlaces de verificación
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')

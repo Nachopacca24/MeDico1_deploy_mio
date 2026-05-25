@@ -61,3 +61,4 @@ django-cloudinary-storage==0.3.0
 google-auth==2.48.0
 google-auth-httplib2==0.3.0
 google-auth-oauthlib==1.2.4
+django-anymail[resend]==12.0
