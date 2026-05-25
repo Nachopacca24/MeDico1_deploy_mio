@@ -226,12 +226,11 @@ SIMPLE_JWT = {
 # CONFIGURACIÓN DE EMAIL (Zoho Mail SMTP)
 # ============================================
 
-# Para desarrollo: Console backend (muestra emails en la terminal)
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
-    # Para producción: SMTP backend
+# Usar SMTP si hay credenciales Zoho configuradas; si no, consola (dev local)
+if os.environ.get('ZOHO_EMAIL') or os.environ.get('EMAIL_HOST_USER'):
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Zoho SMTP — credenciales vía ZOHO_EMAIL / ZOHO_PASSWORD
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.zoho.com')
