@@ -57,43 +57,38 @@ class RegisterView(APIView):
             email_sent = False
             try:
                 verification_token = user.generate_verification_token()
-                verification_url = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
-                
+                verification_url = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}&email={user.email}"
+                display_name = escape(user.first_name or user.username)
+
                 send_mail(
                     subject='¡Bienvenido a MéDico! - Verifica tu email',
-                    message=f'''
-¡Hola {user.first_name or user.username}!
-
-¡Bienvenido a MéDico! Estamos encantados de tenerte con nosotros.
-
-Para activar todas las funciones de tu cuenta, verifica tu email:
-
-{verification_url}
-
-Este enlace expirará en 24 horas.
-
-Saludos,
-El equipo de MéDico
+                    message=f'¡Bienvenido a MéDico! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
+                    html_message=f'''
+<div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
+    <div style="background-color:#00BCD4;padding:28px;text-align:center;">
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+    </div>
+    <div style="padding:36px;">
+      <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">¡Bienvenido, {display_name}!</h2>
+      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Estamos encantados de tenerte con nosotros. Para activar todas las funciones de tu cuenta, verifica tu dirección de correo electrónico.</p>
+      <div style="text-align:center;margin:32px 0;">
+        <a href="{verification_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Verificar mi email</a>
+      </div>
+      <p style="color:#9ca3af;font-size:13px;margin:0 0 6px;">O copia y pega esta URL en tu navegador:</p>
+      <p style="font-size:12px;word-break:break-all;"><a href="{verification_url}" style="color:#00BCD4;">{verification_url}</a></p>
+      <p style="color:#6b7280;font-size:12px;margin-top:24px;">Este enlace expirará en 24 horas.</p>
+    </div>
+    <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+    </div>
+  </div>
+</div>
                     ''',
-                html_message=f'''
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                    <h2 style="color: #2563eb;">¡Bienvenido a MéDico!</h2>
-                    <p>Hola <strong>{user.first_name or user.username}</strong>,</p>
-                    <p>Estamos encantados de tenerte con nosotros. Para activar todas las funciones de tu cuenta, por favor verifica tu dirección de correo electrónico haciendo clic en el siguiente enlace:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="{verification_url}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verificar mi email</a>
-                    </div>
-                    <p style="color: #666; font-size: 14px;">O copia y pega esta URL en tu navegador:</p>
-                    <p style="color: #666; font-size: 14px; word-break: break-all;"><a href="{verification_url}">{verification_url}</a></p>
-                    <p style="color: #999; font-size: 12px; margin-top: 40px;">Este enlace expirará en 24 horas.</p>
-                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                    <p style="color: #999; font-size: 12px; text-align: center;">El equipo de MéDico</p>
-                </div>
-                ''',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=True,
-            )
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
                 email_sent = True
             except Exception as e:
                 print(f"Error enviando email de verificación: {e}")
@@ -307,27 +302,37 @@ class SendVerificationEmailView(APIView):
         # Generar token y enviar email
         try:
             token = user.generate_verification_token()
-            verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-            
+            verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}&email={user.email}"
+            display_name = escape(user.first_name or user.username)
+
             send_mail(
                 subject='Verifica tu email - MéDico',
-                message=f'Hola {user.first_name or user.username}! Verifica tu email usando el siguiente enlace: {verification_url}',
+                message=f'Hola {user.first_name or user.username}! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
                 html_message=f'''
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                    <h2 style="color: #2563eb;">Verificación de email</h2>
-                    <p>Hola <strong>{user.first_name or user.username}</strong>,</p>
-                    <p>Has solicitado verificar tu cuenta. Por favor haz clic en el siguiente enlace:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="{verification_url}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verificar mi email</a>
-                    </div>
-                    <p style="color: #999; font-size: 12px; margin-top: 40px;">Este enlace expirará en 24 horas.</p>
-                </div>
+<div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
+    <div style="background-color:#00BCD4;padding:28px;text-align:center;">
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+    </div>
+    <div style="padding:36px;">
+      <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">Verifica tu email</h2>
+      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, has solicitado verificar tu cuenta en MéDico.</p>
+      <div style="text-align:center;margin:32px 0;">
+        <a href="{verification_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Verificar mi email</a>
+      </div>
+      <p style="color:#6b7280;font-size:12px;margin-top:24px;">Este enlace expirará en 24 horas.</p>
+    </div>
+    <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+    </div>
+  </div>
+</div>
                 ''',
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=False,
             )
-            
+
             return Response({
                 'message': 'Email de verificación enviado correctamente',
                 'email': email
@@ -420,27 +425,37 @@ class ResendVerificationEmailView(APIView):
         
         try:
             token = user.generate_verification_token()
-            verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-            
+            verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}&email={user.email}"
+            display_name = escape(user.first_name or user.username)
+
             send_mail(
-                subject='Verifica tu email - MéDico',
-                message=f'Hola {user.first_name or user.username}! Aquí está tu nuevo enlace para verificar tu email: {verification_url}',
+                subject='Nuevo enlace de verificación - MéDico',
+                message=f'Hola {user.first_name or user.username}! Tu nuevo enlace de verificación: {verification_url}\n\nEste enlace expira en 24 horas.',
                 html_message=f'''
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                    <h2 style="color: #2563eb;">Verificación de email (Nuevo enlace)</h2>
-                    <p>Hola <strong>{user.first_name or user.username}</strong>,</p>
-                    <p>Aquí tienes un nuevo enlace para verificar tu cuenta en MéDico. Por favor haz clic a continuación:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="{verification_url}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verificar mi email</a>
-                    </div>
-                    <p style="color: #999; font-size: 12px; margin-top: 40px;">Este enlace expirará en 24 horas.</p>
-                </div>
+<div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
+    <div style="background-color:#00BCD4;padding:28px;text-align:center;">
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+    </div>
+    <div style="padding:36px;">
+      <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">Nuevo enlace de verificación</h2>
+      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, aquí tienes un nuevo enlace para verificar tu cuenta en MéDico.</p>
+      <div style="text-align:center;margin:32px 0;">
+        <a href="{verification_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Verificar mi email</a>
+      </div>
+      <p style="color:#6b7280;font-size:12px;margin-top:24px;">Este enlace expirará en 24 horas.</p>
+    </div>
+    <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+    </div>
+  </div>
+</div>
                 ''',
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=False,
             )
-            
+
             return Response({
                 'message': 'Email de verificación reenviado correctamente'
             }, status=status.HTTP_200_OK)
@@ -932,25 +947,32 @@ class ForgotPasswordView(APIView):
         try:
             user = User.objects.get(email=email)
             token = user.generate_password_reset_token()
-            reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+            reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}&email={user.email}"
             display_name = escape(user.first_name or user.username)
 
             send_mail(
                 subject='Restablecer contraseña — MéDico',
                 message=f'Usá este link para restablecer tu contraseña: {reset_url}\n\nExpira en 1 hora.',
                 html_message=f'''
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                    <h2 style="color: #2563eb;">Restablecer contraseña</h2>
-                    <p>Hola <strong>{display_name}</strong>,</p>
-                    <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en MéDico.</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="{reset_url}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                            Restablecer contraseña
-                        </a>
-                    </div>
-                    <p style="color: #666; font-size: 14px;">Este link expira en <strong>1 hora</strong>.</p>
-                    <p style="color: #999; font-size: 12px;">Si no solicitaste esto, ignorá este correo.</p>
-                </div>
+<div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
+    <div style="background-color:#00BCD4;padding:28px;text-align:center;">
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+    </div>
+    <div style="padding:36px;">
+      <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">Restablecer contraseña</h2>
+      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, recibimos una solicitud para restablecer la contraseña de tu cuenta en MéDico.</p>
+      <div style="text-align:center;margin:32px 0;">
+        <a href="{reset_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Restablecer contraseña</a>
+      </div>
+      <p style="color:#9ca3af;font-size:13px;margin:0 0 8px;">Este enlace expira en <strong style="color:#f9fafb;">1 hora</strong>.</p>
+      <p style="color:#6b7280;font-size:12px;margin:0;">Si no solicitaste esto, ignorá este correo.</p>
+    </div>
+    <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+    </div>
+  </div>
+</div>
                 ''',
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],

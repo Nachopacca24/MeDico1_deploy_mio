@@ -223,7 +223,7 @@ SIMPLE_JWT = {
 }
 
 # ============================================
-# CONFIGURACIÓN DE EMAIL
+# CONFIGURACIÓN DE EMAIL (Zoho Mail SMTP)
 # ============================================
 
 # Para desarrollo: Console backend (muestra emails en la terminal)
@@ -233,13 +233,13 @@ else:
     # Para producción: SMTP backend
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-# Configuración SMTP (para producción)
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+# Zoho SMTP — credenciales vía ZOHO_EMAIL / ZOHO_PASSWORD
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.zoho.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'MéDico <noreply@medico1.com>')
+EMAIL_HOST_USER = os.environ.get('ZOHO_EMAIL', os.environ.get('EMAIL_HOST_USER', ''))
+EMAIL_HOST_PASSWORD = os.environ.get('ZOHO_PASSWORD', os.environ.get('EMAIL_HOST_PASSWORD', ''))
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'MéDico <contacto@medicoapp.app>')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Timeout para envío de emails

@@ -8,6 +8,7 @@ import { Separator } from "@/shared/components/ui/separator";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { Shield } from "lucide-react";
 import { advertisementService } from "@/admin/services/advertisementService";
+import { EmailVerificationBanner } from "@/shared/components/EmailVerificationBanner";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -49,6 +50,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         <main className="flex flex-1 flex-col gap-4 p-4 md:p-6 pb-20 md:pb-16">
+          <EmailVerificationBanner />
           {children}
         </main>
       </SidebarInset>
