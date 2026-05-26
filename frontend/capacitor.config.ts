@@ -5,8 +5,15 @@ const config: CapacitorConfig = {
   appName: 'MéDico App',
   webDir: 'dist',
   android: {
-    // Allow the WebView to handle deep links before the system does
-    allowMixedContent: false,
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true,
+  },
+  server: {
+    allowNavigation: [
+      'medico1deploymio-production.up.railway.app',
+    ],
+    cleartext: false,
   },
   plugins: {
     SplashScreen: {

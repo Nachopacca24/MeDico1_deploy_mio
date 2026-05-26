@@ -64,10 +64,10 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-
-    # CORS
+    # CORS must be first — before any middleware that can generate a response
     'corsheaders.middleware.CorsMiddleware',
+
+    'django.middleware.security.SecurityMiddleware',
 
     # Custom
     'core.middleware.ViteDevMiddleware',
@@ -288,6 +288,15 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
     'sentry-trace',
     'baggage',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
 ]
 
 CSRF_COOKIE_SECURE = False

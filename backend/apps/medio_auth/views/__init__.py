@@ -115,7 +115,11 @@ class LoginView(APIView):
     throttle_classes = [LoginRateThrottle]
 
     def post(self, request):
-        logger.info("Login attempt - User-Agent: %s", request.META.get('HTTP_USER_AGENT', 'unknown'))
+        logger.info(
+            "Login attempt - Origin: %s | User-Agent: %s",
+            request.META.get('HTTP_ORIGIN', 'none'),
+            request.META.get('HTTP_USER_AGENT', 'unknown'),
+        )
         serializer = LoginSerializer(
             data=request.data,
             context={'request': request}

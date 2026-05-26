@@ -59,7 +59,7 @@ STATICFILES_DIRS = [
 TEMPLATES[0]['DIRS'] = [BASE_DIR.parent / 'frontend' / 'dist']
 
 # WhiteNoise para servir archivos estáticos
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 WHITENOISE_ROOT = os.path.join(BASE_DIR.parent, 'frontend', 'dist')
 WHITENOISE_INDEX_FILE = True
