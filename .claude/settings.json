@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(keytool -genkey -v -keystore \"C:\\\\Users\\\\nacho\\\\medicoapp-keystore\\\\medicoapp.keystore\" -alias medicoapp -keyalg RSA -keysize 2048 -validity 10000 -storepass \"MedicoApp2024!\" -keypass \"MedicoApp2024!\" -dname \"CN=MeDico App, OU=MeDico, O=MeDico, L=Guatemala City, ST=Guatemala, C=GT\" 2>&1)",
+      "PowerShell($aab = \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\frontend\\\\android\\\\app\\\\build\\\\outputs\\\\bundle\\\\release\\\\app-release.aab\"; if \\(Test-Path $aab\\) { $size = \\(Get-Item $aab\\).Length / 1MB; Write-Host \"✅ AAB found: $aab\"; Write-Host \"   Size: $\\([math]::Round\\($size,2\\)\\) MB\" } else { Write-Host \"❌ AAB not found\" })",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\frontend\\\\public\\\\.well-known\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"Directory ready\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\frontend\\\\public\\\\.well-known\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\nacho"
+    ]
+  }
+}

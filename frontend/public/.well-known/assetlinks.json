@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.medicoapp.medico",
+      "sha256_cert_fingerprints": [
+        "89:D6:D5:C3:45:8A:5F:DD:7F:6A:94:F8:9A:32:75:27:2B:DC:98:4C:76:2B:9C:F9:D3:20:A5:D0:43:07:DB:8F"
+      ]
+    }
+  }
+]
