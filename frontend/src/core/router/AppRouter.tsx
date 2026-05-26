@@ -18,6 +18,7 @@ import LogoutPage from "@/pages/logout";
 import VerifyEmailPage from "@/pages/verify-email";
 import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
+import CompleteProfilePage from "@/pages/complete-profile";
 
 // Main pages
 import Index from "@/pages/index";
@@ -59,6 +60,9 @@ export const AppRouter = () => {
         <Route path='clients' element={<Clients />} />
         <Route path='advertisements' element={<Advertisements />} />
       </Route>
+
+      {/* Profile completion — protected but outside ad system */}
+      <Route path='/complete-profile' element={<ProtectedRoute><CompleteProfilePage /></ProtectedRoute>} />
 
       {/* Protected routes — wrapped in PersistentAdSystem so ad timers survive navigation */}
       <Route element={<ProtectedRoute><PersistentAdSystem /></ProtectedRoute>}>

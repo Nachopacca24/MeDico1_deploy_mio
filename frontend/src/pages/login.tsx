@@ -119,12 +119,6 @@ export default function Login() {
         title: "¡Bienvenido/a!",
         description: "Has iniciado sesión con Google exitosamente.",
       });
-      // If there was a 'from' state, navigate there, otherwise to home
-      if (location.state?.from) {
-        navigate(location.state.from);
-      } else {
-        navigate("/");
-      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -150,16 +144,10 @@ export default function Login() {
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
       await loginWithGoogle(token);
       toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
-      if (location.state?.from) {
-        navigate(location.state.from);
-      } else {
-        navigate("/");
-      }
     } catch (error: any) {
-      // Don't show a toast if the user simply cancelled the picker
       const cancelled = error?.error === 'popup_closed_by_user'
         || error?.message === 'User cancelled'
-        || error?.code === 12501; // SIGN_IN_CANCELLED
+        || error?.code === 12501;
       if (!cancelled) {
         const msg = error?.message ?? error?.error ?? JSON.stringify(error) ?? 'Error desconocido';
         toast({ variant: "destructive", title: "Error al iniciar sesión con Google", description: msg, duration: 8000 });

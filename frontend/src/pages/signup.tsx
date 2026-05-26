@@ -1,7 +1,7 @@
 import type React from "react";
 
 import { useState } from "react";
-import { useNavigate, Link, Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError } from '@/shared/services/authErrors';
 import { Button } from "@/shared/components/ui/button";
@@ -44,7 +44,6 @@ export default function SignupForm() {
     specialty: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { register, isAuthenticated, loginWithGoogle } = useAuth();
 
@@ -170,7 +169,6 @@ export default function SignupForm() {
         title: "¡Bienvenido/a!",
         description: "Te has registrado con Google exitosamente.",
       });
-      navigate("/");
     } catch (error: any) {
       toast({
         variant: "destructive",
