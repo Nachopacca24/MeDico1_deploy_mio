@@ -3,7 +3,10 @@
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
-const REDIRECT_URI = window.location.origin + '/calendar';
+
+// Single redirect URI for all platforms (web + Android App Links).
+// Google requires https for sensitive scopes — custom URI schemes are not allowed.
+const REDIRECT_URI = 'https://medicoapp.app/calendar';
 
 export interface CalendarEvent {
   id?: string;
@@ -163,11 +166,14 @@ class GoogleCalendarService {
   }
 
   async handleOAuthCallback(): Promise<boolean> {
+    // On Android the deep link delivers params in the hash or query string
     const hash = window.location.hash;
-    if (!hash) return false;
+    const search = window.location.search;
+    const raw = hash ? hash.substring(1) : search ? search.substring(1) : '';
+    if (!raw) return false;
 
     try {
-      const params = new URLSearchParams(hash.substring(1));
+      const params = new URLSearchParams(raw);
       const accessToken = params.get('access_token');
       const state = params.get('state');
       const error = params.get('error');
