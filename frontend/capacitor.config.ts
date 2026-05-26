@@ -9,6 +9,7 @@ const config: CapacitorConfig = {
     webContentsDebuggingEnabled: true,
   },
   server: {
+    androidScheme: 'https',
     allowNavigation: [
       'medico1deploymio-production.up.railway.app',
     ],

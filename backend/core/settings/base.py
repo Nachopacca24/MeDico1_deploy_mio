@@ -264,6 +264,8 @@ _cors_env = os.environ.get(
 CORS_ALLOWED_ORIGINS = list(set(_cors_env + [
     'capacitor://localhost',
     'ionic://localhost',
+    # Capacitor 5+ serves from https://localhost on Android (androidScheme default)
+    'https://localhost',
     'http://localhost',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
