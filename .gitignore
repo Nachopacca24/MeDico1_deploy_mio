@@ -24,6 +24,11 @@
 *.p12
 *.jks
 *.asc
+*.keystore
+
+# Android signing — NEVER commit these
+frontend/android/keystore.properties
+frontend/android/app/google-services.json
 id_rsa
 id_rsa.pub
 authorized_keys
