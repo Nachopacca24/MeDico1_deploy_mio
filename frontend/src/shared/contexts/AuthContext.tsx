@@ -105,8 +105,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (response.user.role === 0) {
         navigate('/admin');
-      } else if (!response.user.is_profile_complete) {
-        navigate('/complete-profile');
       } else {
         navigate('/');
       }

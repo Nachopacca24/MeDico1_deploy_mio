@@ -119,6 +119,11 @@ export default function Login() {
         title: "¡Bienvenido/a!",
         description: "Has iniciado sesión con Google exitosamente.",
       });
+      if (location.state?.from) {
+        navigate(location.state.from);
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -144,7 +149,13 @@ export default function Login() {
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
       await loginWithGoogle(token);
       toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
+      if (location.state?.from) {
+        navigate(location.state.from);
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
+      // Don't show a toast if the user simply cancelled the picker
       const cancelled = error?.error === 'popup_closed_by_user'
         || error?.message === 'User cancelled'
         || error?.code === 12501;
