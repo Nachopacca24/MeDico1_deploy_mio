@@ -2,7 +2,7 @@ import type React from "react";
 import { useState } from "react";
 import { useNavigate, Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
-import { AuthError } from '@/shared/services/authErrors';
+import { AuthError, NetworkError } from '@/shared/services/authErrors';
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
@@ -12,8 +12,26 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { Loader2, Activity, HeartPulse } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 
+const HEALTH_URL = `${import.meta.env.VITE_API_URL || ''}/api/health/`;
+
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
+  const [connTest, setConnTest] = useState<{ status: 'idle' | 'loading' | 'ok' | 'error'; message: string }>({ status: 'idle', message: '' });
+
+  const testConnection = async () => {
+    setConnTest({ status: 'loading', message: 'Probando...' });
+    try {
+      const res = await fetch(HEALTH_URL);
+      if (res.ok) {
+        const data = await res.json();
+        setConnTest({ status: 'ok', message: `OK (${res.status}) — ${JSON.stringify(data)}` });
+      } else {
+        setConnTest({ status: 'error', message: `HTTP ${res.status} en ${HEALTH_URL}` });
+      }
+    } catch (err: any) {
+      setConnTest({ status: 'error', message: `Error: ${err?.message ?? err} — URL: ${HEALTH_URL}` });
+    }
+  };
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -90,8 +108,9 @@ export default function Login() {
 
       let errorMessage = "Credenciales inválidas. Por favor, intenta de nuevo.";
 
-      // Manejar errores estructurados de AuthError
-      if (error instanceof AuthError) {
+      if (error instanceof NetworkError) {
+        errorMessage = error.message;
+      } else if (error instanceof AuthError) {
         errorMessage = error.getUserMessage();
       } else if (error?.message) {
         errorMessage = error.message;
@@ -101,6 +120,7 @@ export default function Login() {
         variant: "destructive",
         title: "Error al iniciar sesión",
         description: errorMessage,
+        duration: 10000,
       });
     } finally {
       setIsLoading(false);
@@ -280,6 +300,25 @@ export default function Login() {
                 <a href='/privacy.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
                   Política de Privacidad
                 </a>
+              </div>
+
+              <div className="w-full pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-muted-foreground"
+                  onClick={testConnection}
+                  disabled={connTest.status === 'loading'}
+                >
+                  {connTest.status === 'loading' ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                  Probar conexión al servidor
+                </Button>
+                {connTest.status !== 'idle' && (
+                  <p className={`text-xs break-all px-1 ${connTest.status === 'ok' ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
+                    {connTest.message}
+                  </p>
+                )}
               </div>
             </CardFooter>
           </form>

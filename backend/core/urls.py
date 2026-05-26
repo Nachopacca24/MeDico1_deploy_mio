@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.views import (
     IndexView,
+    health_check,
     admin_stats,
     admin_activity,
     admin_users,
@@ -20,7 +21,10 @@ def trigger_error(request):
 urlpatterns = [
     # Django Admin Panel
     path('django-admin/', admin.site.urls),
-    
+
+    # Health check — no auth required
+    path('api/health/', health_check, name='health_check'),
+
     # Sentry Verify
     path('sentry-debug/', trigger_error),
 

@@ -193,8 +193,9 @@ class AuthService {
    * 🔒 Login de usuario
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    const url = AUTH_ENDPOINTS.login;
     try {
-      const response = await fetch(AUTH_ENDPOINTS.login, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,20 +204,25 @@ class AuthService {
       });
 
       if (!response.ok) {
-        throw await parseAuthError(response);
+        const authError = await parseAuthError(response);
+        throw new NetworkError(
+          `HTTP ${response.status} en ${url}: ${authError.message}`
+        );
       }
 
       const result: AuthResponse = await response.json();
 
-      // Guardar tokens y usuario (esto limpiará Google Calendar si es usuario diferente)
       this.saveTokens(result.tokens);
       this.saveUser(result.user);
 
-
       return result;
     } catch (error) {
+      if (error instanceof NetworkError) throw error;
       if (error instanceof TypeError) {
-        throw new NetworkError();
+        // TypeError: "Failed to fetch" → CORS bloqueado o sin red
+        throw new NetworkError(
+          `No se pudo conectar a ${url}. Posible error de CORS o sin conexión. Detalle: ${(error as TypeError).message}`
+        );
       }
       throw error;
     }

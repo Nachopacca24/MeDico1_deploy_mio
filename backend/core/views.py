@@ -6,13 +6,22 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from datetime import timedelta
 from decimal import Decimal
 import os
 import requests
 from django.shortcuts import render
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    return Response({
+        'status': 'ok',
+        'timestamp': timezone.now().isoformat(),
+    })
 
 
 
