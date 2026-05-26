@@ -11,6 +11,8 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { useToast } from "@/shared/hooks/use-toast";
 import { Loader2, Activity, HeartPulse } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -139,6 +141,42 @@ export default function Login() {
     onError: () => toast({ variant: "destructive", title: "Error", description: "Fallo al conectar con Google" }),
   });
 
+  const handleGoogleNative = async () => {
+    setIsLoading(true);
+    try {
+      // initialize() must be called first — the native googleSignInClient is null until then
+      await GoogleAuth.initialize();
+      const googleUser = await GoogleAuth.signIn();
+      const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
+      await loginWithGoogle(token);
+      toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
+      if (location.state?.from) {
+        navigate(location.state.from);
+      } else {
+        navigate("/");
+      }
+    } catch (error: any) {
+      // Don't show a toast if the user simply cancelled the picker
+      const cancelled = error?.error === 'popup_closed_by_user'
+        || error?.message === 'User cancelled'
+        || error?.code === 12501; // SIGN_IN_CANCELLED
+      if (!cancelled) {
+        const msg = error?.message ?? error?.error ?? JSON.stringify(error) ?? 'Error desconocido';
+        toast({ variant: "destructive", title: "Error al iniciar sesión con Google", description: msg, duration: 8000 });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleClick = () => {
+    if (Capacitor.getPlatform() === 'android') {
+      handleGoogleNative();
+    } else {
+      loginGoogle();
+    }
+  };
+
   // Si ya está autenticado, redirigir según el rol
   if (isAuthenticated) {
     if (isAdmin) {
@@ -257,7 +295,7 @@ export default function Login() {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => loginGoogle()}
+                onClick={handleGoogleClick}
                 disabled={isLoading}
               >
                 <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
