@@ -5,8 +5,7 @@ const config: CapacitorConfig = {
   appName: 'MéDico App',
   webDir: 'dist',
   android: {
-    allowMixedContent: true,
-    captureInput: true,
+    allowMixedContent: false,
     webContentsDebuggingEnabled: true,
   },
   server: {
