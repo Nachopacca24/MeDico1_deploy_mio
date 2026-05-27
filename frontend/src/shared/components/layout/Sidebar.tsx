@@ -53,7 +53,7 @@ const mainItems = [
 
 const workItems = [
   {
-    title: "Casos",
+    title: "Mis cirugías",
     url: "/cases",
     icon: Briefcase,
   },

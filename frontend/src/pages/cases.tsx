@@ -583,7 +583,7 @@ const CasesPage = () => {
         <div className="flex-1 space-y-6 min-w-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight">Casos Quirúrgicos</h1>
+              <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight">Mis Cirugías</h1>
               {activeTab === 'activos' && (
                 <p className="text-muted-foreground text-sm">
                   {filteredCases.length} de {cases.length} caso{cases.length !== 1 ? 's' : ''} activos

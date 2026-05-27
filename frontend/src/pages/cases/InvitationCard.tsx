@@ -73,12 +73,19 @@ export function InvitationCard({ case: surgicalCase, onAccept, onReject }: Invit
         <CardDescription className="space-y-2 mt-2">
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span>{new Date(surgicalCase.surgery_date).toLocaleDateString('es-ES', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}</span>
+            <span>
+              {new Date(surgicalCase.surgery_date).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+              {surgicalCase.surgery_time && (
+                <span className="ml-2 font-medium text-foreground">
+                  {surgicalCase.surgery_time.slice(0, 5)}
+                </span>
+              )}
+            </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Hospital className="w-4 h-4 text-muted-foreground" />
