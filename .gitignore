@@ -277,3 +277,6 @@ temp/
 # 5. venv/ NUNCA debe subirse (se regenera con python -m venv venv)
 
 # Fin del .gitignorebackend/run.ps1
+
+# Claude Code local settings (may contain secrets in allowed commands)
+.claude/
