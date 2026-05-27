@@ -23,15 +23,12 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-// Variable interval: 50% short (6-9s), 50% long (10-13s)
-const nextIntervalMs = (): number => {
-  if (Math.random() < 0.5) return (6 + Math.random() * 3) * 1000;
-  return (10 + Math.random() * 3) * 1000;
-};
+// Variable interval around 5 minutes (270-330s)
+const nextIntervalMs = (): number => (270 + Math.random() * 60) * 1000;
 
 export function PopupAdManager({
-  initialDelay = 5,
-  maxPerSession = 10,
+  initialDelay = 20,
+  maxPerSession = 999,
 }: PopupAdManagerProps) {
   const { user } = useAuth();
   const userSpecialty = user?.specialty ?? '';

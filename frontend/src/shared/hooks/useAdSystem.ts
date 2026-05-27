@@ -34,9 +34,9 @@ export function useAdSystem(isMobile: boolean = false): AdSystemSettings {
     showBetweenContent: !isPremium,
     showForYouSection: true,
     popupStyle: isMobile ? 'bottom-sheet' : 'full',
-    popupInitialDelay: 6,
-    popupInterval: 15,
-    popupMaxPerSession: 20,
+    popupInitialDelay: 20,
+    popupInterval: 300,
+    popupMaxPerSession: 999,
     userSpecialty,
     isPremium,
   };
