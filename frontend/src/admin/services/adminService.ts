@@ -102,17 +102,34 @@ class AdminService {
     try {
       const response = await authService.authenticatedFetch(
         `${API_URL}/api/admin/users/${userId}/delete/`,
-        {
-          method: 'POST',
-        }
+        { method: 'POST' }
       );
-      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Error al eliminar usuario');
       }
     } catch (error) {
       console.error('Error en deleteUser:', error);
+      throw error;
+    }
+  }
+
+  async setPermanentPremium(userId: number, isPermanent: boolean): Promise<void> {
+    try {
+      const response = await authService.authenticatedFetch(
+        `${API_URL}/api/admin/users/${userId}/permanent-premium/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_permanent: isPermanent }),
+        }
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al actualizar Premium Permanente');
+      }
+    } catch (error) {
+      console.error('Error en setPermanentPremium:', error);
       throw error;
     }
   }

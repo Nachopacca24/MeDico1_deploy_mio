@@ -234,6 +234,7 @@ def admin_users(request):
         'id', 'username', 'email', 'first_name', 'last_name',
         'is_staff', 'is_active', 'is_superuser', 'is_verified',
         'date_joined', 'last_login', 'plan', 'specialty', 'phone',
+        'trial_ends_at', 'is_permanent_premium', 'role',
     )
 
     # Contar casos en una sola consulta
@@ -242,12 +243,18 @@ def admin_users(request):
         for row in SurgicalCase.objects.values('created_by_id').annotate(total=Count('id'))
     }
 
+    now = timezone.now()
     users_list = []
     for user in users:
         if user['date_joined']:
             user['date_joined'] = user['date_joined'].isoformat()
         if user['last_login']:
             user['last_login'] = user['last_login'].isoformat()
+        if user['trial_ends_at']:
+            user['trial_ends_at'] = user['trial_ends_at'].isoformat()
+            user['trial_active'] = user['trial_ends_at'] > now.isoformat()
+        else:
+            user['trial_active'] = False
         full_name = f"{user['first_name']} {user['last_name']}".strip()
         user['full_name'] = full_name if full_name else user['username']
         user['total_cases'] = case_counts.get(user['id'], 0)
@@ -255,6 +262,26 @@ def admin_users(request):
         users_list.append(user)
 
     return Response(users_list)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def set_permanent_premium(request, user_id):
+    """Otorgar o revocar Premium Permanente a un usuario."""
+    is_permanent = request.data.get('is_permanent', True)
+    try:
+        target = User.objects.get(id=user_id)
+        target.is_permanent_premium = bool(is_permanent)
+        if bool(is_permanent):
+            target.plan = 'premium'
+        target.save(update_fields=['is_permanent_premium', 'plan'])
+        return Response({
+            'success': True,
+            'is_permanent_premium': target.is_permanent_premium,
+            'plan': target.plan,
+        })
+    except User.DoesNotExist:
+        return Response({'message': 'Usuario no encontrado'}, status=404)
 
 
 @api_view(['POST'])

@@ -90,6 +90,19 @@ class CustomUser(AbstractUser):
         verbose_name="Plan de Suscripción",
         help_text="Plan actual del usuario"
     )
+
+    trial_ends_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Fin del Período de Prueba",
+        help_text="Fecha en que termina el período de prueba de 14 días"
+    )
+
+    is_permanent_premium = models.BooleanField(
+        default=False,
+        verbose_name="Premium Permanente",
+        help_text="Si es True, el usuario mantiene Premium permanentemente sin importar el plan"
+    )
     
     # Verificación de Email - CAMPOS NUEVOS
     is_email_verified = models.BooleanField(

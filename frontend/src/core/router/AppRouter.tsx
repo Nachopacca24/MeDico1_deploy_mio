@@ -10,6 +10,7 @@ import AdminDashboard from "@/admin/pages/Dashboard";
 import Clients from "@/admin/pages/Clients";
 import Advertisements from "@/admin/pages/Advertisements";
 import UsersPage from "@/admin/pages/UsersPage";
+import SubscriptionsPage from "@/admin/pages/SubscriptionsPage";
 
 // Auth pages
 import LoginPage from "@/pages/login";
@@ -57,6 +58,7 @@ export const AppRouter = () => {
       >
         <Route index element={<AdminDashboard />} />
         <Route path='users' element={<UsersPage />} />
+        <Route path='subscriptions' element={<SubscriptionsPage />} />
         <Route path='clients' element={<Clients />} />
         <Route path='advertisements' element={<Advertisements />} />
       </Route>

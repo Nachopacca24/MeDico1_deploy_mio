@@ -4,19 +4,18 @@ import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { Button } from '@/shared/components/ui/button';
-import { 
-  Users, 
-  Building2, 
-  Stethoscope, 
-  BarChart3, 
-  Settings, 
+import {
+  Users,
+  Stethoscope,
+  BarChart3,
   LogOut,
   Menu,
   X,
   Shield,
   Home,
   Briefcase,
-  Megaphone
+  Megaphone,
+  CreditCard,
 } from 'lucide-react';
 
 const adminMenuItems = [
@@ -31,6 +30,11 @@ const adminMenuItems = [
     icon: Users
   },
   {
+    title: 'Suscripciones',
+    href: '/admin/subscriptions',
+    icon: CreditCard
+  },
+  {
     title: 'Clientes',
     href: '/admin/clients',
     icon: Briefcase
@@ -41,20 +45,10 @@ const adminMenuItems = [
     icon: Megaphone
   },
   {
-    title: 'Hospitales',
-    href: '/admin/hospitals',
-    icon: Building2
-  },
-  {
     title: 'Procedimientos',
     href: '/admin/procedures',
     icon: Stethoscope
   },
-  {
-    title: 'Configuración',
-    href: '/admin/settings',
-    icon: Settings
-  }
 ];
 
 export const AdminLayout = () => {

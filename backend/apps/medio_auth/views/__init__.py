@@ -53,9 +53,13 @@ class RegisterView(APIView):
         
         if serializer.is_valid():
             user = serializer.save()
+            # Activar prueba de 14 días con acceso premium
+            user.trial_ends_at = timezone.now() + timedelta(days=14)
+            user.plan = 'premium'
+            user.save(update_fields=['trial_ends_at', 'plan'])
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
-            
+
             # Generar token de verificación y enviar email
             email_sent = False
             try:
@@ -897,7 +901,9 @@ class GoogleLoginView(APIView):
                     first_name=first_name,
                     last_name=last_name,
                     is_email_verified=True,
-                    role=1
+                    role=1,
+                    trial_ends_at=timezone.now() + timedelta(days=14),
+                    plan='premium',
                 )
                 created = True
             

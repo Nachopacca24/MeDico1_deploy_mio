@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'name',
-            'role', 'is_admin', 'plan', 'friend_code',
+            'role', 'is_admin', 'plan', 'trial_ends_at', 'is_permanent_premium', 'friend_code',
             'phone', 'specialty', 'license_number', 'hospital_default',
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
@@ -27,7 +27,8 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'id', 'is_verified', 'is_email_verified', 'friend_code',
-            'created_at', 'updated_at', 'name', 'full_name', 'is_admin'
+            'created_at', 'updated_at', 'name', 'full_name', 'is_admin',
+            'trial_ends_at', 'is_permanent_premium'
         ]
 
 
