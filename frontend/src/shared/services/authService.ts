@@ -27,6 +27,8 @@ export interface User {
   role: number;
   is_admin: boolean;
   plan: 'free' | 'premium';
+  trial_ends_at: string | null;
+  is_permanent_premium: boolean;
   friend_code: string;
   name: string;
   phone?: string;

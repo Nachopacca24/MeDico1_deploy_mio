@@ -263,7 +263,11 @@ const Settings = () => {
                     <div>
                       <CardTitle>Tu Plan Actual</CardTitle>
                       <CardDescription>
-                        {user?.plan === 'premium'
+                        {user?.is_permanent_premium
+                          ? 'Tienes acceso Premium permanente'
+                          : user?.plan === 'premium' && user?.trial_ends_at
+                          ? `Período de prueba — vence el ${new Date(user.trial_ends_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                          : user?.plan === 'premium'
                           ? 'Estás disfrutando de MeDico Premium'
                           : 'Estás en el plan gratuito de MeDico'}
                       </CardDescription>
@@ -286,19 +290,24 @@ const Settings = () => {
                 <Card className={user?.plan !== 'premium' ? 'border-primary ring-1 ring-primary' : ''}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">Plan Free</CardTitle>
-                    <CardDescription>Para comenzar</CardDescription>
+                    <CardDescription>Funciones esenciales, con publicidad</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {[
-                      { icon: CheckCircle2, text: 'Gestión de casos quirúrgicos', ok: true },
-                      { icon: CheckCircle2, text: 'Colegas y ayudantes', ok: true },
-                      { icon: CheckCircle2, text: 'Hospitales y procedimientos', ok: true },
-                      { icon: CheckCircle2, text: 'Calculadora médica', ok: true },
-                      { icon: Eye, text: 'Anuncios en la app', ok: false },
-                      { icon: MessageSquare, text: 'Popups publicitarios', ok: false },
-                    ].map(({ icon: Icon, text, ok }) => (
+                      { ok: true,  text: 'Gestión de casos quirúrgicos' },
+                      { ok: true,  text: 'Colegas y colaboración' },
+                      { ok: true,  text: 'Hospitales y procedimientos' },
+                      { ok: true,  text: 'Calculadora médica' },
+                      { ok: false, text: 'Banners publicitarios visibles' },
+                      { ok: false, text: 'Popups de publicidad periódicos' },
+                      { ok: false, text: 'Novedades sin filtro de especialidad' },
+                      { ok: false, text: 'Sin integración con Google Calendar' },
+                    ].map(({ ok, text }) => (
                       <div key={text} className="flex items-center gap-2 text-sm">
-                        <Icon className={`h-4 w-4 flex-shrink-0 ${ok ? 'text-green-600' : 'text-orange-400'}`} />
+                        {ok
+                          ? <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600" />
+                          : <XCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground/50" />
+                        }
                         <span className={ok ? '' : 'text-muted-foreground'}>{text}</span>
                       </div>
                     ))}
@@ -317,17 +326,18 @@ const Settings = () => {
                       <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
                       Premium
                     </CardTitle>
-                    <CardDescription>Experiencia sin interrupciones</CardDescription>
+                    <CardDescription>Experiencia completa, sin interrupciones</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {[
                       'Gestión de casos quirúrgicos',
-                      'Colegas y ayudantes',
+                      'Colegas y colaboración',
                       'Hospitales y procedimientos',
                       'Calculadora médica',
-                      'Sin anuncios en la app',
-                      'Sin popups publicitarios',
-                      'Solo contenido especializado "Para ti"',
+                      'Sin publicidad ni popups',
+                      'Novedades filtradas por tu especialidad',
+                      'Integración con Google Calendar',
+                      'Acceso anticipado a nuevas funciones',
                     ].map((text) => (
                       <div key={text} className="flex items-center gap-2 text-sm">
                         <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
