@@ -96,7 +96,7 @@
 
     <div class="badge">Legal</div>
     <h1>Política de Privacidad</h1>
-    <p class="updated">Última actualización: Mayo 2025 · Aplicable a medicoapp.app</p>
+    <p class="updated">Última actualización: Mayo 2026 · Aplicable a medicoapp.app</p>
 
     <div class="intro">
       Esta política explica qué información recopilamos cuando usas MéDico App, cómo la usamos y cómo la protegemos. La leemos en lenguaje claro porque creemos que tienes derecho a entender exactamente qué pasa con tus datos.
@@ -152,14 +152,14 @@
     <h2>4. Cifrado de datos sensibles (E2EE)</h2>
 
     <div class="highlight-box">
-      <strong>🔐 Cifrado extremo a extremo:</strong> Los campos sensibles de tus registros (nombre del paciente, ID del paciente, diagnóstico y notas clínicas) se cifran con AES-256-GCM directamente en tu navegador antes de ser enviados a nuestros servidores. La clave de cifrado se deriva de tu contraseña usando PBKDF2.
+      <strong>🔐 Cifrado de datos sensibles:</strong> Los campos sensibles de tus registros (nombre del paciente, ID del paciente, diagnóstico y notas clínicas) se cifran en nuestro servidor con Fernet (AES-128-CBC + HMAC-SHA256) antes de ser almacenados en la base de datos.
     </div>
 
     <p>Esto significa que:</p>
     <ul>
-      <li>En nuestra base de datos solo existe texto cifrado ilegible — no podemos leer los datos de tus pacientes</li>
-      <li>Ningún empleado, administrador o tercero tiene acceso a esa información</li>
-      <li>Si olvidas tu contraseña y no puedes recuperarla, los datos cifrados serán irrecuperables. Esto es una consecuencia necesaria del cifrado real</li>
+      <li>En nuestra base de datos solo existe texto cifrado ilegible para cualquiera que acceda directamente a ella</li>
+      <li>El descifrado ocurre en nuestro servidor de forma segura al momento de servir los datos al médico autenticado</li>
+      <li>La clave de cifrado se gestiona de forma segura en nuestra infraestructura de servidor y nunca se expone públicamente</li>
     </ul>
 
     <p>El médico es el único responsable de la confidencialidad de sus credenciales de acceso.</p>
@@ -179,8 +179,15 @@
 
     <!-- 6 -->
     <h2>6. Google Calendar</h2>
-    <p>Si decides conectar tu Google Calendar, la app solicita permiso para leer y escribir eventos en tu calendario. Este permiso se usa exclusivamente para sincronizar tus casos quirúrgicos. Puedes revocar este permiso en cualquier momento desde la configuración de tu cuenta de Google.</p>
-    <p>Los tokens de acceso a Google Calendar se almacenan de forma local en tu navegador y no son enviados a nuestros servidores.</p>
+    <p>Si decides conectar tu Google Calendar, la app solicita el permiso <strong>calendar.events</strong> para crear, leer, actualizar y eliminar eventos en tu calendario. Este es el permiso mínimo necesario para la funcionalidad de sincronización.</p>
+    <p>Este acceso se usa exclusivamente para:</p>
+    <ul>
+      <li>Crear eventos en tu calendario por cada caso quirúrgico activo que registres</li>
+      <li>Actualizar esos eventos si modificás la fecha, hora o datos del caso</li>
+      <li>Eliminar el evento del calendario si eliminás el caso de la app</li>
+    </ul>
+    <p><strong>Qué datos se incluyen en los eventos de Google Calendar:</strong> cada evento contiene la fecha y hora de la cirugía, el nombre del paciente, la edad, el diagnóstico, el nombre del hospital y los procedimientos realizados — exactamente la información que vos ingresaste en la aplicación. Estos datos son enviados directamente desde tu navegador a la API de Google Calendar.</p>
+    <p>Los tokens de acceso a Google Calendar se almacenan únicamente de forma local en tu navegador y no son enviados ni almacenados en nuestros servidores. Puedes revocar este acceso en cualquier momento desde la configuración de tu cuenta de Google o desde la sección Configuración de la app.</p>
 
     <!-- 7 -->
     <h2>7. Publicidad dentro de la app</h2>
