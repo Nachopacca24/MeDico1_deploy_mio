@@ -206,6 +206,17 @@ class CustomUser(AbstractUser):
         verbose_name="Fecha de Envío del Token de Reset",
     )
 
+    def check_trial_expiry(self):
+        """If trial has expired and plan is still premium (from trial), revert to free."""
+        if (
+            not self.is_permanent_premium
+            and self.trial_ends_at
+            and timezone.now() > self.trial_ends_at
+            and self.plan == 'premium'
+        ):
+            self.plan = 'free'
+            self.__class__.objects.filter(pk=self.pk).update(plan='free')
+
     def generate_verification_token(self):
         """
         Genera un token único para verificación de email.

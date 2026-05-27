@@ -126,9 +126,10 @@ class LoginView(APIView):
         
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            user.check_trial_expiry()
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
-            
+
             return Response({
                 'message': 'Login exitoso',
                 'user': user_data,
@@ -202,6 +203,7 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        request.user.check_trial_expiry()
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -911,7 +913,9 @@ class GoogleLoginView(APIView):
             if not user.is_email_verified:
                 user.is_email_verified = True
                 user.save(update_fields=['is_email_verified'])
-            
+
+            user.check_trial_expiry()
+
             # Generar tokens nativos
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data

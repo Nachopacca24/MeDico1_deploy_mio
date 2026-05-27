@@ -17,10 +17,8 @@ import {
   Crown,
   Clock,
   CheckCircle2,
-  XCircle,
   Users,
   Star,
-  CalendarClock,
   BadgeCheck,
 } from 'lucide-react';
 
@@ -122,7 +120,7 @@ const SubscriptionsPage = () => {
     const now = new Date();
     const trialEnd = new Date(user.trial_ends_at);
     if (trialEnd > now) return 'active-trial';
-    return 'expired-trial';
+    return 'no-trial'; // expired trial → already reverted to free by backend
   };
 
   const getDaysLeft = (trialEndsAt: string) => {
@@ -138,7 +136,7 @@ const SubscriptionsPage = () => {
       activeTab === 'all' ||
       (activeTab === 'trial' && status === 'active-trial') ||
       (activeTab === 'premium' && (status === 'permanent' || user.plan === 'premium')) ||
-      (activeTab === 'free' && user.plan === 'free' && status === 'no-trial') ||
+      (activeTab === 'free' && user.plan === 'free' && status !== 'active-trial' && status !== 'permanent') ||
       (activeTab === 'admins' && (user.is_staff || user.role === 0));
 
     if (!matchesTab) return false;
@@ -155,7 +153,7 @@ const SubscriptionsPage = () => {
     total: users.length,
     activeTrial: users.filter(u => getTrialStatus(u) === 'active-trial').length,
     permanent: users.filter(u => u.is_permanent_premium).length,
-    expiredTrial: users.filter(u => getTrialStatus(u) === 'expired-trial').length,
+    free: users.filter(u => u.plan === 'free' && getTrialStatus(u) === 'no-trial').length,
     admins: users.filter(u => u.is_staff || u.role === 0).length,
   };
 
@@ -163,7 +161,7 @@ const SubscriptionsPage = () => {
     { id: 'all', label: 'Todos', count: stats.total },
     { id: 'trial', label: 'En Prueba', count: stats.activeTrial },
     { id: 'premium', label: 'Premium', count: stats.permanent },
-    { id: 'free', label: 'Free', count: users.filter(u => u.plan === 'free' && getTrialStatus(u) === 'no-trial').length },
+    { id: 'free', label: 'Free', count: stats.free },
     { id: 'admins', label: 'Admins', count: stats.admins },
   ];
 
@@ -217,14 +215,14 @@ const SubscriptionsPage = () => {
             <div className="text-2xl font-bold text-yellow-600">{stats.permanent}</div>
           </CardContent>
         </Card>
-        <Card className="border-red-200 dark:border-red-800">
+        <Card className="border-slate-200 dark:border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-red-500 flex items-center gap-1">
-              <CalendarClock className="h-3.5 w-3.5" /> Prueba Vencida
+            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+              <BadgeCheck className="h-3.5 w-3.5" /> Free
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{stats.expiredTrial}</div>
+            <div className="text-2xl font-bold">{stats.free}</div>
           </CardContent>
         </Card>
         <Card className="border-purple-200 dark:border-purple-800">
@@ -295,8 +293,6 @@ const SubscriptionsPage = () => {
                     ? 'border-yellow-300 dark:border-yellow-700'
                     : trialStatus === 'active-trial'
                     ? 'border-blue-300 dark:border-blue-700'
-                    : trialStatus === 'expired-trial'
-                    ? 'border-red-200 dark:border-red-800'
                     : 'hover:border-primary'
                 }`}
               >
@@ -347,16 +343,6 @@ const SubscriptionsPage = () => {
                       {trialStatus === 'active-trial' && user.trial_ends_at && (
                         <span className="text-xs text-muted-foreground">
                           Vence: {new Date(user.trial_ends_at).toLocaleDateString('es-ES')}
-                        </span>
-                      )}
-                      {trialStatus === 'expired-trial' && user.trial_ends_at && (
-                        <span className="flex items-center gap-1 text-red-500 font-medium">
-                          <XCircle className="h-4 w-4" /> Prueba vencida
-                        </span>
-                      )}
-                      {trialStatus === 'expired-trial' && user.trial_ends_at && (
-                        <span className="text-xs text-muted-foreground">
-                          Venció: {new Date(user.trial_ends_at).toLocaleDateString('es-ES')}
                         </span>
                       )}
                       {trialStatus === 'no-trial' && user.plan === 'premium' && (
