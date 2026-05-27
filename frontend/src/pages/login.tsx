@@ -143,9 +143,11 @@ export default function Login() {
   const handleGoogleNative = async () => {
     setIsLoading(true);
     try {
-      // initialize() must be called first — the native googleSignInClient is null until then
+      console.log('[Google] Calling initialize()...');
       await GoogleAuth.initialize();
+      console.log('[Google] initialize() OK, calling signIn()...');
       const googleUser = await GoogleAuth.signIn();
+      console.log('[Google] signIn() OK, idToken present:', !!googleUser.authentication.idToken);
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
       await loginWithGoogle(token);
       toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
@@ -155,6 +157,7 @@ export default function Login() {
         navigate("/");
       }
     } catch (error: any) {
+      console.error('[Google] ERROR:', JSON.stringify(error), 'code:', error?.code, 'message:', error?.message, 'error:', error?.error);
       // Don't show a toast if the user simply cancelled the picker
       const cancelled = error?.error === 'popup_closed_by_user'
         || error?.message === 'User cancelled'

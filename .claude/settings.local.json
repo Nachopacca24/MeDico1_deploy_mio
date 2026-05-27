@@ -12,7 +12,10 @@
       "Bash(DJANGO_SETTINGS_MODULE=core.settings.dev DEBUG=True DJANGO_SECRET_KEY=test-key python manage.py migrate)",
       "Bash(python manage.py showmigrations medio_auth)",
       "Bash(\"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\venv\\\\Scripts\\\\python.exe\" manage.py makemigrations medico --name add_invoice_number)",
-      "Bash(.venv\\\\Scripts\\\\python.exe manage.py makemigrations medio_auth --name=\"plan_free_premium\")"
+      "Bash(.venv\\\\Scripts\\\\python.exe manage.py makemigrations medio_auth --name=\"plan_free_premium\")",
+      "Bash(npm run *)",
+      "Bash(npx cap *)",
+      "Bash(del \"c:\\\\Users\\\\nacho\\\\OneDrive\\\\Documentos\\\\GitHub\\\\MeDico1_deploy_mio\\\\frontend\\\\android\\\\app\\\\google-services.json\")"
     ]
   }
 }
