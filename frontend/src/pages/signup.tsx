@@ -10,7 +10,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { useToast } from "@/shared/hooks/use-toast";
-import { Loader2, Activity, HeartPulse } from "lucide-react";
+import { Loader2, Activity, HeartPulse, Crown } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 
 // Lista de especialidades médicas basadas en tu sistema
@@ -134,8 +134,8 @@ export default function SignupForm() {
       });
 
       toast({
-        title: "¡Cuenta creada!",
-        description: "Tu cuenta ha sido creada exitosamente.",
+        title: "¡Cuenta creada! Tienes 14 días Premium gratis",
+        description: "Bienvenido/a a MéDico. Disfruta de acceso completo durante tu período de prueba.",
       });
 
       // El navigate lo hace el AuthContext automáticamente
@@ -168,6 +168,10 @@ export default function SignupForm() {
       toast({
         title: "¡Bienvenido/a!",
         description: "Te has registrado con Google exitosamente.",
+      });
+      toast({
+        title: "¡Bienvenido/a! Tienes 14 días Premium gratis",
+        description: "Tu cuenta de Google fue registrada. Disfruta de acceso completo durante tu período de prueba.",
       });
     } catch (error: any) {
       toast({
@@ -228,6 +232,12 @@ export default function SignupForm() {
             </div>
             <CardTitle className='text-2xl font-bold tracking-tight'>Crear cuenta</CardTitle>
             <CardDescription className="text-muted-foreground">Ingresa tus datos para registrar tu perfil profesional</CardDescription>
+            <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <Crown className="h-4 w-4 text-yellow-600 shrink-0" />
+              <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                14 días de acceso Premium gratis al registrarte
+              </span>
+            </div>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className='space-y-4'>

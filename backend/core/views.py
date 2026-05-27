@@ -365,12 +365,12 @@ def delete_user(request, user_id):
         
         # Buscar el usuario a eliminar
         user_to_delete = User.objects.get(id=user_id)
-        
-        # Prevenir eliminación de superusuarios
-        if user_to_delete.is_superuser:
+
+        # Prevenir auto-eliminación
+        if user_to_delete.id == request.user.id:
             return Response({
                 'success': False,
-                'message': 'No se puede eliminar un superusuario'
+                'message': 'No puedes eliminar tu propia cuenta'
             }, status=400)
         
         # Guardar información antes de eliminar

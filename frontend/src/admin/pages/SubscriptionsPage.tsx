@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Badge } from '@/shared/components/ui/badge';
 import { useToast } from '@/shared/hooks/useToast';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import { adminService } from '@/admin/services/adminService';
 import {
   Search,
@@ -46,6 +47,7 @@ type FilterTab = 'all' | 'trial' | 'premium' | 'free' | 'admins';
 
 const SubscriptionsPage = () => {
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<SubscriptionUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -283,7 +285,7 @@ const SubscriptionsPage = () => {
           filtered.map(user => {
             const trialStatus = getTrialStatus(user);
             const isAdmin = user.is_staff || user.role === 0;
-            const canDelete = !user.is_superuser;
+            const canDelete = user.id !== currentUser?.id;
 
             return (
               <Card
@@ -421,8 +423,7 @@ const SubscriptionsPage = () => {
           <div className="flex gap-3 text-sm">
             <AlertCircle className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
             <p className="text-blue-700 dark:text-blue-200">
-              Los superusuarios no pueden ser eliminados desde el panel. Para eliminar un superusuario
-              usa la consola de Django admin o el CLI de Railway.
+              Puedes eliminar cualquier usuario excepto tu propia cuenta. La eliminación es permanente e incluye todos sus casos e información.
             </p>
           </div>
         </CardContent>
