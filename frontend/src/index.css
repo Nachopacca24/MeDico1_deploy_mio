@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Capacitor safe area — required with viewport-fit=cover */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+body {
+  padding-top: var(--sat);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
 @layer base {
   :root {
     /* Clean Modern Theme - Light Mode */

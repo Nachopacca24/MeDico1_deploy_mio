@@ -127,25 +127,24 @@ const CaseDetailPage = () => {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/cases')}>
+        <div className="pb-4 border-b space-y-3">
+          <div className="flex items-start gap-3">
+            <Button variant="ghost" size="icon" className="mt-0.5 flex-shrink-0" onClick={() => navigate('/cases')}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-semibold mb-1 tracking-tight font-mono">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight font-mono break-words">
                 {surgicalCase.patient_name}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Caso #{surgicalCase.id}
                 {isAssistant && <span className="ml-2 text-primary">• Colaborando como ayudante</span>}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap pl-11">
             {getStatusBadge(surgicalCase.status)}
-            
-            {/* Solo mostrar Edit si es el dueño y no está cobrado */}
+
             {isOwner && !isPaid && (
               <Button variant="outline" size="sm" asChild>
                 <Link to={`/cases/${surgicalCase.id}/edit`}>
@@ -154,8 +153,7 @@ const CaseDetailPage = () => {
                 </Link>
               </Button>
             )}
-            
-            {/* Solo mostrar Delete si es dueño y puede eliminar */}
+
             {canDelete && (
               <Button
                 variant="destructive"

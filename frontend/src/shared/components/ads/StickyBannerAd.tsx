@@ -34,7 +34,7 @@ function AdCard({ ad, onDismiss }: AdCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden w-64 animate-in slide-in-from-bottom-4 duration-300 flex-shrink-0">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden w-64 max-w-[calc(100vw-2rem)] animate-in slide-in-from-bottom-4 duration-300 flex-shrink-0">
       {ad.image_url && !imgFailed && (
         <div
           className="relative w-full h-32 cursor-pointer overflow-hidden group"
@@ -196,11 +196,15 @@ export function StickyBannerAd({ position = 'bottom', initialDelay = 5 }: Sticky
 
   if (!ready || visible.length === 0) return null;
 
-  const positionClass = position === 'bottom' ? 'bottom-4' : 'top-20';
+  const positionStyle = position === 'bottom'
+    ? { bottom: 'calc(1rem + var(--sab, 0px))' }
+    : { top: '5rem' };
 
   return (
-    <div className={`fixed ${positionClass} right-4 z-[90] flex flex-col sm:flex-row gap-3 items-end`}>
-      {/* slice(0, slotCount) garantiza máximo 2 cards sin importar el estado */}
+    <div
+      className="fixed right-4 z-[90] flex flex-col gap-3 items-end"
+      style={positionStyle}
+    >
       {visible.slice(0, slotCount).map(ad => (
         <AdCard key={ad.id} ad={ad} onDismiss={() => handleDismiss(ad.id)} />
       ))}

@@ -162,7 +162,7 @@ export function MobilePopupAd({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl max-h-[85vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl max-h-[85vh] overflow-hidden" style={{ paddingBottom: 'var(--sab, 0px)' }}>
             <div className="flex justify-center py-3 border-b border-gray-200 dark:border-gray-700">
               <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full" />
             </div>

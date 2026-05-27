@@ -49,7 +49,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           )}
         </header>
 
-        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6 pb-20 md:pb-16">
+        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6" style={{ paddingBottom: 'calc(5rem + var(--sab, 0px))' }}>
           <EmailVerificationBanner />
           {children}
         </main>
