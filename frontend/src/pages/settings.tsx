@@ -294,14 +294,14 @@ const Settings = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {[
-                      { ok: true,  text: 'Gestión de casos quirúrgicos' },
-                      { ok: true,  text: 'Colegas y colaboración' },
+                      { ok: true,  text: 'Hasta 5 cirugías activas' },
+                      { ok: true,  text: 'Hasta 2 colegas / ayudantes' },
                       { ok: true,  text: 'Hospitales y procedimientos' },
                       { ok: true,  text: 'Calculadora médica' },
-                      { ok: false, text: 'Banners publicitarios visibles' },
-                      { ok: false, text: 'Popups de publicidad periódicos' },
+                      { ok: false, text: 'Publicidad en la app (banners y popups)' },
                       { ok: false, text: 'Novedades sin filtro de especialidad' },
                       { ok: false, text: 'Sin integración con Google Calendar' },
+                      { ok: false, text: 'Sin exportación de cirugías a PDF' },
                     ].map(({ ok, text }) => (
                       <div key={text} className="flex items-center gap-2 text-sm">
                         {ok
@@ -330,13 +330,14 @@ const Settings = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {[
-                      'Gestión de casos quirúrgicos',
-                      'Colegas y colaboración',
+                      'Cirugías activas ilimitadas',
+                      'Colegas y colaboración ilimitados',
                       'Hospitales y procedimientos',
                       'Calculadora médica',
                       'Sin publicidad ni popups',
                       'Novedades filtradas por tu especialidad',
                       'Integración con Google Calendar',
+                      'Exportación de cirugías a PDF',
                       'Acceso anticipado a nuevas funciones',
                     ].map((text) => (
                       <div key={text} className="flex items-center gap-2 text-sm">
@@ -604,7 +605,7 @@ const Settings = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    Los datos sensibles de tus pacientes (nombre, ID, diagnóstico, notas) están cifrados con <strong className="text-foreground">AES-256-GCM</strong> directamente en tu navegador. Ni siquiera MéDico puede leerlos. La clave es tu contraseña — guárdala en un lugar seguro.
+                    Los datos sensibles de tus pacientes (nombre, ID, diagnóstico, notas) están cifrados en el servidor con <strong className="text-foreground">Fernet (AES-128-CBC + HMAC-SHA256)</strong>. Los datos viajan siempre por HTTPS y se almacenan cifrados en la base de datos.
                   </p>
                   <p className="text-xs text-muted-foreground mt-3">
                     Para consultas sobre privacidad: <a href="mailto:contacto@medicoapp.app" className="text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors">contacto@medicoapp.app</a>
