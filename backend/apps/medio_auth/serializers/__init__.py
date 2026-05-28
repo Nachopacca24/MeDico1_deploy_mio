@@ -231,8 +231,8 @@ class ColleagueSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
-            'specialty', 'hospital_default', 'avatar', 'friend_code', 'phone'
+            'id', 'username', 'first_name', 'last_name', 'full_name',
+            'specialty', 'hospital_default', 'avatar', 'friend_code'
         ]
         read_only_fields = fields
 
