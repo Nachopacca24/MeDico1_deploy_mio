@@ -14,19 +14,20 @@ import {
   Users, 
   UserPlus, 
   Search, 
-  AlertCircle, 
-  CheckCircle,
+  AlertCircle,
   Inbox,
   Send,
   Copy,
   Check
 } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
+import { useToast } from '@/shared/hooks/useToast';
 
 const FREE_COLLEAGUE_LIMIT = 3;
 
 export default function ColleaguesPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const isFreePlan = user?.plan === 'free';
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
@@ -39,7 +40,6 @@ export default function ColleaguesPage() {
   const [removingId, setRemovingId] = useState<number | null>(null);
   const [processingRequestId, setProcessingRequestId] = useState<number | null>(null);
   const [sendingRequest, setSendingRequest] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'colleagues' | 'received' | 'sent'>('colleagues');
   const [codeCopied, setCodeCopied] = useState(false);
 
@@ -73,7 +73,6 @@ export default function ColleaguesPage() {
     setSearching(true);
     setSearchError('');
     setSearchResult(null);
-    setSuccessMessage('');
 
     try {
       const result = await colleaguesService.searchColleague(searchCode.trim().toUpperCase());
@@ -93,12 +92,10 @@ export default function ColleaguesPage() {
 
     try {
       await colleaguesService.sendFriendRequest(searchResult.friend_code);
-      setSuccessMessage('Solicitud enviada correctamente');
+      toast.success('Solicitud enviada correctamente');
       setSearchResult(null);
       setSearchCode('');
       await loadData();
-      
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
       setSearchError(error.response?.data?.error || 'Error al enviar solicitud');
     } finally {
@@ -110,11 +107,10 @@ export default function ColleaguesPage() {
     setProcessingRequestId(requestId);
     try {
       await colleaguesService.acceptFriendRequest(requestId);
-      setSuccessMessage('Solicitud aceptada correctamente');
+      toast.success('Solicitud aceptada correctamente');
       await loadData();
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al aceptar solicitud');
+      toast.error(error.response?.data?.error || 'Error al aceptar solicitud');
     } finally {
       setProcessingRequestId(null);
     }
@@ -124,11 +120,10 @@ export default function ColleaguesPage() {
     setProcessingRequestId(requestId);
     try {
       await colleaguesService.rejectFriendRequest(requestId);
-      setSuccessMessage('Solicitud rechazada');
+      toast.success('Solicitud rechazada');
       await loadData();
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al rechazar solicitud');
+      toast.error(error.response?.data?.error || 'Error al rechazar solicitud');
     } finally {
       setProcessingRequestId(null);
     }
@@ -140,11 +135,10 @@ export default function ColleaguesPage() {
     setRemovingId(colleagueId);
     try {
       await colleaguesService.removeColleague(colleagueId);
-      setSuccessMessage('Colega eliminado correctamente');
+      toast.success('Colega eliminado correctamente');
       await loadData();
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error al eliminar colega');
+      toast.error(error.response?.data?.error || 'Error al eliminar colega');
     } finally {
       setRemovingId(null);
     }
@@ -183,14 +177,6 @@ export default function ColleaguesPage() {
             </p>
           </div>
         </div>
-
-        {/* Success Message */}
-        {successMessage && (
-          <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <p className="text-green-700 dark:text-green-300 font-medium">{successMessage}</p>
-          </div>
-        )}
 
         {/* Tu código de colega */}
         <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6">

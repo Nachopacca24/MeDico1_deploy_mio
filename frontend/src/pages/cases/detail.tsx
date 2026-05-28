@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import type { SurgicalCase } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
+import { useToast } from "@/shared/hooks/useToast";
 import {
   ArrowLeft,
   Calendar,
@@ -31,6 +32,7 @@ const CaseDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
   useEffect(() => {
     if (id) fetchCase();
   }, [id]);
@@ -61,7 +63,7 @@ const CaseDetailPage = () => {
       await surgicalCaseService.deleteCase(surgicalCase.id);
       navigate('/cases');
     } catch (err: any) {
-      alert('Error al eliminar caso: ' + err.message);
+      toast.error(err.message || 'Error al eliminar el caso');
       setDeleting(false);
     }
   };
