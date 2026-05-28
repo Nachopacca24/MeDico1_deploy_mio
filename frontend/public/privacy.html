@@ -178,15 +178,23 @@
     <p>Cada uno de estos proveedores tiene sus propias políticas de privacidad y estándares de seguridad. No compartimos tus datos personales con anunciantes.</p>
 
     <!-- 6 -->
-    <h2>6. Google Calendar</h2>
+    <h2>6. Google Calendar y APIs de Google</h2>
+
+    <div class="highlight-box" style="background:#f0fdf4;border-color:#bbf7d0;">
+      <strong style="color:#166534;">Declaración de cumplimiento — Google API Services User Data Policy</strong><br/><br/>
+      El uso y transferencia de información recibida de las APIs de Google se realizará de acuerdo con la
+      <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Política de Datos de Usuario de los Servicios de API de Google</a>,
+      incluyendo los requisitos de Uso Limitado.
+    </div>
+
     <p>Si decides conectar tu Google Calendar, la app solicita el permiso <strong>calendar.events</strong> para crear, leer, actualizar y eliminar eventos en tu calendario. Este es el permiso mínimo necesario para la funcionalidad de sincronización.</p>
     <p>Este acceso se usa exclusivamente para:</p>
     <ul>
       <li>Crear eventos en tu calendario por cada caso quirúrgico activo que registres</li>
-      <li>Actualizar esos eventos si modificás la fecha, hora o datos del caso</li>
-      <li>Eliminar el evento del calendario si eliminás el caso de la app</li>
+      <li>Actualizar esos eventos si modificas la fecha, hora o datos del caso</li>
+      <li>Eliminar el evento del calendario si eliminas el caso de la app</li>
     </ul>
-    <p><strong>Qué datos se incluyen en los eventos de Google Calendar:</strong> cada evento contiene la fecha y hora de la cirugía, el nombre del paciente, la edad, el diagnóstico, el nombre del hospital y los procedimientos realizados — exactamente la información que vos ingresaste en la aplicación. Estos datos son enviados directamente desde tu navegador a la API de Google Calendar.</p>
+    <p><strong>Qué datos se incluyen en los eventos de Google Calendar:</strong> cada evento contiene la fecha y hora de la cirugía, el nombre del paciente, la edad, el diagnóstico, el nombre del hospital y los procedimientos realizados — exactamente la información que ingresaste en la aplicación. Estos datos son enviados directamente desde tu navegador a la API de Google Calendar.</p>
     <p>Los tokens de acceso a Google Calendar se almacenan únicamente de forma local en tu navegador y no son enviados ni almacenados en nuestros servidores. Puedes revocar este acceso en cualquier momento desde la configuración de tu cuenta de Google o desde la sección Configuración de la app.</p>
 
     <!-- 7 -->
@@ -218,7 +226,7 @@
     <h2>10. Seguridad</h2>
     <p>Implementamos medidas técnicas y organizativas para proteger tu información:</p>
     <ul>
-      <li>Cifrado AES-256-GCM para datos sensibles de pacientes</li>
+      <li>Cifrado Fernet (AES-128-CBC + HMAC-SHA256) para datos sensibles de pacientes</li>
       <li>Contraseñas almacenadas como hashes irreversibles (bcrypt)</li>
       <li>Comunicaciones cifradas con TLS/HTTPS</li>
       <li>Autenticación mediante tokens JWT con expiración</li>
