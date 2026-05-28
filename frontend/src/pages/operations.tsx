@@ -341,6 +341,33 @@ const Operations = () => {
           </div>
         </div>
 
+        {/* Missing procedure CTA */}
+        <div className="relative rounded-xl overflow-hidden">
+          {/* Animated glow border */}
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary via-cyan-400 to-primary animate-pulse opacity-40 blur-sm" />
+          <div className="relative flex flex-col sm:flex-row items-center gap-4 bg-primary/10 border border-primary/40 rounded-xl px-5 py-4">
+            <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 animate-bounce">
+              <Stethoscope className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <p className="font-semibold text-foreground">
+                ¿No encuentras el código que buscas?
+              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Escríbenos a{' '}
+                <a
+                  href="mailto:contacto@medicoapp.app"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  contacto@medicoapp.app
+                </a>
+                {' '}y ayúdanos a mantener actualizado el sistema de procedimientos.
+                Esta app es hecha por médicos, para médicos.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Folder Structure Navigation - Grid View */}
         <div>
           {/* Show message if no specialties match */}
