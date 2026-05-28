@@ -18,6 +18,7 @@ import {
   TrendingUp,
   FileSpreadsheet,
   Smartphone,
+  Lock,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -59,7 +60,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-6">
             <Stethoscope className="h-3.5 w-3.5" />
-            Hecho por médicos, para médicos
+            Hecha por médicos, para médicos
           </div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none mb-6">
@@ -78,7 +79,7 @@ export default function LandingPage() {
               to="/signup"
               className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
             >
-              Empieza gratis — 14 días Premium
+              Empezar gratis — 14 días Premium
               <ChevronRight className="h-5 w-5" />
             </Link>
             <Link
@@ -158,9 +159,9 @@ export default function LandingPage() {
               </div>
               <div className="space-y-3 text-sm">
                 <div className="bg-primary/10 border border-primary/20 rounded-lg px-3 py-3">
-                  <p className="font-semibold text-white">Colecistectomía laparoscópica</p>
-                  <p className="text-gray-400 text-xs mt-0.5">4.60 RVU · Q 700/RVU</p>
-                  <p className="text-primary font-black text-lg mt-1">Q 3,220.00</p>
+                  <p className="font-semibold text-white">Tiroidectomía total</p>
+                  <p className="text-gray-400 text-xs mt-0.5">9.70 RVU · Q 700/RVU</p>
+                  <p className="text-primary font-black text-lg mt-1">Q 6,790.00</p>
                 </div>
                 <div className="bg-gray-800 rounded-lg px-3 py-2 text-gray-400 text-xs">
                   + Ayudante: Dr. Ramírez
@@ -186,12 +187,12 @@ export default function LandingPage() {
           </div>
 
           {/* Stat */}
-          <div className="mt-12 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 text-center">
-            <p className="text-4xl font-black text-primary mb-2">1 de cada 4 horas</p>
-            <p className="text-gray-300 text-lg">
+          <div className="mt-12 bg-gray-900 border border-primary/25 rounded-2xl p-8 text-center">
+            <p className="text-5xl font-black text-primary mb-3">1 de cada 4 horas</p>
+            <p className="text-gray-300 text-xl">
               de un médico se pierde en tareas administrativas que no son atención al paciente.
             </p>
-            <p className="text-gray-600 text-xs mt-3">
+            <p className="text-gray-600 text-xs mt-4">
               Fuente: American Medical Association Physician Survey, 2022 · Annals of Internal Medicine, Sinsky et al., 2016
             </p>
           </div>
@@ -213,11 +214,11 @@ export default function LandingPage() {
               </h2>
               <p className="text-gray-400 text-lg mb-6 leading-relaxed">
                 Cada procedimiento tiene su código, nombre y valor en RVU.
-                Vos solo configurás tu multiplicador por hospital y MéDico calcula
+                Solo configuras tu multiplicador por hospital y MéDico calcula
                 el honorario exacto al instante.
               </p>
               <p className="text-gray-400 mb-6">
-                ¿No encontrás un procedimiento? Podés reportarlo y nosotros lo
+                ¿No encuentras un procedimiento? Puedes reportarlo y nosotros lo
                 validamos e incorporamos. La tabla crece con la comunidad.
               </p>
               <div className="bg-gray-900 border border-white/10 rounded-xl p-4 font-mono text-sm">
@@ -229,27 +230,30 @@ export default function LandingPage() {
                   <span className="text-green-400">honorario</span>
                 </div>
                 <div className="text-gray-600 text-xs mt-2">
-                  Ej: 4.60 × Q700 = <span className="text-green-400">Q 3,220.00</span>
+                  Ej: 9.70 × Q700 = <span className="text-green-400">Q 6,790.00</span>
                 </div>
               </div>
             </div>
             <div className="space-y-3">
               {[
-                { code: "27447", name: "Artroplastia total de rodilla", rvu: "23.50" },
-                { code: "43239", name: "Esofagogastroduodenoscopia con biopsia", rvu: "3.50" },
-                { code: "47562", name: "Colecistectomía laparoscópica", rvu: "4.60" },
-                { code: "27130", name: "Artroplastia total de cadera", rvu: "22.62" },
-                { code: "49505", name: "Hernioplastia inguinal abierta", rvu: "5.19" },
+                { code: "60240", name: "Tiroidectomía total", rvu: "9.70", esp: "Endocrino" },
+                { code: "27132", name: "Artroplastia total de cadera", rvu: "22.10", esp: "Ortopedia" },
+                { code: "44140", name: "Colectomía parcial con anastomosis", rvu: "9.80", esp: "Digestivo" },
+                { code: "47480", name: "Colecistotomía con exploración", rvu: "7.40", esp: "Digestivo" },
+                { code: "33030", name: "Pericardiectomía sin bypass", rvu: "17.50", esp: "Cardiovascular" },
               ].map((p) => (
                 <div
                   key={p.code}
                   className="flex items-center justify-between bg-gray-900 border border-white/5 rounded-xl px-4 py-3 hover:border-primary/30 transition-colors"
                 >
                   <div>
-                    <span className="text-xs text-gray-600 font-mono">{p.code}</span>
-                    <p className="text-sm font-medium text-white">{p.name}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 font-mono">{p.code}</span>
+                      <span className="text-[10px] text-gray-700 bg-gray-800 px-1.5 py-0.5 rounded">{p.esp}</span>
+                    </div>
+                    <p className="text-sm font-medium text-white mt-0.5">{p.name}</p>
                   </div>
-                  <span className="text-primary font-black">{p.rvu} RVU</span>
+                  <span className="text-primary font-black shrink-0 ml-3">{p.rvu} RVU</span>
                 </div>
               ))}
               <p className="text-center text-xs text-gray-600 pt-1">
@@ -264,7 +268,7 @@ export default function LandingPage() {
       <section className="py-20 px-4 bg-gray-900/50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-4xl font-black mb-4">Todo lo que necesitás</h2>
+            <h2 className="text-4xl font-black mb-4">Todo lo que necesitas</h2>
             <p className="text-gray-400 text-lg">En una sola app. Sin complicaciones.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -277,6 +281,13 @@ export default function LandingPage() {
                 bg: "bg-yellow-400/10",
               },
               {
+                icon: Lock,
+                title: "Datos cifrados",
+                desc: "La información de tus pacientes está cifrada con Fernet (AES-128-CBC + HMAC-SHA256) y viaja siempre por HTTPS.",
+                color: "text-green-400",
+                bg: "bg-green-400/10",
+              },
+              {
                 icon: Calculator,
                 title: "Calculadora médica",
                 desc: "Fórmulas clínicas de uso frecuente integradas. Todo en un solo lugar.",
@@ -286,28 +297,21 @@ export default function LandingPage() {
               {
                 icon: Users,
                 title: "Colegas y ayudantes",
-                desc: "Invitá a tu equipo a colaborar en un caso. Ellos ven su parte, vos controlás todo.",
-                color: "text-green-400",
-                bg: "bg-green-400/10",
-              },
-              {
-                icon: Calendar,
-                title: "Google Calendar",
-                desc: "Sincronizá tus cirugías con tu calendario. Tu agenda médica siempre actualizada.",
+                desc: "Invita a tu equipo a colaborar en un caso. Ellos ven su parte, tú controlas todo.",
                 color: "text-purple-400",
                 bg: "bg-purple-400/10",
               },
               {
-                icon: Hospital,
-                title: "Múltiples hospitales",
-                desc: "Cada hospital tiene su propio multiplicador. Cambiás de hospital, el cálculo se actualiza solo.",
+                icon: Calendar,
+                title: "Google Calendar",
+                desc: "Sincroniza tus cirugías con tu calendario. Tu agenda médica siempre actualizada.",
                 color: "text-pink-400",
                 bg: "bg-pink-400/10",
               },
               {
                 icon: TrendingUp,
                 title: "Historial y estadísticas",
-                desc: "Mirá cuánto ganaste por mes, por hospital, por procedimiento. Tu práctica en números.",
+                desc: "Ve cuánto ganaste por mes, por hospital, por procedimiento. Tu práctica en números.",
                 color: "text-orange-400",
                 bg: "bg-orange-400/10",
               },
@@ -327,12 +331,32 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── PRECIOS ─────────────────────────────────────────────── */}
+      {/* ── HECHA POR MÉDICOS ───────────────────────────────────── */}
       <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gray-900 border border-white/5 rounded-3xl p-10 md:p-14 text-center">
+            <div className="inline-flex p-3 bg-primary/10 rounded-2xl mb-6">
+              <Stethoscope className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black mb-4">
+              Hecha por médicos, para médicos
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+              MéDico no es una app genérica de gestión. Fue diseñada entendiendo cómo
+              funciona realmente la práctica quirúrgica privada en Latinoamérica: la
+              Tabla de California, los multiplicadores por hospital, los ayudantes,
+              los honorarios. Cada detalle existe porque un médico lo necesitó.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRECIOS ─────────────────────────────────────────────── */}
+      <section className="py-20 px-4 bg-gray-900/50">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-4xl font-black mb-4">Simple y justo</h2>
-            <p className="text-gray-400 text-lg">Empezá gratis, subí cuando lo necesités.</p>
+            <p className="text-gray-400 text-lg">Empieza gratis, sube cuando lo necesites.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -341,13 +365,13 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold mb-1">Free</h3>
               <p className="text-gray-400 text-sm mb-6">Para empezar</p>
               <div className="text-4xl font-black mb-8">Q0<span className="text-lg text-gray-500 font-normal">/mes</span></div>
-              <div className="space-y-3">
+              <div className="space-y-3 mb-8">
                 {[
-                  { ok: true, text: "Hasta 5 cirugías activas" },
-                  { ok: true, text: "Hasta 2 colegas / ayudantes" },
-                  { ok: true, text: "Tabla de California completa" },
-                  { ok: true, text: "Calculadora médica" },
-                  { ok: false, text: "Anuncios personalizados por especialidad" },
+                  { ok: true,  text: "Hasta 5 cirugías activas" },
+                  { ok: true,  text: "Hasta 2 colegas / ayudantes" },
+                  { ok: true,  text: "Tabla de California completa" },
+                  { ok: true,  text: "Calculadora médica" },
+                  { ok: false, text: "Anuncios por especialidad" },
                   { ok: false, text: "Sin Google Calendar" },
                 ].map(({ ok, text }) => (
                   <div key={text} className="flex items-center gap-2 text-sm">
@@ -360,14 +384,14 @@ export default function LandingPage() {
               </div>
               <Link
                 to="/signup"
-                className="mt-8 block text-center border border-white/10 text-gray-300 font-semibold py-3 rounded-xl hover:bg-white/5 transition-colors"
+                className="block text-center border border-white/10 text-gray-300 font-semibold py-3 rounded-xl hover:bg-white/5 transition-colors"
               >
                 Empezar gratis
               </Link>
             </div>
 
             {/* Premium */}
-            <div className="bg-gradient-to-b from-primary/20 to-primary/5 border border-primary/40 rounded-2xl p-8 relative overflow-hidden">
+            <div className="bg-gray-900 border border-primary/40 rounded-2xl p-8 relative overflow-hidden">
               <div className="absolute top-4 right-4">
                 <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">
                   14 días gratis
@@ -379,9 +403,9 @@ export default function LandingPage() {
               </div>
               <p className="text-gray-400 text-sm mb-6">Para médicos que van en serio</p>
               <div className="text-4xl font-black mb-8">
-                $4.99<span className="text-lg text-gray-400 font-normal">/mes</span>
+                $9<span className="text-lg text-gray-400 font-normal">/mes</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 mb-8">
                 {[
                   "Cirugías activas ilimitadas",
                   "Colegas y colaboración ilimitados",
@@ -397,7 +421,7 @@ export default function LandingPage() {
               </div>
               <Link
                 to="/signup"
-                className="mt-8 block text-center bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+                className="block text-center bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
               >
                 Empezar — 14 días gratis
               </Link>
@@ -407,18 +431,20 @@ export default function LandingPage() {
       </section>
 
       {/* ── CIERRE ──────────────────────────────────────────────── */}
-      <section className="py-24 px-4 text-center bg-gradient-to-b from-transparent to-primary/5">
+      <section className="py-28 px-4 text-center">
         <div className="max-w-3xl mx-auto">
-          <div className="inline-flex p-4 bg-primary/10 rounded-full mb-6">
-            <Shield className="h-8 w-8 text-primary" />
+          <div className="inline-flex p-4 bg-primary/10 border border-primary/20 rounded-full mb-8">
+            <Clock className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-4xl sm:text-5xl font-black mb-6 leading-tight">
+          <h2 className="text-4xl sm:text-5xl font-black mb-4 leading-tight">
             Un minuto menos en burocracia
-            <br />
-            <span className="text-primary">es un minuto más salvando vidas.</span>
           </h2>
-          <p className="text-gray-400 text-lg mb-10">
-            MéDico te devuelve ese tiempo.
+          <h2 className="text-4xl sm:text-5xl font-black mb-8 leading-tight text-primary">
+            es un minuto más salvando vidas.
+          </h2>
+          <p className="text-gray-400 text-xl mb-12 max-w-xl mx-auto">
+            MéDico te devuelve ese tiempo. Diseñada para que el trabajo administrativo
+            no compita con la atención médica.
           </p>
           <Link
             to="/signup"
@@ -427,7 +453,7 @@ export default function LandingPage() {
             Registrarme gratis
             <ChevronRight className="h-5 w-5" />
           </Link>
-          <p className="mt-4 text-sm text-gray-600">
+          <p className="mt-5 text-sm text-gray-600">
             14 días Premium sin tarjeta de crédito.
           </p>
         </div>
