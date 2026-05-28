@@ -24,6 +24,7 @@ import { advertisementService, type ActiveAd } from "@/admin/services/advertisem
 import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
 import { useIsMobile } from "@/shared/hooks/useAdSystem";
 import type { CaseStats } from "@/types/surgical-case";
+import { displayPatientName } from "@/shared/utils/patientHash";
 
 const Index = () => {
   const { user } = useAuth();
@@ -328,7 +329,7 @@ const Index = () => {
                   <div className="absolute top-0 left-0 w-1 h-full bg-slate-100 dark:bg-slate-800 group-hover:bg-primary transition-colors" />
                   <div className="flex-1 ml-4">
                     <div className="font-bold text-lg text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors mb-1">
-                      {case_.patient_name}
+                      {displayPatientName(case_.patient_name)}
                     </div>
                     <div className="text-sm text-slate-500 flex items-center gap-3">
                       <Badge variant="outline" className="bg-slate-50 dark:bg-slate-800 border-none text-[10px] uppercase font-black tracking-widest px-2">
@@ -338,7 +339,7 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end pr-2">
-                    <div className="font-black text-xl text-slate-900 dark:text-white">${case_.total_value?.toLocaleString()}</div>
+                    <div className="font-black text-xl text-slate-900 dark:text-white">Q {case_.total_value?.toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                     <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
                       {new Date(case_.surgery_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </div>

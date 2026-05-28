@@ -7,6 +7,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import type { SurgicalCase } from "@/types/surgical-case";
+import { displayPatientName } from "@/shared/utils/patientHash";
 import {
   ArrowLeft,
   Calendar,
@@ -50,7 +51,7 @@ const CaseDetailPage = () => {
     if (!surgicalCase) return;
     
     const confirmed = window.confirm(
-      `¿Estás seguro de eliminar el caso ${surgicalCase.patient_name}?\n\nEsta acción no se puede deshacer.`
+      `¿Estás seguro de eliminar el caso ${displayPatientName(surgicalCase.patient_name)}?\n\nEsta acción no se puede deshacer.`
     );
     
     if (!confirmed) return;
@@ -134,7 +135,7 @@ const CaseDetailPage = () => {
             </Button>
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight font-mono break-words">
-                {surgicalCase.patient_name}
+                {displayPatientName(surgicalCase.patient_name)}
               </h1>
               <p className="text-sm text-muted-foreground">
                 Caso #{surgicalCase.id}
@@ -189,7 +190,7 @@ const CaseDetailPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Código del Paciente</div>
-                    <div className="font-medium">{surgicalCase.patient_name}</div>
+                    <div className="font-medium">{displayPatientName(surgicalCase.patient_name)}</div>
                   </div>
                   {surgicalCase.patient_id && (
                     <div>

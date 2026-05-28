@@ -25,3 +25,10 @@ export function formatPatientHash(value: string): string {
   }
   return value; // legacy plaintext — show as-is
 }
+
+/** Returns display-safe patient name, handling legacy e2ee-encrypted values. */
+export function displayPatientName(value: string | null | undefined): string {
+  if (!value) return 'Sin nombre';
+  if (value.startsWith('e2ee:')) return 'Paciente (datos migrados)';
+  return value;
+}

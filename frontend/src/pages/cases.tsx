@@ -17,6 +17,7 @@ import { useToast } from "@/shared/hooks/useToast";
 import { ReadOnlyBadge } from "@/pages/cases/ReadOnlyBadge";
 import { InvitationCard } from "@/pages/cases/InvitationCard";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
+import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
 import { Loader2, Check, Archive } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
@@ -754,7 +755,7 @@ const CasesPage = () => {
                     <Card className="hover:border-primary transition-colors">
                       <CardHeader>
                         <div className="flex items-center justify-between mb-2">
-                          <CardTitle className="text-lg font-semibold">{surgicalCase.patient_name}</CardTitle>
+                          <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
                           <div className="flex items-center gap-2">
                             {getStatusBadge(surgicalCase.status)}
                           </div>
@@ -923,7 +924,7 @@ const CasesPage = () => {
                       <Card key={surgicalCase.id} className="opacity-80 hover:opacity-100 transition-opacity">
                         <CardHeader>
                           <div className="flex items-center justify-between mb-1">
-                            <CardTitle className="text-lg font-semibold">{surgicalCase.patient_name}</CardTitle>
+                            <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
                             <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                               Cobrado
                             </span>
