@@ -22,14 +22,11 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-// Variable interval: 50% short (5-8 min), 50% long (9-13 min)
-const nextIntervalMs = (): number => {
-  if (Math.random() < 0.5) return (5 + Math.random() * 3) * 60 * 1000;
-  return (9 + Math.random() * 4) * 60 * 1000;
-};
+// Variable interval 3-6 minutes
+const nextIntervalMs = (): number => (3 + Math.random() * 3) * 60 * 1000;
 
 export function MobilePopupAd({
-  initialDelay = 5,
+  initialDelay = 30,
   maxPerSession = 10,
   style = 'bottom-sheet'
 }: MobilePopupAdProps) {

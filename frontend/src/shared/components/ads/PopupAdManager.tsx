@@ -23,11 +23,11 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-// Variable interval around 5 minutes (270-330s)
-const nextIntervalMs = (): number => (270 + Math.random() * 60) * 1000;
+// Variable interval 3-6 minutes
+const nextIntervalMs = (): number => (3 + Math.random() * 3) * 60 * 1000;
 
 export function PopupAdManager({
-  initialDelay = 20,
+  initialDelay = 30,
   maxPerSession = 999,
 }: PopupAdManagerProps) {
   const { user } = useAuth();
