@@ -1,6 +1,6 @@
 // src/components/friendship/ColleagueCard.tsx
 import { Colleague } from '@/services/colleaguesService';
-import { UserMinus, Mail, Phone, Building2, Stethoscope } from 'lucide-react';
+import { UserMinus, Building2, Stethoscope } from 'lucide-react';
 
 interface ColleagueCardProps {
   colleague: Colleague;
@@ -74,19 +74,6 @@ export function ColleagueCard({ colleague, onRemove, isRemoving }: ColleagueCard
           </div>
         )}
 
-        {colleague.email && (
-          <div className="flex items-start gap-2 text-muted-foreground">
-            <Mail className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span className="break-all flex-1">{colleague.email}</span>
-          </div>
-        )}
-
-        {colleague.phone && (
-          <div className="flex items-start gap-2 text-muted-foreground">
-            <Phone className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span className="break-words flex-1">{colleague.phone}</span>
-          </div>
-        )}
       </div>
 
       {/* Código de amigo */}
