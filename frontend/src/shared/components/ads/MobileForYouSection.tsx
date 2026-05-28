@@ -12,9 +12,8 @@ interface MobileForYouSectionProps {
 
 export function MobileForYouSection({ specialty }: MobileForYouSectionProps) {
   const [ads, setAds] = useState<ActiveAd[]>([]);
-  const [dismissed, setDismissed] = useState(
-    () => sessionStorage.getItem('forYouDismissed') === '1'
-  );
+  const [dismissed, setDismissed] = useState(false);
+  const REAPPEAR_MS = 2 * 60 * 1000; // 2 minutos
 
   useEffect(() => {
     if (!specialty) return;
@@ -38,7 +37,7 @@ export function MobileForYouSection({ specialty }: MobileForYouSectionProps) {
           </span>
         </div>
         <button
-          onClick={() => { sessionStorage.setItem('forYouDismissed', '1'); setDismissed(true); }}
+          onClick={() => { setDismissed(true); setTimeout(() => setDismissed(false), REAPPEAR_MS); }}
           className="p-0.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
           aria-label="Ocultar anuncios"
         >
