@@ -301,7 +301,6 @@ const Settings = () => {
                       { ok: false, text: 'Publicidad en la app (banners y popups)' },
                       { ok: false, text: 'Novedades sin filtro de especialidad' },
                       { ok: false, text: 'Sin integración con Google Calendar' },
-                      { ok: false, text: 'Sin exportación de cirugías a PDF' },
                     ].map(({ ok, text }) => (
                       <div key={text} className="flex items-center gap-2 text-sm">
                         {ok
@@ -337,7 +336,6 @@ const Settings = () => {
                       'Sin publicidad ni popups',
                       'Novedades filtradas por tu especialidad',
                       'Integración con Google Calendar',
-                      'Exportación de cirugías a PDF',
                       'Acceso anticipado a nuevas funciones',
                     ].map((text) => (
                       <div key={text} className="flex items-center gap-2 text-sm">
