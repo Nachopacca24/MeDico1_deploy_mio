@@ -298,8 +298,7 @@ const Settings = () => {
                       { ok: true,  text: 'Hasta 2 colegas / ayudantes' },
                       { ok: true,  text: 'Hospitales y procedimientos' },
                       { ok: true,  text: 'Calculadora médica' },
-                      { ok: false, text: 'Publicidad en la app (banners y popups)' },
-                      { ok: false, text: 'Novedades sin filtro de especialidad' },
+                      { ok: false, text: 'Anuncios personalizados por especialidad' },
                       { ok: false, text: 'Sin integración con Google Calendar' },
                     ].map(({ ok, text }) => (
                       <div key={text} className="flex items-center gap-2 text-sm">
@@ -333,8 +332,7 @@ const Settings = () => {
                       'Colegas y colaboración ilimitados',
                       'Hospitales y procedimientos',
                       'Calculadora médica',
-                      'Sin publicidad ni popups',
-                      'Novedades filtradas por tu especialidad',
+                      'Sin anuncios ni interrupciones',
                       'Integración con Google Calendar',
                       'Acceso anticipado a nuevas funciones',
                     ].map((text) => (
