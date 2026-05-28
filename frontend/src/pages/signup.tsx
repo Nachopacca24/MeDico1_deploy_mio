@@ -191,7 +191,7 @@ export default function SignupForm() {
 
   // Si ya está autenticado, redirigir al dashboard
   if (isAuthenticated) {
-    return <Navigate to='/' replace />;
+    return <Navigate to='/dashboard' replace />;
   }
 
   return (

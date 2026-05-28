@@ -85,7 +85,7 @@ export default function Login() {
       if (location.state?.from) {
         navigate(location.state.from);
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       console.error('Error en login:', error);
@@ -122,7 +122,7 @@ export default function Login() {
       if (location.state?.from) {
         navigate(location.state.from);
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       toast({
@@ -154,7 +154,7 @@ export default function Login() {
       if (location.state?.from) {
         navigate(location.state.from);
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       console.error('[Google] ERROR:', JSON.stringify(error), 'code:', error?.code, 'message:', error?.message, 'error:', error?.error);
@@ -184,7 +184,7 @@ export default function Login() {
     if (isAdmin) {
       return <Navigate to='/admin' replace />;
     }
-    return <Navigate to='/' replace />;
+    return <Navigate to='/dashboard' replace />;
   }
 
   return (

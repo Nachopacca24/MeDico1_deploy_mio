@@ -44,7 +44,7 @@ const VerifyEmailPage = () => {
 
         if (isAuthenticated) {
           try { await refreshUser(); } catch { /* ignorar si falla */ }
-          setTimeout(() => navigate('/'), 3000);
+          setTimeout(() => navigate('/dashboard'), 3000);
         } else {
           setTimeout(() => {
             navigate('/login', {
@@ -144,7 +144,7 @@ const VerifyEmailPage = () => {
                   : 'Serás redirigido al login en 3 segundos...'}
               </div>
               <Button
-                onClick={() => isAuthenticated ? navigate('/') : navigate('/login')}
+                onClick={() => isAuthenticated ? navigate('/dashboard') : navigate('/login')}
                 className="w-full"
               >
                 {isAuthenticated ? 'Ir al inicio ahora' : 'Ir al Login ahora'}

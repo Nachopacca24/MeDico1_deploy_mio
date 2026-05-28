@@ -86,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.user.role === 0) {
         navigate('/admin');
       } else {
-        navigate('/');
+        navigate('/dashboard');
       }
       // Return response so callers can access user.id + derive the E2EE key
       return response;
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.user.role === 0) {
         navigate('/admin');
       } else {
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error) {
       throw error;

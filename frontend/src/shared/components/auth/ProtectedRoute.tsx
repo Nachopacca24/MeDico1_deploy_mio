@@ -36,7 +36,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   // Si requiere admin y no es admin, redirigir al dashboard
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Si está autenticado (y es admin si se requiere), mostrar el contenido

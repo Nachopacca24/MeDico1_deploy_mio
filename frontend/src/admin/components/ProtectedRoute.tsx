@@ -30,7 +30,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   // Si la ruta REQUIERE ADMIN y el usuario NO es admin → BLOQUEAR
   if (requireAdmin && !isAdmin) {
     console.warn('⛔ Intento de acceso no autorizado a ruta de admin');
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Si llegó aquí, el usuario tiene permiso

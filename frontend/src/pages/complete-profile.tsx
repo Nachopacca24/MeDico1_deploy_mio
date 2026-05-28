@@ -70,7 +70,7 @@ export default function CompleteProfile() {
     try {
       await updateUser(formData);
       toast({ title: "¡Perfil completado!", description: "Tu información fue guardada exitosamente." });
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",

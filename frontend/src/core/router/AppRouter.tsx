@@ -21,6 +21,9 @@ import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
 import CompleteProfilePage from "@/pages/complete-profile";
 
+// Landing page
+import LandingPage from "@/pages/landing";
+
 // Main pages
 import Index from "@/pages/index";
 import CasesPage from "@/pages/cases";
@@ -40,6 +43,7 @@ export const AppRouter = () => {
   return (
     <Routes>
       {/* Public routes */}
+      <Route path='/' element={<LandingPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/signup' element={<SignupForm />} />
       <Route path='/logout' element={<LogoutPage />} />
@@ -68,7 +72,7 @@ export const AppRouter = () => {
 
       {/* Protected routes — wrapped in PersistentAdSystem so ad timers survive navigation */}
       <Route element={<ProtectedRoute><PersistentAdSystem /></ProtectedRoute>}>
-        <Route path='/' element={<Index />} />
+        <Route path='/dashboard' element={<Index />} />
         <Route path='/cases' element={<CasesPage />} />
         <Route path='/cases/new' element={<NewCase />} />
         <Route path='/cases/:id' element={<CaseDetail />} />

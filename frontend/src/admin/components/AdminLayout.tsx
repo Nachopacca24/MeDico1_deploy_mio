@@ -124,7 +124,7 @@ export const AdminLayout = () => {
             {/* Link para volver al dashboard normal */}
             <div className="pt-4 mt-4 border-t">
               <Link
-                to="/"
+                to="/dashboard"
                 onClick={() => setSidebarOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-accent text-muted-foreground hover:text-foreground"
               >
