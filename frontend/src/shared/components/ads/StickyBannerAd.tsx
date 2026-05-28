@@ -196,6 +196,67 @@ export function StickyBannerAd({ position = 'bottom', initialDelay = 5 }: Sticky
 
   if (!ready || visible.length === 0) return null;
 
+  // ── Mobile: full-width horizontal banner at the very bottom ──────────────
+  if (isMobile) {
+    const ad = visible[0];
+    const [mobileImgFailed, setMobileImgFailed] = useState(false);
+
+    const handleClick = async () => {
+      await advertisementService.trackClick(ad.id).catch(() => {});
+      window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    };
+
+    return (
+      <div
+        className="fixed bottom-0 left-0 right-0 z-[90] animate-in slide-in-from-bottom-2 duration-300"
+        style={{ paddingBottom: 'var(--sab, 0px)' }}
+      >
+        <div className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 shadow-2xl flex items-center gap-3 px-3 py-2.5">
+          {/* Patrocinado tag */}
+          <span className="shrink-0 text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest border border-muted-foreground/20 rounded px-1.5 py-0.5">
+            Ad
+          </span>
+
+          {/* Image */}
+          {ad.image_url && !mobileImgFailed && (
+            <img
+              src={ad.image_url}
+              alt={ad.image_alt_text || ad.title || 'Publicidad'}
+              className="h-10 w-14 object-cover rounded-lg shrink-0"
+              onError={() => setMobileImgFailed(true)}
+            />
+          )}
+
+          {/* Text */}
+          <div className="flex-1 min-w-0 cursor-pointer" onClick={handleClick}>
+            {ad.title && (
+              <p className="text-sm font-semibold text-foreground truncate">{ad.title}</p>
+            )}
+            <p className="text-xs text-muted-foreground truncate">Ver más información</p>
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={handleClick}
+            className="shrink-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+          >
+            Ver
+          </button>
+
+          {/* Dismiss */}
+          <button
+            onClick={() => handleDismiss(ad.id)}
+            className="shrink-0 p-1 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Cerrar anuncio"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Desktop: floating cards in corner ────────────────────────────────────
   const positionStyle = position === 'bottom'
     ? { bottom: 'calc(1rem + var(--sab, 0px))' }
     : { top: '5rem' };

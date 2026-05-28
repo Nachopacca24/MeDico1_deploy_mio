@@ -9,6 +9,8 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 import { Shield } from "lucide-react";
 import { advertisementService } from "@/admin/services/advertisementService";
 import { EmailVerificationBanner } from "@/shared/components/EmailVerificationBanner";
+import { MobileForYouSection } from "@/shared/components/ads/MobileForYouSection";
+import { useIsMobile } from "@/shared/hooks/useAdSystem";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -17,6 +19,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useAuth();
   const isAdmin = user?.is_admin;
+  const isMobile = useIsMobile();
 
   // Pre-warm ad cache using the user's specialty so the exact cache keys match
   useEffect(() => {
@@ -49,8 +52,11 @@ export function AppLayout({ children }: AppLayoutProps) {
           )}
         </header>
 
-        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6" style={{ paddingBottom: 'calc(5rem + var(--sab, 0px))' }}>
+        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6" style={{ paddingBottom: isMobile ? 'calc(4.5rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))' }}>
           <EmailVerificationBanner />
+          {isMobile && user?.plan !== 'premium' && (
+            <MobileForYouSection specialty={user?.specialty} />
+          )}
           {children}
         </main>
       </SidebarInset>
