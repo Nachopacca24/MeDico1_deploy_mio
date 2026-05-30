@@ -115,6 +115,7 @@ class SurgicalCaseService {
           top_hospitals: [], top_hospitals_by_rvu: [],
           collaborators_this_month: 0, active_specialties: 0, avg_per_week: 0,
           total_rvu: 0, avg_rvu_per_case: 0, rvu_this_month: 0, rvu_last_month: 0,
+          pipeline_month: {}, pipeline_week: {},
         };
       }
 
@@ -160,6 +161,7 @@ class SurgicalCaseService {
         top_hospitals: [], top_hospitals_by_rvu: [],
         collaborators_this_month: 0, active_specialties: 0, avg_per_week: 0,
         total_rvu: 0, avg_rvu_per_case: 0, rvu_this_month: 0, rvu_last_month: 0,
+        pipeline_month: {}, pipeline_week: {},
       };
     }
   }
