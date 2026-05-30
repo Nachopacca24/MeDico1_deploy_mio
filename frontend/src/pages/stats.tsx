@@ -103,40 +103,32 @@ export default function StatsPage() {
 
   // KPI: "Activas" = not yet closed (not paid, not cancelled)
   const active = cScheduled + cCompleted + cBilled;
-  // Total for funnel header bar scale
-  const totalForScale = Math.max(stats.total_cases, 1);
+  // Pipeline: cumulative progress through the workflow
+  const totalOperated  = cCompleted + cBilled + cPaid; // all that have been operated
+  const totalBilled    = cBilled + cPaid;               // all that have been billed
+  const totalPaid      = cPaid;                         // all that have been paid
+  const maxPipeline    = Math.max(stats.total_cases, 1);
 
   const pipeline = [
     {
-      key: "scheduled", label: "Programadas",
-      count: stats.total_cases, // starting point: all surgeries
-      sub: `${cScheduled} sin operar aún`,
-      icon: Clock, color: "text-blue-400", bar: "bg-blue-500",
-      barValue: stats.total_cases,
-    },
-    {
       key: "completed", label: "Operadas",
-      count: cCompleted,
-      sub: "operadas, pendientes de factura",
+      count: totalOperated,
+      sub: "han pasado por quirófano",
       icon: CheckCircle2, color: "text-green-400", bar: "bg-green-500",
-      barValue: cCompleted,
     },
     {
       key: "billed", label: "Facturadas",
-      count: cBilled,
-      sub: "facturadas, esperando pago",
+      count: totalBilled,
+      sub: "tienen factura emitida",
       icon: FileText, color: "text-yellow-400", bar: "bg-yellow-500",
-      barValue: cBilled,
     },
     {
       key: "paid", label: "Cobradas",
-      count: cPaid,
+      count: totalPaid,
       sub: "completamente cobradas",
       icon: DollarSign, color: "text-emerald-400", bar: "bg-emerald-500",
-      barValue: cPaid,
     },
   ];
-  const maxPipeline = totalForScale;
 
   const topProcedures = procedureSort === "count"
     ? stats.top_procedures
@@ -163,9 +155,9 @@ export default function StatsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             icon={Activity}
-            label="Cirugías este mes"
-            value={stats.cases_this_month}
-            sub={<DeltaBadge current={stats.cases_this_month} previous={stats.cases_last_month} />}
+            label="Cirugías totales"
+            value={stats.total_cases}
+            sub={<span className="text-xs text-muted-foreground">{stats.cases_this_month} este mes <DeltaBadge current={stats.cases_this_month} previous={stats.cases_last_month} /></span>}
           />
           <StatCard
             icon={CheckCircle2}
@@ -212,7 +204,7 @@ export default function StatsPage() {
             {pipeline.map((step, i) => (
               <div key={step.key} className="flex items-center gap-1 flex-1 min-w-0">
                 <div className={`flex-1 min-w-0 rounded-xl border p-3 text-center ${
-                  step.barValue > 0 ? "border-border bg-muted/30" : "border-border/30 opacity-40"
+                  step.count > 0 ? "border-border bg-muted/30" : "border-border/30 opacity-40"
                 }`}>
                   <step.icon className={`h-5 w-5 mx-auto mb-1 ${step.color}`} />
                   <div className="text-2xl font-black">{step.count}</div>
@@ -225,10 +217,10 @@ export default function StatsPage() {
             ))}
           </div>
 
-          {/* Barras de progreso — escala relativa al total */}
+          {/* Barras de progreso — escala relativa al total de cirugías */}
           <div className="space-y-2.5">
             {pipeline.map(step => {
-              const pct = maxPipeline > 0 ? Math.round((step.barValue / maxPipeline) * 100) : 0;
+              const pct = maxPipeline > 0 ? Math.round((step.count / maxPipeline) * 100) : 0;
               return (
                 <div key={step.key} className="flex items-center gap-3 text-sm">
                   <span className="w-28 shrink-0 text-muted-foreground">{step.label}</span>
