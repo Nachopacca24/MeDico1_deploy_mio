@@ -6,30 +6,16 @@ import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import type { CaseStats } from "@/types/surgical-case";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend,
 } from "recharts";
 import {
-  Activity, Stethoscope, Users, TrendingUp, TrendingDown,
-  Hospital, Minus, Plus, BarChart2,
+  Activity, Users, TrendingUp, TrendingDown,
+  Hospital, Minus, BarChart2, Zap,
+  CheckCircle2, Clock, FileText, DollarSign, ChevronRight,
 } from "lucide-react";
 
-const STATUS_LABELS: Record<string, string> = {
-  scheduled: "Programadas",
-  completed: "Operadas",
-  billed: "Facturadas",
-  paid: "Cobradas",
-  cancelled: "Canceladas",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  scheduled: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  completed: "bg-green-500/20 text-green-400 border-green-500/30",
-  billed: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  paid: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  cancelled: "bg-red-500/20 text-red-400 border-red-500/30",
-};
-
-function DeltaBadge({ current, previous }: { current: number; previous: number }) {
+function DeltaBadge({ current, previous, unit = "" }: { current: number; previous: number; unit?: string }) {
   if (previous === 0 && current === 0) return null;
   const diff = current - previous;
   if (diff === 0) return (
@@ -42,29 +28,34 @@ function DeltaBadge({ current, previous }: { current: number; previous: number }
   return (
     <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${up ? "text-green-500" : "text-red-400"}`}>
       {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-      {up ? "+" : "-"}{pct}% vs mes anterior
+      {up ? "+" : "-"}{pct}% {unit} vs mes anterior
     </span>
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub }: {
-  icon: React.ElementType; label: string; value: string | number; sub?: React.ReactNode;
+function StatCard({ icon: Icon, label, value, sub, accent = false, iconColor = "" }: {
+  icon: React.ElementType; label: string; value: string | number;
+  sub?: React.ReactNode; accent?: boolean; iconColor?: string;
 }) {
   return (
-    <div className="bg-card border rounded-2xl p-5 flex flex-col gap-2">
+    <div className={`border rounded-2xl p-5 flex flex-col gap-2 ${accent ? "bg-primary/5 border-primary/20" : "bg-card"}`}>
       <div className="flex items-center gap-2 text-muted-foreground text-sm">
-        <Icon className="h-4 w-4" />
+        <Icon className={`h-4 w-4 ${iconColor}`} />
         {label}
       </div>
-      <div className="text-3xl font-black text-foreground">{value}</div>
+      <div className="text-3xl font-black text-foreground leading-none">{value}</div>
       {sub && <div>{sub}</div>}
     </div>
   );
 }
 
+type ChartMode = "cirugias" | "rvu" | "ambos";
+
 export default function StatsPage() {
   const [stats, setStats] = useState<CaseStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [chartMode, setChartMode] = useState<ChartMode>("ambos");
+  const [procedureSort, setProcedureSort] = useState<"count" | "rvu">("count");
 
   useEffect(() => {
     surgicalCaseService.getStats()
@@ -102,15 +93,44 @@ export default function StatsPage() {
     );
   }
 
-  const specialties = Object.entries(stats.cases_by_specialty)
-    .map(([name, val]) => ({ name, count: val.count }))
-    .sort((a, b) => b.count - a.count);
+  const byStatus = stats.cases_by_status;
+  // Cumulative funnel: each step includes all stages that follow it
+  const cScheduled = byStatus.scheduled?.count ?? 0;
+  const cCompleted = byStatus.completed?.count ?? 0;
+  const cBilled    = byStatus.billed?.count ?? 0;
+  const cPaid      = byStatus.paid?.count ?? 0;
+  const cancelled  = byStatus.cancelled?.count ?? 0;
 
-  const totalSpecialtyCases = specialties.reduce((s, x) => s + x.count, 0);
+  const funnelProgramadas = cScheduled + cCompleted + cBilled + cPaid; // all active
+  const funnelOperadas    = cCompleted + cBilled + cPaid;               // reached surgery
+  const funnelFacturadas  = cBilled + cPaid;                            // reached billing
+  const funnelCobradas    = cPaid;                                      // fully collected
+
+  // For the "Activas" KPI: surgeries not yet in final state
+  const active = cScheduled + cCompleted;
+
+  const pipeline = [
+    { key: "scheduled", label: "Programadas", count: funnelProgramadas, icon: Clock,        color: "text-blue-400",    bar: "bg-blue-500"    },
+    { key: "completed", label: "Operadas",    count: funnelOperadas,    icon: CheckCircle2, color: "text-green-400",   bar: "bg-green-500"   },
+    { key: "billed",    label: "Facturadas",  count: funnelFacturadas,  icon: FileText,     color: "text-yellow-400",  bar: "bg-yellow-500"  },
+    { key: "paid",      label: "Cobradas",    count: funnelCobradas,    icon: DollarSign,   color: "text-emerald-400", bar: "bg-emerald-500" },
+  ];
+  const maxPipeline = Math.max(funnelProgramadas, 1);
+
+  const topProcedures = procedureSort === "count"
+    ? stats.top_procedures
+    : stats.top_procedures_by_rvu;
+  const maxProcVal = topProcedures.length > 0
+    ? Math.max(...topProcedures.map(p => procedureSort === "count" ? p.count : p.total_rvu))
+    : 1;
+
+  const maxHospitalRvu = stats.top_hospitals_by_rvu.length > 0
+    ? Math.max(...stats.top_hospitals_by_rvu.map(h => h.total_rvu))
+    : 1;
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-5xl mx-auto pb-8">
+      <div className="space-y-6 max-w-5xl mx-auto pb-10">
 
         {/* Header */}
         <div className="border-b pb-4">
@@ -118,7 +138,7 @@ export default function StatsPage() {
           <p className="text-muted-foreground">Tu actividad clínica de un vistazo</p>
         </div>
 
-        {/* KPI Cards */}
+        {/* KPI — Cirugías */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             icon={Activity}
@@ -127,14 +147,18 @@ export default function StatsPage() {
             sub={<DeltaBadge current={stats.cases_this_month} previous={stats.cases_last_month} />}
           />
           <StatCard
-            icon={Stethoscope}
-            label="Procedimientos totales"
-            value={stats.total_procedures}
+            icon={CheckCircle2}
+            label="Activas"
+            value={active}
+            iconColor="text-blue-400"
+            sub={<span className="text-xs text-muted-foreground">programadas + operadas sin cobrar</span>}
           />
           <StatCard
-            icon={Plus}
-            label="Especialidades activas"
-            value={stats.active_specialties}
+            icon={DollarSign}
+            label="Cobradas"
+            value={funnelCobradas}
+            iconColor="text-emerald-400"
+            sub={<span className="text-xs text-muted-foreground">de {stats.total_cases} totales</span>}
           />
           <StatCard
             icon={Users}
@@ -143,67 +167,146 @@ export default function StatsPage() {
           />
         </div>
 
-        {/* Bar chart — cirugías por mes */}
+        {/* KPI — RVU */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            icon={Zap}
+            label="RVU este mes"
+            value={stats.rvu_this_month.toLocaleString('es-GT', { maximumFractionDigits: 1 })}
+            sub={<DeltaBadge current={stats.rvu_this_month} previous={stats.rvu_last_month} unit="en RVU" />}
+            accent
+          />
+          <StatCard icon={Zap} label="RVU total histórico"   value={stats.total_rvu.toLocaleString('es-GT', { maximumFractionDigits: 1 })} accent />
+          <StatCard icon={Zap} label="RVU promedio / cirugía" value={stats.avg_rvu_per_case} accent />
+          <StatCard icon={TrendingUp} label="Cirugías / semana (prom.)" value={stats.avg_per_week} />
+        </div>
+
+        {/* Pipeline de cirugías */}
         <div className="bg-card border rounded-2xl p-5">
-          <h2 className="font-bold text-lg mb-4">Cirugías por mes</h2>
-          {stats.monthly_trend.every(m => m.count === 0) ? (
+          <h2 className="font-bold text-lg mb-1">Pipeline de cirugías</h2>
+          <p className="text-xs text-muted-foreground mb-5">Flujo de tus cirugías desde que las programas hasta que las cobras</p>
+
+          {/* Funnel visual */}
+          <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
+            {pipeline.map((step, i) => (
+              <div key={step.key} className="flex items-center gap-1 flex-1 min-w-0">
+                <div className={`flex-1 min-w-0 rounded-xl border p-3 text-center ${
+                  step.count > 0 ? "border-border bg-muted/30" : "border-border/30 opacity-40"
+                }`}>
+                  <step.icon className={`h-5 w-5 mx-auto mb-1 ${step.color}`} />
+                  <div className="text-2xl font-black">{step.count}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{step.label}</div>
+                </div>
+                {i < pipeline.length - 1 && (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Barras de progreso */}
+          <div className="space-y-2.5">
+            {pipeline.map(step => {
+              const pct = maxPipeline > 0 ? Math.round((step.count / maxPipeline) * 100) : 0;
+              return (
+                <div key={step.key} className="flex items-center gap-3 text-sm">
+                  <span className="w-24 shrink-0 text-muted-foreground">{step.label}</span>
+                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div className={`h-full ${step.bar} rounded-full transition-all duration-500`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="w-6 text-right font-bold shrink-0">{step.count}</span>
+                </div>
+              );
+            })}
+            {cancelled > 0 && (
+              <div className="flex items-center gap-3 text-sm opacity-40">
+                <span className="w-24 shrink-0 text-muted-foreground">Canceladas</span>
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.round((cancelled / maxPipeline) * 100)}%` }} />
+                </div>
+                <span className="w-6 text-right font-bold shrink-0">{cancelled}</span>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground/50 mt-2">
+              Cada etapa incluye las cirugías que la superaron — el embudo siempre decrece.
+            </p>
+          </div>
+        </div>
+
+        {/* Chart — actividad mensual */}
+        <div className="bg-card border rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h2 className="font-bold text-lg">Actividad por mes</h2>
+            <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">
+              {(["ambos", "cirugias", "rvu"] as ChartMode[]).map(m => (
+                <button
+                  key={m}
+                  onClick={() => setChartMode(m)}
+                  className={`px-3 py-1 rounded-md font-semibold transition-colors ${
+                    chartMode === m ? "bg-background shadow text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  {m === "ambos" ? "Ambos" : m === "cirugias" ? "Cirugías" : "RVU"}
+                </button>
+              ))}
+            </div>
+          </div>
+          {stats.monthly_trend.every(m => m.count === 0 && m.rvu === 0) ? (
             <p className="text-muted-foreground text-sm text-center py-8">Sin datos en los últimos 6 meses</p>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={stats.monthly_trend} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.07} />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 12, fill: "currentColor", opacity: 0.5 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  allowDecimals={false}
-                  tick={{ fontSize: 12, fill: "currentColor", opacity: 0.5 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={stats.monthly_trend} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.06} />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "currentColor", opacity: 0.5 }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "currentColor", opacity: 0.5 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    fontSize: 13,
-                  }}
-                  formatter={(value: number) => [value, "Cirugías"]}
+                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
                   labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
                   cursor={{ fill: "currentColor", opacity: 0.04 }}
                 />
-                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={48} />
+                {(chartMode === "cirugias" || chartMode === "ambos") && (
+                  <Bar dataKey="count" name="Cirugías" fill="hsl(var(--primary))" radius={[4,4,0,0]} maxBarSize={36} />
+                )}
+                {(chartMode === "rvu" || chartMode === "ambos") && (
+                  <Bar dataKey="rvu" name="RVU" fill="hsl(var(--primary) / 0.4)" radius={[4,4,0,0]} maxBarSize={36} />
+                )}
+                {chartMode === "ambos" && <Legend wrapperStyle={{ fontSize: 12 }} />}
               </BarChart>
             </ResponsiveContainer>
           )}
         </div>
 
-        {/* Specialty + Status row */}
+        {/* Top procedimientos + Hospitales por RVU */}
         <div className="grid md:grid-cols-2 gap-4">
 
-          {/* Especialidades */}
           <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-bold text-lg mb-4">Por especialidad</h2>
-            {specialties.length === 0 ? (
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h2 className="font-bold text-lg">Top procedimientos</h2>
+              <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">
+                <button onClick={() => setProcedureSort("count")} className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${procedureSort === "count" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
+                  Por cantidad
+                </button>
+                <button onClick={() => setProcedureSort("rvu")} className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${procedureSort === "rvu" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
+                  Por RVU
+                </button>
+              </div>
+            </div>
+            {topProcedures.length === 0 ? (
               <p className="text-muted-foreground text-sm">Sin datos</p>
             ) : (
               <div className="space-y-3">
-                {specialties.map(({ name, count }) => {
-                  const pct = totalSpecialtyCases > 0 ? Math.round((count / totalSpecialtyCases) * 100) : 0;
+                {topProcedures.map((p, i) => {
+                  const val = procedureSort === "count" ? p.count : p.total_rvu;
+                  const pct = maxProcVal > 0 ? Math.round((val / maxProcVal) * 100) : 0;
                   return (
-                    <div key={name}>
-                      <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="font-medium truncate">{name}</span>
-                        <span className="text-muted-foreground ml-2 shrink-0">{count} ({pct}%)</span>
+                    <div key={p.name + i}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
+                        <span className="flex-1 text-sm font-medium truncate">{p.name}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{p.count}× · <span className="text-primary font-bold">{p.total_rvu} RVU</span></span>
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
+                        <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
@@ -212,82 +315,30 @@ export default function StatsPage() {
             )}
           </div>
 
-          {/* Estados */}
           <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-bold text-lg mb-4">Por estado</h2>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(stats.cases_by_status)
-                .filter(([, v]) => v.count > 0)
-                .sort(([, a], [, b]) => b.count - a.count)
-                .map(([key, val]) => (
-                  <div
-                    key={key}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold ${STATUS_COLORS[key] ?? "bg-muted text-foreground border-border"}`}
-                  >
-                    <span>{STATUS_LABELS[key] ?? key}</span>
-                    <span className="font-black">{val.count}</span>
-                  </div>
-                ))}
-              {Object.values(stats.cases_by_status).every(v => v.count === 0) && (
-                <p className="text-muted-foreground text-sm">Sin datos</p>
-              )}
-            </div>
-
-            {/* Extra metrics */}
-            <div className="mt-5 pt-4 border-t grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-muted-foreground">Total cirugías</p>
-                <p className="text-2xl font-black">{stats.total_cases}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Prom. por semana</p>
-                <p className="text-2xl font-black">{stats.avg_per_week}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Top procedures + hospitals row */}
-        <div className="grid md:grid-cols-2 gap-4">
-
-          {/* Top procedimientos */}
-          <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-bold text-lg mb-4">Top procedimientos</h2>
-            {stats.top_procedures.length === 0 ? (
+            <h2 className="font-bold text-lg mb-1">Hospitales por RVU</h2>
+            <p className="text-xs text-muted-foreground mb-4">Donde generas más unidades de valor relativo</p>
+            {stats.top_hospitals_by_rvu.length === 0 ? (
               <p className="text-muted-foreground text-sm">Sin datos</p>
             ) : (
-              <ol className="space-y-3">
-                {stats.top_procedures.map((p, i) => (
-                  <li key={p.name} className="flex items-center gap-3">
-                    <span className="shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">
-                      {i + 1}
-                    </span>
-                    <span className="flex-1 text-sm font-medium truncate">{p.name}</span>
-                    <span className="shrink-0 text-sm font-bold text-primary">{p.count}×</span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
-
-          {/* Top hospitales */}
-          <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-bold text-lg mb-4">Hospitales frecuentes</h2>
-            {stats.top_hospitals.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Sin datos</p>
-            ) : (
-              <ol className="space-y-3">
-                {stats.top_hospitals.map((h, i) => (
-                  <li key={h.name} className="flex items-center gap-3">
-                    <span className="shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">
-                      {i + 1}
-                    </span>
-                    <Hospital className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="flex-1 text-sm font-medium truncate">{h.name}</span>
-                    <span className="shrink-0 text-sm font-bold text-primary">{h.count} cirugías</span>
-                  </li>
-                ))}
-              </ol>
+              <div className="space-y-3">
+                {stats.top_hospitals_by_rvu.map((h, i) => {
+                  const pct = maxHospitalRvu > 0 ? Math.round((h.total_rvu / maxHospitalRvu) * 100) : 0;
+                  return (
+                    <div key={h.name + i}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
+                        <Hospital className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="flex-1 text-sm font-medium truncate">{h.name}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{h.count} cir. · <span className="text-primary font-bold">{h.total_rvu} RVU</span></span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
+                        <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
 

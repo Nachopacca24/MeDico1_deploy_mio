@@ -366,39 +366,17 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             total=Sum('calculated_value')
         )['total'] or Decimal('0.00')
 
-        # Casos por estado con valor total
-        cases_by_status = {}
-        for status_choice in SurgicalCase.STATUS_CHOICES:
-            status_code = status_choice[0]
-            status_cases = queryset.filter(status=status_code)
-            count = status_cases.count()
-
-            # Calcular valor total para este estado
-            status_value = CaseProcedure.objects.filter(
-                case__in=status_cases
-            ).aggregate(
-                total=Sum('calculated_value')
-            )['total'] or Decimal('0.00')
-
-            cases_by_status[status_code] = {
-                'count': count,
-                'total_value': float(status_value)
-            }
-
-        # Casos por especialidad (top 5) con valor total
-        specialty_stats = CaseProcedure.objects.filter(
-            case__in=queryset
-        ).values('specialty').annotate(
-            count=Count('id'),
-            total_value=Sum('calculated_value')
-        ).order_by('-count')[:5]
-
-        cases_by_specialty = {
-            item['specialty']: {
-                'count': item['count'],
-                'total_value': float(item['total_value'] or 0)
-            }
-            for item in specialty_stats
+        # Casos por estado — usando flags booleanos reales (is_operated, is_billed, is_paid)
+        # El campo `status` se queda en 'scheduled' aunque el médico marque is_operated=True,
+        # así que los booleanos son la fuente de verdad del flujo real.
+        cancelled_count = queryset.filter(status='cancelled').count()
+        active_qs = queryset.exclude(status='cancelled')
+        cases_by_status = {
+            'scheduled': {'count': active_qs.filter(is_operated=False).count(), 'total_value': 0},
+            'completed': {'count': active_qs.filter(is_operated=True, is_billed=False).count(), 'total_value': 0},
+            'billed':    {'count': active_qs.filter(is_billed=True, is_paid=False).count(), 'total_value': 0},
+            'paid':      {'count': active_qs.filter(is_paid=True).count(), 'total_value': 0},
+            'cancelled': {'count': cancelled_count, 'total_value': 0},
         }
 
         # Casos recientes (últimos 5)
@@ -423,7 +401,27 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             surgery_date__lt=this_month_start
         ).count()
 
-        # Monthly trend — last 6 months
+        # Total RVU
+        all_procedures_qs = CaseProcedure.objects.filter(case__in=queryset)
+        total_rvu = float(all_procedures_qs.aggregate(t=Sum('rvu'))['t'] or 0)
+        avg_rvu_per_case = round(total_rvu / total_cases, 2) if total_cases > 0 else 0.0
+
+        # RVU this month / last month
+        cases_this_month_qs = queryset.filter(surgery_date__gte=this_month_start)
+        cases_last_month_qs = queryset.filter(
+            surgery_date__gte=last_month_start,
+            surgery_date__lt=this_month_start
+        )
+        rvu_this_month = float(
+            CaseProcedure.objects.filter(case__in=cases_this_month_qs)
+            .aggregate(t=Sum('rvu'))['t'] or 0
+        )
+        rvu_last_month = float(
+            CaseProcedure.objects.filter(case__in=cases_last_month_qs)
+            .aggregate(t=Sum('rvu'))['t'] or 0
+        )
+
+        # Monthly trend — last 6 months (cases + RVU)
         MONTH_NAMES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
                        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
         monthly_trend = []
@@ -435,29 +433,77 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 y -= 1
             first_day = date(y, m, 1)
             last_day = date(y, m, calendar.monthrange(y, m)[1])
-            count = queryset.filter(
-                surgery_date__gte=first_day,
-                surgery_date__lte=last_day
-            ).count()
-            monthly_trend.append({'month': MONTH_NAMES[m - 1], 'year': y, 'count': count})
+            month_cases = queryset.filter(surgery_date__gte=first_day, surgery_date__lte=last_day)
+            count = month_cases.count()
+            rvu = float(
+                CaseProcedure.objects.filter(case__in=month_cases)
+                .aggregate(t=Sum('rvu'))['t'] or 0
+            )
+            monthly_trend.append({
+                'month': MONTH_NAMES[m - 1], 'year': y,
+                'count': count, 'rvu': round(rvu, 1),
+            })
 
-        # Top 5 procedures
+        # Top 5 procedures by count + total RVU
         top_procedures = list(
             CaseProcedure.objects.filter(case__in=queryset)
             .values('surgery_name')
-            .annotate(count=Count('id'))
+            .annotate(count=Count('id'), total_rvu=Sum('rvu'))
             .order_by('-count')[:5]
         )
-        top_procedures_list = [{'name': p['surgery_name'], 'count': p['count']} for p in top_procedures]
+        top_procedures_list = [
+            {'name': p['surgery_name'], 'count': p['count'], 'total_rvu': round(float(p['total_rvu'] or 0), 1)}
+            for p in top_procedures
+        ]
 
-        # Top 3 hospitals
+        # Top 5 procedures by RVU
+        top_procedures_by_rvu = list(
+            CaseProcedure.objects.filter(case__in=queryset)
+            .values('surgery_name')
+            .annotate(count=Count('id'), total_rvu=Sum('rvu'))
+            .order_by('-total_rvu')[:5]
+        )
+        top_procedures_by_rvu_list = [
+            {'name': p['surgery_name'], 'count': p['count'], 'total_rvu': round(float(p['total_rvu'] or 0), 1)}
+            for p in top_procedures_by_rvu
+        ]
+
+        # Top 5 hospitals by count
         top_hospitals = list(
             queryset.exclude(hospital__isnull=True)
             .values('hospital__name')
             .annotate(count=Count('id'))
-            .order_by('-count')[:3]
+            .order_by('-count')[:5]
         )
         top_hospitals_list = [{'name': h['hospital__name'], 'count': h['count']} for h in top_hospitals]
+
+        # Top 5 hospitals by RVU
+        top_hospitals_by_rvu = list(
+            CaseProcedure.objects.filter(case__in=queryset, case__hospital__isnull=False)
+            .values('case__hospital__name')
+            .annotate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
+            .order_by('-total_rvu')[:5]
+        )
+        top_hospitals_by_rvu_list = [
+            {'name': h['case__hospital__name'], 'total_rvu': round(float(h['total_rvu'] or 0), 1), 'count': h['count']}
+            for h in top_hospitals_by_rvu
+        ]
+
+        # Specialty stats — add RVU
+        specialty_stats_rvu = CaseProcedure.objects.filter(
+            case__in=queryset
+        ).values('specialty').annotate(
+            count=Count('id'),
+            total_rvu=Sum('rvu'),
+        ).order_by('-count')[:8]
+        cases_by_specialty = {
+            item['specialty']: {
+                'count': item['count'],
+                'total_value': 0,
+                'total_rvu': round(float(item['total_rvu'] or 0), 1),
+            }
+            for item in specialty_stats_rvu
+        }
 
         # Collaborators this month (distinct assistant doctors)
         collaborators_this_month = queryset.filter(
@@ -493,10 +539,16 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             'cases_last_month': cases_last_month,
             'monthly_trend': monthly_trend,
             'top_procedures': top_procedures_list,
+            'top_procedures_by_rvu': top_procedures_by_rvu_list,
             'top_hospitals': top_hospitals_list,
+            'top_hospitals_by_rvu': top_hospitals_by_rvu_list,
             'collaborators_this_month': collaborators_this_month,
             'active_specialties': active_specialties,
             'avg_per_week': avg_per_week,
+            'total_rvu': total_rvu,
+            'avg_rvu_per_case': avg_rvu_per_case,
+            'rvu_this_month': rvu_this_month,
+            'rvu_last_month': rvu_last_month,
         }
 
         return Response(stats_data, status=status.HTTP_200_OK)

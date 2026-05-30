@@ -111,8 +111,10 @@ class SurgicalCaseService {
           total_cases: 0, total_procedures: 0, total_value: 0,
           cases_by_status: {}, cases_by_specialty: {}, recent_cases: [],
           cases_this_month: 0, cases_last_month: 0, monthly_trend: [],
-          top_procedures: [], top_hospitals: [], collaborators_this_month: 0,
-          active_specialties: 0, avg_per_week: 0,
+          top_procedures: [], top_procedures_by_rvu: [],
+          top_hospitals: [], top_hospitals_by_rvu: [],
+          collaborators_this_month: 0, active_specialties: 0, avg_per_week: 0,
+          total_rvu: 0, avg_rvu_per_case: 0, rvu_this_month: 0, rvu_last_month: 0,
         };
       }
 
@@ -133,10 +135,16 @@ class SurgicalCaseService {
         cases_last_month: data.cases_last_month ?? 0,
         monthly_trend: data.monthly_trend ?? [],
         top_procedures: data.top_procedures ?? [],
+        top_procedures_by_rvu: data.top_procedures_by_rvu ?? [],
         top_hospitals: data.top_hospitals ?? [],
+        top_hospitals_by_rvu: data.top_hospitals_by_rvu ?? [],
         collaborators_this_month: data.collaborators_this_month ?? 0,
         active_specialties: data.active_specialties ?? 0,
         avg_per_week: data.avg_per_week ?? 0,
+        total_rvu: data.total_rvu ?? 0,
+        avg_rvu_per_case: data.avg_rvu_per_case ?? 0,
+        rvu_this_month: data.rvu_this_month ?? 0,
+        rvu_last_month: data.rvu_last_month ?? 0,
       };
       
       return transformedData;

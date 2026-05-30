@@ -18,15 +18,21 @@ export interface CaseStats {
     [key: string]: { count: number; total_value: number };
   };
   cases_by_specialty: {
-    [key: string]: { count: number; total_value: number };
+    [key: string]: { count: number; total_value: number; total_rvu?: number };
   };
   recent_cases: SurgicalCase[];
   // extended stats
   cases_this_month: number;
   cases_last_month: number;
-  monthly_trend: { month: string; year: number; count: number }[];
-  top_procedures: { name: string; count: number }[];
+  monthly_trend: { month: string; year: number; count: number; rvu: number }[];
+  top_procedures: { name: string; count: number; total_rvu: number }[];
+  top_procedures_by_rvu: { name: string; count: number; total_rvu: number }[];
   top_hospitals: { name: string; count: number }[];
+  top_hospitals_by_rvu: { name: string; total_rvu: number; count: number }[];
+  total_rvu: number;
+  avg_rvu_per_case: number;
+  rvu_this_month: number;
+  rvu_last_month: number;
   collaborators_this_month: number;
   active_specialties: number;
   avg_per_week: number;
