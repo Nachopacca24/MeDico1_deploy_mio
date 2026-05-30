@@ -97,7 +97,7 @@ interface StickyBannerAdProps {
   initialDelay?: number;
 }
 
-export function StickyBannerAd({ position = 'bottom', initialDelay = 5 }: StickyBannerAdProps) {
+export function StickyBannerAd({ position = 'bottom', initialDelay = 1 }: StickyBannerAdProps) {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const slotCount = isMobile ? 1 : 2;

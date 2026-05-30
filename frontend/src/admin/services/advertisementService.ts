@@ -85,7 +85,8 @@ export interface FeedAd {
 class AdvertisementService {
   // Module-level cache so re-fetches within 5 min are instant
   private static adCache = new Map<string, { data: ActiveAd[]; fetchedAt: number }>();
-  private static readonly CACHE_TTL_MS = 5 * 60 * 1000;
+  private static readonly CACHE_TTL_MS       = 5 * 60 * 1000; // 5 min for results with ads
+  private static readonly CACHE_TTL_EMPTY_MS = 15 * 1000;     // 15 s for empty results (avoid hammering)
 
   private async handleResponse(response: Response) {
     const contentType = response.headers.get('content-type');
@@ -238,8 +239,11 @@ class AdvertisementService {
   async getActiveAds(placement: string = 'home_banner', specialty?: string): Promise<ActiveAd[]> {
     const cacheKey = `${placement}:${specialty ?? ''}`;
     const cached = AdvertisementService.adCache.get(cacheKey);
-    if (cached && Date.now() - cached.fetchedAt < AdvertisementService.CACHE_TTL_MS) {
-      return cached.data;
+    if (cached) {
+      const ttl = cached.data.length > 0
+        ? AdvertisementService.CACHE_TTL_MS
+        : AdvertisementService.CACHE_TTL_EMPTY_MS;
+      if (Date.now() - cached.fetchedAt < ttl) return cached.data;
     }
 
     try {
@@ -253,9 +257,8 @@ class AdvertisementService {
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
       const data: ActiveAd[] = await response.json();
-      if (data.length > 0) {
-        AdvertisementService.adCache.set(cacheKey, { data, fetchedAt: Date.now() });
-      }
+      // Always cache — empty responses use a shorter TTL (see getter above)
+      AdvertisementService.adCache.set(cacheKey, { data, fetchedAt: Date.now() });
 
       // Preload images so they appear instantly when the ad timer fires
       data.forEach(ad => {
