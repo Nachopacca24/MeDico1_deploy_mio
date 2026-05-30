@@ -94,28 +94,49 @@ export default function StatsPage() {
   }
 
   const byStatus = stats.cases_by_status;
-  // Cumulative funnel: each step includes all stages that follow it
-  const cScheduled = byStatus.scheduled?.count ?? 0;
-  const cCompleted = byStatus.completed?.count ?? 0;
-  const cBilled    = byStatus.billed?.count ?? 0;
-  const cPaid      = byStatus.paid?.count ?? 0;
+  // Exclusive counts per stage — each surgery is in exactly ONE stage
+  const cScheduled = byStatus.scheduled?.count ?? 0; // not operated yet
+  const cCompleted = byStatus.completed?.count ?? 0; // operated, not billed yet
+  const cBilled    = byStatus.billed?.count ?? 0;    // billed, not paid yet
+  const cPaid      = byStatus.paid?.count ?? 0;      // fully paid
   const cancelled  = byStatus.cancelled?.count ?? 0;
 
-  const funnelProgramadas = cScheduled + cCompleted + cBilled + cPaid; // all active
-  const funnelOperadas    = cCompleted + cBilled + cPaid;               // reached surgery
-  const funnelFacturadas  = cBilled + cPaid;                            // reached billing
-  const funnelCobradas    = cPaid;                                      // fully collected
-
-  // For the "Activas" KPI: surgeries not yet in final state
-  const active = cScheduled + cCompleted;
+  // KPI: "Activas" = not yet closed (not paid, not cancelled)
+  const active = cScheduled + cCompleted + cBilled;
+  // Total for funnel header bar scale
+  const totalForScale = Math.max(stats.total_cases, 1);
 
   const pipeline = [
-    { key: "scheduled", label: "Programadas", count: funnelProgramadas, icon: Clock,        color: "text-blue-400",    bar: "bg-blue-500"    },
-    { key: "completed", label: "Operadas",    count: funnelOperadas,    icon: CheckCircle2, color: "text-green-400",   bar: "bg-green-500"   },
-    { key: "billed",    label: "Facturadas",  count: funnelFacturadas,  icon: FileText,     color: "text-yellow-400",  bar: "bg-yellow-500"  },
-    { key: "paid",      label: "Cobradas",    count: funnelCobradas,    icon: DollarSign,   color: "text-emerald-400", bar: "bg-emerald-500" },
+    {
+      key: "scheduled", label: "Programadas",
+      count: stats.total_cases, // starting point: all surgeries
+      sub: `${cScheduled} sin operar aún`,
+      icon: Clock, color: "text-blue-400", bar: "bg-blue-500",
+      barValue: stats.total_cases,
+    },
+    {
+      key: "completed", label: "Operadas",
+      count: cCompleted,
+      sub: "operadas, pendientes de factura",
+      icon: CheckCircle2, color: "text-green-400", bar: "bg-green-500",
+      barValue: cCompleted,
+    },
+    {
+      key: "billed", label: "Facturadas",
+      count: cBilled,
+      sub: "facturadas, esperando pago",
+      icon: FileText, color: "text-yellow-400", bar: "bg-yellow-500",
+      barValue: cBilled,
+    },
+    {
+      key: "paid", label: "Cobradas",
+      count: cPaid,
+      sub: "completamente cobradas",
+      icon: DollarSign, color: "text-emerald-400", bar: "bg-emerald-500",
+      barValue: cPaid,
+    },
   ];
-  const maxPipeline = Math.max(funnelProgramadas, 1);
+  const maxPipeline = totalForScale;
 
   const topProcedures = procedureSort === "count"
     ? stats.top_procedures
@@ -156,7 +177,7 @@ export default function StatsPage() {
           <StatCard
             icon={DollarSign}
             label="Cobradas"
-            value={funnelCobradas}
+            value={cPaid}
             iconColor="text-emerald-400"
             sub={<span className="text-xs text-muted-foreground">de {stats.total_cases} totales</span>}
           />
@@ -191,7 +212,7 @@ export default function StatsPage() {
             {pipeline.map((step, i) => (
               <div key={step.key} className="flex items-center gap-1 flex-1 min-w-0">
                 <div className={`flex-1 min-w-0 rounded-xl border p-3 text-center ${
-                  step.count > 0 ? "border-border bg-muted/30" : "border-border/30 opacity-40"
+                  step.barValue > 0 ? "border-border bg-muted/30" : "border-border/30 opacity-40"
                 }`}>
                   <step.icon className={`h-5 w-5 mx-auto mb-1 ${step.color}`} />
                   <div className="text-2xl font-black">{step.count}</div>
@@ -204,32 +225,30 @@ export default function StatsPage() {
             ))}
           </div>
 
-          {/* Barras de progreso */}
+          {/* Barras de progreso — escala relativa al total */}
           <div className="space-y-2.5">
             {pipeline.map(step => {
-              const pct = maxPipeline > 0 ? Math.round((step.count / maxPipeline) * 100) : 0;
+              const pct = maxPipeline > 0 ? Math.round((step.barValue / maxPipeline) * 100) : 0;
               return (
                 <div key={step.key} className="flex items-center gap-3 text-sm">
-                  <span className="w-24 shrink-0 text-muted-foreground">{step.label}</span>
+                  <span className="w-28 shrink-0 text-muted-foreground">{step.label}</span>
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                     <div className={`h-full ${step.bar} rounded-full transition-all duration-500`} style={{ width: `${pct}%` }} />
                   </div>
                   <span className="w-6 text-right font-bold shrink-0">{step.count}</span>
+                  <span className="w-40 text-xs text-muted-foreground/60 hidden md:block">{step.sub}</span>
                 </div>
               );
             })}
             {cancelled > 0 && (
               <div className="flex items-center gap-3 text-sm opacity-40">
-                <span className="w-24 shrink-0 text-muted-foreground">Canceladas</span>
+                <span className="w-28 shrink-0 text-muted-foreground">Canceladas</span>
                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.round((cancelled / maxPipeline) * 100)}%` }} />
                 </div>
                 <span className="w-6 text-right font-bold shrink-0">{cancelled}</span>
               </div>
             )}
-            <p className="text-xs text-muted-foreground/50 mt-2">
-              Cada etapa incluye las cirugías que la superaron — el embudo siempre decrece.
-            </p>
           </div>
         </div>
 
