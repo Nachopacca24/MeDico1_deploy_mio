@@ -154,8 +154,10 @@ class SurgicalCaseService {
         total_cases: 0, total_procedures: 0, total_value: 0,
         cases_by_status: {}, cases_by_specialty: {}, recent_cases: [],
         cases_this_month: 0, cases_last_month: 0, monthly_trend: [],
-        top_procedures: [], top_hospitals: [], collaborators_this_month: 0,
-        active_specialties: 0, avg_per_week: 0,
+        top_procedures: [], top_procedures_by_rvu: [],
+        top_hospitals: [], top_hospitals_by_rvu: [],
+        collaborators_this_month: 0, active_specialties: 0, avg_per_week: 0,
+        total_rvu: 0, avg_rvu_per_case: 0, rvu_this_month: 0, rvu_last_month: 0,
       };
     }
   }
