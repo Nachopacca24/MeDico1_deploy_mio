@@ -1,9 +1,12 @@
 # apps/medico/views/surgical_case.py
 
 import logging
-from django.db.models import Sum, Count, Q
+import calendar
+from datetime import date
+from django.db.models import Sum, Count, Q, Min, Max
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.dateparse import parse_date
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework import serializers as rest_serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -401,10 +404,82 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         # Casos recientes (últimos 5)
         recent_cases = queryset.order_by('-surgery_date', '-created_at')[:5]
         recent_serializer = SurgicalCaseListSerializer(
-            recent_cases, 
+            recent_cases,
             many=True,
             context={'request': request}
         )
+
+        # ── Extended stats ────────────────────────────────────────
+        today = timezone.now().date()
+        this_month_start = today.replace(day=1)
+        # last month start/end
+        first_of_this = this_month_start
+        last_month_last = first_of_this - timezone.timedelta(days=1)
+        last_month_start = last_month_last.replace(day=1)
+
+        cases_this_month = queryset.filter(surgery_date__gte=this_month_start).count()
+        cases_last_month = queryset.filter(
+            surgery_date__gte=last_month_start,
+            surgery_date__lt=this_month_start
+        ).count()
+
+        # Monthly trend — last 6 months
+        MONTH_NAMES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+                       'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+        monthly_trend = []
+        for i in range(5, -1, -1):
+            m = today.month - i
+            y = today.year
+            while m <= 0:
+                m += 12
+                y -= 1
+            first_day = date(y, m, 1)
+            last_day = date(y, m, calendar.monthrange(y, m)[1])
+            count = queryset.filter(
+                surgery_date__gte=first_day,
+                surgery_date__lte=last_day
+            ).count()
+            monthly_trend.append({'month': MONTH_NAMES[m - 1], 'year': y, 'count': count})
+
+        # Top 5 procedures
+        top_procedures = list(
+            CaseProcedure.objects.filter(case__in=queryset)
+            .values('surgery_name')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:5]
+        )
+        top_procedures_list = [{'name': p['surgery_name'], 'count': p['count']} for p in top_procedures]
+
+        # Top 3 hospitals
+        top_hospitals = list(
+            queryset.exclude(hospital__isnull=True)
+            .values('hospital__name')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:3]
+        )
+        top_hospitals_list = [{'name': h['hospital__name'], 'count': h['count']} for h in top_hospitals]
+
+        # Collaborators this month (distinct assistant doctors)
+        collaborators_this_month = queryset.filter(
+            surgery_date__gte=this_month_start,
+            assistant_doctor__isnull=False
+        ).values('assistant_doctor').distinct().count()
+
+        # Active specialties (distinct)
+        active_specialties = CaseProcedure.objects.filter(
+            case__in=queryset
+        ).values('specialty').distinct().count()
+
+        # Avg per week
+        if total_cases > 0:
+            date_range = queryset.aggregate(min_date=Min('surgery_date'), max_date=Max('surgery_date'))
+            if date_range['min_date'] and date_range['max_date']:
+                days_span = max((date_range['max_date'] - date_range['min_date']).days, 7)
+                avg_per_week = round(total_cases / (days_span / 7), 1)
+            else:
+                avg_per_week = 0.0
+        else:
+            avg_per_week = 0.0
 
         stats_data = {
             'total_cases': total_cases,
@@ -413,6 +488,15 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             'cases_by_status': cases_by_status,
             'cases_by_specialty': cases_by_specialty,
             'recent_cases': recent_serializer.data,
+            # extended
+            'cases_this_month': cases_this_month,
+            'cases_last_month': cases_last_month,
+            'monthly_trend': monthly_trend,
+            'top_procedures': top_procedures_list,
+            'top_hospitals': top_hospitals_list,
+            'collaborators_this_month': collaborators_this_month,
+            'active_specialties': active_specialties,
+            'avg_per_week': avg_per_week,
         }
 
         return Response(stats_data, status=status.HTTP_200_OK)

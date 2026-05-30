@@ -36,8 +36,9 @@ import Favorites from "@/pages/favorites";
 import NovedadesPage from "@/pages/novedades";
 import SettingsPage from "@/pages/settings";
 import DebugFavorites from "@/pages/debug-favorites";
-import ColleaguesPage from "@/pages/ColleaguesPage"; 
+import ColleaguesPage from "@/pages/ColleaguesPage";
 import CalendarPage from "@/pages/calendar";
+import StatsPage from "@/pages/stats";
 
 export const AppRouter = () => {
   return (
@@ -85,6 +86,7 @@ export const AppRouter = () => {
         <Route path='/settings' element={<SettingsPage />} />
         <Route path='/debug-favorites' element={<DebugFavorites />} />
         <Route path='/calendar' element={<CalendarPage />} />
+        <Route path='/stats' element={<StatsPage />} />
       </Route>
     </Routes>
   );

@@ -108,12 +108,11 @@ class SurgicalCaseService {
       if (!contentType || !contentType.includes('application/json')) {
         console.warn('Stats endpoint returned non-JSON response');
         return {
-          total_cases: 0,
-          total_procedures: 0,
-          total_value: 0,
-          cases_by_status: {},
-          cases_by_specialty: {},
-          recent_cases: []
+          total_cases: 0, total_procedures: 0, total_value: 0,
+          cases_by_status: {}, cases_by_specialty: {}, recent_cases: [],
+          cases_this_month: 0, cases_last_month: 0, monthly_trend: [],
+          top_procedures: [], top_hospitals: [], collaborators_this_month: 0,
+          active_specialties: 0, avg_per_week: 0,
         };
       }
 
@@ -124,23 +123,31 @@ class SurgicalCaseService {
         total_procedures: data.total_procedures,
         total_value: data.total_value,
         cases_by_status: data.cases_by_status || {},
-        cases_by_specialty: Object.entries(data.cases_by_specialty || {}).reduce((acc, [key, count]) => {
-          acc[key] = { count: count as number, total_value: 0 };
+        cases_by_specialty: Object.entries(data.cases_by_specialty || {}).reduce((acc, [key, val]) => {
+          const v = val as any;
+          acc[key] = { count: typeof v === 'object' ? v.count : v, total_value: 0 };
           return acc;
         }, {} as Record<string, { count: number; total_value: number }>),
-        recent_cases: data.recent_cases || []
+        recent_cases: data.recent_cases || [],
+        cases_this_month: data.cases_this_month ?? 0,
+        cases_last_month: data.cases_last_month ?? 0,
+        monthly_trend: data.monthly_trend ?? [],
+        top_procedures: data.top_procedures ?? [],
+        top_hospitals: data.top_hospitals ?? [],
+        collaborators_this_month: data.collaborators_this_month ?? 0,
+        active_specialties: data.active_specialties ?? 0,
+        avg_per_week: data.avg_per_week ?? 0,
       };
       
       return transformedData;
     } catch (error) {
       console.error('Error fetching stats:', error);
       return {
-        total_cases: 0,
-        total_procedures: 0,
-        total_value: 0,
-        cases_by_status: {},
-        cases_by_specialty: {},
-        recent_cases: []
+        total_cases: 0, total_procedures: 0, total_value: 0,
+        cases_by_status: {}, cases_by_specialty: {}, recent_cases: [],
+        cases_this_month: 0, cases_last_month: 0, monthly_trend: [],
+        top_procedures: [], top_hospitals: [], collaborators_this_month: 0,
+        active_specialties: 0, avg_per_week: 0,
       };
     }
   }

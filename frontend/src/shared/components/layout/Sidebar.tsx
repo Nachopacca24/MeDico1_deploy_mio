@@ -8,7 +8,8 @@ import {
   Briefcase,
   Users,
   LogOut,
-  CalendarIcon
+  CalendarIcon,
+  BarChart2,
 } from "lucide-react";
 import { ForYouAds } from "@/shared/components/ads/ForYouAds";
 
@@ -46,7 +47,7 @@ import { useState } from "react";
 const mainItems = [
   {
     title: "Panel",
-    url: "/",
+    url: "/dashboard",
     icon: Home,
   },
 ];
@@ -56,6 +57,11 @@ const workItems = [
     title: "Mis cirugías",
     url: "/cases",
     icon: Briefcase,
+  },
+  {
+    title: "Estadísticas",
+    url: "/stats",
+    icon: BarChart2,
   },
   {
     title: "Procedimientos",
