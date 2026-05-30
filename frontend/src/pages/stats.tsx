@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
+import { useAuth } from "@/shared/contexts/AuthContext";
 import type { CaseStats } from "@/types/surgical-case";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -13,6 +14,7 @@ import {
   Activity, Users, TrendingUp, TrendingDown,
   Hospital, Minus, BarChart2, Zap,
   CheckCircle2, Clock, FileText, DollarSign, ChevronRight,
+  Lock, Star,
 } from "lucide-react";
 
 function DeltaBadge({ current, previous, unit = "" }: { current: number; previous: number; unit?: string }) {
@@ -57,12 +59,72 @@ export default function StatsPage() {
   const [chartMode, setChartMode] = useState<ChartMode>("ambos");
   const [procedureSort, setProcedureSort] = useState<"count" | "rvu">("count");
   const [pipelinePeriod, setPipelinePeriod] = useState<"all" | "month" | "week">("all");
+  const { user } = useAuth();
+  const isPremium = user?.plan === 'premium';
 
   useEffect(() => {
+    if (!isPremium) return; // don't fetch for free users
     surgicalCaseService.getStats()
       .then(setStats)
       .finally(() => setLoading(false));
-  }, []);
+  }, [isPremium]);
+
+  // ── Paywall for free users ───────────────────────────────────
+  if (!isPremium) {
+    return (
+      <AppLayout>
+        <div className="relative overflow-hidden rounded-2xl">
+          {/* Blurred preview */}
+          <div className="blur-md pointer-events-none select-none opacity-50">
+            <div className="space-y-6 max-w-5xl mx-auto pb-10">
+              <div className="border-b pb-4">
+                <h1 className="text-3xl font-semibold tracking-tight mb-1">Estadísticas</h1>
+                <p className="text-muted-foreground">Tu actividad clínica de un vistazo</p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {["Cirugías totales", "Activas", "Cobradas", "Colegas"].map(l => (
+                  <div key={l} className="bg-card border rounded-2xl p-5">
+                    <div className="text-sm text-muted-foreground mb-2">{l}</div>
+                    <div className="text-3xl font-black">--</div>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-card border rounded-2xl p-5 h-64" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-card border rounded-2xl p-5 h-48" />
+                <div className="bg-card border rounded-2xl p-5 h-48" />
+              </div>
+            </div>
+          </div>
+
+          {/* Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-card/95 backdrop-blur-sm border border-primary/20 rounded-3xl p-10 text-center max-w-sm shadow-2xl mx-4">
+              <div className="inline-flex p-4 bg-primary/10 rounded-full mb-5">
+                <Lock className="h-8 w-8 text-primary" />
+              </div>
+              <div className="flex items-center justify-center gap-1.5 mb-3">
+                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                <span className="text-xs font-bold text-yellow-500 uppercase tracking-widest">Solo Premium</span>
+              </div>
+              <h2 className="text-xl font-black mb-3">Estadísticas avanzadas</h2>
+              <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+                Accede a tu pipeline de cirugías, RVU por mes, top procedimientos y hospitales.
+                Disponible solo en el plan Premium.
+              </p>
+              <Link
+                to="/settings"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+              >
+                <Star className="h-4 w-4 fill-white" />
+                Ver planes
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (loading) {
     return (
