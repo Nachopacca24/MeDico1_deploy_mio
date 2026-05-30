@@ -56,6 +56,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true);
   const [chartMode, setChartMode] = useState<ChartMode>("ambos");
   const [procedureSort, setProcedureSort] = useState<"count" | "rvu">("count");
+  const [pipelinePeriod, setPipelinePeriod] = useState<"all" | "month" | "week">("all");
 
   useEffect(() => {
     surgicalCaseService.getStats()
@@ -93,17 +94,23 @@ export default function StatsPage() {
     );
   }
 
-  const byStatus = stats.cases_by_status;
-  // Exclusive counts per stage — each surgery is in exactly ONE stage
-  const cScheduled = byStatus.scheduled?.count ?? 0; // not operated yet
-  const cCompleted = byStatus.completed?.count ?? 0; // operated, not billed yet
-  const cBilled    = byStatus.billed?.count ?? 0;    // billed, not paid yet
-  const cPaid      = byStatus.paid?.count ?? 0;      // fully paid
-  const cancelled  = byStatus.cancelled?.count ?? 0;
+  // Select pipeline dataset based on chosen period
+  const pipelineData = pipelinePeriod === "week"
+    ? stats.pipeline_week
+    : pipelinePeriod === "month"
+    ? stats.pipeline_month
+    : stats.cases_by_status;
+
+  const cScheduled = pipelineData.scheduled?.count ?? 0;
+  const cCompleted = pipelineData.completed?.count ?? 0;
+  const cBilled    = pipelineData.billed?.count ?? 0;
+  const cPaid      = pipelineData.paid?.count ?? 0;
+  const cancelled  = pipelineData.cancelled?.count ?? 0;
+  const periodTotal = cScheduled + cCompleted + cBilled + cPaid + cancelled;
 
   // KPI: "Activas" = not yet closed (not paid, not cancelled)
   const active = cScheduled + cCompleted + cBilled;
-  const maxPipeline = Math.max(stats.total_cases, 1);
+  const maxPipeline = Math.max(periodTotal, 1);
 
   // Pipeline EXCLUSIVO — cada cirugía está en un solo estado
   // cScheduled  = sin operar todavía
@@ -203,8 +210,27 @@ export default function StatsPage() {
 
         {/* Pipeline de cirugías */}
         <div className="bg-card border rounded-2xl p-5">
-          <h2 className="font-bold text-lg mb-1">Pipeline de cirugías</h2>
-          <p className="text-xs text-muted-foreground mb-5">Flujo de tus cirugías desde que las programas hasta que las cobras</p>
+          <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+            <h2 className="font-bold text-lg">Pipeline de cirugías</h2>
+            <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">
+              {([["all", "Todo"], ["month", "Este mes"], ["week", "Esta semana"]] as const).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setPipelinePeriod(val)}
+                  className={`px-3 py-1 rounded-md font-semibold transition-colors ${
+                    pipelinePeriod === val ? "bg-background shadow text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mb-5">
+            {pipelinePeriod === "week" ? "Cirugías con fecha en esta semana" :
+             pipelinePeriod === "month" ? "Cirugías con fecha en este mes" :
+             "Todas tus cirugías históricas"}
+          </p>
 
           {/* Funnel visual */}
           <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">

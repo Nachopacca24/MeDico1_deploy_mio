@@ -366,18 +366,27 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             total=Sum('calculated_value')
         )['total'] or Decimal('0.00')
 
-        # Casos por estado — usando flags booleanos reales (is_operated, is_billed, is_paid)
-        # El campo `status` se queda en 'scheduled' aunque el médico marque is_operated=True,
-        # así que los booleanos son la fuente de verdad del flujo real.
-        cancelled_count = queryset.filter(status='cancelled').count()
-        active_qs = queryset.exclude(status='cancelled')
-        cases_by_status = {
-            'scheduled': {'count': active_qs.filter(is_operated=False).count(), 'total_value': 0},
-            'completed': {'count': active_qs.filter(is_operated=True, is_billed=False).count(), 'total_value': 0},
-            'billed':    {'count': active_qs.filter(is_billed=True, is_paid=False).count(), 'total_value': 0},
-            'paid':      {'count': active_qs.filter(is_paid=True).count(), 'total_value': 0},
-            'cancelled': {'count': cancelled_count, 'total_value': 0},
-        }
+        # Helper: conteo exclusivo por estado para cualquier sub-queryset
+        def pipeline_counts(qs):
+            cancelled = qs.filter(status='cancelled').count()
+            active = qs.exclude(status='cancelled')
+            return {
+                'scheduled': {'count': active.filter(is_operated=False).count(), 'total_value': 0},
+                'completed': {'count': active.filter(is_operated=True, is_billed=False).count(), 'total_value': 0},
+                'billed':    {'count': active.filter(is_billed=True, is_paid=False).count(), 'total_value': 0},
+                'paid':      {'count': active.filter(is_paid=True).count(), 'total_value': 0},
+                'cancelled': {'count': cancelled, 'total_value': 0},
+            }
+
+        # Pipeline por período — calculados aquí antes de redefinir today
+        from datetime import timedelta as _td
+        _today = timezone.now().date()
+        _week_start  = _today - _td(days=_today.weekday())  # lunes
+        _month_start = _today.replace(day=1)
+
+        cases_by_status   = pipeline_counts(queryset)
+        pipeline_month    = pipeline_counts(queryset.filter(surgery_date__gte=_month_start))
+        pipeline_week     = pipeline_counts(queryset.filter(surgery_date__gte=_week_start))
 
         # Casos recientes (últimos 5)
         recent_cases = queryset.order_by('-surgery_date', '-created_at')[:5]
@@ -549,6 +558,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             'avg_rvu_per_case': avg_rvu_per_case,
             'rvu_this_month': rvu_this_month,
             'rvu_last_month': rvu_last_month,
+            'pipeline_month': pipeline_month,
+            'pipeline_week': pipeline_week,
         }
 
         return Response(stats_data, status=status.HTTP_200_OK)

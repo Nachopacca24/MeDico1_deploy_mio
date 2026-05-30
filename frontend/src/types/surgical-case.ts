@@ -33,6 +33,8 @@ export interface CaseStats {
   avg_rvu_per_case: number;
   rvu_this_month: number;
   rvu_last_month: number;
+  pipeline_month: { [key: string]: { count: number; total_value: number } };
+  pipeline_week:  { [key: string]: { count: number; total_value: number } };
   collaborators_this_month: number;
   active_specialties: number;
   avg_per_week: number;

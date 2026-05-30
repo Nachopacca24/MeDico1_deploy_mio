@@ -145,6 +145,8 @@ class SurgicalCaseService {
         avg_rvu_per_case: data.avg_rvu_per_case ?? 0,
         rvu_this_month: data.rvu_this_month ?? 0,
         rvu_last_month: data.rvu_last_month ?? 0,
+        pipeline_month: data.pipeline_month ?? {},
+        pipeline_week: data.pipeline_week ?? {},
       };
       
       return transformedData;
