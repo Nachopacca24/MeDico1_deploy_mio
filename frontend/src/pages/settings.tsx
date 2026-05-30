@@ -13,11 +13,36 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
-import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard } from "lucide-react";
+import { authService } from "@/shared/services/authService";
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+
+async function createCheckout(): Promise<string> {
+  const response = await authService.authenticatedFetch(`${API_URL}/api/v1/payment/checkout/`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error('Error al crear checkout');
+  const data = await response.json();
+  return data.url;
+}
 
 const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true);
+    try {
+      const url = await createCheckout();
+      window.open(url, '_blank');
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo abrir el checkout. Intenta de nuevo.' });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -346,18 +371,32 @@ const Settings = () => {
               </div>
 
               {user?.plan !== 'premium' && (
-                <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-900/10">
+                <Card className="border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
                   <CardContent className="pt-6">
-                    <div className="flex items-center gap-3">
-                      <Zap className="h-5 w-5 text-yellow-600 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">
-                          ¿Quieres Premium?
-                        </p>
-                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                          Contacta a un administrador de MeDico para actualizar tu plan.
-                        </p>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded-xl">
+                          <Star className="h-5 w-5 text-yellow-600 fill-yellow-500" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-yellow-900 dark:text-yellow-100">
+                            Actualiza a Premium — $9/mes
+                          </p>
+                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                            Cirugías ilimitadas, sin anuncios, Google Calendar y estadísticas avanzadas.
+                          </p>
+                        </div>
                       </div>
+                      <Button
+                        onClick={handleUpgrade}
+                        disabled={checkoutLoading}
+                        className="shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white font-bold shadow-md"
+                      >
+                        {checkoutLoading
+                          ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
+                          : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme</>
+                        }
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

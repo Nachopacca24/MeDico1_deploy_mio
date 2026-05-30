@@ -1,10 +1,7 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-
-router = DefaultRouter()
-# router.register(r'payments', views.PaymentViewSet, basename='payment')
-# router.register(r'methods', views.PaymentMethodViewSet, basename='payment-method')
+from django.urls import path
+from .views import create_checkout, lemonsqueezy_webhook
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('checkout/', create_checkout, name='ls_checkout'),
+    path('webhook/', lemonsqueezy_webhook, name='ls_webhook'),
 ]
