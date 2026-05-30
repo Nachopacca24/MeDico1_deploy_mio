@@ -103,29 +103,36 @@ export default function StatsPage() {
 
   // KPI: "Activas" = not yet closed (not paid, not cancelled)
   const active = cScheduled + cCompleted + cBilled;
-  // Pipeline: cumulative progress through the workflow
-  const totalOperated  = cCompleted + cBilled + cPaid; // all that have been operated
-  const totalBilled    = cBilled + cPaid;               // all that have been billed
-  const totalPaid      = cPaid;                         // all that have been paid
-  const maxPipeline    = Math.max(stats.total_cases, 1);
+  const maxPipeline = Math.max(stats.total_cases, 1);
 
+  // Pipeline EXCLUSIVO — cada cirugía está en un solo estado
+  // cScheduled  = sin operar todavía
+  // cCompleted  = operada, pendiente de facturar
+  // cBilled     = facturada, pendiente de cobrar
+  // cPaid       = cobrada ✓
   const pipeline = [
     {
+      key: "scheduled", label: "Programadas",
+      count: cScheduled,
+      sub: "sin operar todavía",
+      icon: Clock, color: "text-blue-400", bar: "bg-blue-500",
+    },
+    {
       key: "completed", label: "Operadas",
-      count: totalOperated,
-      sub: "han pasado por quirófano",
+      count: cCompleted,
+      sub: "operadas, pendientes de factura",
       icon: CheckCircle2, color: "text-green-400", bar: "bg-green-500",
     },
     {
       key: "billed", label: "Facturadas",
-      count: totalBilled,
-      sub: "tienen factura emitida",
+      count: cBilled,
+      sub: "facturadas, esperando cobro",
       icon: FileText, color: "text-yellow-400", bar: "bg-yellow-500",
     },
     {
       key: "paid", label: "Cobradas",
-      count: totalPaid,
-      sub: "completamente cobradas",
+      count: cPaid,
+      sub: "completamente cobradas ✓",
       icon: DollarSign, color: "text-emerald-400", bar: "bg-emerald-500",
     },
   ];
