@@ -50,10 +50,9 @@ SECURE_HSTS_PRELOAD = True
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Servir el frontend de Vite compilado
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'frontend' / 'dist',
-    BASE_DIR / 'static',
-]
+_FRONTEND_DIST = BASE_DIR.parent / 'frontend' / 'dist'
+_STATIC_DIR = BASE_DIR / 'static'
+STATICFILES_DIRS = [d for d in [_FRONTEND_DIST, _STATIC_DIR] if d.exists()]
 
 # Template para servir el index.html del frontend
 TEMPLATES[0]['DIRS'] = [BASE_DIR.parent / 'frontend' / 'dist']
