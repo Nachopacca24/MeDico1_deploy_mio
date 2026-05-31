@@ -176,8 +176,13 @@ def lemonsqueezy_webhook(request):
         obj        = data.get('data', {})
         attrs      = obj.get('attributes', {})
         custom     = data.get('meta', {}).get('custom_data', {})
-        # For subscription events, data.id IS the subscription ID
-        ls_sub_id  = obj.get('id') or str(attrs.get('subscription_id', '')) or None
+        # data.id is the subscription ID only when data.type == 'subscriptions'
+        # For subscription-invoices events, attrs.subscription_id has the real sub ID
+        obj_type  = obj.get('type', '')
+        if obj_type == 'subscriptions':
+            ls_sub_id = obj.get('id') or None
+        else:
+            ls_sub_id = str(attrs.get('subscription_id', '')) or None
 
         logger.info('[LS webhook] event=%s custom_data=%s sub_id=%s', event_name, custom, ls_sub_id)
 
