@@ -59,7 +59,7 @@ const HospitalsPage = () => {
     if (!isFavorite && isFreePlan && currentFavCount >= FREE_HOSPITAL_FAV_LIMIT) {
       toast({
         title: 'Límite alcanzado',
-        description: `Plan gratuito: máximo ${FREE_HOSPITAL_FAV_LIMIT} hospitales favoritos. Actualiza a Premium para favoritos ilimitados.`,
+        description: 'Durante tu prueba Premium operaste sin límites. Reactiva Premium para continuar sin interrupciones.',
         variant: 'destructive'
       });
       return;

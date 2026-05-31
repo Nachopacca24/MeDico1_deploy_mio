@@ -100,7 +100,7 @@ export function FriendRequestCard({
             <div className="flex flex-col gap-2">
               {atLimit ? (
                 <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 text-center">
-                  Límite alcanzado · Actualiza a Premium para aceptar más colegas
+                  Durante tu prueba Premium operaste sin límites · Reactiva Premium para continuar
                 </div>
               ) : null}
               <div className="flex gap-2">

@@ -161,7 +161,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             ).count()
             if active_count >= 5:
                 return Response(
-                    {'error': 'Plan gratuito: máximo 5 casos activos. Actualiza a Premium para casos ilimitados.'},
+                    {'error': 'Durante tu prueba Premium operaste sin límites. Reactiva Premium para continuar sin interrupciones.', 'upgrade_required': True},
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
@@ -304,7 +304,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             ).count()
             if own_cases + accepted_assisted >= 5:
                 return Response(
-                    {'error': f'Alcanzaste el límite de 5 casos activos del plan gratuito (tienes {own_cases + accepted_assisted}). Archiva o elimina un caso existente, o actualiza a Premium para tener casos ilimitados.'},
+                    {'error': 'Durante tu prueba Premium operaste sin límites. Reactiva Premium para continuar sin interrupciones.', 'upgrade_required': True},
                     status=status.HTTP_403_FORBIDDEN,
                 )
 

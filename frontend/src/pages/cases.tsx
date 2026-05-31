@@ -602,7 +602,7 @@ const CasesPage = () => {
                   <Plus className="w-4 h-4 mr-2" />
                   Nuevo Caso
                 </Button>
-                <span className="text-xs text-destructive">Límite alcanzado · Actualiza a Premium</span>
+                <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
               </div>
             ) : (
               <Button asChild className="w-full sm:w-auto">

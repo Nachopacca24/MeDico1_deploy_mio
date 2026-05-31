@@ -297,7 +297,7 @@ export default function ColleaguesPage() {
                       </div>
                     ) : isFreePlan && colleagues.length >= FREE_COLLEAGUE_LIMIT ? (
                       <div className="mt-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 text-sm text-red-700 dark:text-red-300">
-                        Límite alcanzado ({FREE_COLLEAGUE_LIMIT}/{FREE_COLLEAGUE_LIMIT}) · Actualiza a Premium para más colegas
+                        Durante tu prueba Premium operaste sin límites · Reactiva Premium para continuar
                       </div>
                     ) : (
                       <button
