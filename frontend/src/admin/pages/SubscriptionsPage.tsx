@@ -38,6 +38,9 @@ interface SubscriptionUser {
   trial_ends_at: string | null;
   trial_active: boolean;
   is_permanent_premium: boolean;
+  ls_renews_at: string | null;
+  ls_cancelled: boolean;
+  ls_subscription_id: string | null;
   specialty?: string;
 }
 
@@ -345,14 +348,24 @@ const SubscriptionsPage = () => {
                           Vence: {new Date(user.trial_ends_at).toLocaleDateString('es-ES')}
                         </span>
                       )}
-                      {trialStatus === 'no-trial' && user.plan === 'premium' && (
+                      {trialStatus === 'no-trial' && user.plan === 'premium' && !user.ls_cancelled && (
                         <span className="flex items-center gap-1 text-green-600 font-medium">
-                          <CheckCircle2 className="h-4 w-4" /> Premium
+                          <CheckCircle2 className="h-4 w-4" /> Premium activo
+                        </span>
+                      )}
+                      {trialStatus === 'no-trial' && user.plan === 'premium' && user.ls_cancelled && (
+                        <span className="flex items-center gap-1 text-orange-500 font-medium">
+                          <Clock className="h-4 w-4" /> Cancelado
                         </span>
                       )}
                       {trialStatus === 'no-trial' && user.plan === 'free' && (
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <BadgeCheck className="h-4 w-4" /> Free
+                        </span>
+                      )}
+                      {user.ls_renews_at && user.plan === 'premium' && (
+                        <span className="text-xs text-muted-foreground">
+                          {user.ls_cancelled ? 'Expira' : 'Renueva'}: {new Date(user.ls_renews_at).toLocaleDateString('es-ES')}
                         </span>
                       )}
                     </div>

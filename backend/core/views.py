@@ -235,6 +235,7 @@ def admin_users(request):
         'is_staff', 'is_active', 'is_superuser', 'is_verified',
         'date_joined', 'last_login', 'plan', 'specialty', 'phone',
         'trial_ends_at', 'is_permanent_premium', 'role',
+        'ls_renews_at', 'ls_cancelled', 'ls_subscription_id',
     )
 
     # Contar casos en una sola consulta
@@ -255,6 +256,8 @@ def admin_users(request):
             user['trial_active'] = user['trial_ends_at'] > now.isoformat()
         else:
             user['trial_active'] = False
+        if user.get('ls_renews_at'):
+            user['ls_renews_at'] = user['ls_renews_at'].isoformat()
         full_name = f"{user['first_name']} {user['last_name']}".strip()
         user['full_name'] = full_name if full_name else user['username']
         user['total_cases'] = case_counts.get(user['id'], 0)
@@ -294,7 +297,14 @@ def update_user_plan(request, user_id):
     try:
         target_user = User.objects.get(id=user_id)
         target_user.plan = new_plan
-        target_user.save(update_fields=['plan'])
+        update_fields = ['plan']
+        if new_plan == 'free':
+            # Clean all LS subscription state on admin-forced downgrade
+            target_user.ls_subscription_id = None
+            target_user.ls_renews_at = None
+            target_user.ls_cancelled = False
+            update_fields += ['ls_subscription_id', 'ls_renews_at', 'ls_cancelled']
+        target_user.save(update_fields=update_fields)
         return Response({'success': True, 'plan': new_plan})
     except User.DoesNotExist:
         return Response({'message': 'Usuario no encontrado'}, status=404)
