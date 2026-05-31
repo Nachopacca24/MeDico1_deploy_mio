@@ -397,12 +397,12 @@ const Settings = () => {
                 </CardHeader>
               </Card>
 
-              {/* Over-limit warning: user was premium, now free, but has >5 active surgeries */}
-              {user?.plan === 'free' && (user as any)?.active_surgery_count > 5 && (
-                <Alert className="border-orange-500/50 bg-orange-500/10">
-                  <AlertDescription className="text-orange-400 text-sm">
-                    <strong>Cuenta bloqueada parcialmente:</strong> tenés {(user as any).active_surgery_count} cirugías activas pero el plan Free permite un máximo de 5.
-                    Archivá o completá cirugías hasta bajar a 5 para poder crear nuevas o aceptar invitaciones.
+              {/* Over-limit warning: shown when free user tries to create and backend returns 403 */}
+              {user?.plan === 'free' && (
+                <Alert className="border-slate-700 bg-slate-800/50">
+                  <AlertDescription className="text-slate-400 text-sm">
+                    Plan gratuito: hasta <strong>5 cirugías activas</strong>, 3 colegas, 5 procedimientos y 2 hospitales favoritos.
+                    Si superás el límite al pasar a free, archivá cirugías para volver a crear nuevas.
                   </AlertDescription>
                 </Alert>
               )}

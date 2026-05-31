@@ -234,10 +234,8 @@ def _deactivate_premium(user):
         logger.info('[LS] user=%s has permanent premium — skipping deactivation', user.id)
         return
     user.plan = 'free'
-    user.ls_subscription_id = None
-    user.save(update_fields=['plan', 'ls_subscription_id', 'updated_at'])
-    logger.info('[LS] deactivated premium for user=%s — checking surgery limits', user.id)
-    _log_over_limit_warning(user)
+    user.save(update_fields=['plan', 'updated_at'])
+    logger.info('[LS] deactivated premium for user=%s — free plan restrictions now apply (max 5 active surgeries)', user.id)
 
 
 def _log_over_limit_warning(user):
