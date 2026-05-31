@@ -435,8 +435,8 @@ const Settings = () => {
                         { icon: <Building2 className="h-4 w-4 text-slate-400" />,text: '2 hospitales favoritos' },
                         { icon: <Users className="h-4 w-4 text-violet-400" />,   text: 'Hasta 3 colegas + sistema completo' },
                         { icon: <Calendar className="h-4 w-4 text-emerald-400" />,text: 'Google Calendar integrado' },
-                        { icon: <XCircle className="h-4 w-4 text-slate-600" />,  text: 'Incluye anuncios', muted: true },
                         { icon: <XCircle className="h-4 w-4 text-slate-600" />,  text: 'Sin estadísticas personales', muted: true },
+                        { icon: <XCircle className="h-4 w-4 text-slate-600" />,  text: 'Sin exportar PDF', muted: true },
                       ].map(({ icon, text, muted }) => (
                         <div key={text} className="flex items-center gap-3 text-sm">
                           <span className="flex-shrink-0">{icon}</span>
