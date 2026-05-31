@@ -364,7 +364,7 @@ const Settings = () => {
                         {user?.plan === 'premium' ? 'Premium' : 'Free'}
                       </div>
                       {/* Cancel button — only for paying premium users (not permanent/trial) */}
-                      {user?.plan === 'premium' && !user?.is_permanent_premium && !user?.trial_ends_at && (
+                      {user?.plan === 'premium' && !user?.is_permanent_premium && !user?.trial_ends_at && !user?.ls_cancelled && (
                         !showCancelConfirm ? (
                           <Button
                             variant="ghost"
