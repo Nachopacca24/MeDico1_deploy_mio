@@ -19,7 +19,10 @@ import { InvitationCard } from "@/pages/cases/InvitationCard";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
-import { Loader2, Check, Archive } from 'lucide-react';
+import { Loader2, Check, Archive, Download, CheckSquare, Square } from 'lucide-react';
+import { authService } from "@/shared/services/authService";
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
 import {
   Briefcase,
@@ -227,6 +230,54 @@ const CasesPage = () => {
   const [activeTab, setActiveTab] = useState<'activos' | 'facturados'>('activos');
   const [archivedCases, setArchivedCases] = useState<SurgicalCase[]>([]);
   const [loadingArchived, setLoadingArchived] = useState(false);
+
+  // Multi-select PDF export (premium only)
+  const isPremium = user?.plan === 'premium' || (user as any)?.is_permanent_premium;
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
+
+  const handleBulkExportPdf = async () => {
+    if (selectedIds.size === 0) return;
+    setExportingPdf(true);
+    try {
+      const response = await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/export-pdf/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ case_ids: Array.from(selectedIds), include_factor: true }),
+        }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Error al generar el PDF');
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cd = response.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename="(.+)"/);
+      a.download = match ? match[1] : `cirugias_${selectedIds.size}_casos.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setSelectMode(false);
+      setSelectedIds(new Set());
+    } catch (e: any) {
+      toast.error(e.message || 'No se pudo generar el PDF');
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   // Estado para invitaciones
   const [invitations, setInvitations] = useState<AssistedCasesResponse>({
@@ -596,22 +647,55 @@ const CasesPage = () => {
                 </p>
               )}
             </div>
-            {isFreePlan && countForLimit >= FREE_CASE_LIMIT ? (
-              <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
-                <Button disabled className="w-full sm:w-auto opacity-60 cursor-not-allowed">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nuevo Caso
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              {/* Multi-select toggle — premium only */}
+              {isPremium && cases.length > 0 && (
+                selectMode ? (
+                  <div className="flex items-center gap-2">
+                    {selectedIds.size > 0 && (
+                      <Button
+                        size="sm"
+                        onClick={handleBulkExportPdf}
+                        disabled={exportingPdf}
+                        className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
+                      >
+                        {exportingPdf
+                          ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          : <Download className="w-4 h-4 mr-1" />
+                        }
+                        Exportar {selectedIds.size} PDF{selectedIds.size !== 1 ? 's' : ''}
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}>
+                      Cancelar
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => setSelectMode(true)}
+                    className="border-amber-500/40 text-amber-500 hover:bg-amber-500/10">
+                    <CheckSquare className="w-4 h-4 mr-1" />
+                    Exportar PDF
+                  </Button>
+                )
+              )}
+
+              {isFreePlan && countForLimit >= FREE_CASE_LIMIT ? (
+                <div className="flex flex-col items-end gap-1">
+                  <Button disabled className="opacity-60 cursor-not-allowed">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nuevo Caso
+                  </Button>
+                  <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
+                </div>
+              ) : (
+                <Button asChild>
+                  <Link to="/cases/new">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nuevo Caso
+                  </Link>
                 </Button>
-                <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
-              </div>
-            ) : (
-              <Button asChild className="w-full sm:w-auto">
-                <Link to="/cases/new">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nuevo Caso
-                </Link>
-              </Button>
-            )}
+              )}
+            </div>
           </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -752,11 +836,19 @@ const CasesPage = () => {
                 
                 return (
                   <React.Fragment key={`case-${surgicalCase.id}`}>
-                    <Card className="hover:border-primary transition-colors">
+                    <Card
+                    className={`hover:border-primary transition-colors ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400' : ''}`}
+                    onClick={selectMode && isOwner ? () => toggleSelect(surgicalCase.id) : undefined}
+                  >
                       <CardHeader>
                         <div className="flex items-center justify-between mb-2">
                           <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
                           <div className="flex items-center gap-2">
+                            {selectMode && isOwner && (
+                              selectedIds.has(surgicalCase.id)
+                                ? <CheckSquare className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                                : <Square className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                            )}
                             {getStatusBadge(surgicalCase.status)}
                           </div>
                         </div>

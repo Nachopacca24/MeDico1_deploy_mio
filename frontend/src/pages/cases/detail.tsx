@@ -23,7 +23,12 @@ import {
   AlertCircle,
   Users,
   TrendingUp,
+  Download,
 } from "lucide-react";
+import { useAuth } from "@/shared/contexts/AuthContext";
+import { authService } from "@/shared/services/authService";
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const CaseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +37,38 @@ const CaseDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const isPremium = user?.plan === 'premium' || (user as any)?.is_permanent_premium;
+
+  const handleExportPdf = async (includeHospitalFactor = true) => {
+    if (!surgicalCase) return;
+    setPdfLoading(true);
+    try {
+      const response = await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/pdf/?include_factor=${includeHospitalFactor}`,
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Error al generar el PDF');
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cd = response.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename="(.+)"/);
+      a.download = match ? match[1] : `cirugia_${surgicalCase.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      toast.error(e.message || 'No se pudo generar el PDF');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
   useEffect(() => {
     if (id) fetchCase();
   }, [id]);
@@ -154,6 +190,23 @@ const CaseDetailPage = () => {
                   <Edit className="w-4 h-4 mr-2" />
                   Editar
                 </Link>
+              </Button>
+            )}
+
+            {/* PDF export — premium only */}
+            {isPremium && isOwner && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportPdf(true)}
+                disabled={pdfLoading}
+                className="border-amber-500/40 text-amber-500 hover:bg-amber-500/10"
+              >
+                {pdfLoading
+                  ? <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mr-2" />
+                  : <Download className="w-4 h-4 mr-2" />
+                }
+                Exportar PDF
               </Button>
             )}
 
