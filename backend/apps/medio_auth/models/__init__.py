@@ -103,6 +103,14 @@ class CustomUser(AbstractUser):
         verbose_name="Premium Permanente",
         help_text="Si es True, el usuario mantiene Premium permanentemente sin importar el plan"
     )
+
+    ls_subscription_id = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Lemon Squeezy Subscription ID",
+        help_text="ID de suscripción activa en Lemon Squeezy"
+    )
     
     # Verificación de Email - CAMPOS NUEVOS
     is_email_verified = models.BooleanField(

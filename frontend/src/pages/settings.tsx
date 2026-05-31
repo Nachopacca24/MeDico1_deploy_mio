@@ -27,10 +27,22 @@ async function createCheckout(): Promise<string> {
   return data.url;
 }
 
+async function cancelSubscription(): Promise<void> {
+  const response = await authService.authenticatedFetch(`${API_URL}/api/v1/payment/cancel/`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Error al cancelar suscripción');
+  }
+}
+
 const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   const handleUpgrade = async () => {
     setCheckoutLoading(true);
@@ -43,6 +55,23 @@ const Settings = () => {
       setCheckoutLoading(false);
     }
   };
+
+  const handleCancelSubscription = async () => {
+    setCancelLoading(true);
+    try {
+      await cancelSubscription();
+      toast({
+        title: 'Suscripción cancelada',
+        description: 'Tu plan Premium se mantendrá activo hasta el fin del período de facturación.',
+      });
+      setShowCancelConfirm(false);
+    } catch (e: any) {
+      toast({ variant: 'destructive', title: 'Error', description: e.message || 'No se pudo cancelar. Intenta de nuevo.' });
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -320,17 +349,63 @@ const Settings = () => {
                           : 'Estás en el plan gratuito de MeDico'}
                       </CardDescription>
                     </div>
-                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm ${
-                      user?.plan === 'premium'
-                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                    }`}>
-                      {user?.plan === 'premium' ? <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" /> : null}
-                      {user?.plan === 'premium' ? 'Premium' : 'Free'}
+                    <div className="flex items-center gap-3">
+                      <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm ${
+                        user?.plan === 'premium'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                      }`}>
+                        {user?.plan === 'premium' ? <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" /> : null}
+                        {user?.plan === 'premium' ? 'Premium' : 'Free'}
+                      </div>
+                      {/* Cancel button — only for paying premium users (not permanent/trial) */}
+                      {user?.plan === 'premium' && !user?.is_permanent_premium && !user?.trial_ends_at && (
+                        !showCancelConfirm ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground hover:text-destructive text-xs"
+                            onClick={() => setShowCancelConfirm(true)}
+                          >
+                            Cancelar suscripción
+                          </Button>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">¿Confirmar cancelación?</span>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="text-xs h-7"
+                              disabled={cancelLoading}
+                              onClick={handleCancelSubscription}
+                            >
+                              {cancelLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Sí, cancelar'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-xs h-7"
+                              onClick={() => setShowCancelConfirm(false)}
+                            >
+                              No
+                            </Button>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 </CardHeader>
               </Card>
+
+              {/* Over-limit warning: user was premium, now free, but has >5 active surgeries */}
+              {user?.plan === 'free' && (user as any)?.active_surgery_count > 5 && (
+                <Alert className="border-orange-500/50 bg-orange-500/10">
+                  <AlertDescription className="text-orange-400 text-sm">
+                    <strong>Cuenta bloqueada parcialmente:</strong> tenés {(user as any).active_surgery_count} cirugías activas pero el plan Free permite un máximo de 5.
+                    Archivá o completá cirugías hasta bajar a 5 para poder crear nuevas o aceptar invitaciones.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Feature comparison */}
               <div className="grid md:grid-cols-2 gap-4 items-stretch">
