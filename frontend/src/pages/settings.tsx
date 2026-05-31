@@ -367,8 +367,15 @@ const Settings = () => {
                       </div>
                     ))}
                   </CardContent>
-                  {user?.plan !== 'premium' && (
-                    <CardFooter className="pt-2">
+                  <CardFooter className="pt-2">
+                    {user?.plan === 'premium' ? (
+                      <Button
+                        disabled
+                        className="w-full bg-slate-700 text-yellow-400 font-bold border border-yellow-500/40 cursor-not-allowed opacity-80"
+                      >
+                        <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" /> Plan Activo
+                      </Button>
+                    ) : (
                       <Button
                         onClick={handleUpgrade}
                         disabled={checkoutLoading}
@@ -379,8 +386,8 @@ const Settings = () => {
                           : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — $9/mes</>
                         }
                       </Button>
-                    </CardFooter>
-                  )}
+                    )}
+                  </CardFooter>
                 </Card>
               </div>
             </div>
