@@ -232,7 +232,7 @@ const CasesPage = () => {
   const [loadingArchived, setLoadingArchived] = useState(false);
 
   // Multi-select PDF export (premium only)
-  const isPremium = user?.plan === 'premium' || (user as any)?.is_permanent_premium;
+  const isPremium = user?.plan === 'premium' || user?.is_permanent_premium;
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
@@ -648,9 +648,15 @@ const CasesPage = () => {
               )}
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-end">
-              {/* Multi-select toggle — premium only */}
-              {isPremium && cases.length > 0 && (
-                selectMode ? (
+              {/* Multi-select PDF — visible siempre, activo solo para premium */}
+              {cases.length > 0 && (
+                !isPremium ? (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-muted/40 opacity-60 cursor-not-allowed select-none">
+                    <Download className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Exportar PDF</span>
+                    <span className="text-xs bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-medium ml-1">Premium</span>
+                  </div>
+                ) : selectMode ? (
                   <div className="flex items-center gap-2">
                     {selectedIds.size > 0 && (
                       <Button
