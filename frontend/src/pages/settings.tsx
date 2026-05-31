@@ -338,20 +338,24 @@ const Settings = () => {
                 </Card>
 
                 {/* Premium */}
-                <Card className={`relative overflow-hidden ${user?.plan === 'premium' ? 'border-yellow-400 ring-1 ring-yellow-400' : 'border-yellow-300'}`}>
+                <Card className={`relative overflow-hidden flex flex-col ${user?.plan === 'premium' ? 'border-yellow-400 ring-1 ring-yellow-400' : 'border-yellow-300'}`}>
                   {user?.plan === 'premium' && (
                     <div className="absolute top-3 right-3">
                       <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Activo</span>
                     </div>
                   )}
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-2">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
                       Premium
                     </CardTitle>
                     <CardDescription>Experiencia completa, sin interrupciones</CardDescription>
+                    <div className="flex items-end gap-1 pt-2">
+                      <span className="text-4xl font-extrabold tracking-tight">$9</span>
+                      <span className="text-muted-foreground text-sm mb-1">/mes</span>
+                    </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-3 flex-1">
                     {[
                       'Cirugías activas ilimitadas',
                       'Colegas y colaboración ilimitados',
@@ -383,7 +387,7 @@ const Settings = () => {
                       >
                         {checkoutLoading
                           ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
-                          : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — $9/mes</>
+                          : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme</>
                         }
                       </Button>
                     )}
