@@ -94,23 +94,24 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
 
     # ── Header block ──────────────────────────────────────────────────────────
     status_text = _status_label(case.status)
-    header_data = [[
-        Paragraph('<b>Reporte Quirúrgico</b>', S['title']),
-        Paragraph(
-            f'Estado: <b>{status_text}</b>',
-            ParagraphStyle('hdr_status', fontSize=9, textColor=C_MUTED,
-                           fontName='Helvetica', alignment=TA_RIGHT),
-        ),
-    ]]
-    header_table = Table(header_data, colWidths=[4 * inch, 3 * inch])
+    title_cell = Paragraph(
+        '<b>Reporte Quirúrgico</b><br/>'
+        '<font size="8" color="#64748b">MeDico App · Registro médico quirúrgico</font>',
+        ParagraphStyle('hdr_title', fontSize=20, textColor=C_DARK,
+                       fontName='Helvetica-Bold', leading=26, spaceAfter=0),
+    )
+    status_cell = Paragraph(
+        f'Estado: <b>{status_text}</b>',
+        ParagraphStyle('hdr_status', fontSize=9, textColor=C_MUTED,
+                       fontName='Helvetica', alignment=TA_RIGHT),
+    )
+    header_table = Table([[title_cell, status_cell]], colWidths=[4 * inch, 3 * inch])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
         ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
     ]))
     story.append(header_table)
-    story.append(Paragraph('MeDico App · Registro médico quirúrgico', S['subtitle']))
-    story.append(Spacer(1, 4))
     story.append(HRFlowable(width='100%', thickness=1.5, color=C_AMBER, spaceAfter=10))
 
     # ── Patient info ──────────────────────────────────────────────────────────

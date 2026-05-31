@@ -54,13 +54,13 @@ _FRONTEND_DIST = BASE_DIR.parent / 'frontend' / 'dist'
 _STATIC_DIR = BASE_DIR / 'static'
 STATICFILES_DIRS = [d for d in [_FRONTEND_DIST, _STATIC_DIR] if d.exists()]
 
-# Template para servir el index.html del frontend
-TEMPLATES[0]['DIRS'] = [BASE_DIR.parent / 'frontend' / 'dist']
+# Template dirs — only include if they exist
+TEMPLATES[0]['DIRS'] = [d for d in [_FRONTEND_DIST] if d.exists()]
 
 # WhiteNoise para servir archivos estáticos
 MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
-WHITENOISE_ROOT = os.path.join(BASE_DIR.parent, 'frontend', 'dist')
+WHITENOISE_ROOT = str(_FRONTEND_DIST) if _FRONTEND_DIST.exists() else None
 WHITENOISE_INDEX_FILE = True
 WHITENOISE_MANIFEST_STRICT = False
 
