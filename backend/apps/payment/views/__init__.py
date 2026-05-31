@@ -17,12 +17,23 @@ from rest_framework import status
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-LS_API_KEY        = os.environ.get('LEMONSQUEEZY_API_KEY', '')
-LS_WEBHOOK_SECRET = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', '')
-LS_VARIANT_ID     = os.environ.get('LEMONSQUEEZY_VARIANT_ID', '1725636')
-LS_API_BASE       = 'https://api.lemonsqueezy.com/v1'
-
+LS_API_BASE = 'https://api.lemonsqueezy.com/v1'
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://medico1deploymio.vercel.app')
+
+# Read at module load — log presence/absence so Railway logs confirm they're set
+_LS_API_KEY        = os.environ.get('LEMONSQUEEZY_API_KEY', '')
+_LS_WEBHOOK_SECRET = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', '')
+_LS_VARIANT_ID     = os.environ.get('LEMONSQUEEZY_VARIANT_ID', '1725636')
+_LS_STORE_ID       = os.environ.get('LEMONSQUEEZY_STORE_ID', '')
+
+logger.warning(
+    '[LS] env check — API_KEY=%s WEBHOOK_SECRET=%s STORE_ID=%s VARIANT_ID=%s FRONTEND_URL=%s',
+    'SET' if _LS_API_KEY else 'MISSING',
+    'SET' if _LS_WEBHOOK_SECRET else 'MISSING',
+    _LS_STORE_ID or 'MISSING',
+    _LS_VARIANT_ID or 'MISSING',
+    FRONTEND_URL,
+)
 
 
 # ── Checkout ──────────────────────────────────────────────────────────────────
@@ -30,8 +41,26 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://medico1deploymio.vercel.a
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_checkout(request):
-    """Create a Lemon Squeezy checkout URL for the authenticated user."""
+    api_key   = os.environ.get('LEMONSQUEEZY_API_KEY', _LS_API_KEY)
+    store_id  = os.environ.get('LEMONSQUEEZY_STORE_ID', _LS_STORE_ID)
+    variant_id = os.environ.get('LEMONSQUEEZY_VARIANT_ID', _LS_VARIANT_ID)
     user = request.user
+
+    logger.info(
+        '[LS checkout] user=%s api_key=%s store_id=%s variant_id=%s',
+        user.id,
+        'SET' if api_key else 'MISSING',
+        store_id or 'MISSING',
+        variant_id,
+    )
+
+    if not api_key:
+        logger.error('[LS checkout] LEMONSQUEEZY_API_KEY not set')
+        return Response({'error': 'Configuración de pagos incompleta'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    if not store_id:
+        logger.error('[LS checkout] LEMONSQUEEZY_STORE_ID not set')
+        return Response({'error': 'Configuración de pagos incompleta'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
     payload = {
         'data': {
@@ -46,53 +75,67 @@ def create_checkout(request):
                 },
             },
             'relationships': {
-                'store': {'data': {'type': 'stores', 'id': os.environ.get('LEMONSQUEEZY_STORE_ID', '')}},
-                'variant': {'data': {'type': 'variants', 'id': LS_VARIANT_ID}},
+                'store':   {'data': {'type': 'stores',   'id': store_id}},
+                'variant': {'data': {'type': 'variants', 'id': variant_id}},
             },
         }
     }
+
+    logger.debug('[LS checkout] payload=%s', json.dumps(payload))
 
     try:
         resp = requests.post(
             f'{LS_API_BASE}/checkouts',
             json=payload,
             headers={
-                'Authorization': f'Bearer {LS_API_KEY}',
+                'Authorization': f'Bearer {api_key}',
                 'Accept': 'application/vnd.api+json',
                 'Content-Type': 'application/vnd.api+json',
             },
             timeout=10,
         )
+        logger.info('[LS checkout] LS response status=%s', resp.status_code)
+        if not resp.ok:
+            logger.error('[LS checkout] LS error body=%s', resp.text)
         resp.raise_for_status()
         checkout_url = resp.json()['data']['attributes']['url']
+        logger.info('[LS checkout] checkout_url created for user=%s', user.id)
         return Response({'url': checkout_url})
+    except requests.HTTPError as e:
+        logger.error('[LS checkout] HTTPError status=%s body=%s', e.response.status_code, e.response.text)
+        return Response({'error': 'No se pudo crear el checkout'}, status=status.HTTP_502_BAD_GATEWAY)
     except Exception as e:
-        logger.error('Lemon Squeezy checkout error: %s', e)
+        logger.error('[LS checkout] unexpected error: %s', e, exc_info=True)
         return Response({'error': 'No se pudo crear el checkout'}, status=status.HTTP_502_BAD_GATEWAY)
 
 
 # ── Webhook ───────────────────────────────────────────────────────────────────
 
 def _verify_signature(body: bytes, signature: str) -> bool:
-    if not LS_WEBHOOK_SECRET:
-        return True  # skip verification in local dev without secret
+    secret = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', _LS_WEBHOOK_SECRET)
+    if not secret:
+        logger.warning('[LS webhook] LEMONSQUEEZY_WEBHOOK_SECRET not set — skipping signature check')
+        return True
     expected = hmac.new(
-        LS_WEBHOOK_SECRET.encode(),
+        secret.encode(),
         body,
         hashlib.sha256,
     ).hexdigest()
-    return hmac.compare_digest(expected, signature or '')
+    match = hmac.compare_digest(expected, signature or '')
+    if not match:
+        logger.error('[LS webhook] signature mismatch — expected=%s received=%s', expected[:16] + '...', (signature or '')[:16] + '...')
+    return match
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def lemonsqueezy_webhook(request):
-    """Handle Lemon Squeezy webhook events."""
     body      = request.body
     signature = request.headers.get('X-Signature', '')
 
+    logger.info('[LS webhook] received — size=%d signature_present=%s', len(body), bool(signature))
+
     if not _verify_signature(body, signature):
-        logger.warning('Invalid LS webhook signature')
         return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
@@ -101,19 +144,22 @@ def lemonsqueezy_webhook(request):
         attrs      = data.get('data', {}).get('attributes', {})
         custom     = data.get('meta', {}).get('custom_data', {})
 
+        logger.info('[LS webhook] event=%s custom_data=%s', event_name, custom)
+
         user_id = custom.get('user_id')
         if not user_id:
-            # Fallback: match by email
             email = attrs.get('user_email') or attrs.get('customer_email', '')
+            logger.info('[LS webhook] no user_id in custom_data, trying email=%s', email)
             user  = User.objects.filter(email=email).first() if email else None
         else:
             user = User.objects.filter(id=user_id).first()
+            logger.info('[LS webhook] lookup user_id=%s found=%s', user_id, bool(user))
 
         if not user:
-            logger.warning('LS webhook: user not found for event %s', event_name)
-            return Response({'ok': True})  # still 200 so LS doesn't retry
+            logger.warning('[LS webhook] user not found for event=%s user_id=%s', event_name, user_id)
+            return Response({'ok': True})
 
-        logger.info('LS webhook event=%s user=%s', event_name, user.id)
+        logger.info('[LS webhook] processing event=%s for user=%s (plan=%s)', event_name, user.id, user.plan)
 
         if event_name in ('subscription_created', 'subscription_payment_success', 'subscription_resumed'):
             _activate_premium(user, attrs)
@@ -123,6 +169,7 @@ def lemonsqueezy_webhook(request):
 
         elif event_name == 'subscription_updated':
             sub_status = attrs.get('status', '')
+            logger.info('[LS webhook] subscription_updated sub_status=%s', sub_status)
             if sub_status == 'active':
                 _activate_premium(user, attrs)
             elif sub_status in ('cancelled', 'expired', 'past_due'):
@@ -131,23 +178,21 @@ def lemonsqueezy_webhook(request):
         return Response({'ok': True})
 
     except Exception as e:
-        logger.error('LS webhook processing error: %s', e)
+        logger.error('[LS webhook] processing error: %s', e, exc_info=True)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def _activate_premium(user, attrs: dict):
     user.plan = 'premium'
-    user.is_permanent_premium = False  # LS-managed, not admin-granted
-    # Store LS subscription ID for future reference
-    ls_id = attrs.get('first_subscription_item', {}) or {}
-    update_fields = ['plan', 'is_permanent_premium', 'updated_at']
-    user.save(update_fields=update_fields)
-    logger.info('Activated premium for user %s', user.id)
+    user.is_permanent_premium = False
+    user.save(update_fields=['plan', 'is_permanent_premium', 'updated_at'])
+    logger.info('[LS] activated premium for user=%s', user.id)
 
 
 def _deactivate_premium(user):
     if user.is_permanent_premium:
-        return  # admin-granted permanent premium — never touch it
+        logger.info('[LS] user=%s has permanent premium — skipping deactivation', user.id)
+        return
     user.plan = 'free'
     user.save(update_fields=['plan', 'updated_at'])
-    logger.info('Deactivated premium for user %s', user.id)
+    logger.info('[LS] deactivated premium for user=%s', user.id)
