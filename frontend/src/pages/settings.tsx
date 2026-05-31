@@ -483,6 +483,7 @@ const Settings = () => {
                         { icon: <Calendar className="h-4 w-4 text-emerald-400" />, text: 'Google Calendar integrado' },
                         { icon: <BarChart2 className="h-4 w-4 text-blue-400" />,   text: 'Estadísticas personales avanzadas' },
                         { icon: <Shield className="h-4 w-4 text-emerald-400" />,   text: 'Sin anuncios ni interrupciones' },
+                        { icon: <FileText className="h-4 w-4 text-sky-400" />,     text: 'Exportar cirugías como PDF' },
                         { icon: <Sparkles className="h-4 w-4 text-amber-400" />,   text: 'Acceso anticipado a nuevas funciones' },
                       ].map(({ icon, text }) => (
                         <div key={text} className="flex items-center gap-3 text-sm">
