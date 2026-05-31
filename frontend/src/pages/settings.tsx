@@ -340,13 +340,18 @@ const Settings = () => {
                     <div>
                       <CardTitle>Tu Plan Actual</CardTitle>
                       <CardDescription>
-                        {user?.is_permanent_premium
-                          ? 'Tienes acceso Premium permanente'
-                          : user?.plan === 'premium' && user?.trial_ends_at
-                          ? `Período de prueba — vence el ${new Date(user.trial_ends_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`
-                          : user?.plan === 'premium'
-                          ? 'Suscripción Premium activa'
-                          : 'Estás en el plan gratuito de MeDico'}
+                        {(() => {
+                        const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+                        if (user?.is_permanent_premium) return 'Tienes acceso Premium permanente';
+                        if (user?.plan === 'premium' && user?.trial_ends_at)
+                          return `Período de prueba — vence el ${fmt(user.trial_ends_at)}`;
+                        if (user?.plan === 'premium' && user?.ls_cancelled && user?.ls_renews_at)
+                          return `Cancelado — acceso hasta el ${fmt(user.ls_renews_at)}`;
+                        if (user?.plan === 'premium' && user?.ls_renews_at)
+                          return `Suscripción activa · Se renueva el ${fmt(user.ls_renews_at)}`;
+                        if (user?.plan === 'premium') return 'Suscripción Premium activa';
+                        return 'Estás en el plan gratuito de MeDico';
+                      })()}
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-3">

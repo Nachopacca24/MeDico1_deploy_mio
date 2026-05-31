@@ -199,15 +199,27 @@ def lemonsqueezy_webhook(request):
         if event_name in ('subscription_created', 'subscription_payment_success', 'subscription_resumed'):
             _activate_premium(user, attrs, ls_sub_id)
 
-        elif event_name in ('subscription_cancelled', 'subscription_expired', 'subscription_payment_failed'):
+        elif event_name == 'subscription_expired':
+            # Subscription fully expired — downgrade now
             _deactivate_premium(user)
+
+        elif event_name == 'subscription_cancelled':
+            # User cancelled but keeps access until end of billing period
+            _mark_cancelled(user, attrs)
+
+        elif event_name == 'subscription_payment_failed':
+            # LS retries automatically — keep premium, just log
+            logger.warning('[LS webhook] payment failed for user=%s — keeping premium during retry period', user.id)
 
         elif event_name == 'subscription_updated':
             sub_status = attrs.get('status', '')
-            logger.info('[LS webhook] subscription_updated sub_status=%s', sub_status)
+            logger.info('[LS webhook] subscription_updated sub_status=%s renews_at=%s ends_at=%s',
+                        sub_status, attrs.get('renews_at'), attrs.get('ends_at'))
             if sub_status == 'active':
                 _activate_premium(user, attrs, ls_sub_id)
-            elif sub_status in ('cancelled', 'expired', 'past_due'):
+            elif sub_status == 'cancelled':
+                _mark_cancelled(user, attrs)
+            elif sub_status == 'expired':
                 _deactivate_premium(user)
 
         return Response({'ok': True})
@@ -217,18 +229,48 @@ def lemonsqueezy_webhook(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def _parse_ls_date(value):
+    """Parse a Lemon Squeezy ISO datetime string to a timezone-aware datetime."""
+    if not value:
+        return None
+    try:
+        from django.utils.dateparse import parse_datetime
+        return parse_datetime(value)
+    except Exception:
+        return None
+
+
 def _activate_premium(user, attrs: dict, ls_sub_id: str = None):
     user.plan = 'premium'
     user.is_permanent_premium = False
-    # Clear trial — user is now a paying subscriber, not a trialer
     user.trial_ends_at = None
-    update_fields = ['plan', 'is_permanent_premium', 'trial_ends_at', 'updated_at']
+    user.ls_cancelled = False
+    renews_at = _parse_ls_date(attrs.get('renews_at'))
+    if renews_at:
+        user.ls_renews_at = renews_at
+    update_fields = ['plan', 'is_permanent_premium', 'trial_ends_at', 'ls_cancelled', 'updated_at']
+    if renews_at:
+        update_fields.append('ls_renews_at')
     if ls_sub_id:
         user.ls_subscription_id = str(ls_sub_id)
         update_fields.append('ls_subscription_id')
-        logger.info('[LS] stored subscription_id=%s for user=%s', ls_sub_id, user.id)
     user.save(update_fields=update_fields)
-    logger.info('[LS] activated premium for user=%s — trial_ends_at cleared', user.id)
+    logger.info('[LS] activated premium for user=%s renews_at=%s', user.id, renews_at)
+
+
+def _mark_cancelled(user, attrs: dict):
+    """User cancelled — keep premium until end of billing period."""
+    if user.is_permanent_premium:
+        return
+    ends_at = _parse_ls_date(attrs.get('ends_at')) or _parse_ls_date(attrs.get('renews_at'))
+    user.ls_cancelled = True
+    if ends_at:
+        user.ls_renews_at = ends_at
+    update_fields = ['ls_cancelled', 'updated_at']
+    if ends_at:
+        update_fields.append('ls_renews_at')
+    user.save(update_fields=update_fields)
+    logger.info('[LS] subscription cancelled for user=%s — premium until %s', user.id, ends_at)
 
 
 def _deactivate_premium(user):
@@ -236,8 +278,11 @@ def _deactivate_premium(user):
         logger.info('[LS] user=%s has permanent premium — skipping deactivation', user.id)
         return
     user.plan = 'free'
-    user.save(update_fields=['plan', 'updated_at'])
-    logger.info('[LS] deactivated premium for user=%s — free plan restrictions now apply (max 5 active surgeries)', user.id)
+    user.ls_cancelled = False
+    user.ls_renews_at = None
+    user.ls_subscription_id = None
+    user.save(update_fields=['plan', 'ls_cancelled', 'ls_renews_at', 'ls_subscription_id', 'updated_at'])
+    logger.info('[LS] deactivated premium for user=%s', user.id)
 
 
 def _log_over_limit_warning(user):

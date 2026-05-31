@@ -111,6 +111,19 @@ class CustomUser(AbstractUser):
         verbose_name="Lemon Squeezy Subscription ID",
         help_text="ID de suscripción activa en Lemon Squeezy"
     )
+
+    ls_renews_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Próxima renovación / Vence el",
+        help_text="Fecha de próxima renovación (activa) o fecha de expiración (cancelada)"
+    )
+
+    ls_cancelled = models.BooleanField(
+        default=False,
+        verbose_name="Suscripción cancelada",
+        help_text="True si el usuario canceló pero aún tiene acceso hasta ls_renews_at"
+    )
     
     # Verificación de Email - CAMPOS NUEVOS
     is_email_verified = models.BooleanField(
