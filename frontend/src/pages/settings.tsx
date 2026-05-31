@@ -345,7 +345,7 @@ const Settings = () => {
                           : user?.plan === 'premium' && user?.trial_ends_at
                           ? `Período de prueba — vence el ${new Date(user.trial_ends_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`
                           : user?.plan === 'premium'
-                          ? 'Estás disfrutando de MeDico Premium'
+                          ? 'Suscripción Premium activa'
                           : 'Estás en el plan gratuito de MeDico'}
                       </CardDescription>
                     </div>

@@ -220,13 +220,15 @@ def lemonsqueezy_webhook(request):
 def _activate_premium(user, attrs: dict, ls_sub_id: str = None):
     user.plan = 'premium'
     user.is_permanent_premium = False
-    update_fields = ['plan', 'is_permanent_premium', 'updated_at']
+    # Clear trial — user is now a paying subscriber, not a trialer
+    user.trial_ends_at = None
+    update_fields = ['plan', 'is_permanent_premium', 'trial_ends_at', 'updated_at']
     if ls_sub_id:
         user.ls_subscription_id = str(ls_sub_id)
         update_fields.append('ls_subscription_id')
         logger.info('[LS] stored subscription_id=%s for user=%s', ls_sub_id, user.id)
     user.save(update_fields=update_fields)
-    logger.info('[LS] activated premium for user=%s', user.id)
+    logger.info('[LS] activated premium for user=%s — trial_ends_at cleared', user.id)
 
 
 def _deactivate_premium(user):
