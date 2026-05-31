@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
-import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles } from "lucide-react";
 import { authService } from "@/shared/services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -310,89 +310,107 @@ const Settings = () => {
               </Card>
 
               {/* Feature comparison */}
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* Free */}
-                <Card className={user?.plan !== 'premium' ? 'border-primary ring-1 ring-primary' : ''}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Plan Free</CardTitle>
-                    <CardDescription>Funciones esenciales, con publicidad</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {[
-                      { ok: true,  text: 'Hasta 5 cirugías activas' },
-                      { ok: true,  text: 'Hasta 2 colegas / ayudantes' },
-                      { ok: true,  text: 'Hospitales y procedimientos' },
-                      { ok: true,  text: 'Calculadora médica' },
-                      { ok: false, text: 'Anuncios personalizados por especialidad' },
-                      { ok: false, text: 'Sin integración con Google Calendar' },
-                    ].map(({ ok, text }) => (
-                      <div key={text} className="flex items-center gap-2 text-sm">
-                        {ok
-                          ? <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600" />
-                          : <XCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground/50" />
-                        }
-                        <span className={ok ? '' : 'text-muted-foreground'}>{text}</span>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
+              <div className="grid md:grid-cols-2 gap-4 items-stretch">
 
-                {/* Premium */}
-                <Card className={`relative overflow-hidden flex flex-col ${user?.plan === 'premium' ? 'border-yellow-400 ring-1 ring-yellow-400' : 'border-yellow-300'}`}>
-                  {user?.plan === 'premium' && (
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Activo</span>
+                {/* Free */}
+                <div className={`rounded-xl border flex flex-col overflow-hidden transition-all ${user?.plan !== 'premium' ? 'border-primary ring-2 ring-primary shadow-md' : 'border-border'}`}>
+                  <div className="p-6 pb-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Gratis</span>
+                      {user?.plan !== 'premium' && (
+                        <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">Tu plan actual</span>
+                      )}
                     </div>
-                  )}
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-                      Premium
-                    </CardTitle>
-                    <CardDescription>Experiencia completa, sin interrupciones</CardDescription>
-                    <div className="flex items-end gap-1 pt-2">
-                      <span className="text-4xl font-extrabold tracking-tight">$9</span>
+                    <h3 className="text-2xl font-bold mt-1">Plan Free</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Para empezar sin compromisos</p>
+                    <div className="flex items-end gap-1 mt-4">
+                      <span className="text-4xl font-extrabold tracking-tight">$0</span>
                       <span className="text-muted-foreground text-sm mb-1">/mes</span>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3 flex-1">
-                    {[
-                      'Cirugías activas ilimitadas',
-                      'Colegas y colaboración ilimitados',
-                      'Hospitales y procedimientos',
-                      'Calculadora médica',
-                      'Sin anuncios ni interrupciones',
-                      'Integración con Google Calendar',
-                      'Acceso anticipado a nuevas funciones',
-                    ].map((text) => (
-                      <div key={text} className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                        <span>{text}</span>
+                  </div>
+                  <div className="px-6 pb-6 flex-1 flex flex-col">
+                    <div className="space-y-3 flex-1">
+                      {[
+                        { icon: <Zap className="h-4 w-4 text-blue-500" />,      text: '5 cirugías activas' },
+                        { icon: <Heart className="h-4 w-4 text-rose-400" />,    text: '5 procedimientos en favoritos' },
+                        { icon: <Building2 className="h-4 w-4 text-slate-400" />, text: '2 hospitales favoritos' },
+                        { icon: <Users className="h-4 w-4 text-violet-400" />,  text: 'Hasta 3 colegas + sistema completo' },
+                        { icon: <Calendar className="h-4 w-4 text-green-500" />, text: 'Integración con Google Calendar' },
+                        { icon: <XCircle className="h-4 w-4 text-muted-foreground/40" />, text: 'Con anuncios', muted: true },
+                        { icon: <XCircle className="h-4 w-4 text-muted-foreground/40" />, text: 'Sin estadísticas personales', muted: true },
+                      ].map(({ icon, text, muted }) => (
+                        <div key={text} className="flex items-center gap-3 text-sm">
+                          <span className="flex-shrink-0">{icon}</span>
+                          <span className={muted ? 'text-muted-foreground line-through' : ''}>{text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="outline" disabled className="w-full mt-6 cursor-default opacity-60">
+                      Plan actual
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Premium */}
+                <div className={`rounded-xl flex flex-col overflow-hidden relative transition-all shadow-lg ${user?.plan === 'premium' ? 'ring-2 ring-yellow-400 shadow-yellow-500/20' : 'ring-2 ring-yellow-400/60 shadow-yellow-500/10'}`}>
+                  {/* gradient header */}
+                  <div className="bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 p-6 pb-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-yellow-900" />
+                        <span className="text-xs font-semibold uppercase tracking-widest text-yellow-900">Recomendado</span>
                       </div>
-                    ))}
-                  </CardContent>
-                  <CardFooter className="pt-2">
-                    {user?.plan === 'premium' ? (
-                      <Button
-                        disabled
-                        className="w-full bg-slate-700 text-yellow-400 font-bold border border-yellow-500/40 cursor-not-allowed opacity-80"
-                      >
-                        <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" /> Plan Activo
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleUpgrade}
-                        disabled={checkoutLoading}
-                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold shadow-md"
-                      >
-                        {checkoutLoading
-                          ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
-                          : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme</>
-                        }
-                      </Button>
-                    )}
-                  </CardFooter>
-                </Card>
+                      {user?.plan === 'premium' && (
+                        <span className="text-xs font-bold bg-white/30 text-yellow-900 px-2 py-0.5 rounded-full">✓ Activo</span>
+                      )}
+                    </div>
+                    <h3 className="text-2xl font-bold text-yellow-950 mt-1">Premium</h3>
+                    <p className="text-sm text-yellow-900/80 mt-1">Experiencia completa, sin límites</p>
+                    <div className="flex items-end gap-1 mt-4">
+                      <span className="text-5xl font-extrabold tracking-tight text-yellow-950">$9</span>
+                      <span className="text-yellow-900/70 text-sm mb-2">/mes</span>
+                    </div>
+                  </div>
+                  {/* features */}
+                  <div className="bg-card px-6 pb-6 pt-5 flex-1 flex flex-col border border-yellow-400/40 border-t-0 rounded-b-xl">
+                    <div className="space-y-3 flex-1">
+                      {[
+                        { icon: <Infinity className="h-4 w-4 text-yellow-500" />,   text: 'Cirugías activas ilimitadas' },
+                        { icon: <Heart className="h-4 w-4 text-rose-400" />,        text: 'Procedimientos favoritos ilimitados' },
+                        { icon: <Building2 className="h-4 w-4 text-amber-500" />,   text: 'Hospitales favoritos ilimitados' },
+                        { icon: <Users className="h-4 w-4 text-violet-400" />,      text: 'Colegas ilimitados + colaboración' },
+                        { icon: <Calendar className="h-4 w-4 text-green-500" />,    text: 'Google Calendar integrado' },
+                        { icon: <BarChart2 className="h-4 w-4 text-blue-400" />,    text: 'Estadísticas personales avanzadas' },
+                        { icon: <Shield className="h-4 w-4 text-emerald-500" />,    text: 'Sin anuncios ni interrupciones' },
+                        { icon: <Sparkles className="h-4 w-4 text-yellow-500" />,   text: 'Acceso anticipado a nuevas funciones' },
+                      ].map(({ icon, text }) => (
+                        <div key={text} className="flex items-center gap-3 text-sm">
+                          <span className="flex-shrink-0">{icon}</span>
+                          <span className="font-medium">{text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-6">
+                      {user?.plan === 'premium' ? (
+                        <Button disabled className="w-full bg-slate-700 text-yellow-400 font-bold border border-yellow-500/40 cursor-not-allowed opacity-80">
+                          <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" /> Plan Activo
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleUpgrade}
+                          disabled={checkoutLoading}
+                          className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-yellow-950 font-bold shadow-lg shadow-yellow-500/30 border-0"
+                        >
+                          {checkoutLoading
+                            ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
+                            : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — $9/mes</>
+                          }
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </TabsContent>
