@@ -280,6 +280,29 @@ const Settings = () => {
 
           {/* Plan Tab */}
           <TabsContent value="plan">
+            <style>{`
+              @keyframes float-star {
+                0%, 100% { transform: translateY(0px) rotate(-5deg); }
+                50%       { transform: translateY(-5px) rotate(5deg); }
+              }
+              @keyframes shimmer-sweep {
+                0%   { transform: translateX(-200%); }
+                100% { transform: translateX(200%); }
+              }
+              @keyframes glow-breathe {
+                0%, 100% { box-shadow: 0 0 18px 2px rgba(251,191,36,0.12); }
+                50%       { box-shadow: 0 0 36px 6px rgba(251,191,36,0.30); }
+              }
+              .float-star  { animation: float-star 3s ease-in-out infinite; }
+              .premium-glow { animation: glow-breathe 3s ease-in-out infinite; }
+              .shimmer-btn { position: relative; overflow: hidden; }
+              .shimmer-btn::after {
+                content: '';
+                position: absolute; inset: 0;
+                background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%);
+                animation: shimmer-sweep 2.4s ease-in-out infinite;
+              }
+            `}</style>
             <div className="space-y-4">
               {/* Current plan card */}
               <Card>
@@ -312,94 +335,97 @@ const Settings = () => {
               {/* Feature comparison */}
               <div className="grid md:grid-cols-2 gap-4 items-stretch">
 
-                {/* Free */}
-                <div className={`rounded-xl border flex flex-col overflow-hidden transition-all ${user?.plan !== 'premium' ? 'border-primary ring-2 ring-primary shadow-md' : 'border-border'}`}>
+                {/* ── Free ─────────────────────────────────────────── */}
+                <div className={`rounded-2xl border bg-card flex flex-col overflow-hidden transition-all ${user?.plan !== 'premium' ? 'border-slate-500 ring-1 ring-slate-500/60 shadow-md' : 'border-border'}`}>
                   <div className="p-6 pb-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Gratis</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Gratis</span>
                       {user?.plan !== 'premium' && (
-                        <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">Tu plan actual</span>
+                        <span className="text-xs font-semibold bg-slate-700 text-slate-200 px-2.5 py-0.5 rounded-full">Plan actual</span>
                       )}
                     </div>
-                    <h3 className="text-2xl font-bold mt-1">Plan Free</h3>
+                    <h3 className="text-2xl font-bold">Plan Free</h3>
                     <p className="text-sm text-muted-foreground mt-1">Para empezar sin compromisos</p>
                     <div className="flex items-end gap-1 mt-4">
-                      <span className="text-4xl font-extrabold tracking-tight">$0</span>
-                      <span className="text-muted-foreground text-sm mb-1">/mes</span>
+                      <span className="text-5xl font-extrabold tracking-tight">$0</span>
+                      <span className="text-muted-foreground text-sm mb-2">/mes</span>
                     </div>
                   </div>
                   <div className="px-6 pb-6 flex-1 flex flex-col">
-                    <div className="space-y-3 flex-1">
+                    <div className="w-full h-px bg-border mb-5" />
+                    <div className="space-y-3.5 flex-1">
                       {[
-                        { icon: <Zap className="h-4 w-4 text-blue-500" />,      text: '5 cirugías activas' },
-                        { icon: <Heart className="h-4 w-4 text-rose-400" />,    text: '5 procedimientos en favoritos' },
-                        { icon: <Building2 className="h-4 w-4 text-slate-400" />, text: '2 hospitales favoritos' },
-                        { icon: <Users className="h-4 w-4 text-violet-400" />,  text: 'Hasta 3 colegas + sistema completo' },
-                        { icon: <Calendar className="h-4 w-4 text-green-500" />, text: 'Integración con Google Calendar' },
-                        { icon: <XCircle className="h-4 w-4 text-muted-foreground/40" />, text: 'Con anuncios', muted: true },
-                        { icon: <XCircle className="h-4 w-4 text-muted-foreground/40" />, text: 'Sin estadísticas personales', muted: true },
+                        { icon: <Zap className="h-4 w-4 text-blue-400" />,       text: '5 cirugías activas' },
+                        { icon: <Heart className="h-4 w-4 text-rose-400" />,     text: '5 procedimientos en favoritos' },
+                        { icon: <Building2 className="h-4 w-4 text-slate-400" />,text: '2 hospitales favoritos' },
+                        { icon: <Users className="h-4 w-4 text-violet-400" />,   text: 'Hasta 3 colegas + sistema completo' },
+                        { icon: <Calendar className="h-4 w-4 text-emerald-400" />,text: 'Google Calendar integrado' },
+                        { icon: <XCircle className="h-4 w-4 text-slate-600" />,  text: 'Incluye anuncios', muted: true },
+                        { icon: <XCircle className="h-4 w-4 text-slate-600" />,  text: 'Sin estadísticas personales', muted: true },
                       ].map(({ icon, text, muted }) => (
                         <div key={text} className="flex items-center gap-3 text-sm">
                           <span className="flex-shrink-0">{icon}</span>
-                          <span className={muted ? 'text-muted-foreground line-through' : ''}>{text}</span>
+                          <span className={muted ? 'text-muted-foreground/50 line-through' : 'text-foreground/90'}>{text}</span>
                         </div>
                       ))}
                     </div>
-                    <Button variant="outline" disabled className="w-full mt-6 cursor-default opacity-60">
+                    <Button variant="outline" disabled className="w-full mt-6 cursor-default opacity-50 rounded-xl">
                       Plan actual
                     </Button>
                   </div>
                 </div>
 
-                {/* Premium */}
-                <div className={`rounded-xl flex flex-col overflow-hidden relative transition-all shadow-lg ${user?.plan === 'premium' ? 'ring-2 ring-yellow-400 shadow-yellow-500/20' : 'ring-2 ring-yellow-400/60 shadow-yellow-500/10'}`}>
-                  {/* gradient header */}
-                  <div className="bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 p-6 pb-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-yellow-900" />
-                        <span className="text-xs font-semibold uppercase tracking-widest text-yellow-900">Recomendado</span>
+                {/* ── Premium ──────────────────────────────────────── */}
+                <div className={`premium-glow rounded-2xl flex flex-col overflow-hidden ring-1 ring-amber-400/50 bg-card`}>
+                  {/* subtle top accent bar */}
+                  <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500" />
+                  <div className="p-6 pb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Star className="float-star h-5 w-5 fill-amber-400 text-amber-400" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Premium</span>
                       </div>
-                      {user?.plan === 'premium' && (
-                        <span className="text-xs font-bold bg-white/30 text-yellow-900 px-2 py-0.5 rounded-full">✓ Activo</span>
-                      )}
+                      {user?.plan === 'premium'
+                        ? <span className="text-xs font-semibold bg-amber-400/15 text-amber-400 border border-amber-400/30 px-2.5 py-0.5 rounded-full">✓ Activo</span>
+                        : <span className="text-xs font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2.5 py-0.5 rounded-full">Recomendado</span>
+                      }
                     </div>
-                    <h3 className="text-2xl font-bold text-yellow-950 mt-1">Premium</h3>
-                    <p className="text-sm text-yellow-900/80 mt-1">Experiencia completa, sin límites</p>
+                    <h3 className="text-2xl font-bold">MeDico Premium</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Experiencia completa, sin límites</p>
                     <div className="flex items-end gap-1 mt-4">
-                      <span className="text-5xl font-extrabold tracking-tight text-yellow-950">$9</span>
-                      <span className="text-yellow-900/70 text-sm mb-2">/mes</span>
+                      <span className="text-5xl font-extrabold tracking-tight text-amber-400">$9</span>
+                      <span className="text-muted-foreground text-sm mb-2">/mes</span>
                     </div>
                   </div>
-                  {/* features */}
-                  <div className="bg-card px-6 pb-6 pt-5 flex-1 flex flex-col border border-yellow-400/40 border-t-0 rounded-b-xl">
-                    <div className="space-y-3 flex-1">
+                  <div className="px-6 pb-6 flex-1 flex flex-col">
+                    <div className="w-full h-px bg-amber-400/20 mb-5" />
+                    <div className="space-y-3.5 flex-1">
                       {[
-                        { icon: <Infinity className="h-4 w-4 text-yellow-500" />,   text: 'Cirugías activas ilimitadas' },
-                        { icon: <Heart className="h-4 w-4 text-rose-400" />,        text: 'Procedimientos favoritos ilimitados' },
-                        { icon: <Building2 className="h-4 w-4 text-amber-500" />,   text: 'Hospitales favoritos ilimitados' },
-                        { icon: <Users className="h-4 w-4 text-violet-400" />,      text: 'Colegas ilimitados + colaboración' },
-                        { icon: <Calendar className="h-4 w-4 text-green-500" />,    text: 'Google Calendar integrado' },
-                        { icon: <BarChart2 className="h-4 w-4 text-blue-400" />,    text: 'Estadísticas personales avanzadas' },
-                        { icon: <Shield className="h-4 w-4 text-emerald-500" />,    text: 'Sin anuncios ni interrupciones' },
-                        { icon: <Sparkles className="h-4 w-4 text-yellow-500" />,   text: 'Acceso anticipado a nuevas funciones' },
+                        { icon: <Infinity className="h-4 w-4 text-amber-400" />,   text: 'Cirugías activas ilimitadas' },
+                        { icon: <Heart className="h-4 w-4 text-rose-400" />,       text: 'Procedimientos favoritos ilimitados' },
+                        { icon: <Building2 className="h-4 w-4 text-amber-300" />,  text: 'Hospitales favoritos ilimitados' },
+                        { icon: <Users className="h-4 w-4 text-violet-400" />,     text: 'Colegas ilimitados + colaboración' },
+                        { icon: <Calendar className="h-4 w-4 text-emerald-400" />, text: 'Google Calendar integrado' },
+                        { icon: <BarChart2 className="h-4 w-4 text-blue-400" />,   text: 'Estadísticas personales avanzadas' },
+                        { icon: <Shield className="h-4 w-4 text-emerald-400" />,   text: 'Sin anuncios ni interrupciones' },
+                        { icon: <Sparkles className="h-4 w-4 text-amber-400" />,   text: 'Acceso anticipado a nuevas funciones' },
                       ].map(({ icon, text }) => (
                         <div key={text} className="flex items-center gap-3 text-sm">
                           <span className="flex-shrink-0">{icon}</span>
-                          <span className="font-medium">{text}</span>
+                          <span className="font-medium text-foreground/90">{text}</span>
                         </div>
                       ))}
                     </div>
                     <div className="mt-6">
                       {user?.plan === 'premium' ? (
-                        <Button disabled className="w-full bg-slate-700 text-yellow-400 font-bold border border-yellow-500/40 cursor-not-allowed opacity-80">
-                          <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" /> Plan Activo
+                        <Button disabled className="w-full rounded-xl bg-amber-400/10 text-amber-400 font-bold border border-amber-400/30 cursor-not-allowed">
+                          <Star className="h-4 w-4 mr-2 fill-amber-400" /> Plan Activo
                         </Button>
                       ) : (
                         <Button
                           onClick={handleUpgrade}
                           disabled={checkoutLoading}
-                          className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-yellow-950 font-bold shadow-lg shadow-yellow-500/30 border-0"
+                          className="shimmer-btn w-full rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold shadow-lg shadow-amber-400/25 border-0 transition-all duration-200 hover:shadow-amber-400/40 hover:scale-[1.02]"
                         >
                           {checkoutLoading
                             ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
