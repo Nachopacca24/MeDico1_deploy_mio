@@ -21,7 +21,8 @@ router.register(r'hospitals', HospitalViewSet, basename='hospital')
 router.register(r'admin/users', AdminUserViewSet, basename='admin-users')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    # Custom paths BEFORE router so they aren't swallowed by cases/{pk}/
     path('cases/<int:case_id>/pdf/', export_case_pdf, name='case-pdf'),
     path('cases/export-pdf/', export_cases_bulk_pdf, name='cases-bulk-pdf'),
+    path('', include(router.urls)),
 ]
