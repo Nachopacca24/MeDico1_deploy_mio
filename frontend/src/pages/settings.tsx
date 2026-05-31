@@ -338,7 +338,7 @@ const Settings = () => {
                 </Card>
 
                 {/* Premium */}
-                <Card className={`relative overflow-hidden ${user?.plan === 'premium' ? 'border-yellow-400 ring-1 ring-yellow-400' : ''}`}>
+                <Card className={`relative overflow-hidden ${user?.plan === 'premium' ? 'border-yellow-400 ring-1 ring-yellow-400' : 'border-yellow-300'}`}>
                   {user?.plan === 'premium' && (
                     <div className="absolute top-3 right-3">
                       <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Activo</span>
@@ -367,40 +367,22 @@ const Settings = () => {
                       </div>
                     ))}
                   </CardContent>
-                </Card>
-              </div>
-
-              {user?.plan !== 'premium' && (
-                <Card className="border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded-xl">
-                          <Star className="h-5 w-5 text-yellow-600 fill-yellow-500" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-yellow-900 dark:text-yellow-100">
-                            Actualiza a Premium — $9/mes
-                          </p>
-                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                            Cirugías ilimitadas, sin anuncios, Google Calendar y estadísticas avanzadas.
-                          </p>
-                        </div>
-                      </div>
+                  {user?.plan !== 'premium' && (
+                    <CardFooter className="pt-2">
                       <Button
                         onClick={handleUpgrade}
                         disabled={checkoutLoading}
-                        className="shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white font-bold shadow-md"
+                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold shadow-md"
                       >
                         {checkoutLoading
                           ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
-                          : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme</>
+                          : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — $9/mes</>
                         }
                       </Button>
-                    </div>
-                  </CardContent>
+                    </CardFooter>
+                  )}
                 </Card>
-              )}
+              </div>
             </div>
           </TabsContent>
 
