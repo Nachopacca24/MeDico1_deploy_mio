@@ -357,7 +357,7 @@ export default function CalculatorPage() {
                     <Label className="text-xs font-semibold flex items-center gap-1 mb-2 text-muted-foreground">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> Frecuentes
                     </Label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {favProcs.map(proc => (
                         <button
                           key={proc.codigo}

@@ -1077,7 +1077,7 @@ const NewCase = () => {
                 <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG o WEBP · Máx. 10 MB cada una</p>
               </label>
             ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                 {pendingPreviews.map((src, idx) => (
                   <div key={idx} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square">
                     <img src={src} alt="" className="w-full h-full object-cover" />

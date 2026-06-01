@@ -481,7 +481,7 @@ const CaseDetailPage = () => {
                         </div>
                         
                         {/* Mostrar RVU para todos, valores monetarios solo para el dueño */}
-                        <div className={`grid ${isAssistant ? 'grid-cols-1' : 'grid-cols-3'} gap-4 mt-3 pt-3 border-t`}>
+                        <div className={`grid ${isAssistant ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-3 mt-3 pt-3 border-t`}>
                           <div>
                             <div className="text-xs text-muted-foreground mb-1">RVU</div>
                             <div className="font-semibold flex items-center gap-1">

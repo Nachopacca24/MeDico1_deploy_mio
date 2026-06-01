@@ -45,7 +45,7 @@ function StatCard({ icon: Icon, label, value, sub, accent = false, iconColor = "
         <Icon className={`h-4 w-4 ${iconColor}`} />
         {label}
       </div>
-      <div className="text-3xl font-black text-foreground leading-none">{value}</div>
+      <div className="text-2xl sm:text-3xl font-black text-foreground leading-none">{value}</div>
       {sub && <div>{sub}</div>}
     </div>
   );
@@ -228,7 +228,7 @@ export default function StatsPage() {
         </div>
 
         {/* KPI — Cirugías */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard
             icon={Activity}
             label="Cirugías totales"
@@ -257,7 +257,7 @@ export default function StatsPage() {
         </div>
 
         {/* KPI — RVU */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard
             icon={Zap}
             label="RVU este mes"
@@ -302,7 +302,7 @@ export default function StatsPage() {
                   step.count > 0 ? "border-border bg-muted/30" : "border-border/30 opacity-40"
                 }`}>
                   <step.icon className={`h-5 w-5 mx-auto mb-1 ${step.color}`} />
-                  <div className="text-2xl font-black">{step.count}</div>
+                  <div className="text-xl sm:text-2xl font-black">{step.count}</div>
                   <div className="text-xs text-muted-foreground mt-0.5">{step.label}</div>
                 </div>
                 {i < pipeline.length - 1 && (

@@ -958,25 +958,25 @@ const CasesPage = () => {
                        {/* Mostrar valores según si es dueño o ayudante */}
                         {isOwner ? (
                           // Vista completa para el dueño (con valor monetario)
-                          <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t">
+                          <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t text-sm">
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">Procedimientos</div>
-                              <div className="text-lg font-semibold">{surgicalCase.procedure_count || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-1">Proc.</div>
+                              <div className="text-base font-semibold">{surgicalCase.procedure_count || 0}</div>
                             </div>
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">RVU Total</div>
-                              <div className="text-lg font-semibold">{surgicalCase.total_rvu || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-1">RVU</div>
+                              <div className="text-base font-semibold">{surgicalCase.total_rvu || 0}</div>
                             </div>
                             <div>
                               <div className="text-xs text-muted-foreground mb-1">Valor</div>
-                              <div className="text-lg font-semibold">
+                              <div className="text-base font-semibold">
                                 Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </div>
                             </div>
                           </div>
                         ) : (
                           // Vista simplificada para el ayudante (sin valor monetario)
-                          <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t">
+                          <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t text-sm">
                             <div>
                               <div className="text-xs text-muted-foreground mb-1">Procedimientos</div>
                               <div className="text-lg font-semibold">{surgicalCase.procedure_count || 0}</div>
@@ -1151,18 +1151,18 @@ const CasesPage = () => {
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                          <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t">
+                          <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t text-sm">
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">Procedimientos</div>
-                              <div className="text-lg font-semibold">{surgicalCase.procedure_count || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-1">Proc.</div>
+                              <div className="text-base font-semibold">{surgicalCase.procedure_count || 0}</div>
                             </div>
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">RVU Total</div>
-                              <div className="text-lg font-semibold">{surgicalCase.total_rvu || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-1">RVU</div>
+                              <div className="text-base font-semibold">{surgicalCase.total_rvu || 0}</div>
                             </div>
                             <div>
                               <div className="text-xs text-muted-foreground mb-1">Valor</div>
-                              <div className="text-lg font-semibold">
+                              <div className="text-base font-semibold">
                                 Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </div>
                             </div>
