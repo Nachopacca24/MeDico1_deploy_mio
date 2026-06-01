@@ -91,14 +91,39 @@ export default function CalculatorPage() {
 
   useEffect(() => {
     hospitalService.getHospitals().then(setHospitals).catch(() => {});
-    favoritesService.getFavorites().then(favs => {
-      setFavProcs(favs.map(f => ({
+
+    favoritesService.getFavorites().then(async favs => {
+      const procs: ProcedureData[] = favs.map(f => ({
         codigo: f.surgery_code,
         cirugia: f.surgery_name || f.surgery_code,
         especialidad: f.specialty || 'General',
         grupo: '',
         rvu: 0,
-      })));
+      }));
+      setFavProcs(procs);
+
+      // Load RVUs in background for each favorite
+      const updated = [...procs];
+      for (let i = 0; i < updated.length; i++) {
+        const proc = updated[i];
+        try {
+          const subs = FOLDER_STRUCTURE[proc.especialidad];
+          const paths = subs
+            ? Object.values(subs)
+            : Object.values(FOLDER_STRUCTURE).flatMap(s => Object.values(s));
+          for (const path of paths) {
+            try {
+              const rows = await loadCSV(path);
+              const found = rows.find((r: any) => String(r.codigo || '').trim() === proc.codigo);
+              if (found && parseFloat(found.rvu) > 0) {
+                updated[i] = { ...proc, rvu: parseFloat(found.rvu) || 0 };
+                setFavProcs([...updated]);
+                break;
+              }
+            } catch {}
+          }
+        } catch {}
+      }
     }).catch(() => {});
   }, []);
 
@@ -342,17 +367,14 @@ export default function CalculatorPage() {
                         >
                           <div className="flex-1 min-w-0">
                             <div className="text-xs font-medium leading-tight line-clamp-2">{proc.cirugia}</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">{proc.codigo}</div>
+                            <div className="text-xs font-bold text-primary mt-1">
+                              {proc.rvu > 0
+                                ? <>{proc.rvu} RVU</>
+                                : <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                              }
+                            </div>
                           </div>
-                          <div className="shrink-0 flex flex-col items-end gap-1">
-                            {loadingFavRvu === proc.codigo
-                              ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                              : <Plus className="h-3.5 w-3.5 text-muted-foreground" />
-                            }
-                            {proc.rvu > 0 && (
-                              <span className="text-xs font-bold text-primary">{proc.rvu}</span>
-                            )}
-                          </div>
+                          <Plus className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                         </button>
                       ))}
                     </div>
