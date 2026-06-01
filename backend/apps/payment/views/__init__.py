@@ -8,6 +8,7 @@ import os
 
 import requests
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -66,6 +67,11 @@ def create_checkout(request):
         logger.error('[LS checkout] LEMONSQUEEZY_STORE_ID not set')
         return Response({'error': 'Configuración de pagos incompleta'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
+    # Block if already has an active non-cancelled paid subscription
+    if user.plan == 'premium' and user.ls_subscription_id and not user.ls_cancelled:
+        logger.warning('[LS checkout] user=%s already has active subscription=%s', user.id, user.ls_subscription_id)
+        return Response({'error': 'Ya tenés una suscripción Premium activa.'}, status=status.HTTP_400_BAD_REQUEST)
+
     payload = {
         'data': {
             'type': 'checkouts',
@@ -114,6 +120,10 @@ def create_checkout(request):
 def cancel_subscription(request):
     user = request.user
 
+    # Idempotent: already cancelled
+    if user.ls_cancelled:
+        return Response({'ok': True, 'message': 'La suscripción ya estaba cancelada.'})
+
     if user.plan != 'premium' or user.is_permanent_premium:
         return Response({'error': 'No hay suscripción activa para cancelar'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -150,8 +160,9 @@ def cancel_subscription(request):
 def _verify_signature(body: bytes, signature: str) -> bool:
     secret = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', _LS_WEBHOOK_SECRET)
     if not secret:
-        logger.warning('[LS webhook] LEMONSQUEEZY_WEBHOOK_SECRET not set — skipping signature check')
-        return True
+        # [SECURITY] Reject all webhooks if secret is not configured — never skip in production
+        logger.critical('[LS webhook] LEMONSQUEEZY_WEBHOOK_SECRET not set — rejecting webhook')
+        return False
     expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     match = hmac.compare_digest(expected, signature or '')
     if not match:
@@ -173,6 +184,15 @@ def lemonsqueezy_webhook(request):
     try:
         data       = json.loads(body)
         event_name = data.get('meta', {}).get('event_name', '')
+
+        # [SECURITY] Replay attack protection — deduplicate by webhook_id
+        webhook_id = data.get('meta', {}).get('webhook_id', '')
+        if webhook_id:
+            cache_key = f'ls_webhook:{webhook_id}'
+            if cache.get(cache_key):
+                logger.warning('[LS webhook] duplicate webhook_id=%s ignored', webhook_id)
+                return Response({'ok': True})
+            cache.set(cache_key, True, 86400)  # 24h TTL
         obj        = data.get('data', {})
         attrs      = obj.get('attributes', {})
         custom     = data.get('meta', {}).get('custom_data', {})

@@ -352,8 +352,8 @@ def export_case_pdf(request, case_id):
         logger.error('[PDF] generation error case=%s: %s', case_id, e, exc_info=True)
         return Response({'error': 'Error al generar el PDF'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    patient_name = decrypt_field(case.patient_name) or 'paciente'
-    filename = f'cirugia_{case.surgery_date or "sin_fecha"}_{patient_name[:20].replace(" ", "_")}.pdf'
+    # [SECURITY] Never expose patient name in filename — use generic identifier
+    filename = f'cirugia_{case.id}_{case.surgery_date or "sin_fecha"}.pdf'
 
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -375,6 +375,13 @@ def export_cases_bulk_pdf(request):
         return Response({'error': 'Enviá una lista de case_ids'}, status=status.HTTP_400_BAD_REQUEST)
     if len(case_ids) > 50:
         return Response({'error': 'Máximo 50 casos por exportación'}, status=status.HTTP_400_BAD_REQUEST)
+    # [SECURITY] Validate all IDs are positive integers to prevent malformed input
+    try:
+        case_ids = [int(cid) for cid in case_ids if int(cid) > 0]
+    except (ValueError, TypeError):
+        return Response({'error': 'case_ids debe ser una lista de números enteros'}, status=status.HTTP_400_BAD_REQUEST)
+    if not case_ids:
+        return Response({'error': 'No se enviaron IDs válidos'}, status=status.HTTP_400_BAD_REQUEST)
 
     include_factor = request.data.get('include_factor', True)
 
