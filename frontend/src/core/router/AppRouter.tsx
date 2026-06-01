@@ -33,6 +33,7 @@ import EditCase from "@/pages/cases/edit";
 import Operations from "@/pages/operations";
 import HospitalsPage from "@/pages/hospitals";
 import InsurancesPage from "@/pages/insurances";
+import CalculatorPage from "@/pages/calculator";
 import Favorites from "@/pages/favorites";
 import NovedadesPage from "@/pages/novedades";
 import SettingsPage from "@/pages/settings";
@@ -82,6 +83,7 @@ export const AppRouter = () => {
         <Route path='/operations' element={<Operations />} />
         <Route path='/hospitals' element={<HospitalsPage />} />
         <Route path='/insurances' element={<InsurancesPage />} />
+        <Route path='/calculator' element={<CalculatorPage />} />
         <Route path='/favorites' element={<Favorites />} />
         <Route path='/colleagues' element={<ColleaguesPage />} />
         <Route path='/novedades' element={<NovedadesPage />} />

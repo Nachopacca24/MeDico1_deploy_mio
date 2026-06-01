@@ -11,6 +11,7 @@ import {
   CalendarIcon,
   BarChart2,
   ShieldCheck,
+  Calculator,
 } from "lucide-react";
 import { ForYouAds } from "@/shared/components/ads/ForYouAds";
 
@@ -87,6 +88,11 @@ const workItems = [
 ];
 
 const toolsItems = [
+  {
+    title: "Calculadora",
+    url: "/calculator",
+    icon: Calculator,
+  },
   {
     title: "Calendario",
     url: "/calendar",
