@@ -58,7 +58,6 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true);
   const [chartMode, setChartMode] = useState<ChartMode>("ambos");
   const [procedureSort, setProcedureSort] = useState<"count" | "rvu">("count");
-  const [insurerSort, setInsurerSort] = useState<"count" | "rvu">("count");
   const [pipelinePeriod, setPipelinePeriod] = useState<"all" | "month" | "week">("all");
   const { user } = useAuth();
   const isPremium = user?.plan === 'premium';
@@ -451,55 +450,66 @@ export default function StatsPage() {
 
         </div>
 
-        {/* Seguros */}
-        {(stats.top_insurers_by_count.length > 0 || stats.top_insurers_by_rvu.length > 0) && (() => {
-          const topInsurers = insurerSort === "count" ? stats.top_insurers_by_count : stats.top_insurers_by_rvu;
-          const maxInsurerVal = topInsurers.length > 0
-            ? Math.max(...topInsurers.map(i => insurerSort === "count" ? i.count : (i as any).total_rvu))
-            : 1;
-          return (
-            <div className="bg-card border rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-emerald-400" />
-                  <h2 className="font-bold text-lg">Top seguros médicos</h2>
-                </div>
-                <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">
-                  <button onClick={() => setInsurerSort("count")} className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${insurerSort === "count" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
-                    Por cirugías
-                  </button>
-                  <button onClick={() => setInsurerSort("rvu")} className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${insurerSort === "rvu" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
-                    Por RVU
-                  </button>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mb-4">
-                {insurerSort === "count" ? "Seguros con los que operás más frecuentemente" : "Seguros con mayor RVU acumulado"}
-              </p>
+        {/* Top seguros */}
+        <div className="grid md:grid-cols-2 gap-4">
+
+          <div className="bg-card border rounded-2xl p-5">
+            <h2 className="font-bold text-lg mb-1">Seguros por cirugías</h2>
+            <p className="text-xs text-muted-foreground mb-4">Con qué seguros operás más frecuentemente</p>
+            {stats.top_insurers_by_count.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Sin datos — registrá el seguro al crear una cirugía</p>
+            ) : (
               <div className="space-y-3">
-                {topInsurers.map((ins, i) => {
-                  const val = insurerSort === "count" ? ins.count : (ins as any).total_rvu;
-                  const pct = maxInsurerVal > 0 ? Math.round((val / maxInsurerVal) * 100) : 0;
+                {stats.top_insurers_by_count.map((ins, i) => {
+                  const max = stats.top_insurers_by_count[0]?.count ?? 1;
+                  const pct = Math.round((ins.count / max) * 100);
                   return (
                     <div key={ins.name + i}>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="shrink-0 w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-black flex items-center justify-center">{i + 1}</span>
+                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
                         <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="flex-1 text-sm font-medium truncate">{ins.name}</span>
-                        <span className="shrink-0 text-xs text-muted-foreground">
-                          {ins.count} cir.{insurerSort === "rvu" && <> · <span className="text-emerald-400 font-bold">{(ins as any).total_rvu} RVU</span></>}
-                        </span>
+                        <span className="shrink-0 text-xs font-bold text-primary">{ins.count} cir.</span>
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
-                        <div className="h-full bg-emerald-500/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                        <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </div>
-          );
-        })()}
+            )}
+          </div>
+
+          <div className="bg-card border rounded-2xl p-5">
+            <h2 className="font-bold text-lg mb-1">Seguros por RVU</h2>
+            <p className="text-xs text-muted-foreground mb-4">Con qué seguros generás más valor relativo</p>
+            {stats.top_insurers_by_rvu.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Sin datos — registrá el seguro al crear una cirugía</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.top_insurers_by_rvu.map((ins, i) => {
+                  const max = stats.top_insurers_by_rvu[0]?.total_rvu ?? 1;
+                  const pct = Math.round((ins.total_rvu / max) * 100);
+                  return (
+                    <div key={ins.name + i}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
+                        <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="flex-1 text-sm font-medium truncate">{ins.name}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{ins.count} cir. · <span className="text-primary font-bold">{ins.total_rvu} RVU</span></span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
+                        <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+        </div>
 
       </div>
     </AppLayout>
