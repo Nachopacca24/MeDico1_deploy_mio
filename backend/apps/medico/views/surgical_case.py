@@ -538,27 +538,27 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         # Top 5 insurers by case count
         top_insurers_by_count = list(
-            queryset.exclude(insurance_company__isnull=True).exclude(insurance_company='')
-            .values('insurance_company')
+            queryset.exclude(insurance_company__isnull=True)
+            .values('insurance_company__name')
             .annotate(count=Count('id'))
             .order_by('-count')[:5]
         )
         top_insurers_by_count_list = [
-            {'name': i['insurance_company'], 'count': i['count']}
+            {'name': i['insurance_company__name'], 'count': i['count']}
             for i in top_insurers_by_count
         ]
 
         # Top 5 insurers by RVU
         top_insurers_by_rvu = list(
             CaseProcedure.objects.filter(
-                case__in=queryset.exclude(insurance_company__isnull=True).exclude(insurance_company='')
+                case__in=queryset.exclude(insurance_company__isnull=True)
             )
-            .values('case__insurance_company')
+            .values('case__insurance_company__name')
             .annotate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
             .order_by('-total_rvu')[:5]
         )
         top_insurers_by_rvu_list = [
-            {'name': i['case__insurance_company'], 'total_rvu': round(float(i['total_rvu'] or 0), 1), 'count': i['count']}
+            {'name': i['case__insurance_company__name'], 'total_rvu': round(float(i['total_rvu'] or 0), 1), 'count': i['count']}
             for i in top_insurers_by_rvu
         ]
 

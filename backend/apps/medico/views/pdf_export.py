@@ -156,7 +156,7 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
     etime_str = _fmt_time(case.surgery_end_time)
     time_range = f'{time_str} – {etime_str}' if time_str and etime_str else time_str or '—'
 
-    insurance = case.insurance_company or '—'
+    insurance = (case.insurance_company.name if case.insurance_company else '—')
 
     surg_data = [
         [Paragraph('Hospital', S['label']), Paragraph('Fecha', S['label']),

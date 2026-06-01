@@ -31,6 +31,21 @@ class Specialty(models.Model):
         return self.name
 
 
+class InsuranceCompany(models.Model):
+    """Aseguradoras médicas de Guatemala"""
+    name = models.CharField(max_length=200, unique=True, verbose_name="Nombre")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Aseguradora'
+        verbose_name_plural = 'Aseguradoras'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Hospital(models.Model):
     """Hospitales y clínicas"""
     name = models.CharField(

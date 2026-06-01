@@ -12,36 +12,13 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { useToast } from '@/shared/hooks/useToast';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
+import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { colleaguesService } from '@/services/colleaguesService';
 import { loadCSV } from '@/shared/utils/csvLoader';
 import { favoritesService } from '@/services/favoritesService';
 import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users, ArrowLeft, AlertCircle } from 'lucide-react';
 import type { PatientGender } from '@/types/surgical-case';
 
-const GUATEMALA_INSURERS = [
-  'IGSS (Instituto Guatemalteco de Seguridad Social)',
-  'Seguros G&T',
-  'Seguros Universales',
-  'Aseguradora General',
-  'Seguros Alianza',
-  'Seguros Banrural',
-  'COSAMI',
-  'Pan-American Life Insurance (PALIG)',
-  'Columna Seguros',
-  'Aseguradora Rural',
-  'Seguros Occidente',
-  'Seguros del País',
-  'MAPFRE Guatemala',
-  'Seguros Reforma',
-  'AIG Guatemala',
-  'Chubb Guatemala',
-  'Qualitas Seguros',
-  'Seguros Agromercantil',
-  'BanSeguros (Banco Industrial)',
-  'Grupo SURA Guatemala',
-  'MetLife Guatemala',
-  'Otro',
-];
 
 interface ProcedureData {
   codigo: string;
@@ -84,7 +61,8 @@ const EditCase = () => {
   const [rateMultiplier, setRateMultiplier] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
-  const [insuranceCompany, setInsuranceCompany] = useState('');
+  const [insuranceId, setInsuranceId] = useState('');
+  const [insurances, setInsurances] = useState<InsuranceCompany[]>([]);
   const [status, setStatus] = useState<'scheduled' | 'completed' | 'billed' | 'paid' | 'cancelled'>('scheduled');
 
   // Assistant doctor state
@@ -120,16 +98,18 @@ const EditCase = () => {
         console.log("[EditCase] Cargando datos iniciales...");
         setLoading(true);
 
-        // Cargar hospitales, colegas, favoritos Y caso en paralelo
-        const [hospitalsData, colleaguesData, favoritesData, caseData] = await Promise.all([
+        // Cargar hospitales, colegas, favoritos, seguros Y caso en paralelo
+        const [hospitalsData, colleaguesData, favoritesData, insurancesData, caseData] = await Promise.all([
           hospitalService.getHospitals(),
           colleaguesService.getColleagues(),
           favoritesService.getFavorites(),
+          insuranceService.getInsurances(),
           surgicalCaseService.getCase(parseInt(id))
         ]);
 
         setHospitals(hospitalsData);
         setColleagues(colleaguesData.colleagues);
+        setInsurances(insurancesData);
 
         // Convertir favoritos a formato de procedimientos
         const favProcs: ProcedureData[] = favoritesData.map(fav => ({
@@ -153,7 +133,7 @@ const EditCase = () => {
         setSurgeryEndTime(caseData.surgery_end_time || '');
         setDiagnosis(caseData.diagnosis || '');
         setNotes(caseData.notes || '');
-        setInsuranceCompany(caseData.insurance_company || '');
+        setInsuranceId(caseData.insurance_company ? String(caseData.insurance_company) : '');
         setStatus((caseData.status?.toLowerCase?.() || 'scheduled') as typeof status);
 
         // Cargar procedimientos del caso
@@ -538,7 +518,7 @@ const EditCase = () => {
         surgery_end_time: surgeryEndTime || undefined,
         diagnosis: diagnosis || undefined,
         notes: notes || undefined,
-        insurance_company: insuranceCompany || undefined,
+        insurance_company: insuranceId ? parseInt(insuranceId) : null,
         status: status,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
@@ -698,13 +678,13 @@ const EditCase = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="insurance" className="text-sm font-semibold">Seguro médico</Label>
-                  <Select value={insuranceCompany} onValueChange={setInsuranceCompany}>
+                  <Select value={insuranceId} onValueChange={setInsuranceId}>
                     <SelectTrigger id="insurance" className="h-11">
                       <SelectValue placeholder="Selecciona un seguro (opcional)" />
                     </SelectTrigger>
                     <SelectContent position="popper" sideOffset={5} className="w-[var(--radix-select-trigger-width)] max-h-[300px]">
-                      {GUATEMALA_INSURERS.map((ins) => (
-                        <SelectItem key={ins} value={ins}>{ins}</SelectItem>
+                      {insurances.map((ins) => (
+                        <SelectItem key={ins.id} value={ins.id.toString()}>{ins.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

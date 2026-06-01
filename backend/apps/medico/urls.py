@@ -9,6 +9,7 @@ from apps.medico.views import (
     AdminUserViewSet
 )
 from apps.medico.serializers.hospital import HospitalViewSet
+from apps.medico.serializers.insurance import InsuranceCompanyViewSet
 from apps.medico.views.pdf_export import export_case_pdf, export_cases_bulk_pdf
 from apps.medico.views.surgery_images import list_surgery_images, upload_surgery_image, delete_surgery_image
 
@@ -19,6 +20,7 @@ router.register(r'favorites', FavoriteViewSet, basename='favorite')
 router.register(r'cases', SurgicalCaseViewSet, basename='surgical-case')
 router.register(r'procedures', CaseProcedureViewSet, basename='case-procedure')
 router.register(r'hospitals', HospitalViewSet, basename='hospital')
+router.register(r'insurances', InsuranceCompanyViewSet, basename='insurance')
 router.register(r'admin/users', AdminUserViewSet, basename='admin-users')
 
 urlpatterns = [

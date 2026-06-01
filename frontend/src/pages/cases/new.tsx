@@ -11,6 +11,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { useToast } from '@/shared/hooks/useToast';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
+import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { colleaguesService } from '@/services/colleaguesService';
 import { loadCSV } from '@/shared/utils/csvLoader';
 import { favoritesService } from '@/services/favoritesService';
@@ -21,30 +22,6 @@ import { authService } from '@/shared/services/authService';
 const API_URL = import.meta.env.VITE_API_URL || '';
 import type { PatientGender } from '@/types/surgical-case';
 
-const GUATEMALA_INSURERS = [
-  'IGSS (Instituto Guatemalteco de Seguridad Social)',
-  'Seguros G&T',
-  'Seguros Universales',
-  'Aseguradora General',
-  'Seguros Alianza',
-  'Seguros Banrural',
-  'COSAMI',
-  'Pan-American Life Insurance (PALIG)',
-  'Columna Seguros',
-  'Aseguradora Rural',
-  'Seguros Occidente',
-  'Seguros del País',
-  'MAPFRE Guatemala',
-  'Seguros Reforma',
-  'AIG Guatemala',
-  'Chubb Guatemala',
-  'Qualitas Seguros',
-  'Seguros Agromercantil',
-  'BanSeguros (Banco Industrial)',
-  'Grupo SURA Guatemala',
-  'MetLife Guatemala',
-  'Otro',
-];
 
 interface ProcedureData {
   codigo: string;
@@ -109,7 +86,8 @@ const NewCase = () => {
   const [rateMultiplier, setRateMultiplier] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
-  const [insuranceCompany, setInsuranceCompany] = useState('');
+  const [insuranceId, setInsuranceId] = useState('');
+  const [insurances, setInsurances] = useState<InsuranceCompany[]>([]);
 
   // Assistant doctor state
   const [assistantType, setAssistantType] = useState<'colleague' | 'manual' | 'none'>('none');
@@ -140,6 +118,8 @@ const NewCase = () => {
       .then(setHospitals)
       .catch(() => toast.error('Error', 'No se pudieron cargar los hospitales'))
       .finally(() => setLoadingHospitals(false));
+
+    insuranceService.getInsurances().then(setInsurances).catch(() => {});
 
     colleaguesService.getColleagues()
       .then(data => setColleagues(data.colleagues))
@@ -523,7 +503,7 @@ const NewCase = () => {
         surgery_end_time: surgeryEndTime || undefined,
         diagnosis: diagnosis || undefined,
         notes: notes || undefined,
-        insurance_company: insuranceCompany || undefined,
+        insurance_company: insuranceId ? parseInt(insuranceId) : undefined,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
           surgery_name: proc.surgery_name,
@@ -663,13 +643,13 @@ const NewCase = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="insurance" className="text-sm font-semibold">Seguro médico</Label>
-                  <Select value={insuranceCompany} onValueChange={setInsuranceCompany}>
+                  <Select value={insuranceId} onValueChange={setInsuranceId}>
                     <SelectTrigger id="insurance" className="h-11">
                       <SelectValue placeholder="Selecciona un seguro (opcional)" />
                     </SelectTrigger>
                     <SelectContent position="popper" sideOffset={5} className="w-[var(--radix-select-trigger-width)] max-h-[300px]">
-                      {GUATEMALA_INSURERS.map((ins) => (
-                        <SelectItem key={ins} value={ins}>{ins}</SelectItem>
+                      {insurances.map((ins) => (
+                        <SelectItem key={ins.id} value={ins.id.toString()}>{ins.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

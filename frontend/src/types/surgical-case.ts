@@ -75,7 +75,8 @@ export interface SurgicalCase {
   
   
   
-  insurance_company?: string | null;
+  insurance_company?: number | null;
+  insurance_company_name?: string | null;
 
   // Campos de estado
   is_operated?: boolean;
@@ -118,7 +119,7 @@ export interface CreateCaseData {
   surgery_end_time?: string;
   diagnosis?: string;
   notes?: string;
-  insurance_company?: string | null;
+  insurance_company?: number | null;
   procedures: Omit<Procedure, 'id'>[];
   
   

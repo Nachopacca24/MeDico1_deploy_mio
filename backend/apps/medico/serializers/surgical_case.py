@@ -73,6 +73,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
 
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
+    insurance_company_name = serializers.CharField(source='insurance_company.name', read_only=True, allow_null=True)
 
     class Meta:
         model = SurgicalCase
@@ -108,6 +109,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'archived_at',
             'images_purge_at',
             'insurance_company',
+            'insurance_company_name',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 

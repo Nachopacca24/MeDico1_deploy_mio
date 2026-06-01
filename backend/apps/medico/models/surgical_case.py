@@ -151,10 +151,12 @@ class SurgicalCase(models.Model):
     )
     
     # Seguro médico
-    insurance_company = models.CharField(
-        max_length=150,
-        blank=True,
+    insurance_company = models.ForeignKey(
+        'InsuranceCompany',
+        on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name='cases',
         verbose_name="Seguro médico",
     )
 
