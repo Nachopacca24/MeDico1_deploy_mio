@@ -10,6 +10,7 @@ from apps.medico.views import (
 )
 from apps.medico.serializers.hospital import HospitalViewSet
 from apps.medico.views.pdf_export import export_case_pdf, export_cases_bulk_pdf
+from apps.medico.views.surgery_images import list_surgery_images, upload_surgery_image, delete_surgery_image
 
 app_name = 'medico'
 
@@ -24,5 +25,8 @@ urlpatterns = [
     # Custom paths BEFORE router so they aren't swallowed by cases/{pk}/
     path('cases/<int:case_id>/pdf/', export_case_pdf, name='case-pdf'),
     path('cases/export-pdf/', export_cases_bulk_pdf, name='cases-bulk-pdf'),
+    path('cases/<int:case_id>/images/', list_surgery_images, name='case-images-list'),
+    path('cases/<int:case_id>/images/upload/', upload_surgery_image, name='case-images-upload'),
+    path('cases/<int:case_id>/images/<int:image_id>/', delete_surgery_image, name='case-images-delete'),
     path('', include(router.urls)),
 ]

@@ -24,9 +24,21 @@ import {
   Users,
   TrendingUp,
   Download,
+  ImagePlus,
+  X,
+  Images,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { authService } from "@/shared/services/authService";
+
+interface SurgeryImage {
+  id: number;
+  cloudinary_url: string;
+  original_filename: string;
+  file_size: number | null;
+  uploaded_at: string;
+}
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -38,10 +50,69 @@ const CaseDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [images, setImages] = useState<SurgeryImage[]>([]);
+  const [imagesLoading, setImagesLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
   const isPremium = user?.plan === 'premium' || user?.is_permanent_premium;
+
+  const fetchImages = async (caseId: number) => {
+    setImagesLoading(true);
+    try {
+      const resp = await authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${caseId}/images/`);
+      if (resp.ok) setImages(await resp.json());
+    } catch { /* silent */ }
+    finally { setImagesLoading(false); }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !surgicalCase) return;
+    if (images.length >= 5) {
+      toast.error('Límite de 5 imágenes por cirugía alcanzado');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('image', file);
+    setUploadingImage(true);
+    try {
+      const resp = await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/images/upload/`,
+        { method: 'POST', body: formData }
+      );
+      if (!resp.ok) {
+        const d = await resp.json().catch(() => ({}));
+        throw new Error(d.error || 'Error al subir imagen');
+      }
+      const img = await resp.json();
+      setImages(prev => [...prev, img]);
+      toast.success('Imagen subida correctamente');
+    } catch (err: any) {
+      toast.error(err.message || 'Error al subir imagen');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleImageDelete = async (imageId: number) => {
+    if (!surgicalCase) return;
+    try {
+      const resp = await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/images/${imageId}/`,
+        { method: 'DELETE' }
+      );
+      if (resp.ok || resp.status === 204) {
+        setImages(prev => prev.filter(img => img.id !== imageId));
+        toast.success('Imagen eliminada');
+      }
+    } catch {
+      toast.error('Error al eliminar imagen');
+    }
+  };
 
   const handleExportPdf = async (includeHospitalFactor = true) => {
     if (!surgicalCase) return;
@@ -78,6 +149,7 @@ const CaseDetailPage = () => {
       setLoading(true);
       const data = await surgicalCaseService.getCase(parseInt(id!));
       setSurgicalCase(data);
+      fetchImages(data.id);
     } catch (err: any) {
       setError(err.message || 'Error al cargar el caso');
     } finally {
@@ -536,6 +608,102 @@ const CaseDetailPage = () => {
             </Card>
           </div>
         </div>
+
+        {/* ── Images section ─────────────────────────────────────────── */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Images className="w-5 h-5" />
+                Imágenes
+                {images.length > 0 && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({images.length}/5)
+                  </span>
+                )}
+              </CardTitle>
+              {isOwner && isPremium && images.length < 5 && (
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                  />
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-amber-500/40 text-amber-500 hover:bg-amber-500/10 text-sm font-medium transition-colors">
+                    {uploadingImage
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <ImagePlus className="w-4 h-4" />
+                    }
+                    {uploadingImage ? 'Subiendo...' : 'Agregar imagen'}
+                  </div>
+                </label>
+              )}
+              {isOwner && !isPremium && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-muted/40 opacity-60 cursor-not-allowed text-sm text-muted-foreground">
+                  <ImagePlus className="w-4 h-4" />
+                  Agregar imagen
+                  <span className="text-xs bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-medium ml-1">Premium</span>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {imagesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : images.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                {isPremium ? 'No hay imágenes. Agregá radiografías o fotos post-operatorias.' : 'Activá Premium para agregar imágenes a tus cirugías.'}
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                {images.map(img => (
+                  <div key={img.id} className="relative group rounded-lg overflow-hidden border border-border aspect-square">
+                    <img
+                      src={img.cloudinary_url}
+                      alt={img.original_filename || 'Imagen'}
+                      className="w-full h-full object-cover cursor-pointer"
+                      onClick={() => setLightboxUrl(img.cloudinary_url)}
+                    />
+                    {isOwner && (
+                      <button
+                        onClick={() => handleImageDelete(img.id)}
+                        className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Lightbox */}
+        {lightboxUrl && (
+          <div
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setLightboxUrl(null)}
+          >
+            <button
+              className="absolute top-4 right-4 text-white/70 hover:text-white"
+              onClick={() => setLightboxUrl(null)}
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <img
+              src={lightboxUrl}
+              alt="Imagen ampliada"
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={e => e.stopPropagation()}
+            />
+          </div>
+        )}
+
       </div>
     </AppLayout>
   );

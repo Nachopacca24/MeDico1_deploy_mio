@@ -4,6 +4,7 @@ from django.conf import settings
 
 # Import surgical case models
 from .surgical_case import SurgicalCase, CaseProcedure
+from .surgery_image import SurgeryImage
 
 
 class Specialty(models.Model):
