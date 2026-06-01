@@ -251,7 +251,8 @@ class SurgicalCase(models.Model):
                 # Auto-archivar cuando se marca como cobrado
                 if not old_instance.is_paid and self.is_paid and not self.archived_at:
                     self.archived_at = timezone.now()
-                    self.images_purge_at = self.archived_at + timedelta(days=90)
+                    if self.images.exists():
+                        self.images_purge_at = self.archived_at + timedelta(days=90)
             except SurgicalCase.DoesNotExist:
                 pass
         else:
