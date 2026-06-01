@@ -130,6 +130,7 @@ function CaseStatusToggles({
 
   return (
     <div className="flex flex-col gap-2">
+      {/* Row 1: status toggles */}
       <div className={`flex ${compact ? 'gap-1' : 'gap-2'} flex-wrap`}>
         <Button
           variant={isOperated ? 'default' : 'outline'}
@@ -146,21 +147,6 @@ function CaseStatusToggles({
           {!updating && isOperated && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
           <span>Operado</span>
         </Button>
-
-        {/* Imágenes post-op — aparece al marcar operado */}
-        {isOperated && (
-          <Link to={`/cases/${surgicalCase.id}#images`}>
-            <Button
-              variant="outline"
-              size={buttonSize}
-              type="button"
-              className="border-amber-400/60 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400"
-            >
-              <ImagePlus className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />
-              <span>Imágenes</span>
-            </Button>
-          </Link>
-        )}
 
         <Button
           variant={isBilled ? 'default' : 'outline'}
@@ -195,6 +181,7 @@ function CaseStatusToggles({
         </Button>
       </div>
 
+      {/* Row 2: invoice number — only when billed */}
       {isBilled && canEdit && (
         <div className="flex items-center gap-1.5 mt-1">
           <input
@@ -220,6 +207,21 @@ function CaseStatusToggles({
             }
           </button>
         </div>
+      )}
+
+      {/* Row 3: Imágenes button — only when operated */}
+      {isOperated && (
+        <Link to={`/cases/${surgicalCase.id}#images`} className="w-full">
+          <Button
+            variant="outline"
+            size={buttonSize}
+            type="button"
+            className="w-full border-amber-400/60 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400"
+          >
+            <ImagePlus className={`${iconSize} mr-1.5`} />
+            <span>Subir imágenes de la cirugía</span>
+          </Button>
+        </Link>
       )}
     </div>
   );
