@@ -105,6 +105,8 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'created_by_name',
+            'archived_at',
+            'images_purge_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 

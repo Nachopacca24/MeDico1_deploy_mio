@@ -99,6 +99,8 @@ export interface SurgicalCase {
   updated_at: string;
   created_by?: number;
   created_by_name?: string;
+  archived_at?: string | null;
+  images_purge_at?: string | null;
 }
 
 export interface CreateCaseData {

@@ -1031,11 +1031,25 @@ const CasesPage = () => {
                 </Card>
               ) : (
                 <div className="space-y-4">
+                  <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:border-amber-800/40 dark:bg-amber-950/20 px-4 py-3 text-sm space-y-1">
+                    <p className="font-medium text-amber-800 dark:text-amber-300">Retención automática de datos</p>
+                    <p className="text-amber-700 dark:text-amber-400/80">
+                      Las <span className="font-semibold">imágenes</span> se eliminan a los <span className="font-semibold">3 meses</span> de cobrar — exportá el PDF antes si querés conservarlas.
+                    </p>
+                    <p className="text-amber-700 dark:text-amber-400/80">
+                      El <span className="font-semibold">caso completo</span> se elimina a los <span className="font-semibold">6 meses</span> de cobrar.
+                    </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">
-                    {archivedCases.length} caso{archivedCases.length !== 1 ? 's' : ''} — se eliminan automáticamente a los 6 meses de ser facturados
+                    {archivedCases.length} caso{archivedCases.length !== 1 ? 's' : ''}
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {archivedCases.map((surgicalCase) => (
+                    {archivedCases.map((surgicalCase) => {
+                      const imagesPurgeDate = surgicalCase.images_purge_at ? new Date(surgicalCase.images_purge_at) : null;
+                      const casePurgeDate   = surgicalCase.archived_at     ? new Date(new Date(surgicalCase.archived_at).getTime() + 180 * 24 * 60 * 60 * 1000) : null;
+                      const now = new Date();
+                      const imagesAlreadyPurged = imagesPurgeDate && imagesPurgeDate <= now;
+                      return (
                       <Card key={surgicalCase.id} className="opacity-80 hover:opacity-100 transition-opacity">
                         <CardHeader>
                           <div className="flex items-center justify-between mb-1">
@@ -1061,6 +1075,22 @@ const CasesPage = () => {
                               <div className="flex items-center gap-2 text-sm">
                                 <span className="text-xs text-muted-foreground">Factura:</span>
                                 <span className="text-xs font-medium">#{surgicalCase.invoice_number}</span>
+                              </div>
+                            )}
+                            {imagesPurgeDate && (
+                              <div className="text-xs mt-1 space-y-0.5">
+                                {imagesAlreadyPurged ? (
+                                  <p className="text-muted-foreground">Imágenes eliminadas</p>
+                                ) : (
+                                  <p className="text-amber-600 dark:text-amber-400">
+                                    Imágenes se eliminan el {imagesPurgeDate.toLocaleDateString()}
+                                  </p>
+                                )}
+                                {casePurgeDate && (
+                                  <p className="text-muted-foreground">
+                                    Caso se elimina el {casePurgeDate.toLocaleDateString()}
+                                  </p>
+                                )}
                               </div>
                             )}
                           </CardDescription>
@@ -1092,7 +1122,8 @@ const CasesPage = () => {
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
