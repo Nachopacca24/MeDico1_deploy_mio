@@ -254,6 +254,11 @@ const CasesPage = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
 
+  // Select mode para cobrados
+  const [archivedSelectMode, setArchivedSelectMode] = useState(false);
+  const [archivedSelectedIds, setArchivedSelectedIds] = useState<Set<number>>(new Set());
+  const [exportingArchivedPdf, setExportingArchivedPdf] = useState(false);
+
   const toggleSelect = (id: number) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -262,16 +267,25 @@ const CasesPage = () => {
     });
   };
 
-  const handleBulkExportPdf = async () => {
-    if (selectedIds.size === 0) return;
-    setExportingPdf(true);
+  const toggleArchivedSelect = (id: number) => {
+    setArchivedSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
+
+  const handleBulkExportPdf = async (ids: Set<number>, onDone: () => void) => {
+    if (ids.size === 0) return;
+    const isArchived = ids === archivedSelectedIds;
+    if (isArchived) setExportingArchivedPdf(true); else setExportingPdf(true);
     try {
       const response = await authService.authenticatedFetch(
         `${API_URL}/api/v1/medico/cases/export-pdf/`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ case_ids: Array.from(selectedIds), include_factor: true }),
+          body: JSON.stringify({ case_ids: Array.from(ids), include_factor: true }),
         }
       );
       if (!response.ok) {
@@ -284,15 +298,14 @@ const CasesPage = () => {
       a.href = url;
       const cd = response.headers.get('Content-Disposition') || '';
       const match = cd.match(/filename="(.+)"/);
-      a.download = match ? match[1] : `cirugias_${selectedIds.size}_casos.pdf`;
+      a.download = match ? match[1] : `cirugias_${ids.size}_casos.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-      setSelectMode(false);
-      setSelectedIds(new Set());
+      onDone();
     } catch (e: any) {
       toast.error(e.message || 'No se pudo generar el PDF');
     } finally {
-      setExportingPdf(false);
+      if (isArchived) setExportingArchivedPdf(false); else setExportingPdf(false);
     }
   };
 
@@ -678,7 +691,7 @@ const CasesPage = () => {
                     {selectedIds.size > 0 && (
                       <Button
                         size="sm"
-                        onClick={handleBulkExportPdf}
+                        onClick={() => handleBulkExportPdf(selectedIds, () => { setSelectMode(false); setSelectedIds(new Set()); })}
                         disabled={exportingPdf}
                         className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
                       >
@@ -1040,9 +1053,40 @@ const CasesPage = () => {
                       El <span className="font-semibold">caso completo</span> se elimina a los <span className="font-semibold">6 meses</span> de cobrar.
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {archivedCases.length} caso{archivedCases.length !== 1 ? 's' : ''}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      {archivedCases.length} caso{archivedCases.length !== 1 ? 's' : ''}
+                    </p>
+                    {isPremium && (
+                      archivedSelectMode ? (
+                        <div className="flex items-center gap-2">
+                          {archivedSelectedIds.size > 0 && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleBulkExportPdf(archivedSelectedIds, () => { setArchivedSelectMode(false); setArchivedSelectedIds(new Set()); })}
+                              disabled={exportingArchivedPdf}
+                              className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold"
+                            >
+                              {exportingArchivedPdf
+                                ? <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                : <Download className="w-4 h-4 mr-1" />
+                              }
+                              Exportar {archivedSelectedIds.size} PDF{archivedSelectedIds.size !== 1 ? 's' : ''}
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline" onClick={() => { setArchivedSelectMode(false); setArchivedSelectedIds(new Set()); }}>
+                            Cancelar
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="outline" onClick={() => setArchivedSelectMode(true)}
+                          className="border-amber-500/40 text-amber-500 hover:bg-amber-500/10">
+                          <CheckSquare className="w-4 h-4 mr-1" />
+                          Exportar PDF
+                        </Button>
+                      )
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {archivedCases.map((surgicalCase) => {
                       const imagesPurgeDate = surgicalCase.images_purge_at ? new Date(surgicalCase.images_purge_at) : null;
@@ -1050,13 +1094,24 @@ const CasesPage = () => {
                       const now = new Date();
                       const imagesAlreadyPurged = imagesPurgeDate && imagesPurgeDate <= now;
                       return (
-                      <Card key={surgicalCase.id} className="opacity-80 hover:opacity-100 transition-opacity">
+                      <Card
+                        key={surgicalCase.id}
+                        className={`opacity-80 hover:opacity-100 transition-opacity ${archivedSelectMode ? 'cursor-pointer' : ''} ${archivedSelectMode && archivedSelectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 opacity-100' : ''}`}
+                        onClick={archivedSelectMode ? () => toggleArchivedSelect(surgicalCase.id) : undefined}
+                      >
                         <CardHeader>
                           <div className="flex items-center justify-between mb-1">
                             <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
-                            <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                              Cobrado
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {archivedSelectMode && (
+                                archivedSelectedIds.has(surgicalCase.id)
+                                  ? <CheckSquare className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                                  : <Square className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                              )}
+                              <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                Cobrado
+                              </span>
+                            </div>
                           </div>
                           <CardDescription className="space-y-2">
                             <div className="flex items-center gap-2 text-sm">
