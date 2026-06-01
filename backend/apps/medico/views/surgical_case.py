@@ -536,6 +536,32 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         else:
             avg_per_week = 0.0
 
+        # Top 5 insurers by case count
+        top_insurers_by_count = list(
+            queryset.exclude(insurance_company__isnull=True).exclude(insurance_company='')
+            .values('insurance_company')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:5]
+        )
+        top_insurers_by_count_list = [
+            {'name': i['insurance_company'], 'count': i['count']}
+            for i in top_insurers_by_count
+        ]
+
+        # Top 5 insurers by RVU
+        top_insurers_by_rvu = list(
+            CaseProcedure.objects.filter(
+                case__in=queryset.exclude(insurance_company__isnull=True).exclude(insurance_company='')
+            )
+            .values('case__insurance_company')
+            .annotate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
+            .order_by('-total_rvu')[:5]
+        )
+        top_insurers_by_rvu_list = [
+            {'name': i['case__insurance_company'], 'total_rvu': round(float(i['total_rvu'] or 0), 1), 'count': i['count']}
+            for i in top_insurers_by_rvu
+        ]
+
         stats_data = {
             'total_cases': total_cases,
             'total_procedures': total_procedures,
@@ -560,6 +586,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             'rvu_last_month': rvu_last_month,
             'pipeline_month': pipeline_month,
             'pipeline_week': pipeline_week,
+            'top_insurers_by_count': top_insurers_by_count_list,
+            'top_insurers_by_rvu': top_insurers_by_rvu_list,
         }
 
         return Response(stats_data, status=status.HTTP_200_OK)

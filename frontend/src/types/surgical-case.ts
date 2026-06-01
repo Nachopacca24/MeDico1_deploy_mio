@@ -29,6 +29,8 @@ export interface CaseStats {
   top_procedures_by_rvu: { name: string; count: number; total_rvu: number }[];
   top_hospitals: { name: string; count: number }[];
   top_hospitals_by_rvu: { name: string; total_rvu: number; count: number }[];
+  top_insurers_by_count: { name: string; count: number }[];
+  top_insurers_by_rvu: { name: string; total_rvu: number; count: number }[];
   total_rvu: number;
   avg_rvu_per_case: number;
   rvu_this_month: number;
