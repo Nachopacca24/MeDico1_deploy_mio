@@ -19,7 +19,7 @@ import { InvitationCard } from "@/pages/cases/InvitationCard";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
-import { Loader2, Check, Archive, Download, CheckSquare, Square } from 'lucide-react';
+import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus } from 'lucide-react';
 import { authService } from "@/shared/services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -146,6 +146,21 @@ function CaseStatusToggles({
           {!updating && isOperated && <Check className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />}
           <span>Operado</span>
         </Button>
+
+        {/* Imágenes post-op — aparece al marcar operado */}
+        {isOperated && (
+          <Link to={`/cases/${surgicalCase.id}#images`}>
+            <Button
+              variant="outline"
+              size={buttonSize}
+              type="button"
+              className="border-amber-400/60 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400"
+            >
+              <ImagePlus className={`${iconSize} ${compact ? '' : 'mr-1.5'}`} />
+              <span>Imágenes</span>
+            </Button>
+          </Link>
+        )}
 
         <Button
           variant={isBilled ? 'default' : 'outline'}
