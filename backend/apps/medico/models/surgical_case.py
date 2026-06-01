@@ -1,5 +1,7 @@
 # apps/medico/models/surgical_case.py
 
+from datetime import timedelta
+
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -164,6 +166,14 @@ class SurgicalCase(models.Model):
         help_text="Si está completo, se elimina automáticamente a los 6 meses"
     )
 
+    # Las imágenes se purgan a los 3 meses de cobrado (antes de que se borre el caso)
+    images_purge_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Purgar imágenes el",
+        help_text="Las imágenes se eliminan automáticamente 3 meses después de cobrar"
+    )
+
     # Metadatos
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -236,6 +246,7 @@ class SurgicalCase(models.Model):
                 # Auto-archivar cuando se marca como cobrado
                 if not old_instance.is_paid and self.is_paid and not self.archived_at:
                     self.archived_at = timezone.now()
+                    self.images_purge_at = self.archived_at + timedelta(days=90)
             except SurgicalCase.DoesNotExist:
                 pass
         else:
