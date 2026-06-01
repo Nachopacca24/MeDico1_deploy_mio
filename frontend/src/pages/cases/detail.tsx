@@ -610,78 +610,82 @@ const CaseDetailPage = () => {
         </div>
 
         {/* ── Images section ─────────────────────────────────────────── */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Images className="w-5 h-5" />
-                Imágenes
-                {images.length > 0 && (
-                  <span className="text-sm font-normal text-muted-foreground">
-                    ({images.length}/5)
-                  </span>
-                )}
-              </CardTitle>
-              {isOwner && isPremium && images.length < 5 && (
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    disabled={uploadingImage}
+        <div className={`rounded-xl border-2 border-dashed p-6 transition-colors ${isPremium ? 'border-amber-400/60 bg-amber-400/5' : 'border-border bg-muted/20'}`}>
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-4">
+            <Images className={`w-5 h-5 flex-shrink-0 ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`} />
+            <div className="flex-1 min-w-0">
+              <p className={`font-semibold ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                {surgicalCase.is_operated ? 'Imágenes post-operatorias' : 'Imágenes'}
+                {images.length > 0 && <span className="text-sm font-normal text-muted-foreground ml-2">({images.length}/5)</span>}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {surgicalCase.is_operated ? 'Fotos del resultado, evolución y cierre' : 'Radiografías, estudios, fotos del paciente'}
+              </p>
+            </div>
+            {isOwner && isPremium && images.length < 5 && (
+              <label className="cursor-pointer flex-shrink-0">
+                <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-400/50 text-amber-400 hover:bg-amber-400/10 text-sm font-medium transition-colors">
+                  {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+                  {uploadingImage ? 'Subiendo...' : `Agregar (${images.length}/5)`}
+                </div>
+              </label>
+            )}
+          </div>
+
+          {/* Content */}
+          {imagesLoading ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : !isPremium ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-2">
+              <ImagePlus className="w-10 h-10 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground text-center">
+                La carga de imágenes es exclusiva del <span className="text-amber-400 font-semibold">Plan Premium</span>
+              </p>
+            </div>
+          ) : images.length === 0 ? (
+            isOwner ? (
+              <label className="flex flex-col items-center justify-center py-8 cursor-pointer rounded-lg border border-dashed border-amber-400/30 hover:border-amber-400/60 hover:bg-amber-400/5 transition-colors">
+                <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                <ImagePlus className="w-10 h-10 text-amber-400/50 mb-2" />
+                <p className="text-sm text-muted-foreground">Hacé clic para agregar imágenes</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG o WEBP · Máx. 10 MB</p>
+              </label>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-6">No hay imágenes en este caso.</p>
+            )
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              {images.map(img => (
+                <div key={img.id} className="relative group rounded-lg overflow-hidden border border-amber-400/20 aspect-square">
+                  <img
+                    src={img.cloudinary_url}
+                    alt={img.original_filename || 'Imagen'}
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => setLightboxUrl(img.cloudinary_url)}
                   />
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-amber-500/40 text-amber-500 hover:bg-amber-500/10 text-sm font-medium transition-colors">
-                    {uploadingImage
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <ImagePlus className="w-4 h-4" />
-                    }
-                    {uploadingImage ? 'Subiendo...' : 'Agregar imagen'}
-                  </div>
+                  {isOwner && (
+                    <button
+                      onClick={() => handleImageDelete(img.id)}
+                      className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {isOwner && images.length < 5 && (
+                <label className="flex items-center justify-center rounded-lg border-2 border-dashed border-amber-400/30 hover:border-amber-400/60 aspect-square cursor-pointer transition-colors">
+                  <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                  {uploadingImage ? <Loader2 className="w-6 h-6 text-amber-400/50 animate-spin" /> : <ImagePlus className="w-6 h-6 text-amber-400/50" />}
                 </label>
               )}
-              {isOwner && !isPremium && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-muted/40 opacity-60 cursor-not-allowed text-sm text-muted-foreground">
-                  <ImagePlus className="w-4 h-4" />
-                  Agregar imagen
-                  <span className="text-xs bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-medium ml-1">Premium</span>
-                </div>
-              )}
             </div>
-          </CardHeader>
-          <CardContent>
-            {imagesLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : images.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                {isPremium ? 'No hay imágenes. Agregá radiografías o fotos post-operatorias.' : 'Activá Premium para agregar imágenes a tus cirugías.'}
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {images.map(img => (
-                  <div key={img.id} className="relative group rounded-lg overflow-hidden border border-border aspect-square">
-                    <img
-                      src={img.cloudinary_url}
-                      alt={img.original_filename || 'Imagen'}
-                      className="w-full h-full object-cover cursor-pointer"
-                      onClick={() => setLightboxUrl(img.cloudinary_url)}
-                    />
-                    {isOwner && (
-                      <button
-                        onClick={() => handleImageDelete(img.id)}
-                        className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          )}
+        </div>
 
         {/* Lightbox */}
         {lightboxUrl && (
