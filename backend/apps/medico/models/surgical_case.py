@@ -343,28 +343,24 @@ class SurgicalCase(models.Model):
     
     @property
     def total_rvu(self):
-        """Calcular RVU total de todos los procedimientos"""
-        return self.procedures.aggregate(
-            total=Sum('rvu')
-        )['total'] or 0
-    
+        # Uses prefetch cache when available — avoids N+1 query per case
+        procs = self.procedures.all()
+        return sum(float(p.rvu or 0) for p in procs) or 0
+
     @property
     def total_value(self):
-        """Calcular valor total de todos los procedimientos"""
-        return self.procedures.aggregate(
-            total=Sum('calculated_value')
-        )['total'] or 0
-    
+        procs = self.procedures.all()
+        return sum(float(p.calculated_value or 0) for p in procs) or 0
+
     @property
     def procedure_count(self):
-        """Contar número de procedimientos"""
-        return self.procedures.count()
-    
+        procs = self.procedures.all()
+        return len(procs)
+
     @property
     def primary_specialty(self):
-        """Obtener la especialidad principal (la del primer procedimiento o más frecuente)"""
-        first_procedure = self.procedures.first()
-        return first_procedure.specialty if first_procedure else None
+        procs = self.procedures.all()
+        return procs[0].specialty if procs else None
 
 
 class CaseProcedure(models.Model):

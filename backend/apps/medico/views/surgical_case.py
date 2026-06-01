@@ -52,7 +52,9 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         if self.action in ('accept_invitation', 'reject_invitation', 'retrieve'):
             return SurgicalCase.objects.filter(
                 Q(created_by=user) | Q(assistant_doctor=user)
-            ).select_related('hospital', 'created_by', 'assistant_doctor').prefetch_related('procedures').distinct()
+            ).select_related(
+                'hospital', 'created_by', 'assistant_doctor', 'insurance_company'
+            ).prefetch_related('procedures', 'images').distinct()
 
         # Por defecto ocultar archivados; ?archived=true los muestra
         show_archived = self.request.query_params.get('archived', 'false').lower() == 'true'
@@ -82,10 +84,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         # Optimizamos con select_related y prefetch_related para evitar el problema N+1
         queryset = queryset.select_related(
-            'hospital', 
+            'hospital',
             'created_by',
-            'assistant_doctor'
-        ).prefetch_related('procedures').distinct()
+            'assistant_doctor',
+            'insurance_company',
+        ).prefetch_related('procedures', 'images').distinct()
 
         # Filtros opcionales
         status_filter = self.request.query_params.get('status', None)
