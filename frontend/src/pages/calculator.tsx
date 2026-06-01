@@ -332,19 +332,27 @@ export default function CalculatorPage() {
                     <Label className="text-xs font-semibold flex items-center gap-1 mb-2 text-muted-foreground">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> Frecuentes
                     </Label>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="grid grid-cols-2 gap-2">
                       {favProcs.map(proc => (
                         <button
                           key={proc.codigo}
                           onClick={() => addFav(proc)}
                           disabled={loadingFavRvu === proc.codigo}
-                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50"
+                          className="flex items-start justify-between gap-2 p-2.5 rounded-lg border bg-muted/40 hover:bg-primary/10 hover:border-primary/40 hover:text-primary text-left transition-colors disabled:opacity-50"
                         >
-                          {loadingFavRvu === proc.codigo
-                            ? <Loader2 className="h-3 w-3 animate-spin" />
-                            : <Plus className="h-3 w-3" />
-                          }
-                          {proc.cirugia}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium leading-tight line-clamp-2">{proc.cirugia}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{proc.codigo}</div>
+                          </div>
+                          <div className="shrink-0 flex flex-col items-end gap-1">
+                            {loadingFavRvu === proc.codigo
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                              : <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                            }
+                            {proc.rvu > 0 && (
+                              <span className="text-xs font-bold text-primary">{proc.rvu}</span>
+                            )}
+                          </div>
                         </button>
                       ))}
                     </div>
