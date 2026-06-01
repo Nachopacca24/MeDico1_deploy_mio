@@ -2,6 +2,7 @@
 
 import io
 import logging
+import urllib.request
 from datetime import date
 
 from django.http import HttpResponse
@@ -16,7 +17,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, cm
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    HRFlowable, KeepTogether,
+    HRFlowable, KeepTogether, Image as RLImage,
 )
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 
@@ -270,6 +271,51 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
                            fontName='Helvetica-Bold', alignment=TA_RIGHT)
         ))
 
+    # ── Surgery images ────────────────────────────────────────────────────────
+    images = list(case.images.all())
+    if images:
+        story.append(Spacer(1, 8))
+        story.append(Paragraph('IMÁGENES DE LA CIRUGÍA', S['section']))
+
+        MAX_W = 3.2 * inch
+        MAX_H = 2.8 * inch
+        img_cells = []
+
+        for img_obj in images:
+            try:
+                with urllib.request.urlopen(img_obj.cloudinary_url, timeout=10) as resp:
+                    img_bytes = io.BytesIO(resp.read())
+                rl_img = RLImage(img_bytes, width=MAX_W, height=MAX_H, kind='proportional')
+                caption = Paragraph(
+                    img_obj.original_filename or f'Imagen {img_obj.id}',
+                    ParagraphStyle('img_cap', fontSize=7, textColor=C_MUTED,
+                                   fontName='Helvetica', alignment=TA_CENTER, spaceAfter=0),
+                )
+                img_cells.append([rl_img, caption])
+            except Exception as e:
+                logger.warning('[PDF] could not fetch image=%s: %s', img_obj.id, e)
+
+        # 2 columns
+        for i in range(0, len(img_cells), 2):
+            pair = img_cells[i:i + 2]
+            if len(pair) == 1:
+                pair.append(['', ''])
+            row_imgs    = [pair[0][0], pair[1][0]]
+            row_caps    = [pair[0][1], pair[1][1]]
+            img_table = Table(
+                [row_imgs, row_caps],
+                colWidths=[3.5 * inch, 3.5 * inch],
+            )
+            img_table.setStyle(TableStyle([
+                ('ALIGN',   (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN',  (0, 0), (-1, -1), 'MIDDLE'),
+                ('PADDING', (0, 0), (-1, -1), 6),
+                ('GRID',    (0, 0), (-1, -1), 0.4, C_BORDER),
+                ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+            ]))
+            story.append(img_table)
+            story.append(Spacer(1, 6))
+
     return story
 
 
@@ -337,7 +383,7 @@ def export_case_pdf(request, case_id):
         case = (
             SurgicalCase.objects
             .select_related('hospital', 'created_by', 'assistant_doctor')
-            .prefetch_related('procedures')
+            .prefetch_related('procedures', 'images')
             .get(pk=case_id, created_by=request.user)
         )
     except SurgicalCase.DoesNotExist:
@@ -388,7 +434,7 @@ def export_cases_bulk_pdf(request):
     cases = (
         SurgicalCase.objects
         .select_related('hospital', 'created_by', 'assistant_doctor')
-        .prefetch_related('procedures')
+        .prefetch_related('procedures', 'images')
         .filter(pk__in=case_ids, created_by=request.user)
         .order_by('surgery_date')
     )
