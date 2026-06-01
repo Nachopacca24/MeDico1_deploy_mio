@@ -173,6 +173,11 @@ class SurgicalCase(models.Model):
         verbose_name="Purgar imágenes el",
         help_text="Las imágenes se eliminan automáticamente 3 meses después de cobrar"
     )
+    images_expiry_notified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Notificación de expiración enviada el",
+    )
 
     # Metadatos
     created_by = models.ForeignKey(
