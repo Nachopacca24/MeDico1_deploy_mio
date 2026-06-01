@@ -1,6 +1,7 @@
 """
 Serializers y Views para Hospitales
 """
+from django.db.models import Exists, OuterRef, Case, When, IntegerField
 from rest_framework import serializers, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -11,20 +12,19 @@ from apps.medico.models import Hospital, FavoriteHospital
 class HospitalSerializer(serializers.ModelSerializer):
     """Serializer para hospitales"""
     is_favorite = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Hospital
         fields = ['id', 'name', 'location', 'created_at', 'updated_at', 'is_favorite']
         read_only_fields = ['id', 'created_at', 'updated_at', 'is_favorite']
-    
+
     def get_is_favorite(self, obj):
-        """Verifica si el hospital es favorito del usuario actual"""
+        # Uses annotation from queryset — no extra DB query
+        if hasattr(obj, 'is_fav_annotated'):
+            return obj.is_fav_annotated
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return FavoriteHospital.objects.filter(
-                user=request.user,
-                hospital=obj
-            ).exists()
+            return FavoriteHospital.objects.filter(user=request.user, hospital=obj).exists()
         return False
 
 
@@ -53,33 +53,18 @@ class HospitalViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None  # Desactivar paginación para mostrar todos los hospitales
     
     def get_queryset(self):
-        """
-        Ordena hospitales: favoritos primero, luego por nombre
-        """
-        from django.db.models import Case, When, IntegerField
-        
-        queryset = Hospital.objects.all()
-        
-        if self.request.user.is_authenticated:
-            # Obtener IDs de hospitales favoritos
-            favorite_ids = list(FavoriteHospital.objects.filter(
-                user=self.request.user
-            ).values_list('hospital_id', flat=True))
-            
-            if favorite_ids:
-                # Ordenar: favoritos primero (0), luego no favoritos (1)
-                queryset = queryset.annotate(
-                    is_fav=Case(
-                        When(id__in=favorite_ids, then=0),
-                        default=1,
-                        output_field=IntegerField()
-                    )
-                ).order_by('is_fav', 'name')
-            else:
-                queryset = queryset.order_by('name')
-        else:
-            queryset = queryset.order_by('name')
-        
+        user = self.request.user
+        fav_subquery = FavoriteHospital.objects.filter(
+            user=user, hospital=OuterRef('pk')
+        )
+        queryset = Hospital.objects.annotate(
+            is_fav_annotated=Exists(fav_subquery),
+            is_fav_order=Case(
+                When(is_fav_annotated=True, then=0),
+                default=1,
+                output_field=IntegerField()
+            )
+        ).order_by('is_fav_order', 'name')
         return queryset
     
     @action(detail=True, methods=['post'])

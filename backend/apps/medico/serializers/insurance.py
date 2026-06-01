@@ -1,3 +1,4 @@
+from django.db.models import Exists, OuterRef, Case, When, IntegerField
 from rest_framework import serializers, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -14,6 +15,9 @@ class InsuranceCompanySerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at', 'is_favorite']
 
     def get_is_favorite(self, obj):
+        # Uses annotation from queryset — no extra DB query
+        if hasattr(obj, 'is_fav_annotated'):
+            return obj.is_fav_annotated
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return FavoriteInsurance.objects.filter(user=request.user, insurance=obj).exists()
@@ -26,25 +30,18 @@ class InsuranceCompanyViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        from django.db.models import Case, When, IntegerField
-        queryset = InsuranceCompany.objects.all()
-        if self.request.user.is_authenticated:
-            fav_ids = list(FavoriteInsurance.objects.filter(
-                user=self.request.user
-            ).values_list('insurance_id', flat=True))
-            if fav_ids:
-                queryset = queryset.annotate(
-                    is_fav=Case(
-                        When(id__in=fav_ids, then=0),
-                        default=1,
-                        output_field=IntegerField()
-                    )
-                ).order_by('is_fav', 'name')
-            else:
-                queryset = queryset.order_by('name')
-        else:
-            queryset = queryset.order_by('name')
-        return queryset
+        user = self.request.user
+        fav_subquery = FavoriteInsurance.objects.filter(
+            user=user, insurance=OuterRef('pk')
+        )
+        return InsuranceCompany.objects.annotate(
+            is_fav_annotated=Exists(fav_subquery),
+            is_fav_order=Case(
+                When(is_fav_annotated=True, then=0),
+                default=1,
+                output_field=IntegerField()
+            )
+        ).order_by('is_fav_order', 'name')
 
     @action(detail=True, methods=['post'])
     def favorite(self, request, pk=None):
