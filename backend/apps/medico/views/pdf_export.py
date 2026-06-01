@@ -156,15 +156,17 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
     etime_str = _fmt_time(case.surgery_end_time)
     time_range = f'{time_str} – {etime_str}' if time_str and etime_str else time_str or '—'
 
+    insurance = case.insurance_company or '—'
+
     surg_data = [
         [Paragraph('Hospital', S['label']), Paragraph('Fecha', S['label']),
          Paragraph('Hora', S['label'])],
         [Paragraph(f'<b>{hospital_name}</b>', S['body']), Paragraph(date_str, S['body']),
          Paragraph(time_range, S['body'])],
         [Paragraph('Cirujano', S['label']), Paragraph('Ayudante', S['label']),
-         Paragraph('', S['label'])],
+         Paragraph('Seguro médico', S['label'])],
         [Paragraph(surgeon_name, S['body']), Paragraph(assistant, S['body']),
-         Paragraph('', S['body'])],
+         Paragraph(insurance, S['body'])],
     ]
     surg_table = Table(surg_data, colWidths=[2.5 * inch, 1.8 * inch, 2.2 * inch])
     surg_table.setStyle(TableStyle([

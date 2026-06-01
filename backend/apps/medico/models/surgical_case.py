@@ -150,6 +150,14 @@ class SurgicalCase(models.Model):
         verbose_name="Notas Adicionales"
     )
     
+    # Seguro médico
+    insurance_company = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name="Seguro médico",
+    )
+
     # Número de factura
     invoice_number = models.CharField(
         max_length=100,

@@ -21,6 +21,31 @@ import { authService } from '@/shared/services/authService';
 const API_URL = import.meta.env.VITE_API_URL || '';
 import type { PatientGender } from '@/types/surgical-case';
 
+const GUATEMALA_INSURERS = [
+  'IGSS (Instituto Guatemalteco de Seguridad Social)',
+  'Seguros G&T',
+  'Seguros Universales',
+  'Aseguradora General',
+  'Seguros Alianza',
+  'Seguros Banrural',
+  'COSAMI',
+  'Pan-American Life Insurance (PALIG)',
+  'Columna Seguros',
+  'Aseguradora Rural',
+  'Seguros Occidente',
+  'Seguros del País',
+  'MAPFRE Guatemala',
+  'Seguros Reforma',
+  'AIG Guatemala',
+  'Chubb Guatemala',
+  'Qualitas Seguros',
+  'Seguros Agromercantil',
+  'BanSeguros (Banco Industrial)',
+  'Grupo SURA Guatemala',
+  'MetLife Guatemala',
+  'Otro',
+];
+
 interface ProcedureData {
   codigo: string;
   cirugia: string;
@@ -84,6 +109,7 @@ const NewCase = () => {
   const [rateMultiplier, setRateMultiplier] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
+  const [insuranceCompany, setInsuranceCompany] = useState('');
 
   // Assistant doctor state
   const [assistantType, setAssistantType] = useState<'colleague' | 'manual' | 'none'>('none');
@@ -497,6 +523,7 @@ const NewCase = () => {
         surgery_end_time: surgeryEndTime || undefined,
         diagnosis: diagnosis || undefined,
         notes: notes || undefined,
+        insurance_company: insuranceCompany || undefined,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
           surgery_name: proc.surgery_name,
@@ -623,15 +650,30 @@ const NewCase = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="diagnosis" className="text-sm font-semibold">Diagnóstico Principal</Label>
-                <Input
-                  id="diagnosis"
-                  value={diagnosis}
-                  onChange={(e) => setDiagnosis(e.target.value)}
-                  placeholder="Ej: Colecistitis crónica calculosa"
-                  className="h-11"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="diagnosis" className="text-sm font-semibold">Diagnóstico Principal</Label>
+                  <Input
+                    id="diagnosis"
+                    value={diagnosis}
+                    onChange={(e) => setDiagnosis(e.target.value)}
+                    placeholder="Ej: Colecistitis crónica calculosa"
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="insurance" className="text-sm font-semibold">Seguro médico</Label>
+                  <Select value={insuranceCompany} onValueChange={setInsuranceCompany}>
+                    <SelectTrigger id="insurance" className="h-11">
+                      <SelectValue placeholder="Selecciona un seguro (opcional)" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" sideOffset={5} className="w-[var(--radix-select-trigger-width)] max-h-[300px]">
+                      {GUATEMALA_INSURERS.map((ins) => (
+                        <SelectItem key={ins} value={ins}>{ins}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>

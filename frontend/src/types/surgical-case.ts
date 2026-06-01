@@ -73,6 +73,8 @@ export interface SurgicalCase {
   
   
   
+  insurance_company?: string | null;
+
   // Campos de estado
   is_operated?: boolean;
   is_billed?: boolean;
@@ -111,9 +113,10 @@ export interface CreateCaseData {
   hospital: number;
   surgery_date: string;
   surgery_time?: string;
-  surgery_end_time?: string;       
+  surgery_end_time?: string;
   diagnosis?: string;
   notes?: string;
+  insurance_company?: string | null;
   procedures: Omit<Procedure, 'id'>[];
   
   

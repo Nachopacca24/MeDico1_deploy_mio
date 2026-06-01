@@ -107,6 +107,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'created_by_name',
             'archived_at',
             'images_purge_at',
+            'insurance_company',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -179,6 +180,7 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
             'assistant_notified_at',
             'notes',
             'diagnosis',
+            'insurance_company',
             'procedures',
             'total_rvu',
             'total_value',
