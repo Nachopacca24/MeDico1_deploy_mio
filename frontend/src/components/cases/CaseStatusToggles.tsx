@@ -1,8 +1,9 @@
 // src/components/cases/CaseStatusToggles.tsx
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, ImagePlus } from 'lucide-react';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import type { SurgicalCase } from '@/types/surgical-case';
 
@@ -11,19 +12,21 @@ interface CaseStatusTogglesProps {
   onUpdate: (updatedCase: SurgicalCase) => void;
   onError: (error: string) => void;
   compact?: boolean;
+  onUploadImages?: () => void; // if provided, fires instead of navigating
 }
 
-export function CaseStatusToggles({ 
-  surgicalCase, 
-  onUpdate, 
+export function CaseStatusToggles({
+  surgicalCase,
+  onUpdate,
   onError,
-  compact = false 
+  compact = false,
+  onUploadImages,
 }: CaseStatusTogglesProps) {
   const [updating, setUpdating] = useState<'operated' | 'billed' | 'paid' | null>(null);
 
   const isOperated = surgicalCase.is_operated ?? false;
-  const isBilled = surgicalCase.is_billed ?? false;
-  const isPaid = surgicalCase.is_paid ?? false;
+  const isBilled   = surgicalCase.is_billed   ?? false;
+  const isPaid     = surgicalCase.is_paid      ?? false;
 
   const handleToggle = async (
     type: 'operated' | 'billed' | 'paid',
@@ -32,7 +35,7 @@ export function CaseStatusToggles({
     setUpdating(type);
     try {
       let updated: SurgicalCase;
-      
+
       switch (type) {
         case 'operated':
           updated = await surgicalCaseService.toggleOperated(surgicalCase.id, !currentValue);
@@ -54,7 +57,7 @@ export function CaseStatusToggles({
           updated = await surgicalCaseService.togglePaid(surgicalCase.id, !currentValue);
           break;
       }
-      
+
       onUpdate(updated);
     } catch (error: any) {
       onError(error.message || `Error al actualizar ${type}`);
@@ -64,10 +67,11 @@ export function CaseStatusToggles({
   };
 
   const buttonSize = compact ? 'sm' : 'default';
-  const iconSize = compact ? 'w-3 h-3' : 'w-4 h-4';
+  const iconSize   = compact ? 'w-3 h-3' : 'w-4 h-4';
 
   return (
     <div className={`flex ${compact ? 'gap-1' : 'gap-2'} flex-wrap`}>
+
       {/* Operado */}
       <Button
         variant={isOperated ? 'default' : 'outline'}
@@ -75,8 +79,8 @@ export function CaseStatusToggles({
         onClick={() => handleToggle('operated', isOperated)}
         disabled={updating !== null}
         className={
-          isOperated 
-            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+          isOperated
+            ? 'bg-blue-600 hover:bg-blue-700 text-white'
             : 'hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
         }
       >
@@ -85,6 +89,34 @@ export function CaseStatusToggles({
         <span>Operado</span>
       </Button>
 
+      {/* Imágenes post-op — aparece cuando ya está operado */}
+      {isOperated && (
+        onUploadImages ? (
+          <Button
+            variant="outline"
+            size={buttonSize}
+            onClick={onUploadImages}
+            disabled={updating !== null}
+            className="border-amber-400/60 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400"
+          >
+            <ImagePlus className={`${iconSize} mr-1.5`} />
+            <span>Imágenes</span>
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size={buttonSize}
+            asChild
+            className="border-amber-400/60 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400"
+          >
+            <Link to={`/cases/${surgicalCase.id}#images`}>
+              <ImagePlus className={`${iconSize} mr-1.5`} />
+              <span>Imágenes</span>
+            </Link>
+          </Button>
+        )
+      )}
+
       {/* Facturado */}
       <Button
         variant={isBilled ? 'default' : 'outline'}
@@ -92,8 +124,8 @@ export function CaseStatusToggles({
         onClick={() => handleToggle('billed', isBilled)}
         disabled={updating !== null || (!isOperated && !isBilled)}
         className={
-          isBilled 
-            ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+          isBilled
+            ? 'bg-purple-600 hover:bg-purple-700 text-white'
             : 'hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300'
         }
       >
@@ -109,8 +141,8 @@ export function CaseStatusToggles({
         onClick={() => handleToggle('paid', isPaid)}
         disabled={updating !== null || (!isBilled && !isPaid)}
         className={
-          isPaid 
-            ? 'bg-green-600 hover:bg-green-700 text-white' 
+          isPaid
+            ? 'bg-green-600 hover:bg-green-700 text-white'
             : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
         }
       >
@@ -118,6 +150,7 @@ export function CaseStatusToggles({
         {!updating && isPaid && <Check className={`${iconSize} mr-1.5`} />}
         <span>Cobrado</span>
       </Button>
+
     </div>
   );
 }

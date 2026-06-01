@@ -4,6 +4,7 @@ import logging
 
 import cloudinary.uploader
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
@@ -123,6 +124,12 @@ def upload_surgery_image(request, case_id):
     )
 
     logger.info('[IMG] uploaded image=%s to case=%s by user=%s', img.id, case_id, request.user.id)
+
+    # Notify assistant if they exist and have accepted
+    if case.assistant_doctor and case.assistant_accepted is True:
+        case.assistant_notified_at = timezone.now()
+        case.save(update_fields=['assistant_notified_at'])
+        logger.info('[IMG] notified assistant=%s of new image in case=%s', case.assistant_doctor_id, case_id)
 
     return Response({
         'id': img.id,

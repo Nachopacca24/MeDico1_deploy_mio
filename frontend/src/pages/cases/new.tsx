@@ -1020,7 +1020,9 @@ const NewCase = () => {
                 <p className={`font-semibold ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`}>
                   Imágenes pre-operatorias
                 </p>
-                <p className="text-xs text-muted-foreground">Radiografías, estudios, fotos del paciente</p>
+                <p className="text-xs text-muted-foreground">
+                  Radiografías, estudios, fotos del paciente · <span className="text-amber-400/80">máximo 5 imágenes en total para todo el proceso</span>
+                </p>
               </div>
               {isPremium && pendingImages.length < 5 && (
                 <label className="ml-auto cursor-pointer">

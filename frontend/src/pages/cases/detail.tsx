@@ -1,5 +1,5 @@
 //src/pages/cases/detail.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -54,6 +54,8 @@ const CaseDetailPage = () => {
   const [imagesLoading, setImagesLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
+  const imagesSectionRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -143,6 +145,16 @@ const CaseDetailPage = () => {
   useEffect(() => {
     if (id) fetchCase();
   }, [id]);
+
+  // Scroll to images section if #images hash is present
+  useEffect(() => {
+    if (window.location.hash === '#images' && imagesSectionRef.current) {
+      setTimeout(() => {
+        imagesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (isPremium && isOwner) imageFileInputRef.current?.click();
+      }, 600);
+    }
+  }, [surgicalCase]);
 
   const fetchCase = async () => {
     try {
@@ -610,7 +622,16 @@ const CaseDetailPage = () => {
         </div>
 
         {/* ── Images section ─────────────────────────────────────────── */}
-        <div className={`rounded-xl border-2 border-dashed p-6 transition-colors ${isPremium ? 'border-amber-400/60 bg-amber-400/5' : 'border-border bg-muted/20'}`}>
+        {/* Hidden file input triggered by the status toggle button */}
+        <input
+          ref={imageFileInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
+          className="hidden"
+          onChange={handleImageUpload}
+          disabled={uploadingImage}
+        />
+        <div ref={imagesSectionRef} className={`rounded-xl border-2 border-dashed p-6 transition-colors ${isPremium ? 'border-amber-400/60 bg-amber-400/5' : 'border-border bg-muted/20'}`}>
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
             <Images className={`w-5 h-5 flex-shrink-0 ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`} />
