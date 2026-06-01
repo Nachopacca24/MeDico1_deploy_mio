@@ -153,6 +153,7 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
 
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
+    insurance_company_name = serializers.CharField(source='insurance_company.name', read_only=True, allow_null=True)
 
     class Meta:
         model = SurgicalCase
