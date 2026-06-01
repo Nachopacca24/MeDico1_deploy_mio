@@ -183,6 +183,7 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
             'notes',
             'diagnosis',
             'insurance_company',
+            'insurance_company_name',
             'procedures',
             'total_rvu',
             'total_value',
@@ -222,6 +223,7 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer para crear/actualizar casos con procedimientos anidados"""
 
     procedures = CaseProcedureSerializer(many=True, required=False)
+    insurance_company_name = serializers.CharField(source='insurance_company.name', read_only=True, allow_null=True)
 
     is_operated = serializers.BooleanField(default=False, required=False)
     is_billed = serializers.BooleanField(default=False, required=False)
@@ -268,6 +270,8 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
             'status',
             'notes',
             'diagnosis',
+            'insurance_company',
+            'insurance_company_name',
             'is_operated',
             'is_billed',
             'is_paid',

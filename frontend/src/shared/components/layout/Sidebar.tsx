@@ -10,6 +10,7 @@ import {
   LogOut,
   CalendarIcon,
   BarChart2,
+  ShieldCheck,
 } from "lucide-react";
 import { ForYouAds } from "@/shared/components/ads/ForYouAds";
 
@@ -72,6 +73,11 @@ const workItems = [
     title: "Hospitales",
     url: "/hospitals",
     icon: Building2,
+  },
+  {
+    title: "Seguros",
+    url: "/insurances",
+    icon: ShieldCheck,
   },
   {
     title: "Colegas",

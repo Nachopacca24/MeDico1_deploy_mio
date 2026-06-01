@@ -649,7 +649,12 @@ const NewCase = () => {
                     </SelectTrigger>
                     <SelectContent position="popper" sideOffset={5} className="w-[var(--radix-select-trigger-width)] max-h-[300px]">
                       {insurances.map((ins) => (
-                        <SelectItem key={ins.id} value={ins.id.toString()}>{ins.name}</SelectItem>
+                        <SelectItem key={ins.id} value={ins.id.toString()}>
+                          <div className="flex items-center gap-2">
+                            {ins.is_favorite && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
+                            <span>{ins.name}</span>
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

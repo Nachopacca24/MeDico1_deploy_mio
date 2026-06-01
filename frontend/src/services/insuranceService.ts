@@ -5,6 +5,7 @@ const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}
 export interface InsuranceCompany {
   id: number;
   name: string;
+  is_favorite?: boolean;
 }
 
 class InsuranceService {
@@ -20,6 +21,21 @@ class InsuranceService {
       console.error('Error fetching insurances:', error);
       throw error;
     }
+  }
+
+  async favoriteInsurance(id: number): Promise<void> {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/${id}/favorite/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) throw new Error('Error al agregar a favoritos');
+  }
+
+  async unfavoriteInsurance(id: number): Promise<void> {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/${id}/unfavorite/`, {
+      method: 'DELETE',
+    });
+    if (!response.ok && response.status !== 404) throw new Error('Error al quitar de favoritos');
   }
 }
 

@@ -32,6 +32,7 @@ import CaseDetail from "@/pages/cases/detail";
 import EditCase from "@/pages/cases/edit";
 import Operations from "@/pages/operations";
 import HospitalsPage from "@/pages/hospitals";
+import InsurancesPage from "@/pages/insurances";
 import Favorites from "@/pages/favorites";
 import NovedadesPage from "@/pages/novedades";
 import SettingsPage from "@/pages/settings";
@@ -80,6 +81,7 @@ export const AppRouter = () => {
         <Route path='/cases/:id/edit' element={<EditCase />} />
         <Route path='/operations' element={<Operations />} />
         <Route path='/hospitals' element={<HospitalsPage />} />
+        <Route path='/insurances' element={<InsurancesPage />} />
         <Route path='/favorites' element={<Favorites />} />
         <Route path='/colleagues' element={<ColleaguesPage />} />
         <Route path='/novedades' element={<NovedadesPage />} />

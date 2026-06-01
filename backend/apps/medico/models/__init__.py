@@ -243,6 +243,36 @@ class FavoriteHospital(models.Model):
         return f"{self.user.username} - {self.hospital.name}"
 
 
+class FavoriteInsurance(models.Model):
+    """Aseguradoras favoritas de usuarios"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='favorite_insurances',
+        verbose_name="Usuario"
+    )
+    insurance = models.ForeignKey(
+        InsuranceCompany,
+        on_delete=models.CASCADE,
+        related_name='favorited_by',
+        verbose_name="Aseguradora"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+
+    class Meta:
+        verbose_name = 'Aseguradora Favorita'
+        verbose_name_plural = 'Aseguradoras Favoritas'
+        unique_together = ['user', 'insurance']
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['insurance']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.insurance.name}"
+
+
 class CalculationHistory(models.Model):
     """Historial de cálculos realizados por usuarios"""
     user = models.ForeignKey(

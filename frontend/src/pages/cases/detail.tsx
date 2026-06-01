@@ -28,6 +28,7 @@ import {
   X,
   Images,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { authService } from "@/shared/services/authService";
@@ -408,6 +409,16 @@ const CaseDetailPage = () => {
                     </div>
                     <div className="font-medium">{surgicalCase.hospital_name}</div>
                   </div>
+
+                  {surgicalCase.insurance_company_name && (
+                    <div className="col-span-2">
+                      <div className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                        <ShieldCheck className="w-4 h-4" />
+                        Seguro médico
+                      </div>
+                      <div className="font-medium">{surgicalCase.insurance_company_name}</div>
+                    </div>
+                  )}
 
                   {/* Médico Ayudante */}
                   {surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== "Sin ayudante" && (
