@@ -590,9 +590,9 @@ const EditCase = () => {
       // ✅ CRÍTICO: Llamar a updateCase (NO createCase)
       await surgicalCaseService.updateCase(parseInt(id!), caseData);
 
-      // Upload new images if any
+      // Upload new images in parallel
       if (isPremium && pendingImages.length > 0) {
-        for (const file of pendingImages) {
+        await Promise.all(pendingImages.map(async file => {
           try {
             const formData = new FormData();
             formData.append('image', file);
@@ -603,7 +603,7 @@ const EditCase = () => {
           } catch (imgError) {
             console.warn('Error uploading image:', imgError);
           }
-        }
+        }));
       }
 
       toast.success(

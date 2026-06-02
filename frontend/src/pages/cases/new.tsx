@@ -548,9 +548,9 @@ const NewCase = () => {
 
       const newCase = await surgicalCaseService.createCase(caseData);
 
-      // Upload pending images if any (premium only)
+      // Upload pending images in parallel (premium only)
       if (isPremium && pendingImages.length > 0) {
-        for (const file of pendingImages) {
+        await Promise.all(pendingImages.map(async file => {
           try {
             const formData = new FormData();
             formData.append('image', file);
@@ -559,7 +559,7 @@ const NewCase = () => {
               { method: 'POST', body: formData }
             );
           } catch { /* silent — case was created, images are optional */ }
-        }
+        }));
       }
 
       toast.success(
