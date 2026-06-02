@@ -1082,8 +1082,8 @@ const NewCase = () => {
                   <div key={idx} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square">
                     <img src={src} alt="" className="w-full h-full object-cover" />
                     <button type="button" onClick={() => removePendingImage(idx)}
-                      className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full p-1">
-                      <X className="w-3 h-3" />
+                      className="absolute top-1.5 right-1.5 bg-black/70 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors">
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 ))}

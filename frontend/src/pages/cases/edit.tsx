@@ -1,5 +1,6 @@
 //src/pages/cases/edit.tsx
 import { useState, useEffect, useMemo } from 'react';
+const API_URL = import.meta.env.VITE_API_URL || '';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { BetweenContentAd } from '@/shared/components/ads/BetweenContentAd';
@@ -10,13 +11,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useToast } from '@/shared/hooks/useToast';
+import { authService } from '@/shared/services/authService';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { colleaguesService } from '@/services/colleaguesService';
 import { loadCSV } from '@/shared/utils/csvLoader';
 import { favoritesService } from '@/services/favoritesService';
-import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users, ArrowLeft, AlertCircle, ImagePlus, Images } from 'lucide-react';
+import { useAuth } from '@/shared/contexts/AuthContext';
 import type { PatientGender } from '@/types/surgical-case';
 
 
@@ -48,6 +51,29 @@ const EditCase = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isPremium = user?.plan === 'premium' || user?.is_permanent_premium;
+
+  const [pendingImages, setPendingImages] = useState<File[]>([]);
+  const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = 5 - pendingImages.length;
+    const toAdd = files.slice(0, remaining);
+    setPendingImages(prev => [...prev, ...toAdd]);
+    toAdd.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = ev => setPendingPreviews(prev => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(f);
+    });
+    e.target.value = '';
+  };
+
+  const removePendingImage = (idx: number) => {
+    setPendingImages(prev => prev.filter((_, i) => i !== idx));
+    setPendingPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -544,6 +570,22 @@ const EditCase = () => {
 
       // ✅ CRÍTICO: Llamar a updateCase (NO createCase)
       await surgicalCaseService.updateCase(parseInt(id!), caseData);
+
+      // Upload new images if any
+      if (isPremium && pendingImages.length > 0) {
+        for (const file of pendingImages) {
+          try {
+            const formData = new FormData();
+            formData.append('image', file);
+            await authService.authenticatedFetch(
+              `${API_URL}/api/v1/medico/cases/${id}/images/upload/`,
+              { method: 'POST', body: formData }
+            );
+          } catch (imgError) {
+            console.warn('Error uploading image:', imgError);
+          }
+        }
+      }
 
       toast.success(
         '¡Caso actualizado exitosamente!',
@@ -1066,6 +1108,64 @@ const EditCase = () => {
               />
               </CardContent>
               </Card>
+
+              {/* Images */}
+              <div className={`rounded-xl border-2 border-dashed p-6 transition-colors ${isPremium ? 'border-amber-400/60 bg-amber-400/5' : 'border-border bg-muted/20'}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <Images className={`w-5 h-5 ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`} />
+                  <div>
+                    <p className={`font-semibold ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                      Agregar imágenes
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Radiografías, estudios, fotos · <span className="text-amber-400/80">máximo 5 en total por cirugía</span>
+                    </p>
+                  </div>
+                  {isPremium && pendingImages.length < 5 && (
+                    <label className="ml-auto cursor-pointer">
+                      <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-400/50 text-amber-400 hover:bg-amber-400/10 text-sm font-medium transition-colors">
+                        <ImagePlus className="w-4 h-4" />
+                        Agregar ({pendingImages.length}/5)
+                      </div>
+                    </label>
+                  )}
+                </div>
+
+                {!isPremium ? (
+                  <div className="flex flex-col items-center justify-center py-6 gap-2">
+                    <ImagePlus className="w-10 h-10 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground text-center">
+                      La carga de imágenes es exclusiva del <span className="text-amber-400 font-semibold">Plan Premium</span>
+                    </p>
+                  </div>
+                ) : pendingPreviews.length === 0 ? (
+                  <label className="flex flex-col items-center justify-center py-8 cursor-pointer rounded-lg border border-dashed border-amber-400/30 hover:border-amber-400/60 hover:bg-amber-400/5 transition-colors">
+                    <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
+                    <ImagePlus className="w-10 h-10 text-amber-400/50 mb-2" />
+                    <p className="text-sm text-muted-foreground">Hacé clic para agregar imágenes</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG o WEBP · Máx. 10 MB cada una</p>
+                  </label>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {pendingPreviews.map((src, idx) => (
+                      <div key={idx} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square">
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                        <button type="button" onClick={() => removePendingImage(idx)}
+                          className="absolute top-1.5 right-1.5 bg-black/70 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    {pendingImages.length < 5 && (
+                      <label className="flex items-center justify-center rounded-lg border-2 border-dashed border-amber-400/30 hover:border-amber-400/60 aspect-square cursor-pointer transition-colors">
+                        <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
+                        <ImagePlus className="w-6 h-6 text-amber-400/50" />
+                      </label>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Submit Buttons */}
               <div className="flex gap-4 justify-end pt-4">
