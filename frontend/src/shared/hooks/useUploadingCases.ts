@@ -5,7 +5,8 @@ export function useIsUploading(caseId: number): boolean {
   const [uploading, setUploading] = useState(() => uploadStore.has(caseId));
   useEffect(() => {
     setUploading(uploadStore.has(caseId));
-    return uploadStore.subscribe(() => setUploading(uploadStore.has(caseId)));
+    const unsub = uploadStore.subscribe(() => setUploading(uploadStore.has(caseId)));
+    return () => { unsub(); };
   }, [caseId]);
   return uploading;
 }
