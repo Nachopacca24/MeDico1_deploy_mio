@@ -405,27 +405,26 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Error al crear el caso: {str(e)}")
 
         if procedures_data:
-            for index, proc_data in enumerate(procedures_data):
-                rvu = Decimal(str(proc_data.get('rvu', 0)))
-                factor = Decimal(str(proc_data.get('hospital_factor', hospital_factor)))
-                if 'calculated_value' not in proc_data or not proc_data['calculated_value']:
-                    calculated_value = rvu * factor
-                else:
-                    calculated_value = Decimal(str(proc_data['calculated_value']))
-                CaseProcedure.objects.create(
+            CaseProcedure.objects.bulk_create([
+                CaseProcedure(
                     case=case,
                     surgery_code=proc_data['surgery_code'],
                     surgery_name=proc_data['surgery_name'],
                     specialty=proc_data.get('specialty', ''),
                     grupo=proc_data.get('grupo', ''),
-                    rvu=rvu,
-                    hospital_factor=factor,
-                    calculated_value=calculated_value,
+                    rvu=Decimal(str(proc_data.get('rvu', 0))),
+                    hospital_factor=Decimal(str(proc_data.get('hospital_factor', hospital_factor))),
+                    calculated_value=(
+                        Decimal(str(proc_data['calculated_value']))
+                        if proc_data.get('calculated_value')
+                        else Decimal(str(proc_data.get('rvu', 0))) * Decimal(str(proc_data.get('hospital_factor', hospital_factor)))
+                    ),
                     notes=proc_data.get('notes', ''),
-                    order=proc_data.get('order', index)
+                    order=proc_data.get('order', index),
                 )
+                for index, proc_data in enumerate(procedures_data)
+            ])
 
-        case.refresh_from_db()
         return case
 
     def update(self, instance, validated_data):
@@ -445,14 +444,11 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
 
         if procedures_data is not None:
             instance.procedures.all().delete()
-
-            for idx, proc_data in enumerate(procedures_data):
-                proc_data['order'] = idx
-
-                CaseProcedure.objects.create(
-                    case=instance,
-                    **proc_data
-                )
+            if procedures_data:
+                CaseProcedure.objects.bulk_create([
+                    CaseProcedure(case=instance, order=idx, **{k: v for k, v in proc_data.items() if k != 'order'})
+                    for idx, proc_data in enumerate(procedures_data)
+                ])
 
         return instance
 

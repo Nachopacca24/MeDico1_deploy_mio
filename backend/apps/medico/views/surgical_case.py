@@ -173,9 +173,9 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             case = serializer.save(created_by=request.user)
 
-            case = SurgicalCase.objects.prefetch_related('procedures').select_related(
-                'hospital', 'created_by', 'assistant_doctor'
-            ).get(pk=case.pk)
+            case = SurgicalCase.objects.select_related(
+                'hospital', 'created_by', 'assistant_doctor', 'insurance_company'
+            ).prefetch_related('procedures').get(pk=case.pk)
 
             response_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
@@ -205,7 +205,10 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         case = serializer.save()
 
-        # Retornar con serializer detallado
+        case = SurgicalCase.objects.select_related(
+            'hospital', 'created_by', 'assistant_doctor', 'insurance_company'
+        ).prefetch_related('procedures').get(pk=case.pk)
+
         detail_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
         return Response(detail_serializer.data)
 
