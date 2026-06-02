@@ -18,6 +18,7 @@ import { favoritesService } from '@/services/favoritesService';
 import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users, ImagePlus, Images } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { authService } from '@/shared/services/authService';
+import { uploadStore } from '@/shared/stores/uploadStore';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 import type { PatientGender } from '@/types/surgical-case';
@@ -591,6 +592,7 @@ const NewCase = () => {
       if (isPremium && pendingImages.length > 0) {
         toast.success('¡Caso creado!', `Subiendo ${pendingImages.length} imagen${pendingImages.length > 1 ? 'es' : ''} en segundo plano...`);
         navigate('/cases');
+        uploadStore.add(newCase.id);
         Promise.all(pendingImages.map(async file => {
           try {
             const formData = new FormData();
@@ -600,7 +602,7 @@ const NewCase = () => {
               { method: 'POST', body: formData }
             );
           } catch { /* silent */ }
-        }));
+        })).finally(() => uploadStore.remove(newCase.id));
       } else {
         toast.success('¡Caso creado exitosamente!', `El caso de ${patientName} ha sido registrado correctamente`);
         navigate('/cases');

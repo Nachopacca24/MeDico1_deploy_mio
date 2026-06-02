@@ -21,6 +21,18 @@ import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
 import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus } from 'lucide-react';
 import { authService } from "@/shared/services/authService";
+import { useIsUploading } from "@/shared/hooks/useUploadingCases";
+
+function UploadingBadge({ caseId }: { caseId: number }) {
+  const uploading = useIsUploading(caseId);
+  if (!uploading) return null;
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-amber-400 font-medium">
+      <Loader2 className="w-3 h-3 animate-spin" />
+      Subiendo imágenes...
+    </span>
+  );
+}
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
@@ -878,8 +890,11 @@ const CasesPage = () => {
                   >
                       <CardHeader>
                         <div className="flex items-center justify-between mb-2">
-                          <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
-                          <div className="flex items-center gap-2">
+                          <div className="min-w-0">
+                            <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
+                            <UploadingBadge caseId={surgicalCase.id} />
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
                             {selectMode && isOwner && (
                               selectedIds.has(surgicalCase.id)
                                 ? <CheckSquare className="w-5 h-5 text-amber-400 flex-shrink-0" />
