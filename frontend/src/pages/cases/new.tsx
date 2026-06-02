@@ -22,6 +22,24 @@ import { authService } from '@/shared/services/authService';
 const API_URL = import.meta.env.VITE_API_URL || '';
 import type { PatientGender } from '@/types/surgical-case';
 
+const FOLDER_STRUCTURE: Record<string, Record<string, string>> = {
+  "Cardiovascular": { "Cardiovascular": "Cardiovascular/Cardiovascular.csv", "Corazón": "Cardiovascular/Corazón.csv", "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv", "Tórax": "Cardiovascular/torax.csv" },
+  "Dermatología": { "Dermatología": "Dermatología/Dermatología.csv" },
+  "Digestivo": { "Digestivo": "Digestivo/Digestivo.csv", "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv", "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv", "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv" },
+  "Endocrino": { "Endocrino": "Endocrino/Endocrino.csv" },
+  "Ginecología": { "Ginecología": "Ginecología/Ginecología.csv" },
+  "Mama": { "Mama": "Mama/Mama.csv" },
+  "Maxilofacial": { "Maxilofacial": "Maxilofacial/Maxilofacial.csv" },
+  "Neurocirugía": { "Neurocirugía": "Neurocirugía/Neurocirugía.csv", "Columna": "Neurocirugía/Columna.csv", "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv" },
+  "Obstetricia": { "Obstetricia": "Obstetricia/Obstetricia.csv" },
+  "Oftalmología": { "Oftalmología": "Oftalmología/Oftalmología.csv" },
+  "Ortopedia": { "Ortopedia": "Ortopedia/Ortopedia.csv", "Cadera": "Ortopedia/Cadera.csv", "Hombro": "Ortopedia/Hombro.csv", "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv", "Pie": "Ortopedia/Pie.csv", "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv", "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv", "Artroscopia": "Ortopedia/Artroscopia.csv" },
+  "Otorrinolaringología": { "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv", "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv", "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv", "Tórax": "Otorrino/torax.csv" },
+  "Plástica": { "Plástica": "Plastica/Plastica.csv" },
+  "Procesos variados": { "Cirugía General": "Procesos_variados/Cirugía_General.csv", "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv", "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv", "Uñas y piel": "Procesos_variados/Uñas___piel.csv" },
+  "Urología": { "Urología": "Urología/Urología.csv" },
+};
+
 
 interface ProcedureData {
   codigo: string;
@@ -127,7 +145,7 @@ const NewCase = () => {
       .finally(() => setLoadingColleagues(false));
 
     favoritesService.getFavorites()
-      .then(favoritesData => {
+      .then(async favoritesData => {
         const favProcs: ProcedureData[] = favoritesData.map(fav => ({
           codigo: fav.surgery_code,
           cirugia: fav.surgery_name || fav.surgery_code,
@@ -137,8 +155,29 @@ const NewCase = () => {
           rvu: 0,
         }));
         setFavoriteProcedures(favProcs);
+
+        // Pre-load RVUs in background
+        const updated = [...favProcs];
+        for (let i = 0; i < updated.length; i++) {
+          const proc = updated[i];
+          try {
+            const subs = FOLDER_STRUCTURE[proc.especialidad];
+            const paths = subs ? Object.values(subs) : Object.values(FOLDER_STRUCTURE).flatMap(s => Object.values(s));
+            for (const path of paths) {
+              try {
+                const rows = await loadCSV(path);
+                const found = rows.find((r: any) => String(r.codigo || '').trim() === proc.codigo);
+                if (found && parseFloat(found.rvu) > 0) {
+                  updated[i] = { ...proc, rvu: parseFloat(found.rvu) || 0 };
+                  setFavoriteProcedures([...updated]);
+                  break;
+                }
+              } catch {}
+            }
+          } catch {}
+        }
       })
-      .catch(() => {}); // no crítico
+      .catch(() => {});
   }, []);
 
   // Filtrado de procedimientos basado en búsqueda
@@ -548,9 +587,11 @@ const NewCase = () => {
 
       const newCase = await surgicalCaseService.createCase(caseData);
 
-      // Upload pending images in parallel (premium only)
+      // Navigate immediately — images upload in the background
       if (isPremium && pendingImages.length > 0) {
-        await Promise.all(pendingImages.map(async file => {
+        toast.success('¡Caso creado!', `Subiendo ${pendingImages.length} imagen${pendingImages.length > 1 ? 'es' : ''} en segundo plano...`);
+        navigate('/cases');
+        Promise.all(pendingImages.map(async file => {
           try {
             const formData = new FormData();
             formData.append('image', file);
@@ -558,16 +599,12 @@ const NewCase = () => {
               `${API_URL}/api/v1/medico/cases/${newCase.id}/images/upload/`,
               { method: 'POST', body: formData }
             );
-          } catch { /* silent — case was created, images are optional */ }
+          } catch { /* silent */ }
         }));
+      } else {
+        toast.success('¡Caso creado exitosamente!', `El caso de ${patientName} ha sido registrado correctamente`);
+        navigate('/cases');
       }
-
-      toast.success(
-        '¡Caso creado exitosamente!',
-        `El caso de ${patientName} ha sido registrado correctamente`
-      );
-
-      navigate('/cases');
     } catch (error: any) {
       const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';
       toast.error('Error al crear caso', msg);

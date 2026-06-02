@@ -194,32 +194,51 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
         story.append(Spacer(1, 6))
 
     # ── Procedures table ──────────────────────────────────────────────────────
-    procedures = case.procedures.all().order_by('order')
-    if procedures.exists():
+    MULTI_MULTIPLIERS = [1.0, 0.5, 0.25, 0.10]
+
+    procedures = list(case.procedures.all().order_by('order'))
+    if procedures:
         story.append(Paragraph('PROCEDIMIENTOS', S['section']))
+
+        procs_count = len(procedures)
+        use_multi = procs_count > 1
+
+        # Sort by value desc to assign multiple-rule ranks
+        ranked = sorted(enumerate(procedures), key=lambda x: float(x[1].rvu or 0), reverse=True)
+        rank_map = {orig_i: rank for rank, (orig_i, _) in enumerate(ranked)}
+        pct_labels = ['100%', '50%', '25%', '10%']
 
         if include_hospital_factor:
             headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU',
                        f'Factor\n{case.hospital.name[:15] if case.hospital else "Hospital"}',
-                       'Valor']
-            col_w = [0.3*inch, 0.8*inch, 2.1*inch, 1.0*inch, 0.5*inch, 0.7*inch, 0.8*inch]
+                       'Valor base', 'Regla múlt.', 'Honorario']
+            col_w = [0.25*inch, 0.7*inch, 1.6*inch, 0.8*inch, 0.45*inch, 0.6*inch, 0.7*inch, 0.6*inch, 0.7*inch]
         else:
-            headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU', 'Valor']
-            col_w = [0.3*inch, 0.9*inch, 2.4*inch, 1.2*inch, 0.6*inch, 0.85*inch]
+            headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU', 'Valor base', 'Regla múlt.', 'Honorario']
+            col_w = [0.25*inch, 0.75*inch, 1.9*inch, 0.95*inch, 0.5*inch, 0.75*inch, 0.65*inch, 0.75*inch]
 
         proc_data = [[Paragraph(h, S['label']) for h in headers]]
 
-        total_rvu   = 0
-        total_value = 0
+        total_rvu        = 0
+        total_value      = 0
+        total_multi      = 0
 
-        for i, proc in enumerate(procedures, 1):
-            rvu   = float(proc.rvu or 0)
-            val   = float(proc.calculated_value or 0)
+        for i, proc in enumerate(procedures):
+            rvu     = float(proc.rvu or 0)
+            val     = float(proc.calculated_value or 0)
+            rank    = rank_map.get(i, i)
+            mult    = MULTI_MULTIPLIERS[min(rank, len(MULTI_MULTIPLIERS) - 1)]
+            multi_v = val * mult
+            pct     = pct_labels[min(rank, len(pct_labels) - 1)]
+
             total_rvu   += rvu
             total_value += val
+            total_multi += multi_v
 
+            multi_style = ParagraphStyle('mp', fontSize=8, fontName='Helvetica-Bold',
+                                         textColor=C_AMBER if mult == 1.0 else C_MUTED)
             row = [
-                Paragraph(str(i), S['body']),
+                Paragraph(str(i + 1), S['body']),
                 Paragraph(proc.surgery_code or '—', S['body']),
                 Paragraph(proc.surgery_name or '—', S['body']),
                 Paragraph(proc.specialty or '—', S['body']),
@@ -228,27 +247,27 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
             if include_hospital_factor:
                 row.append(Paragraph(f'{float(proc.hospital_factor or 0):.2f}', S['body']))
             row.append(Paragraph(f'Q {val:,.2f}', S['body']))
+            row.append(Paragraph(pct, multi_style))
+            row.append(Paragraph(f'Q {multi_v:,.2f}',
+                                 ParagraphStyle('mv', fontSize=8, fontName='Helvetica-Bold',
+                                                textColor=C_AMBER if mult == 1.0 else C_DARK)))
             proc_data.append(row)
 
         # Totals row
+        tb = ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)
+        ta = ParagraphStyle('ta', fontSize=9, fontName='Helvetica-Bold', textColor=C_AMBER)
+        empty = Paragraph('', S['body'])
+        base_cols = [empty, empty,
+                     Paragraph('TOTAL', tb), empty,
+                     Paragraph(f'{total_rvu:.2f}', tb)]
         if include_hospital_factor:
-            totals_row = [
-                Paragraph('', S['body']), Paragraph('', S['body']),
-                Paragraph('TOTAL', ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)),
-                Paragraph('', S['body']),
-                Paragraph(f'{total_rvu:.2f}', ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)),
-                Paragraph('', S['body']),
-                Paragraph(f'Q {total_value:,.2f}', ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_AMBER)),
-            ]
-        else:
-            totals_row = [
-                Paragraph('', S['body']), Paragraph('', S['body']),
-                Paragraph('TOTAL', ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)),
-                Paragraph('', S['body']),
-                Paragraph(f'{total_rvu:.2f}', ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)),
-                Paragraph(f'Q {total_value:,.2f}', ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_AMBER)),
-            ]
-        proc_data.append(totals_row)
+            base_cols.append(empty)
+        base_cols += [
+            Paragraph(f'Q {total_value:,.2f}', tb),
+            empty,
+            Paragraph(f'Q {total_multi:,.2f}', ta),
+        ]
+        proc_data.append(base_cols)
 
         proc_table = Table(proc_data, colWidths=col_w, repeatRows=1)
         last = len(proc_data) - 1
@@ -258,20 +277,30 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 8),
             ('ROWBACKGROUNDS', (0, 1), (-1, last - 1), [C_WHITE, C_LIGHT]),
-            ('BACKGROUND', (0, last), (-1, last), colors.HexColor('#fef3c7')),  # amber-100
+            ('BACKGROUND', (0, last), (-1, last), colors.HexColor('#fef3c7')),
             ('GRID', (0, 0), (-1, -1), 0.4, C_BORDER),
-            ('PADDING', (0, 0), (-1, -1), 5),
+            ('PADDING', (0, 0), (-1, -1), 4),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('ALIGN', (4, 0), (-1, -1), 'RIGHT'),
         ]))
         story.append(proc_table)
         story.append(Spacer(1, 4))
-        story.append(Paragraph(
-            f'RVU Total: <b>{total_rvu:.2f}</b> &nbsp;&nbsp;|&nbsp;&nbsp; '
-            f'Honorario Total: <b>Q {total_value:,.2f}</b>',
-            ParagraphStyle('sum', fontSize=10, textColor=C_AMBER,
-                           fontName='Helvetica-Bold', alignment=TA_RIGHT)
-        ))
+
+        if use_multi:
+            story.append(Paragraph(
+                f'RVU Total: <b>{total_rvu:.2f}</b> &nbsp;|&nbsp; '
+                f'Valor base: <b>Q {total_value:,.2f}</b> &nbsp;|&nbsp; '
+                f'<font color="#f59e0b">Honorario con regla múltiple: <b>Q {total_multi:,.2f}</b></font>',
+                ParagraphStyle('sum', fontSize=9, textColor=C_AMBER,
+                               fontName='Helvetica-Bold', alignment=TA_RIGHT)
+            ))
+        else:
+            story.append(Paragraph(
+                f'RVU Total: <b>{total_rvu:.2f}</b> &nbsp;|&nbsp; '
+                f'Honorario Total: <b>Q {total_value:,.2f}</b>',
+                ParagraphStyle('sum', fontSize=10, textColor=C_AMBER,
+                               fontName='Helvetica-Bold', alignment=TA_RIGHT)
+            ))
 
     # ── Surgery images ────────────────────────────────────────────────────────
     images = list(case.images.all())
