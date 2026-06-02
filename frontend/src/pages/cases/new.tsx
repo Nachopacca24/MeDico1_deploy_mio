@@ -407,11 +407,33 @@ const NewCase = () => {
     }
   };
 
-  const { totalRvu, totalValue } = useMemo(() => {
+  const [multipleRule, setMultipleRule] = useState(false);
+
+  const MULTI_MULTIPLIERS = [1.0, 0.5, 0.25, 0.10];
+  const getMultiplier = (rank: number) => MULTI_MULTIPLIERS[Math.min(rank, MULTI_MULTIPLIERS.length - 1)];
+
+  // Sorted indices by RVU desc (for the multiple rule rank)
+  const sortedByRvu = useMemo(() => {
+    return [...selectedProcedures]
+      .map((p, i) => ({ ...p, originalIndex: i }))
+      .sort((a, b) => b.rvu - a.rvu);
+  }, [selectedProcedures]);
+
+  const rankMap = useMemo(() => {
+    const m: Record<number, number> = {};
+    sortedByRvu.forEach((p, rank) => { m[p.originalIndex] = rank; });
+    return m;
+  }, [sortedByRvu]);
+
+  const { totalRvu, totalValue, adjustedValue } = useMemo(() => {
     const factor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
-    const rvu = selectedProcedures.reduce((sum, proc) => sum + proc.rvu, 0);
-    return { totalRvu: rvu, totalValue: rvu * factor };
-  }, [selectedProcedures, rateMultiplier]);
+    const rvu = selectedProcedures.reduce((sum, p) => sum + p.rvu, 0);
+    const adj = selectedProcedures.reduce((sum, p, i) => {
+      const mult = multipleRule ? getMultiplier(rankMap[i] ?? i) : 1;
+      return sum + p.rvu * mult * factor;
+    }, 0);
+    return { totalRvu: rvu, totalValue: rvu * factor, adjustedValue: adj };
+  }, [selectedProcedures, rateMultiplier, multipleRule, rankMap]);
 
   const handleAddProcedure = (proc: ProcedureData) => {
     const newProcedure: SelectedProcedure = {
@@ -953,12 +975,28 @@ const NewCase = () => {
                 </div>
               </div>
 
+              {selectedProcedures.length > 1 && (
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Regla de procedimientos múltiples</span>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">(1°×100% · 2°×50% · 3°×25% · 4°+×10%)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMultipleRule(v => !v)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${multipleRule ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${multipleRule ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              )}
+
               {selectedProcedures.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>No hay procedimientos agregados aún</p>
                   <p className="text-sm">
-                    {favoriteProcedures.length > 0 
+                    {favoriteProcedures.length > 0
                       ? 'Selecciona de tus favoritos o busca manualmente'
                       : 'Busca y agrega procedimientos arriba'
                     }
@@ -966,13 +1004,32 @@ const NewCase = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {selectedProcedures.map((proc, index) => (
+                  {selectedProcedures.map((proc, index) => {
+                    const rank = rankMap[index] ?? index;
+                    const mult = multipleRule ? getMultiplier(rank) : 1;
+                    const factor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
+                    const adjValue = proc.rvu * mult * factor;
+                    const pctLabels = ['100%', '50%', '25%', '10%'];
+                    const pctLabel = pctLabels[Math.min(rank, pctLabels.length - 1)];
+                    return (
                     <div key={index} className="border rounded-lg p-4 space-y-3">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <div className="font-medium">{proc.surgery_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {proc.surgery_code} • {proc.specialty} • RVU: {proc.rvu}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium">{proc.surgery_name}</span>
+                            {multipleRule && (
+                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${rank === 0 ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                {rank + 1}° · {pctLabel}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-0.5">
+                            {proc.surgery_code} · {proc.specialty} · <span className="font-medium">{proc.rvu} RVU</span>
+                            {multipleRule && factor > 0 && (
+                              <span className="ml-2 text-primary font-semibold">
+                                → Q {adjValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <Button
@@ -1000,7 +1057,8 @@ const NewCase = () => {
                         />
                       </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               )}
 
@@ -1010,13 +1068,27 @@ const NewCase = () => {
                     <span className="text-muted-foreground">RVU Total:</span>
                     <span className="font-medium">{totalRvu.toFixed(2)}</span>
                   </div>
-                  {rateMultiplier && (
+                  {rateMultiplier && !multipleRule && (
                     <div className="flex justify-between">
-                      <span className="font-medium">Total Quetzales (Q):</span>
+                      <span className="font-medium">Total (Q):</span>
                       <span className="text-lg font-semibold text-primary">
                         Q {totalValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
+                  )}
+                  {rateMultiplier && multipleRule && (
+                    <>
+                      <div className="flex justify-between text-sm text-muted-foreground line-through">
+                        <span>Sin regla múltiple:</span>
+                        <span>Q {totalValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded-lg bg-primary/10 border border-primary/20">
+                        <span className="font-semibold text-sm">Con regla múltiple:</span>
+                        <span className="text-lg font-bold text-primary">
+                          Q {adjustedValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
