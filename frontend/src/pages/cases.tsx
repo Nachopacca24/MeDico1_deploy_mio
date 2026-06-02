@@ -336,6 +336,7 @@ const CasesPage = () => {
   const [currentSidebarAdIndex, setCurrentSidebarAdIndex] = useState(0);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
     fetchCases();
     fetchInvitations();
     loadAds();

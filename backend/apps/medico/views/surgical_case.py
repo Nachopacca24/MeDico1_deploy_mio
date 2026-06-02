@@ -124,7 +124,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             )
 
         # Ordenamiento explícito para aprovechar los índices
-        return queryset.order_by('-surgery_date', '-created_at')
+        return queryset.order_by('-created_at', '-surgery_date')
 
     def get_serializer_class(self):
         """Usar diferentes serializers según la acción"""
