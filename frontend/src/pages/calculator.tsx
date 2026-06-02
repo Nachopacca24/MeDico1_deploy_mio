@@ -206,11 +206,31 @@ export default function CalculatorPage() {
     if (full && full.rvu > 0) addProc(full);
   };
 
+  const [multipleRule, setMultipleRule] = useState(true);
+
   const removeProc = (uid: string) => setSelected(prev => prev.filter(p => p.uid !== uid));
 
-  const factorNum = useMemo(() => Math.max(parseFloat(factor) || 1, 0.01), [factor]);
-  const totalRvu  = useMemo(() => selected.reduce((s, p) => s + p.rvu, 0), [selected]);
-  const totalVal  = useMemo(() => totalRvu * factorNum, [totalRvu, factorNum]);
+  const MULTI_MULTIPLIERS = [1.0, 0.5, 0.25, 0.10];
+  const getMultiplier = (rank: number) => MULTI_MULTIPLIERS[Math.min(rank, MULTI_MULTIPLIERS.length - 1)];
+  const PCT_LABELS = ['100%', '50%', '25%', '10%'];
+
+  // Sort selected by RVU desc to assign ranks
+  const rankedSelected = useMemo(() => (
+    [...selected]
+      .map((p, i) => ({ ...p, rank: 0, originalIndex: i }))
+      .sort((a, b) => b.rvu - a.rvu)
+      .map((p, rank) => ({ ...p, rank }))
+      .sort((a, b) => a.originalIndex - b.originalIndex)
+  ), [selected]);
+
+  const factorNum  = useMemo(() => Math.max(parseFloat(factor) || 1, 0.01), [factor]);
+  const totalRvu   = useMemo(() => selected.reduce((s, p) => s + p.rvu, 0), [selected]);
+  const totalVal   = useMemo(() => totalRvu * factorNum, [totalRvu, factorNum]);
+  const adjustedVal = useMemo(() => rankedSelected.reduce((s, p) => {
+    const mult = multipleRule ? getMultiplier(p.rank) : 1;
+    return s + p.rvu * mult * factorNum;
+  }, 0), [rankedSelected, multipleRule, factorNum]);
+
   const selectedHospital = useMemo(() => hospitals.find(h => h.id.toString() === hospitalId), [hospitals, hospitalId]);
 
   return (
@@ -292,13 +312,39 @@ export default function CalculatorPage() {
                   <span className="text-muted-foreground">Factor</span>
                   <span className="font-semibold">× {factorNum.toFixed(2)}</span>
                 </div>
+                {selected.length > 1 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Regla múltiple</span>
+                    <button
+                      onClick={() => setMultipleRule(v => !v)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${multipleRule ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${multipleRule ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+                )}
                 <div className="h-px bg-border" />
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm font-semibold">Honorario</span>
-                  <span className="font-black text-2xl text-primary">
-                    Q {totalVal.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
-                </div>
+                {multipleRule && selected.length > 1 ? (
+                  <>
+                    <div className="flex justify-between text-sm text-muted-foreground line-through">
+                      <span>Sin regla múltiple</span>
+                      <span>Q {totalVal.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-sm font-semibold">Con regla múltiple</span>
+                      <span className="font-black text-2xl text-primary">
+                        Q {adjustedVal.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-sm font-semibold">Honorario</span>
+                    <span className="font-black text-2xl text-primary">
+                      Q {totalVal.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">{selected.length} procedimiento{selected.length !== 1 ? 's' : ''}</p>
               </CardContent>
             </Card>
@@ -395,23 +441,35 @@ export default function CalculatorPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {selected.map(proc => (
+                    {rankedSelected.map(proc => {
+                      const mult = multipleRule ? getMultiplier(proc.rank) : 1;
+                      const adjVal = proc.rvu * mult * factorNum;
+                      const pct = PCT_LABELS[Math.min(proc.rank, PCT_LABELS.length - 1)];
+                      return (
                       <div key={proc.uid} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/40 border">
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{proc.cirugia}</div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium truncate">{proc.cirugia}</span>
+                            {multipleRule && selected.length > 1 && (
+                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${proc.rank === 0 ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                {proc.rank + 1}° · {pct}
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-muted-foreground">{proc.codigo} · {proc.especialidad}</div>
                         </div>
                         <div className="text-right shrink-0">
                           <div className="text-xs font-bold text-primary">{proc.rvu} RVU</div>
                           <div className="text-xs text-muted-foreground">
-                            Q {(proc.rvu * factorNum).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            Q {adjVal.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </div>
                         </div>
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeProc(proc.uid)}>
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
