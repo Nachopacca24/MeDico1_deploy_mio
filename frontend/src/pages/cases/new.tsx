@@ -407,7 +407,7 @@ const NewCase = () => {
     }
   };
 
-  const [multipleRule, setMultipleRule] = useState(false);
+  const [multipleRule, setMultipleRule] = useState(true);
 
   const MULTI_MULTIPLIERS = [1.0, 0.5, 0.25, 0.10];
   const getMultiplier = (rank: number) => MULTI_MULTIPLIERS[Math.min(rank, MULTI_MULTIPLIERS.length - 1)];
@@ -919,9 +919,12 @@ const NewCase = () => {
                                 {proc.codigo} • {proc.especialidad}
                               </div>
                             </div>
-                            {loadingFavoriteRvu === proc.codigo && (
-                              <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-                            )}
+                            <div className="shrink-0 flex flex-col items-end gap-1">
+                              {loadingFavoriteRvu === proc.codigo
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : proc.rvu > 0 && <span className="text-xs font-bold text-primary">{proc.rvu} RVU</span>
+                              }
+                            </div>
                           </div>
                         </button>
                       ))}
