@@ -183,7 +183,7 @@ const VerifyEmailPage = () => {
         {/* Footer */}
         <div className="px-6 pb-6">
           <div className="text-center text-xs text-muted-foreground">
-            MéDico © {new Date().getFullYear()}
+            MeDico App © {new Date().getFullYear()}
           </div>
         </div>
       </Card>

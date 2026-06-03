@@ -88,7 +88,7 @@ export default function CompleteProfile() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center space-x-2 text-primary mb-2">
             <Activity className="h-6 w-6" />
-            <span className="text-2xl font-bold">MéDico</span>
+            <span className="text-2xl font-bold">MeDico App</span>
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight text-center">
             Completa tu perfil

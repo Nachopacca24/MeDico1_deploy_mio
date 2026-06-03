@@ -290,7 +290,7 @@ class CalendarSyncService {
       description += `\nNotas: ${surgicalCase.notes}\n`;
     }
 
-    description += `\n---\nCreado con MeDico`;
+    description += `\n---\nCreado con MeDico App`;
 
     return description;
   }

@@ -35,7 +35,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Stethoscope className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold tracking-tight">MéDico</span>
+            <span className="text-xl font-bold tracking-tight">MeDico App</span>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -151,11 +151,11 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Con MéDico */}
+            {/* Con MeDico App */}
             <div className="bg-gray-900 border border-primary/30 rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Smartphone className="h-5 w-5 text-primary" />
-                <span className="font-bold text-primary">Con MéDico</span>
+                <span className="font-bold text-primary">Con MeDico App</span>
               </div>
               <div className="space-y-3 text-sm">
                 <div className="bg-primary/10 border border-primary/20 rounded-lg px-3 py-3">
@@ -214,7 +214,7 @@ export default function LandingPage() {
               </h2>
               <p className="text-gray-400 text-lg mb-6 leading-relaxed">
                 Cada procedimiento tiene su código, nombre y valor en RVU.
-                Solo configuras tu multiplicador por hospital y MéDico calcula
+                Solo configuras tu multiplicador por hospital y MeDico App calcula
                 el honorario exacto al instante.
               </p>
               <p className="text-gray-400 mb-6">
@@ -276,7 +276,7 @@ export default function LandingPage() {
               {
                 icon: Zap,
                 title: "Registro en 2 minutos",
-                desc: "Sale del quirófano, abre MéDico, registra. Antes de llegar al estacionamiento ya está guardado.",
+                desc: "Sale del quirófano, abre MeDico App, registra. Antes de llegar al estacionamiento ya está guardado.",
                 color: "text-yellow-400",
                 bg: "bg-yellow-400/10",
               },
@@ -342,7 +342,7 @@ export default function LandingPage() {
               Hecha por médicos, para médicos
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              MéDico no es una app genérica de gestión. Fue diseñada entendiendo cómo
+              MeDico App no es una app genérica de gestión. Fue diseñada entendiendo cómo
               funciona realmente la práctica quirúrgica privada en Latinoamérica: la
               Tabla de California, los multiplicadores por hospital, los ayudantes,
               los honorarios. Cada detalle existe porque un médico lo necesitó.
@@ -443,7 +443,7 @@ export default function LandingPage() {
             es un minuto más salvando vidas.
           </h2>
           <p className="text-gray-400 text-xl mb-12 max-w-xl mx-auto">
-            MéDico te devuelve ese tiempo. Diseñada para que el trabajo administrativo
+            MeDico App te devuelve ese tiempo. Diseñada para que el trabajo administrativo
             no compita con la atención médica.
           </p>
           <Link
@@ -464,14 +464,14 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <Stethoscope className="h-4 w-4" />
-            <span>MéDico App — Guatemala</span>
+            <span>MeDico App App — Guatemala</span>
           </div>
           <div className="flex items-center gap-6">
             <Link to="/login" className="hover:text-gray-400 transition-colors">Iniciar sesión</Link>
             <Link to="/signup" className="hover:text-gray-400 transition-colors">Registrarse</Link>
             <a href="mailto:contacto@medicoapp.app" className="hover:text-gray-400 transition-colors">Contacto</a>
           </div>
-          <span>© 2026 MéDico. Todos los derechos reservados.</span>
+          <span>© 2026 MeDico App. Todos los derechos reservados.</span>
         </div>
       </footer>
 

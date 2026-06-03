@@ -69,7 +69,7 @@ export function EmailVerificationBanner() {
       <Mail className='h-4 w-4 text-amber-600' />
       <AlertDescription className='flex items-center justify-between pr-8'>
         <span className='text-sm text-amber-900 dark:text-amber-100'>
-          <strong>Verifica tu email</strong> para acceder a todas las funciones de MéDico.
+          <strong>Verifica tu email</strong> para acceder a todas las funciones de MeDico App.
         </span>
         <div className='flex gap-2 ml-4'>
           <Button

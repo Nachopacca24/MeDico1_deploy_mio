@@ -350,7 +350,7 @@ const Settings = () => {
                         if (user?.plan === 'premium' && user?.ls_renews_at)
                           return `Suscripción activa · Se renueva el ${fmt(user.ls_renews_at)}`;
                         if (user?.plan === 'premium') return 'Suscripción Premium activa';
-                        return 'Estás en el plan gratuito de MeDico';
+                        return 'Estás en el plan gratuito de MeDico App';
                       })()}
                       </CardDescription>
                     </div>
@@ -475,7 +475,7 @@ const Settings = () => {
                         : <span className="text-xs font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2.5 py-0.5 rounded-full">Recomendado</span>
                       }
                     </div>
-                    <h3 className="text-2xl font-bold">MeDico Premium</h3>
+                    <h3 className="text-2xl font-bold">MeDico App Premium</h3>
                     <p className="text-sm text-muted-foreground mt-1">Experiencia completa, sin límites</p>
                     <div className="flex items-end gap-1 mt-4">
                       <span className="text-5xl font-extrabold tracking-tight text-amber-400">$9</span>
@@ -718,7 +718,7 @@ const Settings = () => {
                 <CardHeader>
                   <CardTitle>Documentos Legales</CardTitle>
                   <CardDescription>
-                    Términos de uso y política de privacidad de MéDico App
+                    Términos de uso y política de privacidad de MeDico App
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">

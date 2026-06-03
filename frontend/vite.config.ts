@@ -16,8 +16,8 @@ export default defineConfig(({ mode }) => {
         registerType: "autoUpdate",
         includeAssets: ["favicon.png", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png"],
         manifest: {
-          name: "MéDico App",
-          short_name: "MéDico",
+          name: "MeDico App",
+          short_name: "MeDico App",
           description: "Gestión de casos quirúrgicos para médicos",
           theme_color: "#111827",
           background_color: "#111827",

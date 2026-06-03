@@ -197,7 +197,7 @@ export default function Login() {
 
         <div className='relative z-10 flex items-center space-x-3 text-2xl font-bold'>
           <Activity className="h-8 w-8" />
-          <span>MéDico</span>
+          <span>MeDico App</span>
         </div>
 
         <div className='relative z-10 space-y-4 max-w-lg'>
@@ -211,7 +211,7 @@ export default function Login() {
         </div>
 
         <div className='relative z-10 text-sm text-white/60'>
-          © {new Date().getFullYear()} MéDico Inc. Todos los derechos reservados.
+          © {new Date().getFullYear()} MeDico App Todos los derechos reservados.
         </div>
       </div>
 
@@ -221,7 +221,7 @@ export default function Login() {
           <CardHeader className="space-y-1">
             <div className='flex items-center justify-center space-x-2 text-primary lg:hidden mb-4'>
               <Activity className="h-6 w-6" />
-              <span className='text-2xl font-bold'>MéDico</span>
+              <span className='text-2xl font-bold'>MeDico App</span>
             </div>
             <CardTitle className='text-2xl font-bold tracking-tight'>Bienvenido de nuevo</CardTitle>
             <CardDescription className="text-muted-foreground">Ingresa tus credenciales para acceder a tu cuenta médica</CardDescription>
@@ -314,7 +314,7 @@ export default function Login() {
               </p>
 
               <div className='text-center text-xs text-muted-foreground/70 pt-2 border-t border-slate-100 dark:border-slate-800'>
-                Al usar MéDico aceptas nuestros{" "}
+                Al usar MeDico App aceptas nuestros{" "}
                 <a href='/terms.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
                   Términos de Uso
                 </a>{" "}

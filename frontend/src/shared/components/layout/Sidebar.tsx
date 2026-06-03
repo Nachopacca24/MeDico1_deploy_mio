@@ -147,7 +147,7 @@ export function AppSidebar() {
             <Stethoscope className="h-5 w-5" />
           </div>
           <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-sm font-semibold truncate text-sidebar-foreground">MeDico</span>
+            <span className="text-sm font-semibold truncate text-sidebar-foreground">MeDico App</span>
             <span className="text-xs truncate text-sidebar-foreground/70">Medical Manager</span>
           </div>
         </div>
@@ -277,7 +277,7 @@ export function AppSidebar() {
                   </div>
                   <AlertDialogTitle className="text-xl text-center font-bold">¿Cerrar sesión?</AlertDialogTitle>
                   <AlertDialogDescription className="text-center text-slate-500 text-base">
-                    Estás a punto de salir de MéDico. Tendrás que volver a ingresar tus credenciales para acceder a tus pacientes y casos médicos.
+                    Estás a punto de salir de MeDico App. Tendrás que volver a ingresar tus credenciales para acceder a tus pacientes y casos médicos.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex-col sm:flex-row gap-3 mt-6 sm:space-x-0">
