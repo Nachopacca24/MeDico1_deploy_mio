@@ -21,6 +21,12 @@ import {
   Newspaper,
   Briefcase,
   ArrowRight,
+  Infinity,
+  Sparkles,
+  ImagePlus,
+  Zap,
+  BarChart2,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -60,20 +66,22 @@ export default function LandingPage() {
             Hecha por médicos, para médicos — Guatemala
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none mb-6">
-            Gestiona tus cirugías.
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
+            El tiempo que perdés
+            <br />organizando cirugías
             <br />
-            <span className="text-primary">Recupera tu tiempo.</span>
+            <span className="text-primary">es de tus pacientes.</span>
           </h1>
 
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-4 leading-relaxed">
-            MeDico App es la plataforma de gestión quirúrgica para médicos privados.
-            Registrá tus casos, calculá honorarios con la Tabla de California,
-            exportá PDFs y controlá tu práctica — todo desde el celular.
+            MeDico App nació de una necesidad real: médicos que ya no querían perder
+            horas en Excel, buscar la versión correcta de la Tabla de California
+            ni calcular honorarios a mano. La construyeron con nosotros.
+            Cada función existe porque un médico la pidió.
           </p>
 
-          <p className="text-base text-gray-600 max-w-xl mx-auto mb-10">
-            Sin Excel. Sin papel. Sin versiones desactualizadas de la tabla.
+          <p className="text-base text-gray-500 max-w-xl mx-auto mb-10">
+            Registrá, calculá, exportá y cobrá tus cirugías desde el celular en menos de 2 minutos.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -81,7 +89,7 @@ export default function LandingPage() {
               to="/signup"
               className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
             >
-              Empezar gratis — 14 días Premium
+              14 días de Premium gratis al registrarte. Sin tarjeta de crédito ni compromiso.
               <ChevronRight className="h-5 w-5" />
             </Link>
             <Link
@@ -100,7 +108,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             {[
-              { num: "+1,200", label: "procedimientos quirúrgicos" },
+              { num: "+4,000", label: "procedimientos quirúrgicos" },
               { num: "2 min",  label: "para registrar una cirugía" },
               { num: "100%",   label: "basada en Tabla de California" },
               { num: "0",      label: "Excel necesarios" },
@@ -340,69 +348,100 @@ export default function LandingPage() {
             <p className="text-gray-400 text-lg">Empezá gratis. Subí cuando lo necesités.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Free */}
-            <div className="bg-gray-900 border border-white/10 rounded-2xl p-8">
-              <h3 className="text-xl font-bold mb-1">Free</h3>
-              <p className="text-gray-400 text-sm mb-6">Para conocer la app</p>
-              <div className="text-4xl font-black mb-8">Q0<span className="text-lg text-gray-500 font-normal">/mes</span></div>
-              <div className="space-y-3 mb-8">
-                {[
-                  { ok: true,  text: "Hasta 5 cirugías activas" },
-                  { ok: true,  text: "Hasta 3 colegas / ayudantes" },
-                  { ok: true,  text: "Tabla de California completa (+1,200 procedimientos)" },
-                  { ok: true,  text: "Calculadora de honorarios" },
-                  { ok: true,  text: "Exportación PDF" },
-                  { ok: false, text: "Google Calendar" },
-                  { ok: false, text: "Imágenes quirúrgicas" },
-                  { ok: false, text: "Incluye publicidad por especialidad" },
-                ].map(({ ok, text }) => (
-                  <div key={text} className="flex items-center gap-2 text-sm">
-                    {ok
-                      ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      : <XCircle    className="h-4 w-4 text-gray-700 shrink-0" />}
-                    <span className={ok ? "text-gray-300" : "text-gray-600"}>{text}</span>
-                  </div>
-                ))}
+          <div className="grid md:grid-cols-2 gap-4 items-stretch">
+
+            {/* ── Free ──────────────────────────────────────────── */}
+            <div className="rounded-2xl border border-gray-700 bg-gray-900 flex flex-col overflow-hidden">
+              <div className="p-6 pb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Gratis</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Plan Free</h3>
+                <p className="text-sm text-gray-400 mt-1">Para empezar sin compromisos</p>
+                <div className="flex items-end gap-1 mt-4 mb-2">
+                  <span className="text-5xl font-extrabold tracking-tight text-white">Q0</span>
+                  <span className="text-gray-500 text-sm mb-2">/mes</span>
+                </div>
               </div>
-              <Link to="/signup" className="block text-center border border-white/10 text-gray-300 font-semibold py-3 rounded-xl hover:bg-white/5 transition-colors">
-                Empezar gratis
-              </Link>
+              <div className="px-6 pb-6 flex-1 flex flex-col">
+                <div className="w-full h-px bg-white/10 mb-5" />
+                <div className="space-y-3.5 flex-1">
+                  {[
+                    { icon: <Zap        className="h-4 w-4 text-blue-400"     />, text: '5 cirugías activas' },
+                    { icon: <Heart      className="h-4 w-4 text-rose-400"     />, text: '5 procedimientos en favoritos' },
+                    { icon: <Building2  className="h-4 w-4 text-gray-400"     />, text: '2 hospitales favoritos' },
+                    { icon: <Users      className="h-4 w-4 text-violet-400"   />, text: 'Hasta 3 colegas + sistema completo' },
+                    { icon: <Calendar   className="h-4 w-4 text-emerald-400"  />, text: 'Google Calendar integrado' },
+                    { icon: <Zap        className="h-4 w-4 text-gray-500"     />, text: 'Incluye anuncios', muted: true },
+                    { icon: <ShieldCheck className="h-4 w-4 text-emerald-400" />, text: 'Seguros médicos de Guatemala' },
+                    { icon: <Calculator  className="h-4 w-4 text-cyan-400"   />, text: 'Calculadora de honorarios' },
+                    { icon: <XCircle    className="h-4 w-4 text-gray-600"     />, text: 'Sin estadísticas personales', muted: true },
+                    { icon: <XCircle    className="h-4 w-4 text-gray-600"     />, text: 'Sin exportar PDF', muted: true },
+                  ].map(({ icon, text, muted }) => (
+                    <div key={text} className="flex items-center gap-3 text-sm">
+                      <span className="flex-shrink-0">{icon}</span>
+                      <span className={muted ? 'text-gray-600' : 'text-gray-300'}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link to="/signup" className="block text-center border border-white/10 text-gray-300 font-semibold py-3 rounded-xl hover:bg-white/5 transition-colors mt-6">
+                  Empezar gratis
+                </Link>
+              </div>
             </div>
 
-            {/* Premium */}
-            <div className="bg-gray-900 border border-primary/40 rounded-2xl p-8 relative overflow-hidden">
-              <div className="absolute top-4 right-4">
-                <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">14 días gratis</span>
-              </div>
-              <div className="flex items-center gap-2 mb-1">
-                <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-                <h3 className="text-xl font-bold">Premium</h3>
-              </div>
-              <p className="text-gray-400 text-sm mb-6">Para médicos que van en serio</p>
-              <div className="text-4xl font-black mb-8">
-                $8.50<span className="text-lg text-gray-400 font-normal">/mes</span>
-              </div>
-              <div className="space-y-3 mb-8">
-                {[
-                  "Cirugías ilimitadas",
-                  "Colegas y ayudantes ilimitados",
-                  "Imágenes quirúrgicas por caso (hasta 5 fotos)",
-                  "Google Calendar — sincronización automática",
-                  "Sin publicidad",
-                  "Acceso anticipado a nuevas funciones",
-                  "Soporte prioritario",
-                ].map((text) => (
-                  <div key={text} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span className="text-gray-200">{text}</span>
+            {/* ── Premium ───────────────────────────────────────── */}
+            <div className="rounded-2xl flex flex-col overflow-hidden ring-1 ring-amber-400/50 bg-gray-900">
+              <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500" />
+              <div className="p-6 pb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Premium</span>
                   </div>
-                ))}
+                  <span className="text-xs font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2.5 py-0.5 rounded-full">
+                    14 días gratis
+                  </span>
+                </div>
+                <h3 className="text-2xl font-bold text-white">MeDico App Premium</h3>
+                <p className="text-sm text-gray-400 mt-1">Experiencia completa, sin límites</p>
+                <div className="flex items-end gap-1 mt-4 mb-2">
+                  <span className="text-5xl font-extrabold tracking-tight text-amber-400">$9</span>
+                  <span className="text-gray-400 text-sm mb-2">/mes</span>
+                </div>
               </div>
-              <Link to="/signup" className="block text-center bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-                Empezar — 14 días gratis
-              </Link>
+              <div className="px-6 pb-6 flex-1 flex flex-col">
+                <div className="w-full h-px bg-amber-400/20 mb-5" />
+                <div className="space-y-3.5 flex-1">
+                  {[
+                    { icon: <Infinity    className="h-4 w-4 text-amber-400"   />, text: 'Cirugías activas ilimitadas' },
+                    { icon: <Heart      className="h-4 w-4 text-rose-400"     />, text: 'Procedimientos favoritos ilimitados' },
+                    { icon: <Building2  className="h-4 w-4 text-amber-300"    />, text: 'Hospitales favoritos ilimitados' },
+                    { icon: <Users      className="h-4 w-4 text-violet-400"   />, text: 'Colegas ilimitados + colaboración' },
+                    { icon: <Calendar   className="h-4 w-4 text-emerald-400"  />, text: 'Google Calendar integrado' },
+                    { icon: <BarChart2  className="h-4 w-4 text-blue-400"     />, text: 'Estadísticas personales avanzadas' },
+                    { icon: <Shield     className="h-4 w-4 text-emerald-400"  />, text: 'Sin anuncios ni interrupciones' },
+                    { icon: <FileText   className="h-4 w-4 text-sky-400"      />, text: 'Exportar cirugías como PDF' },
+                    { icon: <ImagePlus  className="h-4 w-4 text-amber-300"    />, text: 'Imágenes por cirugía (hasta 5 fotos)' },
+                    { icon: <ShieldCheck className="h-4 w-4 text-emerald-400" />, text: 'Seguros médicos de Guatemala' },
+                    { icon: <Calculator  className="h-4 w-4 text-cyan-400"   />, text: 'Calculadora de honorarios' },
+                    { icon: <Sparkles   className="h-4 w-4 text-amber-400"    />, text: 'Acceso anticipado a nuevas funciones' },
+                  ].map(({ icon, text }) => (
+                    <div key={text} className="flex items-center gap-3 text-sm">
+                      <span className="flex-shrink-0">{icon}</span>
+                      <span className="font-medium text-gray-200">{text}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  to="/signup"
+                  className="block text-center bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-400/20 mt-6"
+                >
+                  Empezar — 14 días gratis
+                </Link>
+              </div>
             </div>
+
           </div>
         </div>
       </section>
