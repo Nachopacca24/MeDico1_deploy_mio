@@ -19,6 +19,27 @@ MAX_IMAGES_PER_SURGERY = 5
 MAX_FILE_SIZE_BYTES    = 10 * 1024 * 1024  # 10 MB
 ALLOWED_CONTENT_TYPES  = {'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic'}
 
+# Magic byte signatures for allowed image types
+_MAGIC_JPEG  = b'\xff\xd8\xff'
+_MAGIC_PNG   = b'\x89PNG'
+_MAGIC_RIFF  = b'RIFF'
+_MAGIC_WEBP  = b'WEBP'    # at offset 8
+
+
+def _has_valid_image_magic(file_obj) -> bool:
+    header = file_obj.read(12)
+    file_obj.seek(0)
+    if header[:3] == _MAGIC_JPEG:
+        return True
+    if header[:4] == _MAGIC_PNG:
+        return True
+    if header[:4] == _MAGIC_RIFF and header[8:12] == _MAGIC_WEBP:
+        return True
+    # HEIC/HEIF: ftyp box at offset 4
+    if len(header) >= 8 and header[4:8] == b'ftyp':
+        return True
+    return False
+
 
 def _check_premium(user):
     return user.plan == 'premium' or user.is_permanent_premium
@@ -87,11 +108,19 @@ def upload_surgery_image(request, case_id):
     if not file:
         return Response({'error': 'No se envió ningún archivo'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Validate file type
+    # Validate content-type header (client-supplied)
     content_type = file.content_type.lower()
     if content_type not in ALLOWED_CONTENT_TYPES:
         return Response(
             {'error': 'Formato no permitido. Usá JPG, PNG o WEBP.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Validate actual file magic bytes (prevents spoofed content-type)
+    if not _has_valid_image_magic(file):
+        logger.warning('[IMG] magic bytes mismatch user=%s claimed=%s', request.user.id, content_type)
+        return Response(
+            {'error': 'El archivo no es una imagen válida.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 

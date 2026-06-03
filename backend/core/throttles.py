@@ -1,4 +1,4 @@
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 
 class LoginRateThrottle(AnonRateThrottle):
@@ -15,3 +15,7 @@ class AdTrackingThrottle(AnonRateThrottle):
 
 class PasswordResetThrottle(AnonRateThrottle):
     scope = 'password_reset'
+
+
+class ColleagueSearchThrottle(UserRateThrottle):
+    scope = 'colleague_search'

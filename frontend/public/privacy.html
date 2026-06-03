@@ -96,7 +96,7 @@
 
     <div class="badge">Legal</div>
     <h1>Política de Privacidad</h1>
-    <p class="updated">Última actualización: Mayo 2026 · Aplicable a medicoapp.app</p>
+    <p class="updated">Última actualización: Junio 2026 · Versión 1.2 · Aplicable a medicoapp.app</p>
 
     <div class="intro">
       Esta política explica qué información recopilamos cuando usas MéDico App, cómo la usamos y cómo la protegemos. La leemos en lenguaje claro porque creemos que tienes derecho a entender exactamente qué pasa con tus datos.
@@ -131,10 +131,13 @@
       <li>Fechas y horas de acceso</li>
     </ul>
 
-    <p><strong>Lo que NO recopilamos:</strong></p>
+    <p><strong>Lo que NO recopilamos ni utilizamos para fines propios:</strong></p>
     <ul>
       <li>Datos de tarjetas de crédito (el cobro lo gestiona Lemon Squeezy de forma segura)</li>
       <li>Información de pacientes en texto plano — ver sección 4</li>
+      <li>Estadísticas individuales del médico — solo se calculan para mostrarlas al propio médico, no se almacenan ni utilizan con ningún otro fin</li>
+      <li>Imágenes quirúrgicas — solo se almacenan para uso del médico y se eliminan automáticamente a los 3 meses de archivar el caso</li>
+      <li>PDFs generados — se descartan del servidor inmediatamente después de ser enviados al médico, no se guardan copias</li>
     </ul>
 
     <!-- 3 -->
@@ -173,7 +176,7 @@
       <li><strong>Vercel</strong> — hosting del frontend</li>
       <li><strong>Lemon Squeezy</strong> — procesamiento de pagos y suscripciones</li>
       <li><strong>Google Calendar API</strong> — sincronización de eventos quirúrgicos (solo si el médico lo autoriza)</li>
-      <li><strong>Cloudinary</strong> — almacenamiento de imágenes publicitarias</li>
+      <li><strong>Cloudinary</strong> — almacenamiento de imágenes quirúrgicas subidas por el médico e imágenes publicitarias</li>
     </ul>
     <p>Cada uno de estos proveedores tiene sus propias políticas de privacidad y estándares de seguridad. No compartimos tus datos personales con anunciantes.</p>
 
@@ -203,16 +206,41 @@
     <p>MéDico App muestra publicidad de empresas del sector médico (hospitales, farmacéuticas, laboratorios). Esta publicidad se segmenta según tu especialidad médica declarada al registrarte. No utilizamos tecnologías de rastreo entre sitios ni compartimos tu información con anunciantes.</p>
     <p>Los anunciantes solo reciben estadísticas agregadas (impresiones totales, clics totales) — nunca datos personales de médicos individuales.</p>
 
-    <!-- 8 -->
-    <h2>8. Retención de datos</h2>
+    <!-- 7b -->
+    <h2>8. Estadísticas, Imágenes Quirúrgicas y PDFs</h2>
+
+    <p><strong>Estadísticas de casos:</strong></p>
+    <p>Los indicadores estadísticos generados por la aplicación — totales de cirugías, valores RVU acumulados, procedimientos más frecuentes, ingresos estimados — son calculados <strong>en tiempo real y mostrados exclusivamente al médico titular de la cuenta</strong>. MéDico App no almacena estadísticas individuales por separado, no elabora perfiles de rendimiento de médicos, no comparte esta información con ningún tercero y no la utiliza para ningún fin propio.</p>
+
+    <div class="highlight-box">
+      <strong>Regla simple:</strong> lo que ves en tu sección de estadísticas fue calculado para vos y solo vos lo ve. No tenemos acceso a esos números ni los usamos.
+    </div>
+
+    <p><strong>Imágenes quirúrgicas:</strong></p>
+    <p>Las imágenes de cirugías que el médico sube se almacenan en Cloudinary, un proveedor externo de almacenamiento en la nube. MéDico App:</p>
     <ul>
-      <li>Tu cuenta y datos se conservan mientras tu suscripción esté activa</li>
-      <li>Si cancelas tu cuenta, tus datos serán eliminados dentro de los 30 días siguientes a tu solicitud</li>
+      <li>No analiza, procesa ni revisa el contenido de las imágenes</li>
+      <li>No utiliza las imágenes para entrenar modelos de inteligencia artificial</li>
+      <li>No comparte las imágenes con terceros</li>
+      <li>Solo el médico que las subió puede verlas, dentro de su sesión autenticada</li>
+    </ul>
+    <p><strong>Eliminación automática:</strong> cuando un caso quirúrgico es marcado como cobrado y archivado, las imágenes asociadas se eliminan automáticamente de Cloudinary transcurridos <strong>3 meses</strong> desde la fecha de archivado. Esta eliminación es definitiva e irreversible.</p>
+
+    <p><strong>PDFs de reportes:</strong></p>
+    <p>Cuando el médico genera un reporte PDF (resumen de cirugía, detalle de caso, etc.), el archivo es producido en el momento de la solicitud y transmitido directamente al dispositivo del médico. <strong>MéDico App no guarda, archiva ni retiene ninguna copia de los PDFs generados</strong> en sus servidores. El PDF se elimina del servidor inmediatamente después de ser entregado. No existe ningún repositorio o historial de PDFs del lado del servicio.
+
+    <!-- 8 -->
+    <h2>9. Retención de datos</h2>
+    <ul>
+      <li>Tu cuenta y datos de casos se conservan mientras tu cuenta esté activa</li>
+      <li>Si cancelas tu cuenta, tus datos personales serán eliminados dentro de los 30 días siguientes a tu solicitud</li>
+      <li>Las imágenes quirúrgicas se eliminan automáticamente 3 meses después de archivar el caso correspondiente</li>
+      <li>Los PDFs generados no se almacenan en el servidor (eliminación inmediata tras la entrega)</li>
       <li>Los logs técnicos del servidor se conservan por un máximo de 90 días</li>
     </ul>
 
     <!-- 9 -->
-    <h2>9. Tus derechos</h2>
+    <h2>10. Tus derechos</h2>
     <p>Como usuario de MéDico App tienes derecho a:</p>
     <ul>
       <li><strong>Acceder</strong> a los datos que tenemos sobre ti</li>
@@ -224,7 +252,7 @@
     <p>Para ejercer cualquiera de estos derechos, contáctanos en <a href="mailto:contacto@medicoapp.app">contacto@medicoapp.app</a>.</p>
 
     <!-- 10 -->
-    <h2>10. Seguridad</h2>
+    <h2>11. Seguridad</h2>
     <p>Implementamos medidas técnicas y organizativas para proteger tu información:</p>
     <ul>
       <li>Cifrado Fernet (AES-128-CBC + HMAC-SHA256) para datos sensibles de pacientes</li>
@@ -235,11 +263,11 @@
     </ul>
 
     <!-- 11 -->
-    <h2>11. Cambios a esta política</h2>
+    <h2>12. Cambios a esta política</h2>
     <p>Si realizamos cambios significativos a esta política, te notificaremos por correo electrónico con al menos 15 días de anticipación. El uso continuado del servicio después de ese período implica la aceptación de la nueva política.</p>
 
     <!-- 12 -->
-    <h2>12. Contacto</h2>
+    <h2>13. Contacto</h2>
     <div class="contact-card">
       <p><strong>MéDico App</strong></p>
       <p>Servicio operado de forma independiente</p>
@@ -248,7 +276,7 @@
     </div>
 
     <div class="footer-note">
-      © 2025 MéDico App · Todos los derechos reservados<br/>
+      © 2026 MéDico App · Todos los derechos reservados<br/>
       Este documento está sujeto a las leyes de la República de Guatemala.
     </div>
 

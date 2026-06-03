@@ -186,6 +186,13 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         })
 
 
+_VALID_PLACEMENTS = {'home_banner', 'popup', 'for_you', 'sticky_banner', 'feed'}
+_VALID_CATEGORIES = {
+    'general', 'congreso', 'casa_medica', 'hospital',
+    'tecnologia', 'farmaceutica', 'educacion', 'clinica',
+}
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_active_ads(request):
@@ -198,6 +205,9 @@ def get_active_ads(request):
                    Si no se envía, retorna todos (legacy/fallback).
     """
     placement = request.query_params.get('placement', 'home_banner').strip()
+    if placement and placement not in _VALID_PLACEMENTS:
+        return Response({'error': 'Placement inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+
     # Distinguish "not sent" (None) from "sent empty" ('')
     specialty_raw = request.query_params.get('specialty', None)
     specialty = specialty_raw.strip() if specialty_raw is not None else None
@@ -254,6 +264,10 @@ def get_feed(request):
     category = request.query_params.get('category', '').strip()
     specialty = request.query_params.get('specialty', '').strip()
     search = request.query_params.get('search', '').strip()
+
+    if category and category not in _VALID_CATEGORIES:
+        return Response({'error': 'Categoría inválida.'}, status=status.HTTP_400_BAD_REQUEST)
+
     today = timezone.now().date()
 
     qs = Advertisement.objects.filter(

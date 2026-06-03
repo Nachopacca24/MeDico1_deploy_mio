@@ -251,7 +251,7 @@ def lemonsqueezy_webhook(request):
 
     except Exception as e:
         logger.error('[LS webhook] processing error: %s', e, exc_info=True)
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': 'Webhook processing failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def _parse_ls_date(value):

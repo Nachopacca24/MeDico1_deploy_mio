@@ -1,5 +1,6 @@
 # apps/medico/views/__init__.py
 
+import logging
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, status
@@ -7,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Count
+
+logger = logging.getLogger(__name__)
 
 from apps.medico.models import Favorite, SurgicalCase
 from apps.medico.serializers import FavoriteSerializer
@@ -192,11 +195,12 @@ class AdminUserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK
             )
         except Exception as e:
+            logger.exception("Error deleting user pk=%s", pk)
             return Response(
-                {'error': str(e)},
+                {'error': 'Error al eliminar el usuario. Intentá de nuevo.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    
+
     @action(detail=True, methods=['patch'], url_path='toggle_active')
     def toggle_active(self, request, pk=None):
         """

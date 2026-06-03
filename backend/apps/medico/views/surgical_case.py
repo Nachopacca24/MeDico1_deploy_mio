@@ -185,8 +185,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.exception("Error creating case for user %s", request.user.id)
             return Response(
-                {'error': 'Error al crear el caso', 'detail': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                {'error': 'Error al crear el caso. Por favor intentá de nuevo.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def update(self, request, *args, **kwargs):

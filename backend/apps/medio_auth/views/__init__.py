@@ -22,7 +22,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle
+from rest_framework.decorators import throttle_classes
+from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle, ColleagueSearchThrottle
 
 from ..serializers import (
     UserSerializer,
@@ -168,9 +169,10 @@ class LogoutView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            logger.exception("Unexpected error during logout for user %s", request.user.id)
             return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                {'error': 'Error al cerrar sesión. Intentá de nuevo.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -509,6 +511,7 @@ class SearchColleagueView(APIView):
     Buscar un colega por su friend_code
     """
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ColleagueSearchThrottle]
 
     def post(self, request):
         friend_code = request.data.get('friend_code', '').strip().upper()
@@ -558,6 +561,7 @@ class SendFriendRequestView(APIView):
     Enviar una solicitud de amistad a otro usuario por su friend_code
     """
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ColleagueSearchThrottle]
 
     def post(self, request):
         friend_code = request.data.get('friend_code', '').strip().upper()
@@ -867,8 +871,9 @@ class GoogleLoginView(APIView):
                         status=status.HTTP_401_UNAUTHORIZED
                     )
             except Exception as e:
+                logger.exception("Error verifying Google access token")
                 return Response(
-                    {'error': f'Error verificando Access Token: {str(e)}'},
+                    {'error': 'Error verificando token de Google. Intentá de nuevo.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -930,8 +935,9 @@ class GoogleLoginView(APIView):
             }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
             
         except Exception as e:
+            logger.exception("Error during Google login/registration")
             return Response(
-                {'error': f'Error en la base de datos: {str(e)}'},
+                {'error': 'Error interno. Intentá de nuevo.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

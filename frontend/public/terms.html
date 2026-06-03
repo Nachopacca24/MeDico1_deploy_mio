@@ -137,7 +137,7 @@
 
     <div class="badge">Legal</div>
     <h1>Términos de Uso</h1>
-    <p class="updated">Última actualización: Mayo 2026 &middot; Versión 1.1 &middot; Aplicable a medicoapp.app</p>
+    <p class="updated">Última actualización: Junio 2026 &middot; Versión 1.2 &middot; Aplicable a medicoapp.app</p>
 
     <div class="intro">
       Al crear una cuenta en MéDico App o usar cualquier parte del servicio, aceptas estos Términos de Uso en su totalidad. Si no estás de acuerdo con alguna parte, no debes usar el servicio. Te recomendamos leerlos completos — están escritos en lenguaje claro y sin tecnicismos innecesarios.
@@ -152,6 +152,7 @@
         <li><a href="#s4">Suscripción y Pagos</a></li>
         <li><a href="#s5">Uso Aceptable</a></li>
         <li><a href="#s6">Tus Datos y Responsabilidades</a></li>
+        <li><a href="#s6b">Estadísticas, Imágenes y PDFs</a></li>
         <li><a href="#s7">Cifrado y Advertencia de Contraseña</a></li>
         <li><a href="#s8">Almacenamiento Local y Cookies</a></li>
         <li><a href="#s9">Publicidad</a></li>
@@ -163,6 +164,7 @@
         <li><a href="#s15">Ley Aplicable e Idioma</a></li>
         <li><a href="#s16">Disposiciones Generales</a></li>
         <li><a href="#s17">Contacto</a></li>
+        <!-- números 7-18 en el documento; TOC ajustado automáticamente -->
       </ol>
     </div>
 
@@ -255,14 +257,36 @@
     </ul>
     <p>Nos otorgas una licencia limitada, no exclusiva y no transferible para almacenar, procesar y transmitir tus datos con el único fin de proveer y mejorar el servicio.</p>
 
+    <!-- 6b -->
+    <h2 id="s6b">7. Estadísticas, Imágenes y PDFs</h2>
+
+    <p><strong>Estadísticas y datos de casos:</strong></p>
+    <p>Los datos estadísticos que se generan dentro de la aplicación — incluyendo cantidad de cirugías, valores RVU, procedimientos realizados, totales facturados e indicadores similares — son calculados y mostrados <strong>exclusivamente para el uso del médico titular de la cuenta</strong>. MéDico App no accede, analiza, agrega ni utiliza estos datos con ningún fin propio. No se elaboran perfiles estadísticos de médicos individuales ni se comparte esta información con terceros.</p>
+
+    <div class="info-box">
+      <strong>En términos simples:</strong> las estadísticas que ves en la app son tuyas. Nosotros solo las calculamos para mostrártelas a vos. No las usamos para nada más.
+    </div>
+
+    <p><strong>Imágenes quirúrgicas:</strong></p>
+    <p>Las fotografías de cirugías que el médico sube a la plataforma se almacenan en Cloudinary (proveedor de almacenamiento en la nube). MéDico App <strong>no utiliza, analiza, revisa ni procesa estas imágenes</strong> de ninguna forma. Las imágenes son almacenadas con el único propósito de que el médico pueda consultarlas dentro de la app.</p>
+    <ul>
+      <li>Las imágenes se eliminan automáticamente <strong>3 meses después</strong> de que el caso quirúrgico correspondiente sea marcado como cobrado/archivado</li>
+      <li>No se realizan copias de respaldo de las imágenes más allá del almacenamiento operativo en Cloudinary</li>
+      <li>Nadie del equipo de MéDico App tiene acceso a las imágenes de cirugías individuales</li>
+      <li>Las imágenes no se utilizan para entrenar modelos de inteligencia artificial ni para ningún otro fin</li>
+    </ul>
+
+    <p><strong>Exportación PDF:</strong></p>
+    <p>Los reportes en formato PDF que el médico genera desde la aplicación son producidos en el momento de la solicitud y entregados directamente al dispositivo del médico. <strong>MéDico App no almacena, archiva ni retiene ninguna copia de los PDFs generados</strong> en sus servidores ni en ningún sistema de almacenamiento propio. Cada PDF es descartado del servidor inmediatamente después de ser enviado al médico.</p>
+
     <!-- 7 -->
-    <h2 id="s7">7. Cifrado y Advertencia sobre Contraseña</h2>
+    <h2 id="s7">8. Cifrado y Advertencia sobre Contraseña</h2>
     <div class="highlight-box">
       <strong>Advertencia importante sobre cifrado:</strong> Los campos sensibles de tus registros (nombre del paciente, identificación, diagnóstico y notas clínicas) se cifran con AES-256 (Fernet) en el servidor antes de ser almacenados. Guarda tus credenciales en un gestor de contraseñas seguro.
     </div>
 
     <!-- 8 -->
-    <h2 id="s8">8. Almacenamiento Local y Cookies</h2>
+    <h2 id="s8">9. Almacenamiento Local y Cookies</h2>
     <p>MéDico App utiliza el almacenamiento local de tu navegador (<em>localStorage</em> y <em>sessionStorage</em>) para:</p>
     <ul>
       <li>Mantener tu sesión activa (tokens de autenticación JWT)</li>
@@ -273,13 +297,13 @@
     <p>No utilizamos cookies de rastreo publicitario de terceros ni compartimos datos de navegación con redes publicitarias externas. Las únicas cookies técnicas utilizadas son las necesarias para el funcionamiento del servicio (autenticación y seguridad).</p>
 
     <!-- 9 -->
-    <h2 id="s9">9. Publicidad</h2>
+    <h2 id="s9">10. Publicidad</h2>
     <p><strong>Plan gratuito:</strong> Los usuarios en el plan gratuito verán publicidad de empresas del sector médico (hospitales, laboratorios, farmacéuticas, proveedores de equipo médico) segmentada por especialidad médica declarada. Esta publicidad puede aparecer como banners, tarjetas flotantes y contenido patrocinado dentro de la interfaz.</p>
     <p><strong>Plan Premium:</strong> Los usuarios con suscripción Premium activa no verán publicidad de banners, tarjetas flotantes ni popups. Solo podrán ver la sección "Para ti" con contenido informativo relevante a su especialidad.</p>
     <p>En ningún caso la publicidad incluye contenido engañoso, datos personales de médicos individuales ni información de pacientes. Los anunciantes únicamente reciben estadísticas agregadas y anónimas (total de impresiones y clics).</p>
 
     <!-- 10 -->
-    <h2 id="s10">10. Propiedad Intelectual</h2>
+    <h2 id="s10">11. Propiedad Intelectual</h2>
     <p>El software, diseño, interfaz, catálogo de procedimientos quirúrgicos, marca "MéDico App" y demás contenido propio de la plataforma están protegidos por derechos de autor y son propiedad del desarrollador. Queda prohibido:</p>
     <ul>
       <li>Copiar, redistribuir o reproducir el software o contenido de la plataforma</li>
@@ -289,12 +313,12 @@
     <p>El catálogo de procedimientos incluye datos RVU de dominio público adaptados para el contexto guatemalteco. Los datos que tú ingresas en la plataforma son de tu exclusiva propiedad.</p>
 
     <!-- 11 -->
-    <h2 id="s11">11. Disponibilidad del Servicio</h2>
+    <h2 id="s11">12. Disponibilidad del Servicio</h2>
     <p>Nos esforzamos por mantener MéDico App disponible las 24 horas del día, los 7 días de la semana, pero no garantizamos disponibilidad ininterrumpida. Pueden ocurrir interrupciones planificadas (mantenimiento) o no planificadas (fallas técnicas, causas de fuerza mayor).</p>
     <p>Avisaremos con anticipación razonable las interrupciones de mantenimiento planificadas. En caso de interrupciones no planificadas que excedan 72 horas consecutivas, compensaremos con una extensión proporcional de la suscripción activa.</p>
 
     <!-- 12 -->
-    <h2 id="s12">12. Limitación de Responsabilidad</h2>
+    <h2 id="s12">13. Limitación de Responsabilidad</h2>
     <p><strong>MéDico App es una herramienta administrativa para médicos — no es un sistema clínico ni reemplaza el juicio médico profesional.</strong></p>
     <ul>
       <li>No somos responsables de ninguna decisión clínica, diagnóstica o terapéutica tomada basándose en información registrada en la plataforma</li>
@@ -306,23 +330,23 @@
     <p>En ningún caso seremos responsables por daños indirectos, incidentales, consecuentes, especiales o punitivos.</p>
 
     <!-- 13 -->
-    <h2 id="s13">13. Terminación de Cuenta</h2>
+    <h2 id="s13">14. Terminación de Cuenta</h2>
     <p><strong>Por tu parte:</strong> Puedes eliminar tu cuenta en cualquier momento desde la configuración de la aplicación. Tras la solicitud de eliminación, tus datos personales serán eliminados dentro de los 30 días siguientes, salvo que la ley exija su conservación por un período determinado.</p>
     <p><strong>Por nuestra parte:</strong> Nos reservamos el derecho de suspender o terminar cuentas que violen estos Términos de Uso, con aviso previo por correo electrónico excepto en casos de violaciones graves de seguridad donde la suspensión inmediata sea necesaria.</p>
     <p>La cancelación no genera derecho a reembolso por el período de suscripción ya pagado.</p>
 
     <!-- 14 -->
-    <h2 id="s14">14. Cambios a los Términos</h2>
+    <h2 id="s14">15. Cambios a los Términos</h2>
     <p>Podemos actualizar estos Términos de Uso ocasionalmente para reflejar cambios en el servicio, requisitos legales o mejores prácticas. Te notificaremos por correo electrónico con al menos <strong>15 días calendario</strong> de anticipación antes de que los cambios entren en vigor.</p>
     <p>Si continúas usando el servicio después de que los cambios entren en vigor, se considerará que aceptas los nuevos términos. Si no estás de acuerdo con los cambios, puedes cancelar tu cuenta antes de la fecha de entrada en vigor.</p>
 
     <!-- 15 -->
-    <h2 id="s15">15. Ley Aplicable e Idioma</h2>
+    <h2 id="s15">16. Ley Aplicable e Idioma</h2>
     <p>Estos Términos de Uso se rigen e interpretan de acuerdo con las leyes de la República de Guatemala, sin perjuicio de sus normas de conflicto de leyes. Cualquier disputa que surja en relación con estos términos será sometida a la jurisdicción de los tribunales competentes de la ciudad de Guatemala.</p>
     <p>El idioma oficial de estos Términos de Uso es el <strong>español</strong>. En caso de existir traducciones a otros idiomas, la versión en español prevalecerá en caso de discrepancia.</p>
 
     <!-- 16 -->
-    <h2 id="s16">16. Disposiciones Generales</h2>
+    <h2 id="s16">17. Disposiciones Generales</h2>
 
     <p><strong>Acuerdo completo:</strong> Estos Términos de Uso, junto con la Política de Privacidad, constituyen el acuerdo completo entre tú y MéDico App con respecto al uso del servicio, y reemplazan cualquier acuerdo, comunicación o entendimiento previo relacionado con el mismo.</p>
 
@@ -335,7 +359,7 @@
     <p><strong>Notificaciones:</strong> Las notificaciones relacionadas con el servicio se realizarán por correo electrónico a la dirección registrada en tu cuenta. Eres responsable de mantener tu dirección de correo electrónico actualizada.</p>
 
     <!-- 17 -->
-    <h2 id="s17">17. Contacto</h2>
+    <h2 id="s17">18. Contacto</h2>
     <p>Para preguntas, reportes de problemas o cualquier asunto relacionado con estos Términos:</p>
     <div class="contact-card">
       <p><strong>MéDico App</strong></p>

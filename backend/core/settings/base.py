@@ -205,6 +205,7 @@ REST_FRAMEWORK = {
         'register': '10/hour',
         'ad_tracking': '60/hour',
         'password_reset': '3/hour',
+        'colleague_search': '30/hour',
     },
 }
 
@@ -312,7 +313,6 @@ SENTRY_DSN = os.environ.get('SENTRY_DSN')
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        # Add data like request headers and IP for users
-        send_default_pii=True,
+        send_default_pii=False,
         environment=os.environ.get('NODE_ENV', 'development'),
     )

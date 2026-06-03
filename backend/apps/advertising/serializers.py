@@ -1,9 +1,12 @@
 # advertising/serializers.py
 
+import logging
 from rest_framework import serializers
 from .models import Client, Advertisement
 from django.utils import timezone
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -65,7 +68,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 
                 return url
             except Exception as e:
-                print(f"DEBUG AD IMAGE ERROR: {str(e)}")
+                logger.warning("Ad image URL error: %s", e)
                 return None
         return None
 
@@ -187,7 +190,7 @@ class AdvertisementListSerializer(serializers.ModelSerializer):
                 
                 return url
             except Exception as e:
-                print(f"DEBUG AD IMAGE ERROR: {str(e)}")
+                logger.warning("Ad image URL error: %s", e)
                 return None
         return None
 

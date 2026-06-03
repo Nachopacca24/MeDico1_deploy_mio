@@ -1,3 +1,4 @@
+import logging
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import View
 from django.conf import settings
@@ -13,6 +14,8 @@ from decimal import Decimal
 import os
 import requests
 from django.shortcuts import render
+
+logger = logging.getLogger(__name__)
 
 
 def health_check(request):
@@ -402,7 +405,8 @@ def delete_user(request, user_id):
             'message': 'Usuario no encontrado'
         }, status=404)
     except Exception as e:
+        logger.exception("Admin error deleting user_id=%s", user_id)
         return Response({
             'success': False,
-            'message': f'Error al eliminar usuario: {str(e)}'
+            'message': 'Error al eliminar usuario. Intentá de nuevo.'
         }, status=500)
