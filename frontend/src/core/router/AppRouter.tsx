@@ -46,8 +46,7 @@ export const AppRouter = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path='/' element={<Navigate to="/login" replace />} />
-      <Route path='/landing' element={<LandingPage />} />
+      <Route path='/' element={<LandingPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/signup' element={<SignupForm />} />
       <Route path='/logout' element={<LogoutPage />} />
