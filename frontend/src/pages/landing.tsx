@@ -67,10 +67,10 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
-            El tiempo que perdés
-            <br />organizando cirugías
+            Las horas de un médico valen{" "}
+            <span className="text-amber-400">oro</span>.
             <br />
-            <span className="text-primary">es de tus pacientes.</span>
+            <span className="text-primary">Nosotros te ayudamos a aprovecharlas mejor.</span>
           </h1>
 
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-4 leading-relaxed">
@@ -89,7 +89,7 @@ export default function LandingPage() {
               to="/signup"
               className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
             >
-              14 días de Premium gratis al registrarte. Sin tarjeta de crédito ni compromiso.
+              14 días de Premium gratis al registrarte.
               <ChevronRight className="h-5 w-5" />
             </Link>
             <Link
@@ -99,7 +99,7 @@ export default function LandingPage() {
               Ya tengo cuenta
             </Link>
           </div>
-          <p className="mt-4 text-xs text-gray-600">Sin tarjeta de crédito. Sin compromiso.</p>
+          <p className="mt-5 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
         </div>
       </section>
 
