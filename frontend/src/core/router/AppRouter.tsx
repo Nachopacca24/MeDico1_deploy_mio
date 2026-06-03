@@ -1,6 +1,6 @@
 // src/core/router/AppRouter.tsx
 
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/shared/components/auth/ProtectedRoute";
 import { PersistentAdSystem } from "@/shared/components/ads/PersistentAdSystem";
 
@@ -46,7 +46,8 @@ export const AppRouter = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path='/' element={<LandingPage />} />
+      <Route path='/' element={<Navigate to="/login" replace />} />
+      <Route path='/landing' element={<LandingPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/signup' element={<SignupForm />} />
       <Route path='/logout' element={<LogoutPage />} />

@@ -4,6 +4,7 @@ import { ReactNode, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/shared/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/layout/Sidebar";
+import { MobileBottomNav } from "@/shared/components/layout/MobileBottomNav";
 import { Separator } from "@/shared/components/ui/separator";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { Shield } from "lucide-react";
@@ -35,11 +36,13 @@ export function AppLayout({ children }: AppLayoutProps) {
       <AppSidebar />
 
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        {/* Header — sticky so the menu trigger is always visible when scrolling */}
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur-sm px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 flex-1">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <h2 className="text-lg font-semibold">MeDico</h2>
+            {/* SidebarTrigger visible only on desktop — mobile uses MobileBottomNav */}
+            <SidebarTrigger className="-ml-1 hidden md:flex" />
+            <Separator orientation="vertical" className="mr-2 h-4 hidden md:flex" />
+            <h2 className="text-lg font-semibold">MéDico</h2>
           </div>
           {isAdmin && (
             <Link
@@ -52,7 +55,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           )}
         </header>
 
-        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6" style={{ paddingBottom: isMobile ? 'calc(4.5rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))' }}>
+        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6" style={{ paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))' }}>
           <EmailVerificationBanner />
           {isMobile && user?.plan !== 'premium' && (
             <MobileForYouSection specialty={user?.specialty} />
@@ -60,6 +63,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </main>
       </SidebarInset>
+
+      {/* Bottom navigation — mobile only, always accessible */}
+      <MobileBottomNav />
 
     </SidebarProvider>
   );
