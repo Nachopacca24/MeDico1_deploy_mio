@@ -48,7 +48,7 @@ import { useState } from "react";
 // Organizar items por secciones
 const mainItems = [
   {
-    title: "Panel",
+    title: "Inicio",
     url: "/dashboard",
     icon: Home,
   },

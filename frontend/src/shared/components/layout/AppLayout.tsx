@@ -12,6 +12,9 @@ import { advertisementService } from "@/admin/services/advertisementService";
 import { EmailVerificationBanner } from "@/shared/components/EmailVerificationBanner";
 import { MobileForYouSection } from "@/shared/components/ads/MobileForYouSection";
 import { useIsMobile } from "@/shared/hooks/useAdSystem";
+import { TutorialProvider } from "@/core/contexts/TutorialContext";
+import { WelcomeModal } from "@/core/components/WelcomeModal";
+import { TutorialCard } from "@/core/components/TutorialCard";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,6 +35,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [user?.specialty]);
 
   return (
+    <TutorialProvider>
     <SidebarProvider>
       <AppSidebar />
 
@@ -67,6 +71,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Bottom navigation — mobile only, always accessible */}
       <MobileBottomNav />
 
+      {/* Tutorial system */}
+      <WelcomeModal />
+      <TutorialCard />
+
     </SidebarProvider>
+    </TutorialProvider>
   );
 }

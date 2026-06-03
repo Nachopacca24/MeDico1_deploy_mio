@@ -13,8 +13,9 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
-import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen } from "lucide-react";
 import { authService } from "@/shared/services/authService";
+import { useTutorial } from "@/core/contexts/TutorialContext";
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -74,6 +75,7 @@ const Settings = () => {
 
   const { toast } = useToast();
   const { user } = useAuth();
+  const { restartTutorial, tutorialState } = useTutorial();
   
   // Google Calendar
   const {
@@ -182,6 +184,7 @@ const Settings = () => {
             <TabsTrigger value="plan">Mi Plan</TabsTrigger>
             <TabsTrigger value="calendar">Calendario</TabsTrigger>
             <TabsTrigger value="security">Seguridad</TabsTrigger>
+            <TabsTrigger value="tutorial">Tutorial</TabsTrigger>
             <TabsTrigger value="legal">Legal</TabsTrigger>
           </TabsList>
           
@@ -711,6 +714,38 @@ const Settings = () => {
               </CardFooter>
             </Card>
           </TabsContent>
+          {/* Tutorial Tab */}
+          <TabsContent value="tutorial">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <BookOpen className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Tutorial de MeDico App</CardTitle>
+                    <CardDescription>
+                      {tutorialState.completed
+                        ? 'Ya completaste el tutorial. Podés volver a verlo cuando quieras.'
+                        : tutorialState.active
+                        ? 'El tutorial está activo — seguilo desde la tarjeta flotante en pantalla.'
+                        : 'Recorrido guiado por todas las funciones de la app.'}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  El tutorial te lleva paso a paso por la Tabla de California, hospitales, seguros, colegas, Google Calendar, registro de cirugías, estadísticas, calculadora y configuración.
+                </p>
+                <Button onClick={restartTutorial} className="gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  {tutorialState.completed || tutorialState.active ? 'Reiniciar tutorial' : 'Empezar tutorial'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Legal Tab */}
           <TabsContent value="legal">
             <div className="space-y-4">

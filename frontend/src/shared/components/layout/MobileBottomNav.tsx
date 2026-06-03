@@ -11,7 +11,7 @@ import { useNovedadesNew } from '@/shared/hooks/useNovedadesNew';
 
 const TABS = [
   { title: 'Cirugías',   url: '/cases',      icon: Briefcase },
-  { title: 'Panel',      url: '/dashboard',  icon: Home },
+  { title: 'Inicio',     url: '/dashboard',  icon: Home },
   { title: 'Calendario', url: '/calendar',   icon: CalendarIcon },
   { title: 'Novedades',  url: '/novedades',  icon: Newspaper },
 ] as const;
