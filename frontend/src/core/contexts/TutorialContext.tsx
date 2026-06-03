@@ -100,7 +100,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/cases/new',
     emoji: '🩺',
     title: 'Procedimientos quirúrgicos',
-    description: 'Seleccioná los procedimientos que se realizaron en la cirugía. Tus procedimientos favoritos aparecen al inicio de la lista para agilizar el registro. Podés agregar más de uno.',
+    description: 'Seleccioná los procedimientos que se realizaron en la cirugía. Tus procedimientos favoritos aparecen al inicio de la lista para agilizar el registro. Podés agregar más de uno, si alguno no esta ahi tambien lo puedes buscar en Buscar Otros procedimientos.',
     hint: 'Buscá y agregá al menos un procedimiento — es obligatorio para guardar la cirugía.',
   },
   // ── 11. Nueva cirugía — ayudante, imágenes y guardar ────────────
@@ -118,8 +118,8 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/cases',
     emoji: '🔄',
     title: 'Los 3 estados de una cirugía',
-    description: '① Operado — cirugía realizada, podés subir fotos postoperatorias. ② Facturado — registrás el número de factura para mejor control (opcional). ③ Cobrado — el honorario fue cobrado, el caso se archiva. Solo en estado "Cobrado" podés eliminar el caso. Desde cualquier estado podés exportar el PDF.',
-    hint: 'Tocá los tres puntos (⋯) en cualquier caso para ver todas las opciones, incluido exportar PDF.',
+    description: 'La tarjeta de la cirugía tiene tres botones, Operado, Facturado y Cobrado. ① Operado — cirugía realizada, podés subir fotos postoperatorias. ② Facturado — registrás el número de factura para mejor control (opcional). ③ Cobrado — el honorario fue cobrado, el caso se archiva. Solo en estado "Cobrado" podés eliminar el caso. Desde cualquier estado podés exportar el PDF.',
+    hint: 'Tocá el botón Ver en cualquier caso para ver todas las opciones, incluido exportar PDF. Toca el botón Exportar PDF, baja y selecciona la cirugai a exportar y luego vuelve a subir y aprieta de neuvo el boton para convertir los datos de la cirugía a PDF para poder llevar un regisro propio. ',
   },
   // ── 13. Estadísticas ─────────────────────────────────────────────
   {
@@ -139,9 +139,18 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     description: 'Calculá el honorario de cualquier procedimiento al instante, sin necesidad de crear una cirugía. Útil para cotizaciones rápidas o para responder "¿cuánto cobrás por esto?" en el momento.',
     hint: 'Seleccioná un procedimiento y tu hospital favorito para ver el cálculo al instante.',
   },
-  // ── 15. Configuración ────────────────────────────────────────────
+  // ── 15. Novedades ────────────────────────────────────────────────
   {
     step: 15,
+    route: '/novedades',
+    emoji: '📰',
+    title: 'Novedades',
+    description: 'Acá encontrás contenido publicado por hospitales, casas médicas, farmacéuticas y laboratorios segmentado por tu especialidad. Visitala frecuentemente para estar al día con congresos, nuevos equipos, actualizaciones de tarifas y noticias relevantes para tu práctica.',
+    hint: 'El contenido se actualiza constantemente — revisá Novedades cada vez que entrés a la app.',
+  },
+  // ── 16. Configuración ────────────────────────────────────────────
+  {
+    step: 16,
     route: '/settings',
     emoji: '⚙️',
     title: 'Tu perfil y plan',
