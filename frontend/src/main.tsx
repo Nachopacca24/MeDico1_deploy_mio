@@ -11,6 +11,7 @@ import { FavoritesProvider } from "@/core/contexts/FavoritesContext";
 import { QueryProvider, TooltipProviderWrapper } from "@/core/providers";
 import { AppRouter } from "@/core/router";
 import { NotificationInitializer } from "@/core/components/NotificationInitializer";
+import { TutorialProvider } from "@/core/contexts/TutorialContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./index.css";
 import * as Sentry from "@sentry/react";
@@ -39,9 +40,11 @@ createRoot(document.getElementById("root")!).render(
           <ThemeProvider>
             <AuthProvider>
               <FavoritesProvider>
-                <NotificationInitializer />
-                <AppRouter />
-                <ToastContainer />
+                <TutorialProvider>
+                  <NotificationInitializer />
+                  <AppRouter />
+                  <ToastContainer />
+                </TutorialProvider>
               </FavoritesProvider>
             </AuthProvider>
             <Sonner />
