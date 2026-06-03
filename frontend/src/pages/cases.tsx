@@ -732,7 +732,7 @@ const CasesPage = () => {
                 <div className="flex flex-col items-end gap-1">
                   <Button disabled className="opacity-60 cursor-not-allowed">
                     <Plus className="w-4 h-4 mr-2" />
-                    Nuevo Caso
+                    Nueva Cirugía
                   </Button>
                   <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
                 </div>
@@ -740,7 +740,7 @@ const CasesPage = () => {
                 <Button asChild>
                   <Link to="/cases/new">
                     <Plus className="w-4 h-4 mr-2" />
-                    Nuevo Caso
+                    Nueva Cirugía
                   </Link>
                 </Button>
               )}

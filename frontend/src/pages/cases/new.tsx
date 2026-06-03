@@ -619,7 +619,7 @@ const NewCase = () => {
     <AppLayout>
       <div className="mx-auto max-w-5xl space-y-8 pb-12 pt-4 px-4">
         <div className="pb-6 border-b">
-          <h1 className="text-3xl font-bold mb-2 tracking-tight">Nuevo Caso Quirúrgico</h1>
+          <h1 className="text-3xl font-bold mb-2 tracking-tight">Nueva Cirugía</h1>
           <p className="text-muted-foreground text-lg">Ingresa los detalles del procedimiento quirúrgico</p>
         </div>
 

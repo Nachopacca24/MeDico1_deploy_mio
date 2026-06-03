@@ -268,7 +268,7 @@ const Index = () => {
                   <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl group-hover:bg-primary/10 transition-colors">
                     <Briefcase className="h-7 w-7 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
                   </div>
-                  <h3 className="font-bold text-xl text-slate-800 dark:text-slate-100">Nuevo Caso</h3>
+                  <h3 className="font-bold text-xl text-slate-800 dark:text-slate-100">Nueva Cirugía</h3>
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                   Registra y organiza un nuevo procedimiento quirúrgico de manera rápida.
