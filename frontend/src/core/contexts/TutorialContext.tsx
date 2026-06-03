@@ -118,7 +118,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/cases',
     emoji: '🔄',
     title: 'Los 3 estados de una cirugía',
-    description: 'La tarjeta de la cirugía tiene tres botones, Operado, Facturado y Cobrado. ① Operado — cirugía realizada, podés subir fotos postoperatorias. ② Facturado — registrás el número de factura para mejor control (opcional). ③ Cobrado — el honorario fue cobrado, el caso se archiva. Solo en estado "Cobrado" podés eliminar el caso. Desde cualquier estado podés exportar el PDF.',
+    description: 'La tarjeta de la cirugía tiene tres botones, Operado, Facturado y Cobrado. ① Operado — cirugía realizada, podés subir fotos postoperatorias. ② Facturado — registrás el número de factura para mejor control (opcional). ③ Cobrado — el honorario fue cobrado, el caso se archiva. En estado "Cobrado" las imagagenes se eliminan en 3 meses y la cirugia en 6 meses. Desde cualquier estado podés exportar el PDF.',
     hint: 'Tocá el botón Ver en cualquier caso para ver todas las opciones, incluido exportar PDF. Toca el botón Exportar PDF, baja y selecciona la cirugai a exportar y luego vuelve a subir y aprieta de neuvo el boton para convertir los datos de la cirugía a PDF para poder llevar un regisro propio. ',
   },
   // ── 13. Estadísticas ─────────────────────────────────────────────
