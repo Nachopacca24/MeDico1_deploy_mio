@@ -238,7 +238,7 @@ class CalendarSyncService {
    */
   private isValidTime(time: string | null | undefined): time is string {
     if (!time || typeof time !== 'string') return false;
-    const match = time.match(/^(\d{1,2}):(\d{2})$/);
+    const match = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
     if (!match) return false;
     const h = parseInt(match[1], 10);
     const m = parseInt(match[2], 10);
