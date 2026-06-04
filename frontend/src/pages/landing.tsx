@@ -75,10 +75,7 @@ export default function LandingPage() {
 
           {/* Qué es la app */}
           <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            MeDico App es la plataforma para gestionar tu práctica quirúrgica privada —
-            registrá cirugías, calculá honorarios con la Tabla de California,
-            exportá PDF para aseguradoras y controlá tus estadísticas,
-            todo desde el celular.
+            MeDico App es la plataforma que gestioná tu práctica quirúrgica desde un solo lugar. Registrá cirugías, calculá honorarios con la Tabla de California, generá reportes en PDF y mantené toda tu información organizada y siempre disponible.
           </p>
 
           {/* Por qué existe */}
@@ -88,7 +85,7 @@ export default function LandingPage() {
             </p>
             <p className="text-gray-400 leading-relaxed text-base">
               Nació de una necesidad real del día a día médico. Fue desarrollada junto a médicos
-              y cada función existe para resolver un problema que ellos mismos enfrentan —
+              y cada función existe para resolver un problema que ellos mismos enfrentan,
               porque la mejor forma de crear una herramienta para médicos es construirla con ellos.
             </p>
           </div>
@@ -300,7 +297,7 @@ export default function LandingPage() {
                   <span className="text-primary font-black shrink-0 ml-3">{p.rvu} RVU</span>
                 </div>
               ))}
-              <p className="text-center text-xs text-gray-600 pt-1">+1,200 procedimientos disponibles</p>
+              <p className="text-center text-xs text-gray-600 pt-1">+4,000 procedimientos disponibles</p>
             </div>
           </div>
         </div>
