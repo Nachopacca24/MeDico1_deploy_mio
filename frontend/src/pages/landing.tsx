@@ -159,7 +159,7 @@ export default function LandingPage() {
               {
                 icon: TrendingUp,
                 title: "Estadísticas",
-                desc: "Visualizá cuánto ganaste por mes, por hospital, por especialidad y por procedimiento. Entendé tu práctica en números reales.",
+                desc: "Visualizá donde operas mas seguido. Entiende tu práctica en números reales.",
                 color: "text-orange-400",
                 bg: "bg-orange-400/10",
               },
@@ -319,7 +319,7 @@ export default function LandingPage() {
               {
                 step: "03",
                 title: "Exportá y administra",
-                desc: "Generá el PDF del caso para enviarlo a la aseguradora. El caso queda en tu historial. Cuando se cobra, se archiva automáticamente.",
+                desc: "Generá el PDF del caso para enviarlo a la aseguradora. El caso queda en tu historial. Cuando se marca la cirugia como cobrado, se archiva automáticamente.",
               },
             ].map(({ step, title, desc }) => (
               <div key={step} className="relative">
