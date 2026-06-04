@@ -74,14 +74,14 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-4 leading-relaxed">
-            MeDico App nació de una necesidad real: médicos que ya no querían perder
-            horas en Excel, buscar la versión correcta de la Tabla de California
-            ni calcular honorarios a mano. La construyeron con nosotros.
-            Cada función existe porque un médico la pidió.
+            MeDico nació de una necesidad real del día a día médico. 
+            Fue desarrollada junto a médicos, y 
+            cada función existe para resolver un problema que ellos mismos enfrentan. Porque 
+            la mejor forma de crear una herramienta para médicos es construirla con ellos.
           </p>
 
           <p className="text-base text-gray-500 max-w-xl mx-auto mb-10">
-            Registrá, calculá, exportá y cobrá tus cirugías desde el celular en menos de 2 minutos.
+            Registrá, calculá, exportá y administra tus cirugías desde el celular en menos de 2 minutos.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -249,7 +249,7 @@ export default function LandingPage() {
                 <br />Lista para usar.
               </h2>
               <p className="text-gray-400 text-lg mb-5 leading-relaxed">
-                Más de 1,200 procedimientos quirúrgicos con código CPT, nombre y valor RVU.
+                Más de 4,000 procedimientos quirúrgicos con código CPT, nombre y valor RVU.
                 Configurás tu multiplicador por hospital una sola vez y MeDico App
                 calcula el honorario exacto al instante.
               </p>
@@ -318,7 +318,7 @@ export default function LandingPage() {
               },
               {
                 step: "03",
-                title: "Exportá y cobrá",
+                title: "Exportá y administra",
                 desc: "Generá el PDF del caso para enviarlo a la aseguradora. El caso queda en tu historial. Cuando se cobra, se archiva automáticamente.",
               },
             ].map(({ step, title, desc }) => (
@@ -345,7 +345,7 @@ export default function LandingPage() {
           <div className="text-center mb-14">
             <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Precios</p>
             <h2 className="text-4xl font-black mb-4">Simple y justo</h2>
-            <p className="text-gray-400 text-lg">Empezá gratis. Subí cuando lo necesités.</p>
+            <p className="text-gray-400 text-lg">Empezá gratis. Sube cuando lo necesités.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 items-stretch">
