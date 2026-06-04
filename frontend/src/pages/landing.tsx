@@ -73,8 +73,12 @@ export default function LandingPage() {
             <span className="text-primary">Nosotros te ayudamos a aprovecharlas mejor.</span>
           </h1>
 
+          <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">
+            ¿Por qué existe MeDico App?
+          </p>
+
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-4 leading-relaxed">
-            MeDico nació de una necesidad real del día a día médico. 
+            MeDico nació de una necesidad real del día a día médico.
             Fue desarrollada junto a médicos, y 
             cada función existe para resolver un problema que ellos mismos enfrentan. Porque 
             la mejor forma de crear una herramienta para médicos es construirla con ellos.
