@@ -66,27 +66,32 @@ export default function LandingPage() {
             Hecha por médicos, para médicos — Guatemala
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] mb-8">
             Las horas de un médico valen{" "}
             <span className="text-amber-400">oro</span>.
             <br />
             <span className="text-primary">Nosotros te ayudamos a aprovecharlas mejor.</span>
           </h1>
 
-          <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">
-            ¿Por qué existe MeDico App?
+          {/* Qué es la app */}
+          <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+            MeDico App es la plataforma para gestionar tu práctica quirúrgica privada —
+            registrá cirugías, calculá honorarios con la Tabla de California,
+            exportá PDF para aseguradoras y controlá tus estadísticas,
+            todo desde el celular.
           </p>
 
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-4 leading-relaxed">
-            MeDico nació de una necesidad real del día a día médico.
-            Fue desarrollada junto a médicos, y 
-            cada función existe para resolver un problema que ellos mismos enfrentan. Porque 
-            la mejor forma de crear una herramienta para médicos es construirla con ellos.
-          </p>
-
-          <p className="text-base text-gray-500 max-w-xl mx-auto mb-10">
-            Registrá, calculá, exportá y administra tus cirugías desde el celular en menos de 2 minutos.
-          </p>
+          {/* Por qué existe */}
+          <div className="max-w-2xl mx-auto mb-10 text-left bg-white/5 border border-white/10 rounded-2xl px-6 py-5">
+            <p className="text-primary font-semibold text-xs uppercase tracking-widest mb-2">
+              ¿Por qué existe MeDico App?
+            </p>
+            <p className="text-gray-400 leading-relaxed text-base">
+              Nació de una necesidad real del día a día médico. Fue desarrollada junto a médicos
+              y cada función existe para resolver un problema que ellos mismos enfrentan —
+              porque la mejor forma de crear una herramienta para médicos es construirla con ellos.
+            </p>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
