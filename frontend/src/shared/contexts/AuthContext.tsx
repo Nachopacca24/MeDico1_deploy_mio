@@ -121,6 +121,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authService.register(data);
       setUser(response.user);
 
+      // Marcar que el usuario acaba de registrarse para que el tutorial aparezca una sola vez
+      sessionStorage.setItem('medico_just_registered', 'true');
+
       // Los usuarios registrados siempre son role=1 (normal)
       // Redirigir al dashboard
       navigate('/');

@@ -1,5 +1,6 @@
 // src/core/components/WelcomeModal.tsx
 
+import { useState, useEffect } from 'react';
 import { Stethoscope, Sparkles, ArrowRight, X } from 'lucide-react';
 import { useTutorial } from '@/core/contexts/TutorialContext';
 import { useAuth } from '@/shared/contexts/AuthContext';
@@ -8,7 +9,22 @@ export function WelcomeModal() {
   const { tutorialState, startTutorial, dismissWelcome } = useTutorial();
   const { user } = useAuth();
 
-  if (tutorialState.seen || tutorialState.completed) return null;
+  // Solo mostrar si el usuario acaba de registrarse en esta sesión
+  const [visible, setVisible] = useState(() => {
+    const justRegistered = sessionStorage.getItem('medico_just_registered') === 'true';
+    return justRegistered && !tutorialState.seen && !tutorialState.completed;
+  });
+
+  // Limpiar el flag de registro y marcar como visto al montar
+  useEffect(() => {
+    if (visible) {
+      sessionStorage.removeItem('medico_just_registered');
+      dismissWelcome();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!visible) return null;
 
   const firstName = user?.first_name || user?.username || 'Doctor';
 

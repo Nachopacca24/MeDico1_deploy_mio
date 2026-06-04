@@ -19,7 +19,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/operations',
     emoji: '🩺',
     title: 'Tabla de California',
-    description: 'Acá encontrás más de 4,000 procedimientos quirúrgicos con su código CPT y valor en RVU. Esta es la base de todos tus cálculos de honorarios.',
+    description: 'Los procedimientos que tenemos son de la Tabla de california qu elos medicos nos han brindado. Acá encontrás más de 4,000 procedimientos quirúrgicos con su código CPT y valor en RVU. Esta es la base de todos tus cálculos de honorarios.',
     hint: 'Buscá un procedimiento que usés frecuentemente y tocá ⭐ para agregarlo a favoritos.',
   },
   // ── 2. Hospitales ────────────────────────────────────────────────
