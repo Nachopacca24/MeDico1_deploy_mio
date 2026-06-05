@@ -186,7 +186,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         })
 
 
-_VALID_PLACEMENTS = {'home_banner', 'popup', 'for_you', 'sticky_banner', 'feed'}
+_VALID_PLACEMENTS = {'home_banner', 'popup', 'sidebar', 'footer', 'between_content'}
 _VALID_CATEGORIES = {
     'general', 'congreso', 'casa_medica', 'hospital',
     'tecnologia', 'farmaceutica', 'educacion', 'clinica',

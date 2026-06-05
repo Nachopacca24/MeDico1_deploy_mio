@@ -1,8 +1,9 @@
 // src/shared/hooks/useInvitationBadges.ts
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { colleaguesService } from '@/services/colleaguesService';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 const POLL_INTERVAL_MS = 60_000;
 
@@ -15,11 +16,15 @@ interface InvitationBadges {
 }
 
 export function useInvitationBadges(): InvitationBadges {
+  const { isAuthenticated, user } = useAuth();
   const [hasPendingCases, setHasPendingCases] = useState(false);
   const [hasPendingColleagues, setHasPendingColleagues] = useState(false);
   const mountedRef = useRef(true);
 
-  const fetchBadges = async () => {
+  const canFetch = isAuthenticated && user?.is_email_verified;
+
+  const fetchBadges = useCallback(async () => {
+    if (!canFetch) return;
     try {
       const [casesRes, colleaguesRes] = await Promise.allSettled([
         surgicalCaseService.getAssistedCases(),
@@ -37,7 +42,7 @@ export function useInvitationBadges(): InvitationBadges {
     } catch {
       // silently fail — badges are non-critical
     }
-  };
+  }, [canFetch]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -56,7 +61,7 @@ export function useInvitationBadges(): InvitationBadges {
       window.removeEventListener(CASE_INVITATIONS_EVENT, onCasesSeen);
       window.removeEventListener(COLLEAGUE_REQUESTS_EVENT, onColleaguesSeen);
     };
-  }, []);
+  }, [fetchBadges]);
 
   return { hasPendingCases, hasPendingColleagues };
 }
