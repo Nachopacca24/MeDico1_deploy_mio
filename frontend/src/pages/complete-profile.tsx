@@ -38,8 +38,6 @@ export default function CompleteProfile() {
     last_name: user?.last_name || "",
     username: user?.username || "",
     specialty: user?.specialty || "",
-    license_number: user?.license_number || "",
-    phone: user?.phone || "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -57,8 +55,6 @@ export default function CompleteProfile() {
     if (!formData.last_name) newErrors.last_name = "Apellido es requerido";
     if (!formData.username) newErrors.username = "Nombre de usuario es requerido";
     if (!formData.specialty) newErrors.specialty = "Especialidad es requerida";
-    if (!formData.license_number) newErrors.license_number = "Número de colegiado es requerido";
-    if (!formData.phone) newErrors.phone = "Teléfono es requerido";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -168,34 +164,6 @@ export default function CompleteProfile() {
               {errors.specialty && <p className="text-sm text-destructive">{errors.specialty}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="license_number">Número de colegiado</Label>
-              <Input
-                id="license_number"
-                name="license_number"
-                placeholder="COL-12345"
-                value={formData.license_number}
-                onChange={handleChange}
-                disabled={saving}
-                aria-invalid={!!errors.license_number}
-              />
-              {errors.license_number && <p className="text-sm text-destructive">{errors.license_number}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="+502 1234 5678"
-                value={formData.phone}
-                onChange={handleChange}
-                disabled={saving}
-                aria-invalid={!!errors.phone}
-              />
-              {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
-            </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={saving}>

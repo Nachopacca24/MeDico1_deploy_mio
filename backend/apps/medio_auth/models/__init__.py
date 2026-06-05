@@ -311,8 +311,6 @@ class CustomUser(AbstractUser):
             self.first_name,
             self.last_name,
             self.specialty,
-            self.license_number,
-            self.phone
         ]
         return all(required_fields)
     
