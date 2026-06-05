@@ -53,7 +53,7 @@ const folderStructure = {
     "Obstetricia": "Obstetricia/Obstetricia.csv",
   },
   Oftalmología: {
-    "Oftalmología": "Oftalmología/Oftalmología.csv",
+    "Oftalmología": "Oftamología/Oftalmología.csv",
   },
   Ortopedia: {
     "Cadera": "Ortopedia/Cadera.csv",
@@ -80,7 +80,7 @@ const folderStructure = {
     "Uñas y Piel": "Procesos_variados/Uñas___piel.csv",
   },
   Urología: {
-    "Urología": "Urología/Urología.csv",
+    "Urología": "Urologia/Urología.csv",
   },
 };
 
