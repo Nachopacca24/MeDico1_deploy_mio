@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='user',
+            model_name='customuser',
             name='deletion_requested_at',
             field=models.DateTimeField(
                 blank=True,
