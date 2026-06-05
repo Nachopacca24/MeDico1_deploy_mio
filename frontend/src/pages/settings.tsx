@@ -772,7 +772,7 @@ const Settings = () => {
           </TabsContent>
 
           {/* Legal Tab */}
-          <TabsContent value="legal y eliminacion de cuenta">
+          <TabsContent value="legal">
             <div className="space-y-4">
               <Card>
                 <CardHeader>
