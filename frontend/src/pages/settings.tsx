@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
-import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen, Trash2, AlertTriangle } from "lucide-react";
 import { authService } from "@/shared/services/authService";
 import { useTutorial } from "@/core/contexts/TutorialContext";
 
@@ -44,6 +44,9 @@ const Settings = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleUpgrade = async () => {
     setCheckoutLoading(true);
@@ -76,6 +79,28 @@ const Settings = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { restartTutorial, tutorialState } = useTutorial();
+
+  const needsPassword = user?.has_usable_password ?? true;
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    try {
+      const payload = needsPassword
+        ? { password: deleteInput }
+        : { confirmation: deleteInput };
+      await authService.deleteAccount(payload);
+      toast({
+        title: 'Solicitud enviada',
+        description: 'Tu cuenta fue desactivada. Los datos serán eliminados en 30 días.',
+        duration: 6000,
+      });
+      window.location.href = '/login';
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
   
   // Google Calendar
   const {
@@ -806,6 +831,87 @@ const Settings = () => {
                   <p className="text-xs text-muted-foreground mt-3">
                     Para consultas sobre privacidad: <a href="mailto:contacto@medicoapp.app" className="text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors">contacto@medicoapp.app</a>
                   </p>
+                </CardContent>
+              </Card>
+
+              {/* Zona de Peligro */}
+              <Card className="border-red-200 dark:border-red-900">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    <CardTitle className="text-red-600 dark:text-red-400">Zona de Peligro</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Acciones irreversibles sobre tu cuenta
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!showDeleteConfirm ? (
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium">Eliminar cuenta</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Elimina permanentemente tu cuenta y todos tus datos: cirugías, hospitales, favoritos e imágenes. Esta acción no se puede deshacer.
+                        </p>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => { setShowDeleteConfirm(true); setDeleteInput(''); }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar cuenta
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">
+                          ¿Estás seguro? Esta acción es permanente e irreversible.
+                        </p>
+                        <p className="text-xs text-red-600 dark:text-red-500">
+                          Se eliminarán todos tus casos quirúrgicos, imágenes, hospitales, seguros y datos de cuenta. No se puede recuperar nada.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="deleteInput" className="text-sm">
+                          {needsPassword
+                            ? 'Ingresá tu contraseña para confirmar'
+                            : 'Escribí ELIMINAR para confirmar'}
+                        </Label>
+                        <Input
+                          id="deleteInput"
+                          type={needsPassword ? 'password' : 'text'}
+                          placeholder={needsPassword ? '••••••••' : 'ELIMINAR'}
+                          value={deleteInput}
+                          onChange={e => setDeleteInput(e.target.value)}
+                          className="border-red-300 dark:border-red-800 focus-visible:ring-red-500"
+                        />
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          variant="destructive"
+                          disabled={deleteLoading || !deleteInput}
+                          onClick={handleDeleteAccount}
+                          className="flex-1"
+                        >
+                          {deleteLoading
+                            ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Eliminando...</>
+                            : <><Trash2 className="h-4 w-4 mr-2" /> Confirmar eliminación</>}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => { setShowDeleteConfirm(false); setDeleteInput(''); }}
+                          disabled={deleteLoading}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

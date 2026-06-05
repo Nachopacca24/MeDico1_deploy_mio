@@ -943,6 +943,110 @@ class GoogleLoginView(APIView):
 
 
 # ============================================
+# ELIMINACIÓN DE CUENTA
+# ============================================
+
+class DeleteAccountView(APIView):
+    """
+    Solicitud de eliminación de cuenta (soft delete).
+    - La cuenta se desactiva inmediatamente (el usuario no puede volver a entrar).
+    - Se notifica al admin por email.
+    - La eliminación definitiva ocurre a los 30 días mediante el comando
+      manage.py delete_pending_accounts.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+
+        # Verificar que no tenga ya una solicitud pendiente
+        if user.deletion_requested_at:
+            return Response(
+                {'error': 'Ya existe una solicitud de eliminación pendiente para esta cuenta.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Confirmar identidad
+        if user.has_usable_password():
+            password = request.data.get('password', '')
+            if not password:
+                return Response(
+                    {'error': 'Debés ingresar tu contraseña para confirmar.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if not user.check_password(password):
+                return Response(
+                    {'error': 'Contraseña incorrecta.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            confirmation = request.data.get('confirmation', '')
+            if confirmation != 'ELIMINAR':
+                return Response(
+                    {'error': 'Debés escribir ELIMINAR para confirmar.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        try:
+            # Invalidar refresh token
+            refresh_token = request.data.get('refresh')
+            if refresh_token:
+                try:
+                    RefreshToken(refresh_token).blacklist()
+                except TokenError:
+                    pass
+
+            # Soft delete: desactivar cuenta y registrar fecha de solicitud
+            user.is_active = False
+            user.deletion_requested_at = timezone.now()
+            user.save(update_fields=['is_active', 'deletion_requested_at'])
+
+            # Notificar al admin por email
+            deletion_date = (timezone.now() + timedelta(days=30)).strftime('%d/%m/%Y')
+            try:
+                send_mail(
+                    subject=f'[MéDico App] Solicitud de eliminación de cuenta — {user.email}',
+                    message=(
+                        f'El usuario {user.get_full_name() or user.username} ({user.email}) '
+                        f'solicitó eliminar su cuenta.\n\n'
+                        f'ID de usuario: {user.id}\n'
+                        f'Especialidad: {user.specialty or "No especificada"}\n'
+                        f'Fecha de solicitud: {timezone.now().strftime("%d/%m/%Y %H:%M")} UTC\n'
+                        f'Fecha de eliminación definitiva: {deletion_date}\n\n'
+                        f'La cuenta fue desactivada inmediatamente. '
+                        f'Para cancelar la eliminación antes de esa fecha, '
+                        f'reactivá la cuenta desde el panel de administración.'
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[settings.DEFAULT_FROM_EMAIL],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass  # El email de aviso no debe bloquear el proceso
+
+            logger.info(
+                "Account deletion requested: user=%s id=%s scheduled_for=%s",
+                user.email, user.id, deletion_date
+            )
+            return Response(
+                {
+                    'message': (
+                        'Tu cuenta fue desactivada. '
+                        f'Los datos serán eliminados definitivamente el {deletion_date}. '
+                        'Si fue un error, contacta a soporte en contacto@medicoapp.app.'
+                    )
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            logger.exception("Error processing account deletion for user %s", user.id)
+            return Response(
+                {'error': 'Error al procesar la solicitud. Intentá de nuevo.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# ============================================
 # PASSWORD RESET
 # ============================================
 

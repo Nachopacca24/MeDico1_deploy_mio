@@ -13,7 +13,11 @@ class UserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='get_full_name', read_only=True)
     is_profile_complete = serializers.BooleanField(read_only=True)
     is_admin = serializers.BooleanField(read_only=True)
-    
+    has_usable_password = serializers.SerializerMethodField()
+
+    def get_has_usable_password(self, obj):
+        return obj.has_usable_password()
+
     class Meta:
         model = User
         fields = [
@@ -24,12 +28,13 @@ class UserSerializer(serializers.ModelSerializer):
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
             'theme_preference',
-            'is_profile_complete', 'created_at', 'updated_at'
+            'is_profile_complete', 'has_usable_password', 'created_at', 'updated_at'
         ]
         read_only_fields = [
             'id', 'is_verified', 'is_email_verified', 'friend_code',
             'created_at', 'updated_at', 'name', 'full_name', 'is_admin',
-            'trial_ends_at', 'is_permanent_premium', 'ls_renews_at', 'ls_cancelled'
+            'trial_ends_at', 'is_permanent_premium', 'ls_renews_at', 'ls_cancelled',
+            'has_usable_password'
         ]
 
 
@@ -135,21 +140,32 @@ class LoginSerializer(serializers.Serializer):
         # Siempre realizar verificación de contraseña para prevenir timing attacks
         if user_obj:
             password_valid = check_password(password, user_obj.password)
-            
+
+            # Detectar cuenta pendiente de eliminación antes de authenticate
+            if password_valid and user_obj.deletion_requested_at:
+                from django.utils import timezone
+                deletion_date = (user_obj.deletion_requested_at + __import__('datetime').timedelta(days=30)).strftime('%d/%m/%Y')
+                raise ValidationError({
+                    'non_field_errors': (
+                        f'Esta cuenta está programada para eliminación el {deletion_date}. '
+                        'Si fue un error, contactá a soporte en contacto@medicoapp.app.'
+                    )
+                })
+
             if password_valid:
                 user = authenticate(
                     request=self.context.get('request'),
-                    email=email, 
+                    email=email,
                     password=password
                 )
         else:
             check_password(password, 'pbkdf2_sha256$260000$invalid$invalid')
-        
+
         if not user:
             raise ValidationError({
                 'non_field_errors': 'Credenciales inválidas. Por favor verifique su email y contraseña.'
             })
-        
+
         if not user.is_active:
             raise ValidationError({
                 'non_field_errors': 'Esta cuenta está desactivada.'

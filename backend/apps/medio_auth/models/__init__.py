@@ -153,6 +153,14 @@ class CustomUser(AbstractUser):
         verbose_name="Cuenta Verificada por Admin",
         help_text="Indica si la cuenta ha sido verificada por un administrador"
     )
+
+    # Eliminación programada
+    deletion_requested_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Eliminación Solicitada",
+        help_text="Fecha en que el usuario solicitó eliminar su cuenta. Se elimina definitivamente a los 30 días."
+    )
     
     # Configuraciones personales
     theme_preference = models.CharField(

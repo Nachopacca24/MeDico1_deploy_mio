@@ -31,6 +31,9 @@ from .views import (
     # Password Reset
     ForgotPasswordView,
     ResetPasswordView,
+
+    # Delete Account
+    DeleteAccountView,
 )
 
 app_name = 'medio_auth'
@@ -78,4 +81,9 @@ urlpatterns = [
     path('friend-requests/send/', SendFriendRequestView.as_view(), name='send_friend_request'),
     path('friend-requests/<int:request_id>/accept/', AcceptFriendRequestView.as_view(), name='accept_friend_request'),
     path('friend-requests/<int:request_id>/reject/', RejectFriendRequestView.as_view(), name='reject_friend_request'),
+
+    # ============================================
+    # ELIMINACIÓN DE CUENTA
+    # ============================================
+    path('delete-account/', DeleteAccountView.as_view(), name='delete_account'),
 ]

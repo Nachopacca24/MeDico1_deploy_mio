@@ -14,6 +14,7 @@ const AUTH_ENDPOINTS = {
   google: `${API_URL}/api/auth/google/`,
   forgotPassword: `${API_URL}/api/auth/forgot-password/`,
   resetPassword: `${API_URL}/api/auth/reset-password/`,
+  deleteAccount: `${API_URL}/api/auth/delete-account/`,
 };
 
 // Tipos TypeScript
@@ -43,6 +44,7 @@ export interface User {
   is_email_verified: boolean;
   theme_preference: 'light' | 'dark' | 'system';
   is_profile_complete: boolean;
+  has_usable_password: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -289,7 +291,23 @@ class AuthService {
 
     // 🔒 CRÍTICO: Limpiar TODOS los datos (incluyendo Google Calendar)
     this.clearAuth();
+  }
 
+  /**
+   * Eliminar cuenta propia del usuario
+   */
+  async deleteAccount(payload: { password?: string; confirmation?: string }): Promise<void> {
+    const refreshToken = this.getRefreshToken();
+    const response = await this.authenticatedFetch(AUTH_ENDPOINTS.deleteAccount, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, refresh: refreshToken }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || 'No se pudo eliminar la cuenta.');
+    }
+    this.clearAuth();
   }
 
   /**
