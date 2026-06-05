@@ -38,6 +38,10 @@ const Index = () => {
   const [loadingAds, setLoadingAds] = useState(true);
 
   useEffect(() => {
+    if (!user?.is_email_verified) {
+      setLoadingStats(false);
+      return;
+    }
     const fetchStats = async () => {
       try {
         const data = await surgicalCaseService.getStats();
@@ -48,9 +52,8 @@ const Index = () => {
         setLoadingStats(false);
       }
     };
-
     fetchStats();
-  }, []);
+  }, [user?.is_email_verified]);
 
   // Cargar anuncios Gold
   useEffect(() => {

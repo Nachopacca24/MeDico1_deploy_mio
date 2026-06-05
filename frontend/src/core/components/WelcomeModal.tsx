@@ -120,11 +120,10 @@ export function WelcomeModal() {
 
             <div className="space-y-3">
               <button
-                onClick={() => setScreen('tutorial')}
+                onClick={handleClose}
                 className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 active:scale-95 transition-all"
               >
-                Entendido, ver el tutorial
-                <ArrowRight className="h-5 w-5" />
+                Entendido
               </button>
               <button
                 onClick={handleResend}
