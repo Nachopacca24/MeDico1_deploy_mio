@@ -70,6 +70,8 @@ export default function CompleteProfile() {
     try {
       await updateUser(formData);
       toast({ title: "¡Perfil completado!", description: "Tu información fue guardada exitosamente." });
+      // Disparar el tutorial de bienvenida (Google y otros flujos sin email de registro)
+      localStorage.setItem('medico_onboarding_step', 'show_tutorial');
       navigate("/dashboard");
     } catch (error: any) {
       toast({

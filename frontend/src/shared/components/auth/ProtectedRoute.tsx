@@ -39,6 +39,11 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Si el perfil está incompleto (ej. registro con Google), forzar completarlo
+  if (!user.is_profile_complete && location.pathname !== '/complete-profile') {
+    return <Navigate to="/complete-profile" replace />;
+  }
+
   // Si está autenticado (y es admin si se requiere), mostrar el contenido
   return <>{children}</>;
 }
