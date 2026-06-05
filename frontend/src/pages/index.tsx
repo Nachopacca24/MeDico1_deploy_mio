@@ -1,7 +1,6 @@
 // src/pages/index.tsx
 
 import { AppLayout } from "@/shared/components/layout/AppLayout";
-import { EmailVerificationBanner } from "@/shared/components/EmailVerificationBanner";
 import { WeekCalendarWidget } from "@/shared/components/ui/WeekCalendarWidget";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -117,9 +116,6 @@ const Index = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Email Verification Banner */}
-        <EmailVerificationBanner />
-
         {/* Carrusel de Anuncios */}
         {!loadingAds && goldAds.length > 0 && (
           <div className="relative rounded-xl overflow-hidden bg-black">

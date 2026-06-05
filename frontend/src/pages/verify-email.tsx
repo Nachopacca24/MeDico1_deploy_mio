@@ -44,6 +44,8 @@ const VerifyEmailPage = () => {
 
         if (isAuthenticated) {
           try { await refreshUser(); } catch { /* ignorar si falla */ }
+          // Marcar para mostrar el tutorial al llegar al dashboard
+          sessionStorage.setItem('medico_just_verified', 'true');
           setTimeout(() => navigate('/dashboard'), 3000);
         } else {
           setTimeout(() => {

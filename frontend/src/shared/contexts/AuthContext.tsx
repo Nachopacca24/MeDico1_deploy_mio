@@ -121,12 +121,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authService.register(data);
       setUser(response.user);
 
-      // Marcar que el usuario acaba de registrarse para que el tutorial aparezca una sola vez
+      // Marcar que el usuario acaba de registrarse para mostrar el flujo de bienvenida
       sessionStorage.setItem('medico_just_registered', 'true');
 
-      // Los usuarios registrados siempre son role=1 (normal)
-      // Redirigir al dashboard
-      navigate('/');
+      // Ir directo al dashboard para que aparezca el modal de bienvenida
+      navigate('/dashboard');
     } catch (error) {
       throw error;
     }
