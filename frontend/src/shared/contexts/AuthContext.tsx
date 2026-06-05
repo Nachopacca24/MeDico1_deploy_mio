@@ -121,8 +121,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authService.register(data);
       setUser(response.user);
 
-      // Marcar que el usuario acaba de registrarse para mostrar el flujo de bienvenida
-      sessionStorage.setItem('medico_just_registered', 'true');
+      // Iniciar el flujo de onboarding: primero verificar email, luego tutorial
+      localStorage.setItem('medico_onboarding_step', 'verify_email');
 
       // Ir directo al dashboard para que aparezca el modal de bienvenida
       navigate('/dashboard');

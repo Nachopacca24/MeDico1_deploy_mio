@@ -7,7 +7,13 @@ import { useAuth } from '@/shared/contexts/AuthContext';
 import { emailVerificationService } from '@/shared/services/emailVerificationService';
 import { useToast } from '@/shared/hooks/use-toast';
 
+const ONBOARDING_KEY = 'medico_onboarding_step';
+
 type Screen = 'email' | 'tutorial';
+
+function getOnboardingStep() {
+  return localStorage.getItem(ONBOARDING_KEY);
+}
 
 export function WelcomeModal() {
   const { tutorialState, startTutorial, dismissWelcome } = useTutorial();
@@ -15,39 +21,46 @@ export function WelcomeModal() {
   const { toast } = useToast();
   const [isResending, setIsResending] = useState(false);
 
-  const [visible, setVisible] = useState(() => {
-    const justRegistered = sessionStorage.getItem('medico_just_registered') === 'true';
-    const justVerified = sessionStorage.getItem('medico_just_verified') === 'true';
-    return (justRegistered || justVerified) && !tutorialState.completed;
-  });
-
-  // Pantalla inicial: si recién registró y el email no está verificado → pantalla de email
+  const step = getOnboardingStep();
+  const [visible, setVisible] = useState(
+    () => !!step && !tutorialState.completed
+  );
   const [screen, setScreen] = useState<Screen>(() => {
-    const justRegistered = sessionStorage.getItem('medico_just_registered') === 'true';
-    const emailVerified = user?.is_email_verified ?? false;
-    return justRegistered && !emailVerified ? 'email' : 'tutorial';
+    if (step === 'show_tutorial') return 'tutorial';
+    // verify_email: si el usuario ya está verificado (ej. Google OAuth), ir directo al tutorial
+    if (step === 'verify_email' && user?.is_email_verified) return 'tutorial';
+    return 'email';
   });
 
-  // Limpiar flags de sesión al montar
+  // Escuchar cambios en localStorage desde otras pestañas (ej. verificación en pestaña nueva)
   useEffect(() => {
-    if (visible) {
-      sessionStorage.removeItem('medico_just_registered');
-      sessionStorage.removeItem('medico_just_verified');
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key !== ONBOARDING_KEY) return;
+      if (e.newValue === 'show_tutorial' && !tutorialState.completed) {
+        setScreen('tutorial');
+        setVisible(true);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [tutorialState.completed]);
+
+  const clearOnboarding = () => localStorage.removeItem(ONBOARDING_KEY);
 
   const handleClose = () => {
+    clearOnboarding();
     dismissWelcome();
     setVisible(false);
   };
 
   const handleStartTutorial = () => {
+    clearOnboarding();
     startTutorial();
     setVisible(false);
   };
 
   const handleSkipTutorial = () => {
+    clearOnboarding();
     dismissWelcome();
     setVisible(false);
   };

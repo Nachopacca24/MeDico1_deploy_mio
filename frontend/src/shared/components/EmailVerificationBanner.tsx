@@ -1,6 +1,6 @@
 // src/shared/components/EmailVerificationBanner.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { emailVerificationService } from '@/shared/services/emailVerificationService';
 import { Button } from '@/shared/components/ui/button';
@@ -14,6 +14,18 @@ export function EmailVerificationBanner() {
   const [isResending, setIsResending] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+
+  // Cuando el usuario vuelve a esta pestaña, refrescar el estado por si verificó en otra
+  useEffect(() => {
+    if (!user || user.is_email_verified) return;
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refreshUser().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [user, refreshUser]);
 
   // Solo mostrar si el usuario no ha verificado su email y no ha sido descartado
   if (!user || user.is_email_verified === true || isDismissed) {

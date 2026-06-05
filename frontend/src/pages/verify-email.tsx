@@ -42,10 +42,11 @@ const VerifyEmailPage = () => {
           username: response.username,
         });
 
+        // Avanzar al tutorial en el próximo acceso al dashboard (funciona entre pestañas)
+        localStorage.setItem('medico_onboarding_step', 'show_tutorial');
+
         if (isAuthenticated) {
           try { await refreshUser(); } catch { /* ignorar si falla */ }
-          // Marcar para mostrar el tutorial al llegar al dashboard
-          sessionStorage.setItem('medico_just_verified', 'true');
           setTimeout(() => navigate('/dashboard'), 3000);
         } else {
           setTimeout(() => {
