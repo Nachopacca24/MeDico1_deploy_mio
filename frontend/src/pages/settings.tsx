@@ -210,7 +210,7 @@ const Settings = () => {
             <TabsTrigger value="calendar">Calendario</TabsTrigger>
             <TabsTrigger value="security">Seguridad</TabsTrigger>
             <TabsTrigger value="tutorial">Tutorial</TabsTrigger>
-            <TabsTrigger value="legal">Legal</TabsTrigger>
+            <TabsTrigger value="legal">Legal y Eliminacion de cuenta</TabsTrigger>
           </TabsList>
           
           {/* Profile Tab */}
