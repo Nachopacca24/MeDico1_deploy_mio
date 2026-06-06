@@ -80,15 +80,10 @@ const Settings = () => {
   const { user } = useAuth();
   const { restartTutorial, tutorialState } = useTutorial();
 
-  const needsPassword = user?.has_usable_password ?? true;
-
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
-      const payload = needsPassword
-        ? { password: deleteInput }
-        : { confirmation: deleteInput };
-      await authService.deleteAccount(payload);
+      await authService.deleteAccount({ confirmation: deleteInput });
       toast({
         title: 'Solicitud enviada',
         description: 'Tu cuenta fue desactivada. Los datos serán eliminados en 30 días.',
@@ -877,14 +872,12 @@ const Settings = () => {
 
                       <div className="space-y-2">
                         <Label htmlFor="deleteInput" className="text-sm">
-                          {needsPassword
-                            ? 'Ingresá tu contraseña para confirmar'
-                            : 'Escribí ELIMINAR para confirmar'}
+                          Escribí ELIMINAR para confirmar
                         </Label>
                         <Input
                           id="deleteInput"
-                          type={needsPassword ? 'password' : 'text'}
-                          placeholder={needsPassword ? '••••••••' : 'ELIMINAR'}
+                          type="text"
+                          placeholder="ELIMINAR"
                           value={deleteInput}
                           onChange={e => setDeleteInput(e.target.value)}
                           className="border-red-300 dark:border-red-800 focus-visible:ring-red-500"

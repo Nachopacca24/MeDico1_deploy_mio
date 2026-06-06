@@ -966,26 +966,24 @@ class DeleteAccountView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Confirmar identidad
-        if user.has_usable_password():
-            password = request.data.get('password', '')
-            if not password:
-                return Response(
-                    {'error': 'Debés ingresar tu contraseña para confirmar.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        # Confirmar identidad: todos los usuarios escriben "ELIMINAR"
+        # (usuarios con contraseña pueden además confirmar con su password)
+        confirmation = request.data.get('confirmation', '')
+        password = request.data.get('password', '')
+
+        if confirmation == 'ELIMINAR':
+            pass  # confirmación válida para cualquier usuario
+        elif user.has_usable_password() and password:
             if not user.check_password(password):
                 return Response(
                     {'error': 'Contraseña incorrecta.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
         else:
-            confirmation = request.data.get('confirmation', '')
-            if confirmation != 'ELIMINAR':
-                return Response(
-                    {'error': 'Debés escribir ELIMINAR para confirmar.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            return Response(
+                {'error': 'Escribí ELIMINAR en el campo de confirmación para continuar.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             # Invalidar refresh token
