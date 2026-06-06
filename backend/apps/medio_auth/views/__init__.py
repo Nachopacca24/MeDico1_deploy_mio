@@ -901,7 +901,7 @@ class GoogleLoginView(APIView):
             if not user:
                 base_username = email.split('@')[0]
                 unique_username = f"{base_username}_{uuid.uuid4().hex[:6]}"
-                
+
                 user = User.objects.create(
                     email=email,
                     username=unique_username,
@@ -913,7 +913,21 @@ class GoogleLoginView(APIView):
                     plan='premium',
                 )
                 created = True
-            
+            else:
+                # Verificar si la cuenta está pendiente de eliminación
+                if user.deletion_requested_at:
+                    deletion_date = (user.deletion_requested_at + timedelta(days=30)).strftime('%d/%m/%Y')
+                    return Response(
+                        {'error': f'Esta cuenta está programada para eliminación el {deletion_date}. Si fue un error, contactá a soporte en contacto@medicoapp.app.'},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+                # Verificar que la cuenta esté activa
+                if not user.is_active:
+                    return Response(
+                        {'error': 'Esta cuenta está desactivada. Contactá a soporte en contacto@medicoapp.app.'},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
             # Autoverificar email si viene de Google
             if not user.is_email_verified:
                 user.is_email_verified = True
