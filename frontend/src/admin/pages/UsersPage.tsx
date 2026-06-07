@@ -431,7 +431,7 @@ const UsersPage = () => {
               </CardContent>
             </Card>
           );
-          })}
+          })
         )}
       </div>
 
