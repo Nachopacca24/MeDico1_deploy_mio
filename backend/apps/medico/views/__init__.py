@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import Count
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +169,11 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
         result = []
         for u in users:
-            if u['deletion_requested_at']:
+            # Usuarios inactivos sin fecha = solicitaron eliminación antes de que
+            # existiera el campo; marcar con fecha actual para que el admin los reconozca
+            if not u['is_active'] and not u['is_superuser'] and not u['is_staff'] and not u['deletion_requested_at']:
+                u['deletion_requested_at'] = timezone.now().isoformat()
+            elif u['deletion_requested_at']:
                 u['deletion_requested_at'] = u['deletion_requested_at'].isoformat()
             if u['date_joined']:
                 u['date_joined'] = u['date_joined'].isoformat()
