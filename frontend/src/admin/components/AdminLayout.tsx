@@ -16,6 +16,7 @@ import {
   Briefcase,
   Megaphone,
   CreditCard,
+  Bell,
 } from 'lucide-react';
 
 const adminMenuItems = [
@@ -43,6 +44,11 @@ const adminMenuItems = [
     title: 'Publicidad',
     href: '/admin/advertisements',
     icon: Megaphone
+  },
+  {
+    title: 'Anuncios',
+    href: '/admin/announcements',
+    icon: Bell
   },
   {
     title: 'Procedimientos',

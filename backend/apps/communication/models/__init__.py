@@ -1,18 +1,27 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
-# Ejemplo de modelos para comunicación
-# class Message(models.Model):
-#     sender = models.ForeignKey('medio_auth.CustomUser', on_delete=models.CASCADE, related_name='sent_messages')
-#     recipient = models.ForeignKey('medio_auth.CustomUser', on_delete=models.CASCADE, related_name='received_messages')
-#     subject = models.CharField(max_length=200)
-#     body = models.TextField()
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     read_at = models.DateTimeField(null=True, blank=True)
-#
-# class Notification(models.Model):
-#     user = models.ForeignKey('medio_auth.CustomUser', on_delete=models.CASCADE, related_name='notifications')
-#     title = models.CharField(max_length=200)
-#     message = models.TextField()
-#     notification_type = models.CharField(max_length=50)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     read = models.BooleanField(default=False)
+User = get_user_model()
+
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=200, verbose_name='Título')
+    body = models.TextField(verbose_name='Mensaje')
+    is_active = models.BooleanField(default=True, verbose_name='Activo')
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='announcements_created',
+        verbose_name='Creado por',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Anuncio'
+        verbose_name_plural = 'Anuncios'
+
+    def __str__(self):
+        return self.title

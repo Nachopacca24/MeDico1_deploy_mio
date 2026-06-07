@@ -9,6 +9,7 @@ import { AdminLayout } from "@/admin/components/AdminLayout";
 import AdminDashboard from "@/admin/pages/Dashboard";
 import Clients from "@/admin/pages/Clients";
 import Advertisements from "@/admin/pages/Advertisements";
+import AnnouncementsPage from "@/admin/pages/AnnouncementsPage";
 import UsersPage from "@/admin/pages/UsersPage";
 import SubscriptionsPage from "@/admin/pages/SubscriptionsPage";
 
@@ -68,6 +69,7 @@ export const AppRouter = () => {
         <Route path='subscriptions' element={<SubscriptionsPage />} />
         <Route path='clients' element={<Clients />} />
         <Route path='advertisements' element={<Advertisements />} />
+        <Route path='announcements' element={<AnnouncementsPage />} />
       </Route>
 
       {/* Profile completion — protected but outside ad system */}

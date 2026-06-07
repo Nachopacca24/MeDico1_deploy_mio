@@ -16,6 +16,7 @@ from core.views import (
     set_permanent_premium,
     cancel_account_deletion,
 )
+from apps.communication.views import admin_announcements, admin_announcement_detail
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -47,6 +48,8 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/cancel-deletion/', cancel_account_deletion, name='cancel_account_deletion'),
     path('api/admin/hospitals/', admin_hospitals, name='admin_hospitals'),
     path('api/admin/procedures/', admin_procedures, name='admin_procedures'),
+    path('api/admin/announcements/', admin_announcements, name='admin_announcements'),
+    path('api/admin/announcements/<int:pk>/', admin_announcement_detail, name='admin_announcement_detail'),
     
     # Django REST Framework
     path('api-auth/', include('rest_framework.urls')),
