@@ -1000,6 +1000,15 @@ class DeleteAccountView(APIView):
             )
 
         try:
+            # Cancelar suscripción de Lemon Squeezy si tiene una activa
+            from apps.payment.views import cancel_ls_subscription_for_user
+            sub_cancelled = cancel_ls_subscription_for_user(user)
+            if not sub_cancelled:
+                logger.warning(
+                    'DeleteAccount: subscription cancellation failed for user=%s — proceeding anyway',
+                    user.id
+                )
+
             # Invalidar refresh token
             refresh_token = request.data.get('refresh')
             if refresh_token:
@@ -1015,6 +1024,7 @@ class DeleteAccountView(APIView):
 
             # Notificar al admin por email
             deletion_date = (timezone.now() + timedelta(days=30)).strftime('%d/%m/%Y')
+            sub_status = 'Cancelada correctamente' if sub_cancelled else '⚠ Error al cancelar — revisar en Lemon Squeezy'
             try:
                 send_mail(
                     subject=f'[MéDico App] Solicitud de eliminación de cuenta — {user.email}',
@@ -1023,6 +1033,8 @@ class DeleteAccountView(APIView):
                         f'solicitó eliminar su cuenta.\n\n'
                         f'ID de usuario: {user.id}\n'
                         f'Especialidad: {user.specialty or "No especificada"}\n'
+                        f'Plan: {user.plan}\n'
+                        f'Suscripción Lemon Squeezy: {sub_status}\n'
                         f'Fecha de solicitud: {timezone.now().strftime("%d/%m/%Y %H:%M")} UTC\n'
                         f'Fecha de eliminación definitiva: {deletion_date}\n\n'
                         f'La cuenta fue desactivada inmediatamente. '

@@ -113,6 +113,37 @@ def create_checkout(request):
         return Response({'error': 'No se pudo crear el checkout'}, status=status.HTTP_502_BAD_GATEWAY)
 
 
+# ── Shared helper ─────────────────────────────────────────────────────────────
+
+def cancel_ls_subscription_for_user(user) -> bool:
+    """
+    Cancela la suscripción de Lemon Squeezy del usuario si tiene una activa.
+    Devuelve True si no había suscripción activa o se canceló correctamente.
+    Devuelve False si hubo un error al cancelar (nunca lanza excepción).
+    Llamar antes de desactivar/eliminar la cuenta.
+    """
+    if (not user.ls_subscription_id
+            or user.ls_cancelled
+            or user.plan != 'premium'
+            or user.is_permanent_premium):
+        return True  # Nada que cancelar
+
+    sub_id = user.ls_subscription_id
+    logger.info('[LS cancel-on-delete] user=%s cancelling subscription=%s', user.id, sub_id)
+    try:
+        resp = requests.delete(
+            f'{LS_API_BASE}/subscriptions/{sub_id}',
+            headers=_ls_headers(),
+            timeout=10,
+        )
+        resp.raise_for_status()
+        logger.info('[LS cancel-on-delete] subscription=%s cancelled for user=%s', sub_id, user.id)
+        return True
+    except Exception as e:
+        logger.error('[LS cancel-on-delete] failed for user=%s sub=%s: %s', user.id, sub_id, e)
+        return False
+
+
 # ── Cancel subscription ────────────────────────────────────────────────────────
 
 @api_view(['POST'])
