@@ -160,12 +160,21 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             total_favorites=Count('favorite', distinct=True)
         ).values(
             'id', 'username', 'email', 'first_name', 'last_name',
-            'phone', 'specialty', 'is_superuser', 'is_staff', 
+            'phone', 'specialty', 'is_superuser', 'is_staff',
             'is_active', 'date_joined', 'plan',
-            'total_cases', 'total_favorites'
-        )
-        
-        return Response(list(users))
+            'total_cases', 'total_favorites',
+            'deletion_requested_at',
+        ).order_by('is_active', 'deletion_requested_at', 'date_joined')
+
+        result = []
+        for u in users:
+            if u['deletion_requested_at']:
+                u['deletion_requested_at'] = u['deletion_requested_at'].isoformat()
+            if u['date_joined']:
+                u['date_joined'] = u['date_joined'].isoformat()
+            result.append(u)
+
+        return Response(result)
     
     def destroy(self, request, pk=None):
         """

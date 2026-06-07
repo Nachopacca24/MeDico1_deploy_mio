@@ -292,6 +292,22 @@ def set_permanent_premium(request, user_id):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdminUser])
+def cancel_account_deletion(request, user_id):
+    """Cancela la solicitud de eliminación de cuenta y reactiva al usuario."""
+    try:
+        target = User.objects.get(id=user_id)
+        if not target.deletion_requested_at:
+            return Response({'message': 'Este usuario no tiene una solicitud de eliminación pendiente.'}, status=400)
+        target.is_active = True
+        target.deletion_requested_at = None
+        target.save(update_fields=['is_active', 'deletion_requested_at'])
+        return Response({'success': True, 'message': f'Cuenta de {target.email} reactivada exitosamente.'})
+    except User.DoesNotExist:
+        return Response({'message': 'Usuario no encontrado.'}, status=404)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def update_user_plan(request, user_id):
     """Cambiar el plan de un usuario (free/premium)."""
     new_plan = request.data.get('plan')

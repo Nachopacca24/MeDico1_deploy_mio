@@ -114,6 +114,17 @@ class AdminService {
     }
   }
 
+  async cancelAccountDeletion(userId: number): Promise<void> {
+    const response = await authService.authenticatedFetch(
+      `${API_URL}/api/admin/users/${userId}/cancel-deletion/`,
+      { method: 'POST' }
+    );
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al cancelar la eliminación');
+    }
+  }
+
   async setPermanentPremium(userId: number, isPermanent: boolean): Promise<void> {
     try {
       const response = await authService.authenticatedFetch(

@@ -20,6 +20,8 @@ import {
   Award,
   Star,
   StarOff,
+  RotateCcw,
+  Clock,
 } from 'lucide-react';
 
 interface User {
@@ -37,6 +39,7 @@ interface User {
   plan: 'free' | 'premium';
   total_cases: number;
   total_favorites: number;
+  deletion_requested_at: string | null;
 }
 
 const UsersPage = () => {
@@ -46,6 +49,7 @@ const UsersPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [updatingPlanId, setUpdatingPlanId] = useState<number | null>(null);
+  const [cancellingDeletionId, setCancellingDeletionId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -99,6 +103,25 @@ const UsersPage = () => {
       toast.error('Error', error.message || 'No se pudo eliminar el usuario');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleCancelDeletion = async (userId: number, userEmail: string) => {
+    const confirmed = window.confirm(
+      `¿Cancelar la eliminación de la cuenta de "${userEmail}"?\n\nEsto reactivará la cuenta y el usuario podrá volver a iniciar sesión.`
+    );
+    if (!confirmed) return;
+    setCancellingDeletionId(userId);
+    try {
+      await adminService.cancelAccountDeletion(userId);
+      setUsers(prev => prev.map(u =>
+        u.id === userId ? { ...u, is_active: true, deletion_requested_at: null } : u
+      ));
+      toast.success('Cuenta reactivada', `La cuenta de ${userEmail} fue reactivada.`);
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudo cancelar la eliminación.');
+    } finally {
+      setCancellingDeletionId(null);
     }
   };
 
@@ -203,6 +226,20 @@ const UsersPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="border-red-200 dark:border-red-900">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              Eliminaciones Pendientes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+              {users.filter(u => u.deletion_requested_at).length}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search */}
@@ -232,8 +269,16 @@ const UsersPage = () => {
             </CardContent>
           </Card>
         ) : (
-          filteredUsers.map(user => (
-            <Card key={user.id} className="hover:border-primary transition-colors">
+          filteredUsers.map(user => {
+            const deletionDate = user.deletion_requested_at
+              ? new Date(new Date(user.deletion_requested_at).getTime() + 30 * 24 * 60 * 60 * 1000)
+                  .toLocaleDateString('es-GT')
+              : null;
+            return (
+            <Card
+              key={user.id}
+              className={`hover:border-primary transition-colors ${user.deletion_requested_at ? 'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10' : ''}`}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
@@ -247,9 +292,14 @@ const UsersPage = () => {
                           Admin
                         </Badge>
                       )}
-                      {!user.is_active && (
+                      {user.deletion_requested_at ? (
+                        <Badge className="bg-red-600 text-white flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Eliminación el {deletionDate}
+                        </Badge>
+                      ) : !user.is_active ? (
                         <Badge variant="secondary">Inactivo</Badge>
-                      )}
+                      ) : null}
                       {getPlanBadge(user.plan)}
                     </div>
                     <CardDescription>@{user.username}</CardDescription>
@@ -301,6 +351,25 @@ const UsersPage = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2 border-t flex-wrap">
+                  {/* Cancelar eliminación */}
+                  {user.deletion_requested_at && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCancelDeletion(user.id, user.email)}
+                      disabled={cancellingDeletionId === user.id}
+                      className="flex-1 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20"
+                    >
+                      {cancellingDeletionId === user.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Cancelar eliminación
+                        </>
+                      )}
+                    </Button>
+                  )}
                   {/* Toggle plan button */}
                   <Button
                     variant={user.plan === 'premium' ? 'outline' : 'default'}
@@ -343,6 +412,17 @@ const UsersPage = () => {
                   </Button>
                 </div>
 
+                {user.deletion_requested_at && (
+                  <div className="mt-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
+                    <p className="font-medium flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      Solicitud de eliminación: {new Date(user.deletion_requested_at).toLocaleString('es-GT')}
+                    </p>
+                    <p className="text-xs mt-0.5 text-red-600 dark:text-red-400">
+                      Se eliminará definitivamente el {deletionDate}. La cuenta está desactivada.
+                    </p>
+                  </div>
+                )}
                 {user.is_superuser && (
                   <div className="text-xs text-muted-foreground text-center pt-2 bg-blue-50 dark:bg-blue-950/20 p-2 rounded">
                     🛡️ Los superusuarios no pueden ser eliminados desde el panel
@@ -350,7 +430,7 @@ const UsersPage = () => {
                 )}
               </CardContent>
             </Card>
-          ))
+          );}
         )}
       </div>
 

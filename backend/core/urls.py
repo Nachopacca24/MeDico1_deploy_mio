@@ -14,6 +14,7 @@ from core.views import (
     delete_user,
     update_user_plan,
     set_permanent_premium,
+    cancel_account_deletion,
 )
 
 def trigger_error(request):
@@ -43,6 +44,7 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/delete/', delete_user, name='delete_user'),
     path('api/admin/users/<int:user_id>/plan/', update_user_plan, name='update_user_plan'),
     path('api/admin/users/<int:user_id>/permanent-premium/', set_permanent_premium, name='set_permanent_premium'),
+    path('api/admin/users/<int:user_id>/cancel-deletion/', cancel_account_deletion, name='cancel_account_deletion'),
     path('api/admin/hospitals/', admin_hospitals, name='admin_hospitals'),
     path('api/admin/procedures/', admin_procedures, name='admin_procedures'),
     
