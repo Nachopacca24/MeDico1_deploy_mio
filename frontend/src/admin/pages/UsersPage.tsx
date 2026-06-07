@@ -236,7 +236,7 @@ const UsersPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {users.filter(u => u.deletion_requested_at).length}
+              {users.filter(u => !u.is_active && !u.is_superuser && !u.is_staff).length}
             </div>
           </CardContent>
         </Card>
@@ -270,6 +270,8 @@ const UsersPage = () => {
           </Card>
         ) : (
           filteredUsers.map(user => {
+            // Un usuario con is_active=false y no superusuario está pendiente de eliminación
+            const isPendingDeletion = !user.is_active && !user.is_superuser && !user.is_staff;
             const deletionDate = user.deletion_requested_at
               ? new Date(new Date(user.deletion_requested_at).getTime() + 30 * 24 * 60 * 60 * 1000)
                   .toLocaleDateString('es-GT')
@@ -277,7 +279,7 @@ const UsersPage = () => {
             return (
             <Card
               key={user.id}
-              className={`hover:border-primary transition-colors ${user.deletion_requested_at ? 'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10' : ''}`}
+              className={`hover:border-primary transition-colors ${isPendingDeletion ? 'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10' : ''}`}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -292,10 +294,10 @@ const UsersPage = () => {
                           Admin
                         </Badge>
                       )}
-                      {user.deletion_requested_at ? (
+                      {isPendingDeletion ? (
                         <Badge className="bg-red-600 text-white flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          Eliminación el {deletionDate}
+                          {deletionDate ? `Eliminación el ${deletionDate}` : 'Eliminación pendiente'}
                         </Badge>
                       ) : !user.is_active ? (
                         <Badge variant="secondary">Inactivo</Badge>
@@ -352,7 +354,7 @@ const UsersPage = () => {
                 {/* Actions */}
                 <div className="flex gap-2 pt-2 border-t flex-wrap">
                   {/* Cancelar eliminación */}
-                  {user.deletion_requested_at && (
+                  {isPendingDeletion && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -412,14 +414,18 @@ const UsersPage = () => {
                   </Button>
                 </div>
 
-                {user.deletion_requested_at && (
+                {isPendingDeletion && (
                   <div className="mt-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
                     <p className="font-medium flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      Solicitud de eliminación: {new Date(user.deletion_requested_at).toLocaleString('es-GT')}
+                      {user.deletion_requested_at
+                        ? `Solicitud: ${new Date(user.deletion_requested_at).toLocaleString('es-GT')}`
+                        : 'Cuenta desactivada — eliminación solicitada'}
                     </p>
                     <p className="text-xs mt-0.5 text-red-600 dark:text-red-400">
-                      Se eliminará definitivamente el {deletionDate}. La cuenta está desactivada.
+                      {deletionDate
+                        ? `Se eliminará definitivamente el ${deletionDate}.`
+                        : 'Se eliminará en hasta 30 días desde la solicitud.'}
                     </p>
                   </div>
                 )}
