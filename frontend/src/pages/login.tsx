@@ -111,25 +111,34 @@ export default function Login() {
     }
   };
 
+  // Extracts the most descriptive message from any error type
+  const extractErrorMessage = (error: unknown): string => {
+    if (error instanceof AuthError) return error.getUserMessage();
+    if (error instanceof NetworkError) return 'Sin conexión a internet. Verificá tu red e intentá de nuevo.';
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'object' && error !== null) {
+      const e = error as Record<string, unknown>;
+      // Native Google SDK errors come as { error: '...' } or { message: '...' }
+      if (typeof e.message === 'string' && e.message) return e.message;
+      if (typeof e.error === 'string' && e.error) {
+        // Map known native SDK generic errors to Spanish
+        if (e.error === 'Something went wrong') return 'No se pudo completar el inicio de sesión con Google. Intentá de nuevo.';
+        if (e.error === 'popup_closed_by_user') return '';
+        return e.error;
+      }
+    }
+    return 'Ocurrió un error inesperado. Intentá de nuevo.';
+  };
+
   const handleGoogleSuccess = async (tokenResponse: any) => {
     setIsLoading(true);
     try {
       await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
-      toast({
-        title: "¡Bienvenido/a!",
-        description: "Has iniciado sesión con Google exitosamente.",
-      });
-      if (location.state?.from) {
-        navigate(location.state.from);
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "No se pudo iniciar sesión con Google.",
-      });
+      toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
+      navigate(location.state?.from ?? "/dashboard");
+    } catch (error: unknown) {
+      const msg = extractErrorMessage(error);
+      if (msg) toast({ variant: "destructive", title: "Error al iniciar sesión", description: msg });
     } finally {
       setIsLoading(false);
     }
@@ -137,34 +146,26 @@ export default function Login() {
 
   const loginGoogle = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Fallo al conectar con Google" }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Fallo al conectar con Google. Intentá de nuevo." }),
   });
 
   const handleGoogleNative = async () => {
     setIsLoading(true);
     try {
-      console.log('[Google] Calling initialize()...');
       await GoogleAuth.initialize();
-      console.log('[Google] initialize() OK, calling signIn()...');
       const googleUser = await GoogleAuth.signIn();
-      console.log('[Google] signIn() OK, idToken present:', !!googleUser.authentication.idToken);
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
       await loginWithGoogle(token);
       toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
-      if (location.state?.from) {
-        navigate(location.state.from);
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (error: any) {
-      console.error('[Google] ERROR:', JSON.stringify(error), 'code:', error?.code, 'message:', error?.message, 'error:', error?.error);
-      // Don't show a toast if the user simply cancelled the picker
-      const cancelled = error?.error === 'popup_closed_by_user'
-        || error?.message === 'User cancelled'
-        || error?.code === 12501;
+      navigate(location.state?.from ?? "/dashboard");
+    } catch (error: unknown) {
+      const cancelled =
+        (error as any)?.error === 'popup_closed_by_user' ||
+        (error as any)?.message === 'User cancelled' ||
+        (error as any)?.code === 12501;
       if (!cancelled) {
-        const msg = error?.message ?? error?.error ?? JSON.stringify(error) ?? 'Error desconocido';
-        toast({ variant: "destructive", title: "Error al iniciar sesión con Google", description: msg, duration: 8000 });
+        const msg = extractErrorMessage(error);
+        if (msg) toast({ variant: "destructive", title: "Error al iniciar sesión", description: msg, duration: 8000 });
       }
     } finally {
       setIsLoading(false);

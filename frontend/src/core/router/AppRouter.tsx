@@ -1,6 +1,7 @@
 // src/core/router/AppRouter.tsx
 
 import { Route, Routes, Navigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { ProtectedRoute } from "@/shared/components/auth/ProtectedRoute";
 import { PersistentAdSystem } from "@/shared/components/ads/PersistentAdSystem";
 
@@ -47,7 +48,9 @@ export const AppRouter = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path='/' element={<LandingPage />} />
+      <Route path='/' element={
+        Capacitor.isNativePlatform() ? <Navigate to="/login" replace /> : <LandingPage />
+      } />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/signup' element={<SignupForm />} />
       <Route path='/logout' element={<LogoutPage />} />

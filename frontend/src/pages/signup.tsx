@@ -3,7 +3,7 @@ import type React from "react";
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
-import { AuthError } from '@/shared/services/authErrors';
+import { AuthError, NetworkError } from '@/shared/services/authErrors';
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
@@ -165,20 +165,13 @@ export default function SignupForm() {
     setIsLoading(true);
     try {
       await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
-      toast({
-        title: "¡Bienvenido/a!",
-        description: "Te has registrado con Google exitosamente.",
-      });
-      toast({
-        title: "¡Bienvenido/a! Tienes 14 días Premium gratis",
-        description: "Tu cuenta de Google fue registrada. Disfruta de acceso completo durante tu período de prueba.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "No se pudo iniciar sesión con Google.",
-      });
+      toast({ title: "¡Bienvenido/a! Tienes 14 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+    } catch (error: unknown) {
+      let msg = "No se pudo registrar con Google.";
+      if (error instanceof AuthError) msg = error.getUserMessage();
+      else if (error instanceof NetworkError) msg = "Sin conexión a internet. Verificá tu red e intentá de nuevo.";
+      else if (error instanceof Error) msg = error.message;
+      toast({ variant: "destructive", title: "Error al registrarse", description: msg });
     } finally {
       setIsLoading(false);
     }
@@ -186,7 +179,7 @@ export default function SignupForm() {
 
   const loginGoogle = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Fallo al conectar con Google" }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Fallo al conectar con Google. Intentá de nuevo." }),
   });
 
   // Si ya está autenticado, redirigir al dashboard
