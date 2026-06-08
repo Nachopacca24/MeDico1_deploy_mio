@@ -16,7 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
     has_usable_password = serializers.SerializerMethodField()
 
     def get_has_usable_password(self, obj):
-        return obj.has_usable_password()
+        # Empty string password (Google-only accounts created via create()) is not truly usable
+        return obj.has_usable_password() and bool(obj.password)
 
     class Meta:
         model = User
