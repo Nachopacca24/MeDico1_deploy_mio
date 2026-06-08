@@ -1,5 +1,34 @@
 // src/services/googleCalendarService.ts
 
+// Minimal type shim for the dynamically-loaded Google API client.
+interface GapiEventParams {
+  calendarId: string;
+  [key: string]: unknown;
+}
+interface GapiCalendarClient {
+  events: {
+    list(params: GapiEventParams): Promise<{ result: { items: CalendarEvent[] } }>;
+    insert(params: GapiEventParams & { resource: CalendarEvent }): Promise<{ result: { id: string } }>;
+    update(params: GapiEventParams & { eventId: string; resource: CalendarEvent }): Promise<unknown>;
+    delete(params: GapiEventParams & { eventId: string }): Promise<unknown>;
+  };
+}
+interface GapiClientLib {
+  init(config: { discoveryDocs: string[] }): Promise<void>;
+  load(api: string, version: string): Promise<void>;
+  setToken(token: { access_token: string } | null): void;
+  getToken(): { access_token: string } | null;
+  calendar: GapiCalendarClient;
+}
+declare global {
+  interface Window {
+    gapi: {
+      load(api: string, callback: () => void): void;
+      client: GapiClientLib;
+    };
+  }
+}
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
@@ -40,6 +69,8 @@ class GoogleCalendarService {
   private gapiInited = false;
   private readonly STORAGE_PREFIX = 'medico_google_';
   private readonly TOKEN_EXPIRY_KEY = 'token_expiry';
+  private readonly EMAIL_KEY = 'user_email';
+  private readonly LAST_CONNECT_KEY = 'last_connect';
 
   private getCurrentUserId(): string | null {
     const userStr = localStorage.getItem('medico_user');
@@ -58,7 +89,7 @@ class GoogleCalendarService {
     return `${this.STORAGE_PREFIX}${userId}_${key}`;
   }
 
-  setTokens(accessToken: string, expiresIn: number = 3600): void {
+  setTokens(accessToken: string, expiresIn: number = 3600, email?: string): void {
     const userId = this.getCurrentUserId();
     if (!userId) return;
 
@@ -67,6 +98,10 @@ class GoogleCalendarService {
     localStorage.setItem(this.getStorageKey('connected_user_id'), userId);
     localStorage.setItem(this.getStorageKey('token_timestamp'), Date.now().toString());
     localStorage.setItem(this.getStorageKey(this.TOKEN_EXPIRY_KEY), expiryTime.toString());
+    localStorage.setItem(this.getStorageKey(this.LAST_CONNECT_KEY), Date.now().toString());
+    if (email) {
+      localStorage.setItem(this.getStorageKey(this.EMAIL_KEY), email);
+    }
   }
 
   private isTokenExpired(): boolean {
@@ -85,12 +120,27 @@ class GoogleCalendarService {
       return null;
     }
 
-    if (this.isTokenExpired()) {
-      this.clearTokens();
-      return null;
-    }
+    // Don't clear tokens on expiry — keep them so we know the user was connected
+    // and can attempt a silent refresh.
+    if (this.isTokenExpired()) return null;
 
     return localStorage.getItem(this.getStorageKey('access_token'));
+  }
+
+  // True if there are stored credentials for the current user (even if expired).
+  hasStoredCredentials(): boolean {
+    const userId = this.getCurrentUserId();
+    if (!userId) return false;
+    const connectedUserId = localStorage.getItem(this.getStorageKey('connected_user_id'));
+    if (!connectedUserId || connectedUserId !== userId) return false;
+    return !!localStorage.getItem(this.getStorageKey('access_token'));
+  }
+
+  // Returns ms elapsed since last successful connect, or null if never connected.
+  getTimeSinceLastConnect(): number | null {
+    const lastConnectStr = localStorage.getItem(this.getStorageKey(this.LAST_CONNECT_KEY));
+    if (!lastConnectStr) return null;
+    return Date.now() - parseInt(lastConnectStr);
   }
 
   clearTokens(): void {
@@ -98,6 +148,8 @@ class GoogleCalendarService {
     localStorage.removeItem(this.getStorageKey('connected_user_id'));
     localStorage.removeItem(this.getStorageKey('token_timestamp'));
     localStorage.removeItem(this.getStorageKey(this.TOKEN_EXPIRY_KEY));
+    localStorage.removeItem(this.getStorageKey(this.EMAIL_KEY));
+    localStorage.removeItem(this.getStorageKey(this.LAST_CONNECT_KEY));
   }
 
   isConnected(): boolean {
@@ -106,7 +158,7 @@ class GoogleCalendarService {
   }
 
   async initialize(): Promise<void> {
-    if (this.gapiInited && (window as any).gapi?.client?.calendar) return;
+    if (this.gapiInited && window.gapi?.client?.calendar) return;
 
     return new Promise((resolve, reject) => {
       const gapiScript = document.createElement('script');
@@ -115,21 +167,21 @@ class GoogleCalendarService {
       gapiScript.defer = true;
 
       gapiScript.onload = () => {
-        (window as any).gapi.load('client', async () => {
+        window.gapi.load('client', async () => {
           try {
-            await (window as any).gapi.client.init({
+            await window.gapi.client.init({
               discoveryDocs: [DISCOVERY_DOC],
                 });
 
-            if (!(window as any).gapi.client.calendar) {
-              await (window as any).gapi.client.load('calendar', 'v3');
+            if (!window.gapi.client.calendar) {
+              await window.gapi.client.load('calendar', 'v3');
             }
 
             this.gapiInited = true;
             resolve();
           } catch (error: any) {
             try {
-              await (window as any).gapi.client.load('calendar', 'v3');
+              await window.gapi.client.load('calendar', 'v3');
               this.gapiInited = true;
               resolve();
             } catch {
@@ -147,6 +199,17 @@ class GoogleCalendarService {
     });
   }
 
+  private buildAuthUrl(state: string, prompt: 'consent' | 'select_account' | 'none'): string {
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
+    authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
+    authUrl.searchParams.append('response_type', 'token');
+    authUrl.searchParams.append('scope', SCOPES);
+    authUrl.searchParams.append('state', state);
+    authUrl.searchParams.append('prompt', prompt);
+    return authUrl.toString();
+  }
+
   async connect(): Promise<void> {
     const userId = this.getCurrentUserId();
     if (!userId) throw new Error('Usuario no autenticado');
@@ -154,52 +217,79 @@ class GoogleCalendarService {
     const state = `user_${userId}_${Date.now()}`;
     localStorage.setItem('google_oauth_state', state);
 
-    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
-    authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
-    authUrl.searchParams.append('response_type', 'token');
-    authUrl.searchParams.append('scope', SCOPES);
-    authUrl.searchParams.append('state', state);
-    authUrl.searchParams.append('prompt', 'consent');
-
-    window.location.href = authUrl.toString();
+    // select_account: no vuelve a pedir permisos si ya fueron otorgados, solo elegir cuenta
+    window.location.href = this.buildAuthUrl(state, 'select_account');
   }
 
-  async handleOAuthCallback(): Promise<boolean> {
+  // Attempts a silent token refresh without any visible UI.
+  // Uses sessionStorage to guard against infinite redirect loops when Google
+  // cannot refresh silently (interaction_required).
+  async connectSilent(): Promise<void> {
+    const userId = this.getCurrentUserId();
+    if (!userId) throw new Error('Usuario no autenticado');
+
+    const state = `silent_${userId}_${Date.now()}`;
+    localStorage.setItem('google_oauth_state', state);
+    localStorage.setItem('google_oauth_silent', '1');
+
+    window.location.href = this.buildAuthUrl(state, 'none');
+  }
+
+  // Returns 'connected' on success, 'silent_failed' when prompt=none couldn't
+  // refresh silently (user needs to interact), or false if there was no OAuth
+  // response in the URL.
+  async handleOAuthCallback(): Promise<'connected' | 'silent_failed' | false> {
     // On Android the deep link delivers params in the hash or query string
     const hash = window.location.hash;
     const search = window.location.search;
     const raw = hash ? hash.substring(1) : search ? search.substring(1) : '';
     if (!raw) return false;
 
-    try {
-      const params = new URLSearchParams(raw);
-      const accessToken = params.get('access_token');
-      const state = params.get('state');
-      const error = params.get('error');
-      const expiresIn = params.get('expires_in');
+    const params = new URLSearchParams(raw);
+    const accessToken = params.get('access_token');
+    const state = params.get('state');
+    const error = params.get('error');
+    const expiresIn = params.get('expires_in');
 
-      if (error) throw new Error(`Error de OAuth: ${error}`);
-      if (!accessToken) return false;
+    const isSilent = localStorage.getItem('google_oauth_silent') === '1';
+    const savedState = localStorage.getItem('google_oauth_state');
 
-      const savedState = localStorage.getItem('google_oauth_state');
-      if (state !== savedState) throw new Error('Estado de OAuth inválido');
+    // Clean up URL and flags immediately so back-navigation never re-processes
+    window.history.replaceState({}, document.title, window.location.pathname);
+    localStorage.removeItem('google_oauth_state');
+    localStorage.removeItem('google_oauth_silent');
 
-      const expirySeconds = expiresIn ? parseInt(expiresIn) : 3600;
-      this.setTokens(accessToken, expirySeconds);
-
-      await this.initialize();
-      (window as any).gapi.client.setToken({ access_token: accessToken });
-
-      window.history.replaceState({}, document.title, window.location.pathname);
-      localStorage.removeItem('google_oauth_state');
-
-      return true;
-    } catch (error) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      localStorage.removeItem('google_oauth_state');
-      throw error;
+    if (error) {
+      if (isSilent) return 'silent_failed';
+      throw new Error(`Error de OAuth: ${error}`);
     }
+
+    if (!accessToken) return false;
+
+    if (state !== savedState) throw new Error('Estado de OAuth inválido');
+
+    const expirySeconds = expiresIn ? parseInt(expiresIn) : 3600;
+
+    // Fetch email from tokeninfo — implicit flow doesn't return an id_token.
+    let email: string | undefined;
+    try {
+      const resp = await fetch(
+        `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`
+      );
+      if (resp.ok) {
+        const info = await resp.json();
+        email = info.email;
+      }
+    } catch {
+      // non-critical — email display is best-effort
+    }
+
+    this.setTokens(accessToken, expirySeconds, email);
+
+    await this.initialize();
+    window.gapi.client.setToken({ access_token: accessToken });
+
+    return 'connected';
   }
 
   async disconnect(): Promise<void> {
@@ -214,8 +304,8 @@ class GoogleCalendarService {
 
     this.clearTokens();
 
-    if ((window as any).gapi?.client) {
-      (window as any).gapi.client.setToken(null);
+    if (window.gapi?.client) {
+      window.gapi.client.setToken(null);
     }
   }
 
@@ -223,15 +313,15 @@ class GoogleCalendarService {
     const token = this.getAccessToken();
     if (!token) throw new Error('No hay token de acceso disponible. Conéctate primero.');
 
-    if (!(window as any).gapi?.client?.calendar) {
+    if (!window.gapi?.client?.calendar) {
       await this.initialize();
     }
 
-    if (!(window as any).gapi?.client?.calendar) {
+    if (!window.gapi?.client?.calendar) {
       throw new Error('La librería de Google Calendar no pudo cargarse.');
     }
 
-    (window as any).gapi.client.setToken({ access_token: token });
+    window.gapi.client.setToken({ access_token: token });
   }
 
   private async handleApiError(error: any): Promise<void> {
@@ -256,7 +346,7 @@ class GoogleCalendarService {
 
       if (timeMax) request.timeMax = timeMax.toISOString();
 
-      const response = await (window as any).gapi.client.calendar.events.list(request);
+      const response = await window.gapi.client.calendar.events.list(request);
       return response.result.items || [];
     } catch (error) {
       await this.handleApiError(error);
@@ -267,7 +357,7 @@ class GoogleCalendarService {
   async createEvent(event: CalendarEvent): Promise<string> {
     try {
       await this.ensureToken();
-      const response = await (window as any).gapi.client.calendar.events.insert({
+      const response = await window.gapi.client.calendar.events.insert({
         calendarId: 'primary',
         resource: event,
       });
@@ -281,7 +371,7 @@ class GoogleCalendarService {
   async updateEvent(eventId: string, event: CalendarEvent): Promise<void> {
     try {
       await this.ensureToken();
-      await (window as any).gapi.client.calendar.events.update({
+      await window.gapi.client.calendar.events.update({
         calendarId: 'primary',
         eventId: eventId,
         resource: event,
@@ -295,7 +385,7 @@ class GoogleCalendarService {
   async deleteEvent(eventId: string): Promise<void> {
     try {
       await this.ensureToken();
-      await (window as any).gapi.client.calendar.events.delete({
+      await window.gapi.client.calendar.events.delete({
         calendarId: 'primary',
         eventId: eventId,
       });
@@ -306,14 +396,7 @@ class GoogleCalendarService {
   }
 
   getUserEmail(): string | null {
-    const token = (window as any).gapi?.client?.getToken();
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.id_token?.split('.')[1] || ''));
-      return payload.email || null;
-    } catch {
-      return null;
-    }
+    return localStorage.getItem(this.getStorageKey(this.EMAIL_KEY));
   }
 }
 

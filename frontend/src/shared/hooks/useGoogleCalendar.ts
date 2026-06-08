@@ -4,10 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { googleCalendarService, CalendarEvent } from '@/services/googleCalendarService';
 import { useToast } from '@/shared/hooks/use-toast';
 
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
 export function useGoogleCalendar() {
   const [isConnected, setIsConnected] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const { toast } = useToast();
 
   /**
@@ -47,27 +50,42 @@ export function useGoogleCalendar() {
   }, [getCurrentUser]);
 
   /**
-   * 🔒 Verificar conexión al montar el hook y cada 60 segundos
+   * 🔒 Verificar conexión al montar el hook y cada 60 segundos.
+   * Si el token expiró pero el usuario se conectó en los últimos 7 días,
+   * intenta un silent refresh automático (prompt=none) para renovar sin interrumpir.
    */
   useEffect(() => {
     checkConnection();
 
-    // ✅ Verificar conexión periódicamente
+    // Auto-silent-refresh: if not connected but was connected recently, try once per session.
+    if (
+      !googleCalendarService.isConnected() &&
+      googleCalendarService.hasStoredCredentials() &&
+      !sessionStorage.getItem('silent_refresh_attempted')
+    ) {
+      const ms = googleCalendarService.getTimeSinceLastConnect();
+      if (ms !== null && ms < SEVEN_DAYS_MS) {
+        sessionStorage.setItem('silent_refresh_attempted', '1');
+        setIsReconnecting(true);
+        googleCalendarService.connectSilent().catch(() => setIsReconnecting(false));
+        // If connectSilent succeeds it navigates away; we come back via handleOAuthCallback.
+      }
+    }
+
     const interval = setInterval(() => {
       const wasConnected = isConnected;
       checkConnection();
       const nowConnected = googleCalendarService.isConnected();
 
-      // Si se desconectó, notificar al usuario
       if (wasConnected && !nowConnected) {
-          toast({
+        toast({
           variant: "destructive",
           title: "Google Calendar desconectado",
           description: "Tu sesión de Google Calendar expiró. Por favor, reconéctate.",
           duration: 5000,
         });
       }
-    }, 60000); // Cada 60 segundos
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [checkConnection, isConnected, toast]);
@@ -343,6 +361,7 @@ export function useGoogleCalendar() {
     isConnected,
     userEmail,
     isLoading,
+    isReconnecting,
     connect,
     disconnect,
     createEvent,
