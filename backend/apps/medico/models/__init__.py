@@ -5,6 +5,7 @@ from django.conf import settings
 # Import surgical case models
 from .surgical_case import SurgicalCase, CaseProcedure
 from .surgery_image import SurgeryImage
+from .google_calendar_token import GoogleCalendarToken
 
 
 class Specialty(models.Model):

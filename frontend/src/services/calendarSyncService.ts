@@ -13,7 +13,7 @@ class CalendarSyncService {
    */
   async createEventForCase(surgicalCase: SurgicalCase): Promise<string | null> {
     // Verificar si está conectado
-    if (!googleCalendarService.isConnected()) {
+    if (!googleCalendarService.isConnectedLocally()) {
       console.log('⚠️ Google Calendar no está conectado');
       return null;
     }
@@ -77,7 +77,7 @@ class CalendarSyncService {
    * ✅ CRÍTICO: Actualizar evento con VERIFICACIÓN de cambios reales
    */
   async updateEventForCase(surgicalCase: SurgicalCase): Promise<boolean> {
-    if (!googleCalendarService.isConnected()) {
+    if (!googleCalendarService.isConnectedLocally()) {
       console.log('⚠️ Google Calendar no está conectado');
       return false;
     }
@@ -149,7 +149,7 @@ class CalendarSyncService {
    * Eliminar evento de Google Calendar
    */
   async deleteEventForCase(calendarEventId: string): Promise<boolean> {
-    if (!googleCalendarService.isConnected()) {
+    if (!googleCalendarService.isConnectedLocally()) {
       console.log('⚠️ Google Calendar no está conectado');
       return false;
     }
@@ -188,7 +188,7 @@ class CalendarSyncService {
   async syncMissingCases(
     cases: SurgicalCase[]
   ): Promise<{ synced: number; failed: number; paused: boolean; message?: string }> {
-    if (!googleCalendarService.isConnected()) {
+    if (!googleCalendarService.isConnectedLocally()) {
       return { synced: 0, failed: 0, paused: false };
     }
 
@@ -205,7 +205,7 @@ class CalendarSyncService {
 
     for (const surgicalCase of toSync) {
       // Check token before each case — it may have expired mid-loop
-      if (!googleCalendarService.isConnected()) {
+      if (!googleCalendarService.isConnectedLocally()) {
         return {
           synced,
           failed,

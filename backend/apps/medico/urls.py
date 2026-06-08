@@ -12,6 +12,12 @@ from apps.medico.serializers.hospital import HospitalViewSet
 from apps.medico.serializers.insurance import InsuranceCompanyViewSet
 from apps.medico.views.pdf_export import export_case_pdf, export_cases_bulk_pdf
 from apps.medico.views.surgery_images import list_surgery_images, upload_surgery_image, delete_surgery_image
+from apps.medico.views.google_calendar_auth import (
+    connect_google_calendar,
+    get_google_token,
+    google_calendar_status,
+    disconnect_google_calendar,
+)
 
 app_name = 'medico'
 
@@ -24,6 +30,12 @@ router.register(r'insurances', InsuranceCompanyViewSet, basename='insurance')
 router.register(r'admin/users', AdminUserViewSet, basename='admin-users')
 
 urlpatterns = [
+    # Google Calendar OAuth (Authorization Code flow)
+    path('google-calendar/connect/', connect_google_calendar, name='google-calendar-connect'),
+    path('google-calendar/token/', get_google_token, name='google-calendar-token'),
+    path('google-calendar/status/', google_calendar_status, name='google-calendar-status'),
+    path('google-calendar/disconnect/', disconnect_google_calendar, name='google-calendar-disconnect'),
+
     # Custom paths BEFORE router so they aren't swallowed by cases/{pk}/
     path('cases/<int:case_id>/pdf/', export_case_pdf, name='case-pdf'),
     path('cases/export-pdf/', export_cases_bulk_pdf, name='cases-bulk-pdf'),

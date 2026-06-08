@@ -56,7 +56,6 @@ const CalendarPage = () => {
     isConnected,
     userEmail,
     isLoading,
-    isReconnecting,
     connect,
     checkConnection,
     getEvents
@@ -87,13 +86,12 @@ const CalendarPage = () => {
       try {
         const result = await googleCalendarService.handleOAuthCallback();
         if (result === 'connected') {
-          checkConnection();
+          await checkConnection();
           toast.success('¡Conectado!', 'Google Calendar conectado exitosamente');
         }
-        // 'silent_failed' means prompt=none couldn't refresh — no error shown,
-        // the user just sees the normal "connect" screen.
-      } catch {
-        toast.error('Error', 'No se pudo completar la conexión');
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'No se pudo completar la conexión';
+        toast.error('Error', msg);
       }
     };
     handleCallback();
@@ -364,12 +362,9 @@ const CalendarPage = () => {
               <div className="p-4 bg-primary/10 rounded-full mb-4">
                 <CalendarIcon className="w-16 h-16 text-primary" />
               </div>
-              {isReconnecting ? (
+              {isLoading ? (
                 <>
-                  <h3 className="text-2xl font-semibold mb-2">Reconectando...</h3>
-                  <p className="text-muted-foreground text-center max-w-md mb-6">
-                    Renovando tu sesión de Google Calendar automáticamente
-                  </p>
+                  <h3 className="text-2xl font-semibold mb-2">Verificando conexión...</h3>
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </>
               ) : (
@@ -380,18 +375,9 @@ const CalendarPage = () => {
                   <p className="text-muted-foreground text-center max-w-md mb-6">
                     Para ver tus eventos aquí, primero necesitas conectar tu cuenta de Google Calendar
                   </p>
-                  <Button onClick={connect} disabled={isLoading} size="lg">
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Conectando...
-                      </>
-                    ) : (
-                      <>
-                        <CalendarIcon className="mr-2 h-5 w-5" />
-                        Conectar Google Calendar
-                      </>
-                    )}
+                  <Button onClick={connect} size="lg">
+                    <CalendarIcon className="mr-2 h-5 w-5" />
+                    Conectar Google Calendar
                   </Button>
                 </>
               )}

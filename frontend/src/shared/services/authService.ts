@@ -113,7 +113,7 @@ class AuthService {
 
     // Si el usuario cambió, limpiar tokens de Google Calendar
     if (previousUserId && previousUserId !== currentUserId) {
-        googleCalendarService.clearTokens();
+        googleCalendarService.invalidateCache();
     }
 
     localStorage.setItem(TOKEN_STORAGE_KEYS.user, JSON.stringify(user));
@@ -153,7 +153,7 @@ class AuthService {
     localStorage.removeItem(TOKEN_STORAGE_KEYS.lastUserId);
 
     // 🔒 CRÍTICO: Limpiar tokens de Google Calendar
-    googleCalendarService.clearTokens();
+    googleCalendarService.invalidateCache();
   }
 
   /**

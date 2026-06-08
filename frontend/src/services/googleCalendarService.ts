@@ -1,4 +1,41 @@
 // src/services/googleCalendarService.ts
+// Uses Authorization Code flow: the backend exchanges the code for tokens and
+// stores the refresh token encrypted in the database. The frontend only ever
+// holds a short-lived access token in memory — nothing sensitive in localStorage.
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const API_URL = import.meta.env.VITE_API_URL || '';
+const REDIRECT_URI = 'https://medicoapp.app/calendar';
+const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+
+export interface CalendarEvent {
+  id?: string;
+  summary: string;
+  description?: string;
+  location?: string;
+  start: {
+    dateTime?: string;
+    date?: string;
+    timeZone?: string;
+  };
+  end: {
+    dateTime?: string;
+    date?: string;
+    timeZone?: string;
+  };
+  attendees?: Array<{
+    email: string;
+    responseStatus?: string;
+  }>;
+  reminders?: {
+    useDefault: boolean;
+    overrides?: Array<{
+      method: string;
+      minutes: number;
+    }>;
+  };
+}
 
 // Minimal type shim for the dynamically-loaded Google API client.
 interface GapiEventParams {
@@ -29,328 +66,237 @@ declare global {
   }
 }
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
-const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
-
-// Single redirect URI for all platforms (web + Android App Links).
-// Google requires https for sensitive scopes — custom URI schemes are not allowed.
-const REDIRECT_URI = 'https://medicoapp.app/calendar';
-
-export interface CalendarEvent {
-  id?: string;
-  summary: string;
-  description?: string;
-  location?: string;
-  start: {
-    dateTime?: string;
-    date?: string;
-    timeZone?: string;
-  };
-  end: {
-    dateTime?: string;
-    date?: string;
-    timeZone?: string;
-  };
-  attendees?: Array<{
-    email: string;
-    responseStatus?: string;
-  }>;
-  reminders?: {
-    useDefault: boolean;
-    overrides?: Array<{
-      method: string;
-      minutes: number;
-    }>;
-  };
+interface CachedToken {
+  access_token: string;
+  expires_at: number; // ms timestamp
+  email: string;
 }
 
 class GoogleCalendarService {
   private gapiInited = false;
-  private readonly STORAGE_PREFIX = 'medico_google_';
-  private readonly TOKEN_EXPIRY_KEY = 'token_expiry';
-  private readonly EMAIL_KEY = 'user_email';
-  private readonly LAST_CONNECT_KEY = 'last_connect';
+  // In-memory token cache — cleared on page reload (intentional: backend is the source of truth)
+  private cachedToken: CachedToken | null = null;
 
-  private getCurrentUserId(): string | null {
-    const userStr = localStorage.getItem('medico_user');
-    if (!userStr) return null;
-    try {
-      const user = JSON.parse(userStr);
-      return user.id?.toString() || null;
-    } catch {
-      return null;
+  private getAppJwt(): string | null {
+    return localStorage.getItem('medico_access_token');
+  }
+
+  private authHeaders(): Record<string, string> {
+    const jwt = this.getAppJwt();
+    return jwt ? { Authorization: `Bearer ${jwt}` } : {};
+  }
+
+  // ─── Connection status ────────────────────────────────────────────────────
+
+  async checkStatus(): Promise<{ connected: boolean; email: string }> {
+    const resp = await fetch(`${API_URL}/api/v1/medico/google-calendar/status/`, {
+      headers: this.authHeaders(),
+    });
+    if (!resp.ok) return { connected: false, email: '' };
+    return resp.json();
+  }
+
+  // ─── Token management ─────────────────────────────────────────────────────
+
+  // Returns a valid access token, asking the backend to refresh if needed.
+  // Result is cached in memory until 5 minutes before expiry.
+  async getValidToken(): Promise<string | null> {
+    const BUFFER_MS = 5 * 60 * 1000;
+    if (this.cachedToken && Date.now() < this.cachedToken.expires_at - BUFFER_MS) {
+      return this.cachedToken.access_token;
     }
-  }
 
-  private getStorageKey(key: string): string {
-    const userId = this.getCurrentUserId();
-    if (!userId) return `${this.STORAGE_PREFIX}${key}`;
-    return `${this.STORAGE_PREFIX}${userId}_${key}`;
-  }
+    const resp = await fetch(`${API_URL}/api/v1/medico/google-calendar/token/`, {
+      headers: this.authHeaders(),
+    });
 
-  setTokens(accessToken: string, expiresIn: number = 3600, email?: string): void {
-    const userId = this.getCurrentUserId();
-    if (!userId) return;
-
-    const expiryTime = Date.now() + (expiresIn * 1000);
-    localStorage.setItem(this.getStorageKey('access_token'), accessToken);
-    localStorage.setItem(this.getStorageKey('connected_user_id'), userId);
-    localStorage.setItem(this.getStorageKey('token_timestamp'), Date.now().toString());
-    localStorage.setItem(this.getStorageKey(this.TOKEN_EXPIRY_KEY), expiryTime.toString());
-    localStorage.setItem(this.getStorageKey(this.LAST_CONNECT_KEY), Date.now().toString());
-    if (email) {
-      localStorage.setItem(this.getStorageKey(this.EMAIL_KEY), email);
-    }
-  }
-
-  private isTokenExpired(): boolean {
-    const expiryStr = localStorage.getItem(this.getStorageKey(this.TOKEN_EXPIRY_KEY));
-    if (!expiryStr) return true;
-    const expiryTime = parseInt(expiryStr);
-    return Date.now() >= (expiryTime - 5 * 60 * 1000);
-  }
-
-  getAccessToken(): string | null {
-    const userId = this.getCurrentUserId();
-    const connectedUserId = localStorage.getItem(this.getStorageKey('connected_user_id'));
-
-    if (userId && connectedUserId && userId !== connectedUserId) {
-      this.clearTokens();
+    if (!resp.ok) {
+      this.cachedToken = null;
       return null;
     }
 
-    // Don't clear tokens on expiry — keep them so we know the user was connected
-    // and can attempt a silent refresh.
-    if (this.isTokenExpired()) return null;
+    const data = await resp.json();
+    if (!data.connected || !data.access_token) {
+      this.cachedToken = null;
+      return null;
+    }
 
-    return localStorage.getItem(this.getStorageKey('access_token'));
+    this.cachedToken = {
+      access_token: data.access_token,
+      expires_at: Date.now() + data.expires_in * 1000,
+      email: data.email || '',
+    };
+
+    return this.cachedToken.access_token;
   }
 
-  // True if there are stored credentials for the current user (even if expired).
-  hasStoredCredentials(): boolean {
-    const userId = this.getCurrentUserId();
-    if (!userId) return false;
-    const connectedUserId = localStorage.getItem(this.getStorageKey('connected_user_id'));
-    if (!connectedUserId || connectedUserId !== userId) return false;
-    return !!localStorage.getItem(this.getStorageKey('access_token'));
+  isConnectedLocally(): boolean {
+    // Fast synchronous check — true only when we already have a cached token
+    if (!this.cachedToken) return false;
+    return Date.now() < this.cachedToken.expires_at - 5 * 60 * 1000;
   }
 
-  // Returns ms elapsed since last successful connect, or null if never connected.
-  getTimeSinceLastConnect(): number | null {
-    const lastConnectStr = localStorage.getItem(this.getStorageKey(this.LAST_CONNECT_KEY));
-    if (!lastConnectStr) return null;
-    return Date.now() - parseInt(lastConnectStr);
+  getCachedEmail(): string {
+    return this.cachedToken?.email || '';
   }
 
-  clearTokens(): void {
-    localStorage.removeItem(this.getStorageKey('access_token'));
-    localStorage.removeItem(this.getStorageKey('connected_user_id'));
-    localStorage.removeItem(this.getStorageKey('token_timestamp'));
-    localStorage.removeItem(this.getStorageKey(this.TOKEN_EXPIRY_KEY));
-    localStorage.removeItem(this.getStorageKey(this.EMAIL_KEY));
-    localStorage.removeItem(this.getStorageKey(this.LAST_CONNECT_KEY));
+  invalidateCache(): void {
+    this.cachedToken = null;
   }
 
-  isConnected(): boolean {
-    if (!this.getCurrentUserId()) return false;
-    return !!this.getAccessToken();
+  // ─── OAuth flow ───────────────────────────────────────────────────────────
+
+  connect(): void {
+    const state = `cal_${Date.now()}`;
+    sessionStorage.setItem('google_oauth_state', state);
+
+    const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    url.searchParams.set('client_id', GOOGLE_CLIENT_ID);
+    url.searchParams.set('redirect_uri', REDIRECT_URI);
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('scope', SCOPES);
+    url.searchParams.set('state', state);
+    url.searchParams.set('access_type', 'offline');   // required to get refresh_token
+    url.searchParams.set('prompt', 'consent');         // required to get refresh_token on first connect
+    window.location.href = url.toString();
   }
 
-  async initialize(): Promise<void> {
-    if (this.gapiInited && window.gapi?.client?.calendar) return;
+  // Called on every page load. Returns 'connected', 'error', or false.
+  async handleOAuthCallback(): Promise<'connected' | 'error' | false> {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+
+    if (!code && !error) return false;
+
+    // Clean the URL immediately so back-navigation doesn't re-process
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    if (error) throw new Error(`Error de Google: ${error}`);
+
+    const savedState = sessionStorage.getItem('google_oauth_state');
+    sessionStorage.removeItem('google_oauth_state');
+    if (state !== savedState) throw new Error('Estado de OAuth inválido');
+
+    const resp = await fetch(`${API_URL}/api/v1/medico/google-calendar/connect/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...this.authHeaders() },
+      body: JSON.stringify({ code }),
+    });
+
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      throw new Error(data.error || 'No se pudo conectar con Google Calendar');
+    }
+
+    const data = await resp.json();
+    this.cachedToken = {
+      access_token: data.access_token,
+      expires_at: Date.now() + data.expires_in * 1000,
+      email: data.email || '',
+    };
+
+    await this.initGapi(data.access_token);
+    return 'connected';
+  }
+
+  async disconnect(): Promise<void> {
+    await fetch(`${API_URL}/api/v1/medico/google-calendar/disconnect/`, {
+      method: 'DELETE',
+      headers: this.authHeaders(),
+    });
+    this.cachedToken = null;
+    if (window.gapi?.client) window.gapi.client.setToken(null);
+  }
+
+  // ─── GAPI initialization ──────────────────────────────────────────────────
+
+  private async initGapi(accessToken: string): Promise<void> {
+    if (!this.gapiInited || !window.gapi?.client?.calendar) {
+      await this.loadGapi();
+    }
+    window.gapi.client.setToken({ access_token: accessToken });
+  }
+
+  private loadGapi(): Promise<void> {
+    if (this.gapiInited && window.gapi?.client?.calendar) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
-      const gapiScript = document.createElement('script');
-      gapiScript.src = 'https://apis.google.com/js/api.js';
-      gapiScript.async = true;
-      gapiScript.defer = true;
+      const existing = document.querySelector('script[src="https://apis.google.com/js/api.js"]');
+      const script = existing ?? document.createElement('script');
 
-      gapiScript.onload = () => {
+      const init = async () => {
         window.gapi.load('client', async () => {
           try {
-            await window.gapi.client.init({
-              discoveryDocs: [DISCOVERY_DOC],
-                });
-
+            await window.gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
             if (!window.gapi.client.calendar) {
               await window.gapi.client.load('calendar', 'v3');
             }
-
             this.gapiInited = true;
             resolve();
-          } catch (error: any) {
+          } catch {
             try {
               await window.gapi.client.load('calendar', 'v3');
               this.gapiInited = true;
               resolve();
-            } catch {
-              reject(error);
+            } catch (err) {
+              reject(err);
             }
           }
         });
       };
 
-      gapiScript.onerror = () => {
-        reject(new Error('No se pudo cargar la librería de Google Calendar'));
-      };
-
-      document.body.appendChild(gapiScript);
+      if (existing) {
+        init();
+      } else {
+        (script as HTMLScriptElement).src = 'https://apis.google.com/js/api.js';
+        (script as HTMLScriptElement).async = true;
+        (script as HTMLScriptElement).onload = init;
+        (script as HTMLScriptElement).onerror = () =>
+          reject(new Error('No se pudo cargar la librería de Google Calendar'));
+        document.body.appendChild(script);
+      }
     });
   }
 
-  private buildAuthUrl(state: string, prompt: 'consent' | 'select_account' | 'none'): string {
-    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
-    authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
-    authUrl.searchParams.append('response_type', 'token');
-    authUrl.searchParams.append('scope', SCOPES);
-    authUrl.searchParams.append('state', state);
-    authUrl.searchParams.append('prompt', prompt);
-    return authUrl.toString();
-  }
-
-  async connect(): Promise<void> {
-    const userId = this.getCurrentUserId();
-    if (!userId) throw new Error('Usuario no autenticado');
-
-    const state = `user_${userId}_${Date.now()}`;
-    localStorage.setItem('google_oauth_state', state);
-
-    // select_account: no vuelve a pedir permisos si ya fueron otorgados, solo elegir cuenta
-    window.location.href = this.buildAuthUrl(state, 'select_account');
-  }
-
-  // Attempts a silent token refresh without any visible UI.
-  // Uses sessionStorage to guard against infinite redirect loops when Google
-  // cannot refresh silently (interaction_required).
-  async connectSilent(): Promise<void> {
-    const userId = this.getCurrentUserId();
-    if (!userId) throw new Error('Usuario no autenticado');
-
-    const state = `silent_${userId}_${Date.now()}`;
-    localStorage.setItem('google_oauth_state', state);
-    localStorage.setItem('google_oauth_silent', '1');
-
-    window.location.href = this.buildAuthUrl(state, 'none');
-  }
-
-  // Returns 'connected' on success, 'silent_failed' when prompt=none couldn't
-  // refresh silently (user needs to interact), or false if there was no OAuth
-  // response in the URL.
-  async handleOAuthCallback(): Promise<'connected' | 'silent_failed' | false> {
-    // On Android the deep link delivers params in the hash or query string
-    const hash = window.location.hash;
-    const search = window.location.search;
-    const raw = hash ? hash.substring(1) : search ? search.substring(1) : '';
-    if (!raw) return false;
-
-    const params = new URLSearchParams(raw);
-    const accessToken = params.get('access_token');
-    const state = params.get('state');
-    const error = params.get('error');
-    const expiresIn = params.get('expires_in');
-
-    const isSilent = localStorage.getItem('google_oauth_silent') === '1';
-    const savedState = localStorage.getItem('google_oauth_state');
-
-    // Clean up URL and flags immediately so back-navigation never re-processes
-    window.history.replaceState({}, document.title, window.location.pathname);
-    localStorage.removeItem('google_oauth_state');
-    localStorage.removeItem('google_oauth_silent');
-
-    if (error) {
-      if (isSilent) return 'silent_failed';
-      throw new Error(`Error de OAuth: ${error}`);
-    }
-
-    if (!accessToken) return false;
-
-    if (state !== savedState) throw new Error('Estado de OAuth inválido');
-
-    const expirySeconds = expiresIn ? parseInt(expiresIn) : 3600;
-
-    // Fetch email from tokeninfo — implicit flow doesn't return an id_token.
-    let email: string | undefined;
-    try {
-      const resp = await fetch(
-        `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`
-      );
-      if (resp.ok) {
-        const info = await resp.json();
-        email = info.email;
-      }
-    } catch {
-      // non-critical — email display is best-effort
-    }
-
-    this.setTokens(accessToken, expirySeconds, email);
-
-    await this.initialize();
-    window.gapi.client.setToken({ access_token: accessToken });
-
-    return 'connected';
-  }
-
-  async disconnect(): Promise<void> {
-    const token = this.getAccessToken();
-    if (token) {
-      try {
-        await fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, { method: 'POST' });
-      } catch {
-        // revocación best-effort
-      }
-    }
-
-    this.clearTokens();
-
-    if (window.gapi?.client) {
-      window.gapi.client.setToken(null);
-    }
-  }
-
   private async ensureToken(): Promise<void> {
-    const token = this.getAccessToken();
-    if (!token) throw new Error('No hay token de acceso disponible. Conéctate primero.');
+    const token = await this.getValidToken();
+    if (!token) throw new Error('No hay sesión de Google Calendar. Conéctate primero.');
 
-    if (!window.gapi?.client?.calendar) {
-      await this.initialize();
-    }
-
-    if (!window.gapi?.client?.calendar) {
-      throw new Error('La librería de Google Calendar no pudo cargarse.');
-    }
+    if (!window.gapi?.client?.calendar) await this.loadGapi();
+    if (!window.gapi?.client?.calendar) throw new Error('La librería de Google Calendar no pudo cargarse.');
 
     window.gapi.client.setToken({ access_token: token });
   }
 
-  private async handleApiError(error: any): Promise<void> {
-    if (error?.result?.error?.code === 401 || error?.status === 401) {
-      this.clearTokens();
+  private async handleApiError(error: unknown): Promise<never> {
+    const e = error as { result?: { error?: { code?: number } }; status?: number };
+    if (e?.result?.error?.code === 401 || e?.status === 401) {
+      this.cachedToken = null;
       throw new Error('Sesión de Google Calendar expirada. Por favor, reconéctate.');
     }
     throw error;
   }
 
+  // ─── Calendar API ─────────────────────────────────────────────────────────
+
   async getEvents(timeMin: Date = new Date(), timeMax?: Date): Promise<CalendarEvent[]> {
     try {
       await this.ensureToken();
-
-      const request: any = {
+      const request: GapiEventParams = {
         calendarId: 'primary',
         timeMin: timeMin.toISOString(),
         showDeleted: false,
         singleEvents: true,
         orderBy: 'startTime',
       };
-
       if (timeMax) request.timeMax = timeMax.toISOString();
 
       const response = await window.gapi.client.calendar.events.list(request);
       return response.result.items || [];
     } catch (error) {
-      await this.handleApiError(error);
-      return [];
+      return this.handleApiError(error);
     }
   }
 
@@ -363,8 +309,7 @@ class GoogleCalendarService {
       });
       return response.result.id;
     } catch (error) {
-      await this.handleApiError(error);
-      throw new Error('No se pudo crear el evento');
+      return this.handleApiError(error);
     }
   }
 
@@ -373,12 +318,11 @@ class GoogleCalendarService {
       await this.ensureToken();
       await window.gapi.client.calendar.events.update({
         calendarId: 'primary',
-        eventId: eventId,
+        eventId,
         resource: event,
       });
     } catch (error) {
-      await this.handleApiError(error);
-      throw new Error('No se pudo actualizar el evento');
+      return this.handleApiError(error);
     }
   }
 
@@ -387,16 +331,11 @@ class GoogleCalendarService {
       await this.ensureToken();
       await window.gapi.client.calendar.events.delete({
         calendarId: 'primary',
-        eventId: eventId,
+        eventId,
       });
     } catch (error) {
-      await this.handleApiError(error);
-      throw new Error('No se pudo eliminar el evento');
+      return this.handleApiError(error);
     }
-  }
-
-  getUserEmail(): string | null {
-    return localStorage.getItem(this.getStorageKey(this.EMAIL_KEY));
   }
 }
 
