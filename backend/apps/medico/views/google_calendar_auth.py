@@ -33,8 +33,12 @@ def connect_google_calendar(request):
     }, timeout=10)
 
     if not resp.ok:
+        try:
+            google_error = resp.json()
+        except Exception:
+            google_error = resp.text
         return Response(
-            {'error': 'No se pudo obtener el token de Google'},
+            {'error': f'Google rechazó el código: {google_error}'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 

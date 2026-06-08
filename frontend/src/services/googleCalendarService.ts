@@ -150,7 +150,7 @@ class GoogleCalendarService {
 
   async connect(): Promise<void> {
     const state = `cal_${Date.now()}`;
-    sessionStorage.setItem('google_oauth_state', state);
+    localStorage.setItem('google_oauth_state', state);
 
     const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     url.searchParams.set('client_id', GOOGLE_CLIENT_ID);
@@ -192,8 +192,8 @@ class GoogleCalendarService {
 
     if (error) throw new Error(`Error de Google: ${error}`);
 
-    const savedState = sessionStorage.getItem('google_oauth_state');
-    sessionStorage.removeItem('google_oauth_state');
+    const savedState = localStorage.getItem('google_oauth_state');
+    localStorage.removeItem('google_oauth_state');
     if (state !== savedState) throw new Error('Estado de OAuth inválido');
 
     const resp = await fetch(`${API_URL}/api/v1/medico/google-calendar/connect/`, {
