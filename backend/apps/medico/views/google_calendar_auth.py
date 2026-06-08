@@ -66,7 +66,10 @@ def connect_google_calendar(request):
         pass
 
     expiry = timezone.now() + timedelta(seconds=expires_in)
-    token_obj, _ = GoogleCalendarToken.objects.get_or_create(user=request.user)
+    try:
+        token_obj = GoogleCalendarToken.objects.get(user=request.user)
+    except GoogleCalendarToken.DoesNotExist:
+        token_obj = GoogleCalendarToken(user=request.user)
     token_obj.set_refresh_token(refresh_token)
     token_obj.set_access_token(access_token)
     token_obj.token_expiry = expiry
