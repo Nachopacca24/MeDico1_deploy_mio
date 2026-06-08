@@ -107,7 +107,8 @@ const Settings = () => {
   } = useGoogleCalendar();
 
   const [settings, setSettings] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     darkMode: false,
     notifications: true,
@@ -115,11 +116,18 @@ const Settings = () => {
     defaultHospitalId: "",
   });
 
+  const [passwords, setPasswords] = useState({
+    old_password: "",
+    new_password: "",
+    new_password2: "",
+  });
+
   useEffect(() => {
     if (user) {
       setSettings(prev => ({
         ...prev,
-        name: user.name || user.full_name || "",
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
         email: user.email || "",
       }));
     }
@@ -130,6 +138,11 @@ const Settings = () => {
     setSettings(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswords(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSwitchChange = (name: string, checked: boolean) => {
     setSettings(prev => ({ ...prev, [name]: checked }));
   };
@@ -137,16 +150,35 @@ const Settings = () => {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      toast({
-        title: "Perfil actualizado",
-        description: "Tu información de perfil fue guardada.",
+      await authService.updateProfile({
+        first_name: settings.first_name,
+        last_name: settings.last_name,
       });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el perfil.",
-        variant: "destructive"
-      });
+      toast({ title: "Perfil actualizado", description: "Tu información de perfil fue guardada." });
+    } catch {
+      toast({ title: "Error", description: "No se pudo actualizar el perfil.", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    if (!passwords.old_password || !passwords.new_password || !passwords.new_password2) {
+      toast({ title: "Error", description: "Completá todos los campos.", variant: "destructive" });
+      return;
+    }
+    if (passwords.new_password !== passwords.new_password2) {
+      toast({ title: "Error", description: "Las contraseñas nuevas no coinciden.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    try {
+      await authService.changePassword(passwords);
+      toast({ title: "Contraseña actualizada", description: "Tu contraseña fue cambiada correctamente." });
+      setPasswords({ old_password: "", new_password: "", new_password2: "" });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "No se pudo cambiar la contraseña.";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -161,17 +193,9 @@ const Settings = () => {
       } else {
         htmlElement.classList.remove("dark");
       }
-      
-      toast({
-        title: "Preferencias guardadas",
-        description: "Tus preferencias fueron actualizadas.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudieron guardar las preferencias.",
-        variant: "destructive"
-      });
+      toast({ title: "Preferencias guardadas", description: "Tus preferencias fueron actualizadas." });
+    } catch {
+      toast({ title: "Error", description: "No se pudieron guardar las preferencias.", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -218,16 +242,26 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nombre</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={settings.name}
-                    onChange={handleChange}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">Nombre</Label>
+                    <Input
+                      id="first_name"
+                      name="first_name"
+                      value={settings.first_name}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Apellido</Label>
+                    <Input
+                      id="last_name"
+                      name="last_name"
+                      value={settings.last_name}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
-                
                 <div className="space-y-2">
                   <Label htmlFor="email">Correo electrónico</Label>
                   <Input
@@ -620,8 +654,8 @@ const Settings = () => {
                         quirúrgicos con Google Calendar.
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        No guardamos tus credenciales. La conexión es directa entre tu navegador
-                        y Google.
+                        El token de acceso se guarda de forma cifrada en nuestros servidores para
+                        mantener la conexión activa sin interrupciones.
                       </p>
                     </div>
 
@@ -680,58 +714,62 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Contraseña Actual</Label>
-                  <Input
-                    id="currentPassword"
-                    name="currentPassword"
-                    type="password"
-                    placeholder="Ingresa tu contraseña actual"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Nueva Contraseña</Label>
-                  <Input
-                    id="newPassword"
-                    name="newPassword"
-                    type="password"
-                    placeholder="Ingresa la nueva contraseña"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="Confirma la nueva contraseña"
-                  />
-                </div>
-
-                <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-2">Gestión de Sesión</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Estás conectado en este dispositivo
-                  </p>
-                  <Button variant="outline" size="sm">
-                    Cerrar sesión en todos los dispositivos
-                  </Button>
-                </div>
+                {!user?.has_usable_password && (
+                  <Alert>
+                    <AlertDescription>
+                      Tu cuenta fue creada con Google. Para agregar una contraseña usá la opción <strong>¿Olvidaste tu contraseña?</strong> en el login.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {user?.has_usable_password && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="old_password">Contraseña Actual</Label>
+                      <Input
+                        id="old_password"
+                        name="old_password"
+                        type="password"
+                        placeholder="Ingresá tu contraseña actual"
+                        value={passwords.old_password}
+                        onChange={handlePasswordChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new_password">Nueva Contraseña</Label>
+                      <Input
+                        id="new_password"
+                        name="new_password"
+                        type="password"
+                        placeholder="Ingresá la nueva contraseña"
+                        value={passwords.new_password}
+                        onChange={handlePasswordChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new_password2">Confirmar Nueva Contraseña</Label>
+                      <Input
+                        id="new_password2"
+                        name="new_password2"
+                        type="password"
+                        placeholder="Confirmá la nueva contraseña"
+                        value={passwords.new_password2}
+                        onChange={handlePasswordChange}
+                      />
+                    </div>
+                  </>
+                )}
               </CardContent>
-              <CardFooter>
-                <Button disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Actualizando...
-                    </>
-                  ) : (
-                    "Actualizar Contraseña"
-                  )}
-                </Button>
-              </CardFooter>
+              {user?.has_usable_password && (
+                <CardFooter>
+                  <Button onClick={handleSavePassword} disabled={saving}>
+                    {saving ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Actualizando...</>
+                    ) : (
+                      "Actualizar Contraseña"
+                    )}
+                  </Button>
+                </CardFooter>
+              )}
             </Card>
           </TabsContent>
           {/* Tutorial Tab */}
@@ -789,7 +827,7 @@ const Settings = () => {
                       </div>
                       <div>
                         <p className="font-medium text-sm">Términos de Uso</p>
-                        <p className="text-xs text-muted-foreground">Condiciones de uso del servicio · Última actualización: Mayo 2026</p>
+                        <p className="text-xs text-muted-foreground">Condiciones de uso del servicio · Última actualización: Junio 2026</p>
                       </div>
                     </div>
                     <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -807,7 +845,7 @@ const Settings = () => {
                       </div>
                       <div>
                         <p className="font-medium text-sm">Política de Privacidad</p>
-                        <p className="text-xs text-muted-foreground">Cómo protegemos y usamos tus datos · Última actualización: Mayo 2026</p>
+                        <p className="text-xs text-muted-foreground">Cómo protegemos y usamos tus datos · Última actualización: Junio 2026</p>
                       </div>
                     </div>
                     <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />

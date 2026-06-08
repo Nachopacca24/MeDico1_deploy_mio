@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
 import { Button } from "@/shared/components/ui/button";
@@ -39,6 +40,7 @@ import {
 } from "lucide-react";
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const DAYS_SHORT = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -52,6 +54,7 @@ interface CalendarDay {
 }
 
 const CalendarPage = () => {
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const {
     isConnected,
@@ -422,25 +425,38 @@ const CalendarPage = () => {
         <div className="pb-4 border-b">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-semibold mb-1 tracking-tight">Calendario</h1>
-              <p className="text-muted-foreground flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-600" />
-                Conectado como <strong>{userEmail}</strong>
+              <h1 className={`font-semibold mb-1 tracking-tight ${isMobile ? 'text-xl' : 'text-3xl'}`}>Calendario</h1>
+              <p className="text-muted-foreground flex items-center gap-2 text-sm">
+                <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                {isMobile ? userEmail : <>Conectado como <strong>{userEmail}</strong></>}
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => runSync(true)} disabled={syncing || loadingEvents}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-                {syncing ? 'Sincronizando...' : 'Sincronizar casos'}
-              </Button>
-              <Button variant="outline" onClick={loadMonthEvents} disabled={loadingEvents}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${loadingEvents ? 'animate-spin' : ''}`} />
-                Actualizar
-              </Button>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Evento
-              </Button>
+              {isMobile ? (
+                <>
+                  <Button variant="outline" size="icon" onClick={() => runSync(true)} disabled={syncing || loadingEvents} title="Sincronizar">
+                    <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                  </Button>
+                  <Button size="icon" onClick={() => setShowCreateDialog(true)} title="Nuevo evento">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => runSync(true)} disabled={syncing || loadingEvents}>
+                    <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                    {syncing ? 'Sincronizando...' : 'Sincronizar casos'}
+                  </Button>
+                  <Button variant="outline" onClick={loadMonthEvents} disabled={loadingEvents}>
+                    <RefreshCw className={`w-4 h-4 mr-2 ${loadingEvents ? 'animate-spin' : ''}`} />
+                    Actualizar
+                  </Button>
+                  <Button onClick={() => setShowCreateDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nuevo Evento
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -472,27 +488,28 @@ const CalendarPage = () => {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-7 gap-2 mb-2">
-                    {DAYS.map(day => (
-                      <div key={day} className="text-center text-sm font-semibold text-muted-foreground py-2">
+                  <div className="grid grid-cols-7 mb-1" style={{ gap: isMobile ? '2px' : '8px' }}>
+                    {(isMobile ? DAYS_SHORT : DAYS).map((day, i) => (
+                      <div key={i} className="text-center text-xs font-semibold text-muted-foreground py-2">
                         {day}
                       </div>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-7 gap-2">
+                  <div className="grid grid-cols-7" style={{ gap: isMobile ? '2px' : '8px' }}>
                     {calendarDays.map((day, index) => (
                       <button
                         key={index}
                         onClick={() => handleDayClick(day)}
                         className={`
-                          relative min-h-[80px] p-2 rounded-lg border text-left transition-all
-                          ${day.isCurrentMonth 
-                            ? 'bg-background hover:bg-accent' 
+                          relative rounded-lg border text-left transition-all
+                          ${isMobile ? 'min-h-[42px] p-1' : 'min-h-[80px] p-2'}
+                          ${day.isCurrentMonth
+                            ? 'bg-background hover:bg-accent'
                             : 'bg-muted/30 text-muted-foreground'
                           }
-                          ${day.isToday 
-                            ? 'border-primary border-2 ring-2 ring-primary/20' 
+                          ${day.isToday
+                            ? 'border-primary border-2 ring-1 ring-primary/20'
                             : 'border-border'
                           }
                           ${selectedDay?.date.toDateString() === day.date.toDateString()
@@ -502,29 +519,40 @@ const CalendarPage = () => {
                         `}
                       >
                         <span className={`
-                          text-sm font-medium
+                          font-medium block text-center
+                          ${isMobile ? 'text-xs' : 'text-sm'}
                           ${day.isToday ? 'text-primary font-bold' : ''}
                         `}>
                           {day.date.getDate()}
                         </span>
 
                         {day.events.length > 0 && (
-                          <div className="mt-1 space-y-1">
-                            {day.events.slice(0, 2).map((event, i) => (
-                              <div 
-                                key={i}
-                                className="text-xs truncate bg-primary/10 text-primary px-1 rounded"
-                              >
-                                <span className="font-bold mr-1">{formatTime(event, 'start')}</span>
-                                {event.summary}
-                              </div>
-                            ))}
-                            {day.events.length > 2 && (
-                              <div className="text-xs text-muted-foreground">
-                                +{day.events.length - 2} más
-                              </div>
-                            )}
-                          </div>
+                          isMobile ? (
+                            // Mobile: colored dots
+                            <div className="flex justify-center gap-0.5 mt-0.5 flex-wrap">
+                              {day.events.slice(0, 3).map((_, i) => (
+                                <span key={i} className="w-1.5 h-1.5 rounded-full bg-primary block" />
+                              ))}
+                            </div>
+                          ) : (
+                            // Desktop: event labels
+                            <div className="mt-1 space-y-1">
+                              {day.events.slice(0, 2).map((event, i) => (
+                                <div
+                                  key={i}
+                                  className="text-xs truncate bg-primary/10 text-primary px-1 rounded"
+                                >
+                                  <span className="font-bold mr-1">{formatTime(event, 'start')}</span>
+                                  {event.summary}
+                                </div>
+                              ))}
+                              {day.events.length > 2 && (
+                                <div className="text-xs text-muted-foreground">
+                                  +{day.events.length - 2} más
+                                </div>
+                              )}
+                            </div>
+                          )
                         )}
                       </button>
                     ))}
