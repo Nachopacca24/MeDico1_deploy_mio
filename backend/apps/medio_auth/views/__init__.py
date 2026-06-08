@@ -912,6 +912,8 @@ class GoogleLoginView(APIView):
                     trial_ends_at=timezone.now() + timedelta(days=14),
                     plan='premium',
                 )
+                user.set_unusable_password()
+                user.save(update_fields=['password'])
                 created = True
             else:
                 # Verificar si la cuenta está pendiente de eliminación
