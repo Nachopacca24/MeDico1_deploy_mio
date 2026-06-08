@@ -96,7 +96,7 @@
 
     <div class="badge">Legal</div>
     <h1>Política de Privacidad</h1>
-    <p class="updated">Última actualización: Junio 2026 · Versión 1.3 · Aplicable a medicoapp.app</p>
+    <p class="updated">Última actualización: Junio 2026 · Versión 1.4 · Aplicable a medicoapp.app</p>
 
     <div class="intro">
       Esta política explica qué información recopilamos cuando usas MéDico App, cómo la usamos y cómo la protegemos. La leemos en lenguaje claro porque creemos que tienes derecho a entender exactamente qué pasa con tus datos.
@@ -198,7 +198,10 @@
       <li>Eliminar el evento del calendario si eliminas el caso de la app</li>
     </ul>
     <p><strong>Qué datos se incluyen en los eventos de Google Calendar:</strong> cada evento contiene la fecha y hora de la cirugía, el nombre del paciente, la edad, el diagnóstico, el nombre del hospital y los procedimientos realizados — exactamente la información que ingresaste en la aplicación. Estos datos son enviados directamente desde tu navegador a la API de Google Calendar.</p>
-    <p>Los tokens de acceso a Google Calendar se almacenan únicamente de forma local en tu navegador y no son enviados ni almacenados en nuestros servidores. Puedes revocar este acceso en cualquier momento desde la configuración de tu cuenta de Google o desde la sección Configuración de la app.</p>
+
+    <p><strong>Almacenamiento de credenciales de Google Calendar:</strong> para mantener la conexión activa sin requerir que el médico vuelva a autorizarla frecuentemente, MéDico App almacena un <em>refresh token</em> de Google en nuestros servidores, cifrado con Fernet (AES-128-CBC + HMAC-SHA256) — el mismo mecanismo de cifrado usado para los datos de pacientes. El token de acceso de corta duración (1 hora) se gestiona en memoria en el servidor y nunca se persiste en el navegador del usuario. El refresh token se elimina definitivamente de nuestros servidores cuando el médico desconecta Google Calendar desde la app, o cuando elimina su cuenta.</p>
+
+    <p>Puedes revocar este acceso en cualquier momento desde la configuración de tu cuenta de Google (<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>) o desde la sección Configuración de la app.</p>
     <p>MéDico App no retiene, transfiere ni utiliza ningún dato obtenido a través de las APIs de Google para desarrollar, mejorar o entrenar modelos de inteligencia artificial o machine learning.</p>
 
     <!-- 7 -->

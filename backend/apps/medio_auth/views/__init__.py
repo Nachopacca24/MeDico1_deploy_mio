@@ -1009,6 +1009,23 @@ class DeleteAccountView(APIView):
                     user.id
                 )
 
+            # Revocar y eliminar token de Google Calendar si existe
+            try:
+                from apps.medico.models.google_calendar_token import GoogleCalendarToken
+                import requests as http_requests
+                gc_token = GoogleCalendarToken.objects.filter(user=user).first()
+                if gc_token:
+                    access_token = gc_token.get_access_token()
+                    if access_token:
+                        http_requests.post(
+                            'https://oauth2.googleapis.com/revoke',
+                            params={'token': access_token},
+                            timeout=5,
+                        )
+                    gc_token.delete()
+            except Exception:
+                pass  # best-effort — no bloquear la eliminación de cuenta
+
             # Invalidar refresh token
             refresh_token = request.data.get('refresh')
             if refresh_token:
