@@ -152,6 +152,16 @@ class LoginSerializer(serializers.Serializer):
                     )
                 })
 
+            # Cuenta creada con Google — no tiene contraseña configurada
+            if not password_valid and not user_obj.has_usable_password():
+                raise ValidationError({
+                    'non_field_errors': (
+                        'Esta cuenta fue creada con Google. '
+                        'Usá el botón "Continuar con Google" para ingresar, '
+                        'o configurá una contraseña desde "¿Olvidaste tu contraseña?".'
+                    )
+                })
+
             if password_valid:
                 user = authenticate(
                     request=self.context.get('request'),
