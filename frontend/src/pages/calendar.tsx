@@ -1,6 +1,7 @@
 // src/pages/calendar.tsx - VERSIÓN FINAL CORREGIDA
 
 import { useState, useEffect, useRef } from "react";
+import { Capacitor } from "@capacitor/core";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
 import { Button } from "@/shared/components/ui/button";
@@ -82,6 +83,7 @@ const CalendarPage = () => {
   });
 
   useEffect(() => {
+    // Web: OAuth code arrives in ?code= on page load
     const handleCallback = async () => {
       try {
         const result = await googleCalendarService.handleOAuthCallback();
@@ -95,6 +97,32 @@ const CalendarPage = () => {
       }
     };
     handleCallback();
+
+    // Android/iOS: OAuth code arrives via App Links (appUrlOpen event)
+    // Chrome Custom Tabs redirects to medicoapp.app/calendar?code=xxx,
+    // Android App Links intercepts it and fires this event.
+    if (!Capacitor.isNativePlatform()) return;
+
+    let removeListener: (() => void) | null = null;
+    import('@capacitor/app').then(({ App }) => {
+      App.addListener('appUrlOpen', async ({ url }) => {
+        if (!url.includes('/calendar')) return;
+        try {
+          const result = await googleCalendarService.handleOAuthCallback(url);
+          if (result === 'connected') {
+            await checkConnection();
+            toast.success('¡Conectado!', 'Google Calendar conectado exitosamente');
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Error de conexión';
+          toast.error('Error', msg);
+        }
+      }).then(handle => {
+        removeListener = () => handle.remove();
+      });
+    });
+
+    return () => { removeListener?.(); };
   }, []);
 
   useEffect(() => {

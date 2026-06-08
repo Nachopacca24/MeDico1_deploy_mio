@@ -3,6 +3,8 @@
 // stores the refresh token encrypted in the database. The frontend only ever
 // holds a short-lived access token in memory — nothing sensitive in localStorage.
 
+import { Capacitor } from '@capacitor/core';
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const API_URL = import.meta.env.VITE_API_URL || '';
 const REDIRECT_URI = 'https://medicoapp.app/calendar';
@@ -146,7 +148,7 @@ class GoogleCalendarService {
 
   // ─── OAuth flow ───────────────────────────────────────────────────────────
 
-  connect(): void {
+  async connect(): Promise<void> {
     const state = `cal_${Date.now()}`;
     sessionStorage.setItem('google_oauth_state', state);
 
@@ -156,22 +158,37 @@ class GoogleCalendarService {
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', SCOPES);
     url.searchParams.set('state', state);
-    url.searchParams.set('access_type', 'offline');   // required to get refresh_token
-    url.searchParams.set('prompt', 'consent');         // required to get refresh_token on first connect
-    window.location.href = url.toString();
+    url.searchParams.set('access_type', 'offline');
+    url.searchParams.set('prompt', 'consent');
+
+    if (Capacitor.isNativePlatform()) {
+      // On Android/iOS use Chrome Custom Tabs / SFSafariViewController.
+      // Google blocks OAuth in embedded WebViews — Custom Tabs are required.
+      const { Browser } = await import('@capacitor/browser');
+      await Browser.open({ url: url.toString() });
+    } else {
+      window.location.href = url.toString();
+    }
   }
 
-  // Called on every page load. Returns 'connected', 'error', or false.
-  async handleOAuthCallback(): Promise<'connected' | 'error' | false> {
-    const params = new URLSearchParams(window.location.search);
+  // Called on page load (web) or from appUrlOpen event (Android/iOS App Links).
+  // sourceUrl: pass the full URL when called from appUrlOpen; omit for web page load.
+  async handleOAuthCallback(sourceUrl?: string): Promise<'connected' | 'error' | false> {
+    const isAppLink = !!sourceUrl;
+    const params = isAppLink
+      ? new URL(sourceUrl!).searchParams
+      : new URLSearchParams(window.location.search);
+
     const code = params.get('code');
     const state = params.get('state');
     const error = params.get('error');
 
     if (!code && !error) return false;
 
-    // Clean the URL immediately so back-navigation doesn't re-process
-    window.history.replaceState({}, document.title, window.location.pathname);
+    // Clean the browser URL only on web (App Links don't change window.location)
+    if (!isAppLink) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
     if (error) throw new Error(`Error de Google: ${error}`);
 
