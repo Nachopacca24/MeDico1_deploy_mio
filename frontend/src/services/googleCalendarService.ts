@@ -9,7 +9,6 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const API_URL = import.meta.env.VITE_API_URL || '';
 const REDIRECT_URI = 'https://medicoapp.app/calendar';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 
 export interface CalendarEvent {
   id?: string;
@@ -39,35 +38,6 @@ export interface CalendarEvent {
   };
 }
 
-// Minimal type shim for the dynamically-loaded Google API client.
-interface GapiEventParams {
-  calendarId: string;
-  [key: string]: unknown;
-}
-interface GapiCalendarClient {
-  events: {
-    list(params: GapiEventParams): Promise<{ result: { items: CalendarEvent[] } }>;
-    insert(params: GapiEventParams & { resource: CalendarEvent }): Promise<{ result: { id: string } }>;
-    update(params: GapiEventParams & { eventId: string; resource: CalendarEvent }): Promise<unknown>;
-    delete(params: GapiEventParams & { eventId: string }): Promise<unknown>;
-  };
-}
-interface GapiClientLib {
-  init(config: { discoveryDocs: string[] }): Promise<void>;
-  load(api: string, version: string): Promise<void>;
-  setToken(token: { access_token: string } | null): void;
-  getToken(): { access_token: string } | null;
-  calendar: GapiCalendarClient;
-}
-declare global {
-  interface Window {
-    gapi: {
-      load(api: string, callback: () => void): void;
-      client: GapiClientLib;
-    };
-  }
-}
-
 interface CachedToken {
   access_token: string;
   expires_at: number; // ms timestamp
@@ -75,7 +45,6 @@ interface CachedToken {
 }
 
 class GoogleCalendarService {
-  private gapiInited = false;
   // In-memory token cache — cleared on page reload (intentional: backend is the source of truth)
   private cachedToken: CachedToken | null = null;
 
@@ -214,13 +183,6 @@ class GoogleCalendarService {
       email: data.email || '',
     };
 
-    // GAPI init is best-effort — connection succeeds even if it fails (token is on the backend)
-    try {
-      await this.initGapi(data.access_token);
-    } catch {
-      // GAPI may fail due to CSP restrictions on some platforms (Safari PWA, etc.)
-      // Calendar API calls will still work via getValidToken() → backend refresh
-    }
     return 'connected';
   }
 
@@ -230,140 +192,92 @@ class GoogleCalendarService {
       headers: this.authHeaders(),
     });
     this.cachedToken = null;
-    if (window.gapi?.client) window.gapi.client.setToken(null);
   }
 
-  // ─── GAPI initialization ──────────────────────────────────────────────────
-
-  private async initGapi(accessToken: string): Promise<void> {
-    if (!this.gapiInited || !window.gapi?.client?.calendar) {
-      await this.loadGapi();
-    }
-    window.gapi.client.setToken({ access_token: accessToken });
-  }
-
-  private loadGapi(): Promise<void> {
-    if (this.gapiInited && window.gapi?.client?.calendar) return Promise.resolve();
-
-    // 8-second timeout — prevents hanging forever when CSP blocks content.googleapis.com iframe
-    const timeout = new Promise<void>((_, reject) =>
-      setTimeout(() => reject(new Error('GAPI load timeout')), 8000)
-    );
-
-    return Promise.race([timeout, new Promise<void>((resolve, reject) => {
-      const existing = document.querySelector('script[src="https://apis.google.com/js/api.js"]');
-      const script = existing ?? document.createElement('script');
-
-      const init = async () => {
-        window.gapi.load('client', async () => {
-          try {
-            await window.gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
-            if (!window.gapi.client.calendar) {
-              await window.gapi.client.load('calendar', 'v3');
-            }
-            this.gapiInited = true;
-            resolve();
-          } catch {
-            try {
-              await window.gapi.client.load('calendar', 'v3');
-              this.gapiInited = true;
-              resolve();
-            } catch (err) {
-              reject(err);
-            }
-          }
-        });
-      };
-
-      if (existing) {
-        init();
-      } else {
-        (script as HTMLScriptElement).src = 'https://apis.google.com/js/api.js';
-        (script as HTMLScriptElement).async = true;
-        (script as HTMLScriptElement).onload = init;
-        (script as HTMLScriptElement).onerror = () =>
-          reject(new Error('No se pudo cargar la librería de Google Calendar'));
-        document.body.appendChild(script);
-      }
-    })]);
-  }
-
-  private async ensureToken(): Promise<void> {
+  private async getToken(): Promise<string> {
     const token = await this.getValidToken();
     if (!token) throw new Error('No hay sesión de Google Calendar. Conéctate primero.');
-
-    if (!window.gapi?.client?.calendar) await this.loadGapi();
-    if (!window.gapi?.client?.calendar) throw new Error('La librería de Google Calendar no pudo cargarse.');
-
-    window.gapi.client.setToken({ access_token: token });
+    return token;
   }
 
-  private async handleApiError(error: unknown): Promise<never> {
-    const e = error as { result?: { error?: { code?: number } }; status?: number };
-    if (e?.result?.error?.code === 401 || e?.status === 401) {
+  private calendarFetch(
+    path: string,
+    token: string,
+    options: RequestInit = {}
+  ): Promise<Response> {
+    return fetch(`https://www.googleapis.com/calendar/v3${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...(options.headers ?? {}),
+      },
+    });
+  }
+
+  private async handleCalendarResponse<T>(resp: Response): Promise<T> {
+    if (resp.status === 401) {
       this.cachedToken = null;
       throw new Error('Sesión de Google Calendar expirada. Por favor, reconéctate.');
     }
-    throw error;
+    if (!resp.ok) {
+      let msg = `Error ${resp.status}`;
+      try { msg = (await resp.json()).error?.message || msg; } catch { /* ignore */ }
+      throw new Error(msg);
+    }
+    if (resp.status === 204) return undefined as T;
+    return resp.json();
   }
 
-  // ─── Calendar API ─────────────────────────────────────────────────────────
+  // ─── Calendar API — direct REST, no GAPI dependency ──────────────────────
 
   async getEvents(timeMin: Date = new Date(), timeMax?: Date): Promise<CalendarEvent[]> {
-    try {
-      await this.ensureToken();
-      const request: GapiEventParams = {
-        calendarId: 'primary',
-        timeMin: timeMin.toISOString(),
-        showDeleted: false,
-        singleEvents: true,
-        orderBy: 'startTime',
-      };
-      if (timeMax) request.timeMax = timeMax.toISOString();
+    const token = await this.getToken();
+    const params = new URLSearchParams({
+      calendarId: 'primary',
+      timeMin: timeMin.toISOString(),
+      showDeleted: 'false',
+      singleEvents: 'true',
+      orderBy: 'startTime',
+    });
+    if (timeMax) params.set('timeMax', timeMax.toISOString());
 
-      const response = await window.gapi.client.calendar.events.list(request);
-      return response.result.items || [];
-    } catch (error) {
-      return this.handleApiError(error);
-    }
+    const resp = await this.calendarFetch(
+      `/calendars/primary/events?${params}`, token
+    );
+    const data = await this.handleCalendarResponse<{ items?: CalendarEvent[] }>(resp);
+    return data.items || [];
   }
 
   async createEvent(event: CalendarEvent): Promise<string> {
-    try {
-      await this.ensureToken();
-      const response = await window.gapi.client.calendar.events.insert({
-        calendarId: 'primary',
-        resource: event,
-      });
-      return response.result.id;
-    } catch (error) {
-      return this.handleApiError(error);
-    }
+    const token = await this.getToken();
+    const resp = await this.calendarFetch('/calendars/primary/events', token, {
+      method: 'POST',
+      body: JSON.stringify(event),
+    });
+    const data = await this.handleCalendarResponse<{ id: string }>(resp);
+    return data.id;
   }
 
   async updateEvent(eventId: string, event: CalendarEvent): Promise<void> {
-    try {
-      await this.ensureToken();
-      await window.gapi.client.calendar.events.update({
-        calendarId: 'primary',
-        eventId,
-        resource: event,
-      });
-    } catch (error) {
-      return this.handleApiError(error);
-    }
+    const token = await this.getToken();
+    const resp = await this.calendarFetch(
+      `/calendars/primary/events/${encodeURIComponent(eventId)}`, token, {
+        method: 'PUT',
+        body: JSON.stringify(event),
+      }
+    );
+    await this.handleCalendarResponse<void>(resp);
   }
 
   async deleteEvent(eventId: string): Promise<void> {
-    try {
-      await this.ensureToken();
-      await window.gapi.client.calendar.events.delete({
-        calendarId: 'primary',
-        eventId,
-      });
-    } catch (error) {
-      return this.handleApiError(error);
-    }
+    const token = await this.getToken();
+    const resp = await this.calendarFetch(
+      `/calendars/primary/events/${encodeURIComponent(eventId)}`, token, {
+        method: 'DELETE',
+      }
+    );
+    await this.handleCalendarResponse<void>(resp);
   }
 }
 
