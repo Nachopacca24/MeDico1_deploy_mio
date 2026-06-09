@@ -214,7 +214,13 @@ class GoogleCalendarService {
       email: data.email || '',
     };
 
-    await this.initGapi(data.access_token);
+    // GAPI init is best-effort — connection succeeds even if it fails (token is on the backend)
+    try {
+      await this.initGapi(data.access_token);
+    } catch {
+      // GAPI may fail due to CSP restrictions on some platforms (Safari PWA, etc.)
+      // Calendar API calls will still work via getValidToken() → backend refresh
+    }
     return 'connected';
   }
 
@@ -239,7 +245,12 @@ class GoogleCalendarService {
   private loadGapi(): Promise<void> {
     if (this.gapiInited && window.gapi?.client?.calendar) return Promise.resolve();
 
-    return new Promise((resolve, reject) => {
+    // 8-second timeout — prevents hanging forever when CSP blocks content.googleapis.com iframe
+    const timeout = new Promise<void>((_, reject) =>
+      setTimeout(() => reject(new Error('GAPI load timeout')), 8000)
+    );
+
+    return Promise.race([timeout, new Promise<void>((resolve, reject) => {
       const existing = document.querySelector('script[src="https://apis.google.com/js/api.js"]');
       const script = existing ?? document.createElement('script');
 
@@ -274,7 +285,7 @@ class GoogleCalendarService {
           reject(new Error('No se pudo cargar la librería de Google Calendar'));
         document.body.appendChild(script);
       }
-    });
+    })]);
   }
 
   private async ensureToken(): Promise<void> {
