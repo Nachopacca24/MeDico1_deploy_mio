@@ -1148,14 +1148,16 @@ const CasesPage = () => {
                                 <span className="text-xs font-medium">#{surgicalCase.invoice_number}</span>
                               </div>
                             )}
-                            {imagesPurgeDate && (
+                            {(imagesPurgeDate || casePurgeDate) && (
                               <div className="text-xs mt-1 space-y-0.5">
-                                {imagesAlreadyPurged ? (
-                                  <p className="text-muted-foreground">Imágenes eliminadas</p>
-                                ) : (
-                                  <p className="text-amber-600 dark:text-amber-400">
-                                    Imágenes se eliminan el {imagesPurgeDate.toLocaleDateString()}
-                                  </p>
+                                {imagesPurgeDate && (
+                                  imagesAlreadyPurged ? (
+                                    <p className="text-muted-foreground">Imágenes eliminadas</p>
+                                  ) : (
+                                    <p className="text-amber-600 dark:text-amber-400">
+                                      Imágenes se eliminan el {imagesPurgeDate.toLocaleDateString()}
+                                    </p>
+                                  )
                                 )}
                                 {casePurgeDate && (
                                   <p className="text-muted-foreground">

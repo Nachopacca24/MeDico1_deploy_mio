@@ -52,7 +52,7 @@ const CaseDetailPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [images, setImages] = useState<SurgeryImage[]>([]);
-  const [imagesLoading, setImagesLoading] = useState(false);
+  const [imagesLoading, setImagesLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
@@ -667,16 +667,16 @@ const CaseDetailPage = () => {
           </div>
 
           {/* Content */}
-          {imagesLoading ? (
-            <div className="flex justify-center py-6">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : !isPremium ? (
+          {!isPremium ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
               <ImagePlus className="w-10 h-10 text-muted-foreground/30" />
               <p className="text-sm text-muted-foreground text-center">
                 La carga de imágenes es exclusiva del <span className="text-amber-400 font-semibold">Plan Premium</span>
               </p>
+            </div>
+          ) : imagesLoading ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : images.length === 0 ? (
             isOwner ? (
