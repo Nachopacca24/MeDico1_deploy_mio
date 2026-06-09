@@ -18,6 +18,7 @@ import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { authService } from "@/shared/services/authService";
 import { useTutorial } from "@/core/contexts/TutorialContext";
+import { pushNotificationService } from "@/services/pushNotificationService";
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -121,6 +122,11 @@ const Settings = () => {
   } = useGoogleCalendar();
 
   const [surgeryReminderHours, setSurgeryReminderHours] = useState<number>(24);
+  const [notifStatus, setNotifStatus] = useState<'active' | 'no-permission' | 'no-token' | 'not-native' | null>(null);
+
+  useEffect(() => {
+    pushNotificationService.checkStatus().then(setNotifStatus);
+  }, []);
 
   const [settings, setSettings] = useState({
     first_name: "",
@@ -371,6 +377,23 @@ const Settings = () => {
                     Código de moneda (ej: GTQ para Quetzal guatemalteco)
                   </p>
                 </div>
+
+                {notifStatus && notifStatus !== 'not-native' && (
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <Label>Notificaciones push</Label>
+                      <p className="text-xs text-muted-foreground">
+                        {notifStatus === 'active' && 'Tu dispositivo recibirá notificaciones'}
+                        {notifStatus === 'no-permission' && 'Permiso denegado — habilitá las notificaciones en Ajustes del sistema'}
+                        {notifStatus === 'no-token' && 'No se pudo registrar el dispositivo — cerrá sesión y volvé a entrar'}
+                      </p>
+                    </div>
+                    {notifStatus === 'active'
+                      ? <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                      : <XCircle className="h-5 w-5 text-destructive shrink-0" />
+                    }
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="surgeryReminder">Recordatorio de cirugía</Label>

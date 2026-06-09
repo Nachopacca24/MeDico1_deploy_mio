@@ -78,6 +78,18 @@ class PushNotificationService {
     }
   }
 
+  async checkStatus(): Promise<'active' | 'no-permission' | 'no-token' | 'not-native'> {
+    if (!Capacitor.isNativePlatform()) return 'not-native';
+    try {
+      const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+      const { receive } = await FirebaseMessaging.checkPermissions();
+      if (receive !== 'granted') return 'no-permission';
+      return this.tokenRegistered ? 'active' : 'no-token';
+    } catch {
+      return 'no-token';
+    }
+  }
+
   async removeToken(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
     try {
