@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
+import { App as CapApp } from "@capacitor/app";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
@@ -85,11 +86,15 @@ const CalendarPage = () => {
     description: ''
   });
 
+  // Ref-based guard: prevents double-processing if both getLaunchUrl and appUrlOpen fire
+  const oauthProcessingRef = useRef(false);
+
   useEffect(() => {
-    // Web: OAuth code arrives in ?code= on page load
-    const handleCallback = async () => {
+    const processOAuthUrl = async (url?: string) => {
+      if (oauthProcessingRef.current) return;
+      oauthProcessingRef.current = true;
       try {
-        const result = await googleCalendarService.handleOAuthCallback();
+        const result = await googleCalendarService.handleOAuthCallback(url);
         if (result === 'connected') {
           await checkConnection();
           toast.success('¡Conectado!', 'Google Calendar conectado exitosamente');
@@ -97,35 +102,40 @@ const CalendarPage = () => {
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'No se pudo completar la conexión';
         toast.error('Error', msg);
+      } finally {
+        oauthProcessingRef.current = false;
       }
     };
-    handleCallback();
 
-    // Android/iOS: OAuth code arrives via App Links (appUrlOpen event)
-    // Chrome Custom Tabs redirects to medicoapp.app/calendar?code=xxx,
-    // Android App Links intercepts it and fires this event.
+    // ── Case 1: Web — code arrives in window.location.search ──────────────
+    // ── Case 2: Android fresh start — App Links deliver via getLaunchUrl ──
+    const initOAuth = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const launch = await CapApp.getLaunchUrl();
+          if (launch?.url?.includes('/calendar') && launch.url.includes('code=')) {
+            await processOAuthUrl(launch.url);
+            return; // handled via getLaunchUrl, skip window.location check
+          }
+        } catch { /* getLaunchUrl not available */ }
+      }
+      // Web: check window.location.search
+      await processOAuthUrl();
+    };
+    initOAuth();
+
+    // ── Case 3: Android already running — App Links fire appUrlOpen ───────
+    // Static import (not dynamic) so the listener registers synchronously
+    // before any appUrlOpen event can be missed.
     if (!Capacitor.isNativePlatform()) return;
 
-    let removeListener: (() => void) | null = null;
-    import('@capacitor/app').then(({ App }) => {
-      App.addListener('appUrlOpen', async ({ url }) => {
-        if (!url.includes('/calendar')) return;
-        try {
-          const result = await googleCalendarService.handleOAuthCallback(url);
-          if (result === 'connected') {
-            await checkConnection();
-            toast.success('¡Conectado!', 'Google Calendar conectado exitosamente');
-          }
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : 'Error de conexión';
-          toast.error('Error', msg);
-        }
-      }).then(handle => {
-        removeListener = () => handle.remove();
-      });
-    });
+    let listenerHandle: { remove: () => void } | null = null;
+    CapApp.addListener('appUrlOpen', async ({ url }) => {
+      if (!url.includes('/calendar') || !url.includes('code=')) return;
+      await processOAuthUrl(url);
+    }).then(handle => { listenerHandle = handle; });
 
-    return () => { removeListener?.(); };
+    return () => { listenerHandle?.remove(); };
   }, []);
 
   useEffect(() => {

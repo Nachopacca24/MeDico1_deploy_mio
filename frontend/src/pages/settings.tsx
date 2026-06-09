@@ -1,6 +1,7 @@
 // src/pages/settings.tsx
 
 import { useState, useEffect } from "react";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -38,7 +39,19 @@ async function cancelSubscription(): Promise<void> {
   }
 }
 
+const TAB_OPTIONS = [
+  { value: 'profile',     label: 'Perfil' },
+  { value: 'preferences', label: 'Preferencias' },
+  { value: 'plan',        label: 'Mi Plan' },
+  { value: 'calendar',    label: 'Calendario' },
+  { value: 'security',    label: 'Seguridad' },
+  { value: 'tutorial',    label: 'Tutorial' },
+  { value: 'legal',       label: 'Legal y Cuenta' },
+];
+
 const Settings = () => {
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -221,16 +234,24 @@ const Settings = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="inline-flex gap-1">
-            <TabsTrigger value="profile">Perfil</TabsTrigger>
-            <TabsTrigger value="preferences">Preferencias</TabsTrigger>
-            <TabsTrigger value="plan">Mi Plan</TabsTrigger>
-            <TabsTrigger value="calendar">Calendario</TabsTrigger>
-            <TabsTrigger value="security">Seguridad</TabsTrigger>
-            <TabsTrigger value="tutorial">Tutorial</TabsTrigger>
-            <TabsTrigger value="legal">Legal y Eliminacion de cuenta</TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          {isMobile ? (
+            <select
+              value={activeTab}
+              onChange={e => setActiveTab(e.target.value)}
+              className="w-full mb-4 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {TAB_OPTIONS.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          ) : (
+            <TabsList className="inline-flex gap-1">
+              {TAB_OPTIONS.map(t => (
+                <TabsTrigger key={t.value} value={t.value}>{t.label}</TabsTrigger>
+              ))}
+            </TabsList>
+          )}
           
           {/* Profile Tab */}
           <TabsContent value="profile">
