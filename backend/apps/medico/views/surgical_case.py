@@ -187,7 +187,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                     notify_user(
                         case.assistant_doctor,
                         title='Nueva invitación a caso',
-                        body=f'{principal_name} te invitó a un caso quirúrgico.',
+                        body=f'{principal_name} te invitó a una cirugía.',
                         data={'route': '/cases/assisted'},
                     )
                 except Exception:
@@ -233,7 +233,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 notify_user(
                     case.assistant_doctor,
                     title='Nueva invitación a caso',
-                    body=f'{principal_name} te invitó a un caso quirúrgico.',
+                    body=f'{principal_name} te invitó a una cirugía.',
                     data={'route': '/cases/assisted'},
                 )
             elif case.assistant_doctor and case.assistant_accepted is True:

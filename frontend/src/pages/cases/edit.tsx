@@ -54,12 +54,26 @@ const EditCase = () => {
   const { user } = useAuth();
   const isPremium = user?.plan === 'premium' || user?.is_permanent_premium;
 
+  const [existingImages, setExistingImages] = useState<{ id: number; cloudinary_url: string }[]>([]);
+  const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
 
+  const handleDeleteExistingImage = async (imageId: number) => {
+    setDeletingImageId(imageId);
+    try {
+      await authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/images/${imageId}/`, { method: 'DELETE' });
+      setExistingImages(prev => prev.filter(img => img.id !== imageId));
+    } catch {
+      toast.error('Error', 'No se pudo eliminar la imagen');
+    } finally {
+      setDeletingImageId(null);
+    }
+  };
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const remaining = 5 - pendingImages.length;
+    const remaining = 5 - existingImages.length - pendingImages.length;
     const toAdd = files.slice(0, remaining);
     setPendingImages(prev => [...prev, ...toAdd]);
     toAdd.forEach(f => {
@@ -123,18 +137,20 @@ const EditCase = () => {
       try {
         setLoading(true);
 
-        // Cargar hospitales, colegas, favoritos, seguros Y caso en paralelo
-        const [hospitalsData, colleaguesData, favoritesData, insurancesData, caseData] = await Promise.all([
+        // Cargar hospitales, colegas, favoritos, seguros, caso e imágenes en paralelo
+        const [hospitalsData, colleaguesData, favoritesData, insurancesData, caseData, imagesResp] = await Promise.all([
           hospitalService.getHospitals(),
           colleaguesService.getColleagues(),
           favoritesService.getFavorites(),
           insuranceService.getInsurances(),
-          surgicalCaseService.getCase(parseInt(id))
+          surgicalCaseService.getCase(parseInt(id)),
+          authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/images/`),
         ]);
 
         setHospitals(hospitalsData);
         setColleagues(colleaguesData.colleagues);
         setInsurances(insurancesData);
+        if (imagesResp.ok) setExistingImages(await imagesResp.json());
 
         // Convertir favoritos a formato de procedimientos
         const favProcs: ProcedureData[] = favoritesData.map(fav => ({
@@ -159,6 +175,21 @@ const EditCase = () => {
         setNotes(caseData.notes || '');
         setInsuranceId(caseData.insurance_company ? String(caseData.insurance_company) : '');
         setStatus((caseData.status?.toLowerCase?.() || 'scheduled') as typeof status);
+
+        // Poblar ayudante
+        if (caseData.assistant_doctor) {
+          setAssistantType('colleague');
+          setSelectedColleagueId(caseData.assistant_doctor);
+        } else if (caseData.assistant_doctor_name) {
+          setAssistantType('manual');
+          setManualAssistantName(caseData.assistant_doctor_name);
+        }
+
+        // Restaurar multiplicador
+        if (caseData.procedures && caseData.procedures.length > 0) {
+          const factor = caseData.procedures[0].hospital_factor;
+          if (factor && factor !== 1) setRateMultiplier(factor.toString());
+        }
 
         // Cargar procedimientos del caso
         if (caseData.procedures && caseData.procedures.length > 0) {
@@ -1171,18 +1202,21 @@ const EditCase = () => {
                   <Images className={`w-5 h-5 ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`} />
                   <div>
                     <p className={`font-semibold ${isPremium ? 'text-amber-400' : 'text-muted-foreground'}`}>
-                      Agregar imágenes
+                      Imágenes
+                      {isPremium && existingImages.length > 0 && (
+                        <span className="text-sm font-normal text-muted-foreground ml-2">({existingImages.length + pendingImages.length}/5)</span>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Radiografías, estudios, fotos · <span className="text-amber-400/80">máximo 5 en total por cirugía</span>
                     </p>
                   </div>
-                  {isPremium && pendingImages.length < 5 && (
+                  {isPremium && existingImages.length + pendingImages.length < 5 && (
                     <label className="ml-auto cursor-pointer">
                       <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-400/50 text-amber-400 hover:bg-amber-400/10 text-sm font-medium transition-colors">
                         <ImagePlus className="w-4 h-4" />
-                        Agregar ({pendingImages.length}/5)
+                        Agregar
                       </div>
                     </label>
                   )}
@@ -1195,7 +1229,7 @@ const EditCase = () => {
                       La carga de imágenes es exclusiva del <span className="text-amber-400 font-semibold">Plan Premium</span>
                     </p>
                   </div>
-                ) : pendingPreviews.length === 0 ? (
+                ) : existingImages.length === 0 && pendingPreviews.length === 0 ? (
                   <label className="flex flex-col items-center justify-center py-8 cursor-pointer rounded-lg border border-dashed border-amber-400/30 hover:border-amber-400/60 hover:bg-amber-400/5 transition-colors">
                     <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
                     <ImagePlus className="w-10 h-10 text-amber-400/50 mb-2" />
@@ -1204,16 +1238,27 @@ const EditCase = () => {
                   </label>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {existingImages.map((img) => (
+                      <div key={img.id} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square">
+                        <img src={img.cloudinary_url} alt="" className="w-full h-full object-cover" />
+                        <button type="button" onClick={() => handleDeleteExistingImage(img.id)}
+                          disabled={deletingImageId === img.id}
+                          className="absolute top-1.5 right-1.5 bg-black/70 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors disabled:opacity-50">
+                          {deletingImageId === img.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    ))}
                     {pendingPreviews.map((src, idx) => (
-                      <div key={idx} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square">
+                      <div key={`pending-${idx}`} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square opacity-75">
                         <img src={src} alt="" className="w-full h-full object-cover" />
                         <button type="button" onClick={() => removePendingImage(idx)}
                           className="absolute top-1.5 right-1.5 bg-black/70 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors">
                           <X className="w-4 h-4" />
                         </button>
+                        <span className="absolute bottom-1 left-1 text-xs bg-black/60 text-white px-1 rounded">Nueva</span>
                       </div>
                     ))}
-                    {pendingImages.length < 5 && (
+                    {existingImages.length + pendingImages.length < 5 && (
                       <label className="flex items-center justify-center rounded-lg border-2 border-dashed border-amber-400/30 hover:border-amber-400/60 aspect-square cursor-pointer transition-colors">
                         <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
                         <ImagePlus className="w-6 h-6 text-amber-400/50" />

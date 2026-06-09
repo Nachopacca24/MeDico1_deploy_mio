@@ -28,6 +28,15 @@ class PushNotificationService {
               vibration: true,
               lights: true,
             });
+            const { LocalNotifications } = await import('@capacitor/local-notifications');
+            await LocalNotifications.createChannel({
+              id: 'medico_default',
+              name: 'MeDico',
+              importance: 4,
+              visibility: 1,
+              vibration: true,
+              lights: true,
+            });
           } catch { /* Android < 8 doesn't support channels */ }
         }
 
@@ -35,13 +44,29 @@ class PushNotificationService {
         console.log('[FCM] Permiso:', receive);
         if (receive !== 'granted') return;
 
+        const { LocalNotifications } = await import('@capacitor/local-notifications');
+        await LocalNotifications.requestPermissions();
+
         await FirebaseMessaging.addListener('tokenReceived', async ({ token }) => {
           this.tokenRegistered = false;
           await this.registerToken(token);
         });
 
-        await FirebaseMessaging.addListener('notificationReceived', ({ notification }) => {
+        await FirebaseMessaging.addListener('notificationReceived', async ({ notification }) => {
           console.log('[FCM] Foreground notification:', notification.title);
+          try {
+            const { LocalNotifications: LN } = await import('@capacitor/local-notifications');
+            await LN.schedule({
+              notifications: [{
+                id: Date.now() % 2147483647,
+                title: notification.title ?? 'MeDico',
+                body: notification.body ?? '',
+                channelId: 'medico_default',
+              }],
+            });
+          } catch (err) {
+            console.error('[FCM] LocalNotifications error:', err);
+          }
         });
 
         await FirebaseMessaging.addListener('notificationActionPerformed', ({ notification }) => {
