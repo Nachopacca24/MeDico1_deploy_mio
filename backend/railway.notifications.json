@@ -1,0 +1,8 @@
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "python manage.py send_surgery_reminders && python manage.py send_pending_invitation_reminders"
+  }
+}
