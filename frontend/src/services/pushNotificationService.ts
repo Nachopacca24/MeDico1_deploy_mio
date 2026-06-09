@@ -18,6 +18,18 @@ class PushNotificationService {
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
       console.log('[FCM] Plugin cargado');
 
+      // Create notification channel (Android 8+ required)
+      if (Capacitor.getPlatform() === 'android') {
+        await FirebaseMessaging.createChannel({
+          id: 'medico_default',
+          name: 'MeDico',
+          importance: 4, // IMPORTANCE_HIGH
+          visibility: 1, // VISIBILITY_PUBLIC
+          vibration: true,
+          lights: true,
+        });
+      }
+
       const { receive } = await FirebaseMessaging.requestPermissions();
       console.log('[FCM] Permiso:', receive);
       if (receive !== 'granted') return;
