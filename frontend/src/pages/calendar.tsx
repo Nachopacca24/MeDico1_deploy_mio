@@ -67,10 +67,18 @@ const CalendarPage = () => {
   } = useGoogleCalendar();
 
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Initialise events from the in-memory cache so the calendar renders instantly
+  // on re-navigation without showing a spinner.
+  const initCurrentDate = new Date();
+  const initStartOfMonth = new Date(initCurrentDate.getFullYear(), initCurrentDate.getMonth(), 1, 0, 0, 0, 0);
+  const initNextMonth = new Date(initCurrentDate.getFullYear(), initCurrentDate.getMonth() + 1, 1, 23, 59, 59, 999);
+  const cachedEvents = googleCalendarService.getCachedEventsSync(initStartOfMonth, initNextMonth);
+
+  const [events, setEvents] = useState<CalendarEvent[]>(cachedEvents ?? []);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
-  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [loadingEvents, setLoadingEvents] = useState(cachedEvents === null);
   const [syncing, setSyncing] = useState(false);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const hasSyncedRef = useRef(false);

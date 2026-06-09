@@ -59,6 +59,19 @@ class GoogleCalendarService {
   // Events cache — persists across navigation (singleton survives component remounts)
   private eventsCache: CachedEvents | null = null;
 
+  // Returns cached events synchronously if still fresh — used to init React state
+  getCachedEventsSync(timeMin: Date, timeMax?: Date): CalendarEvent[] | null {
+    const key = `${timeMin.getTime()}-${timeMax?.getTime() ?? ''}`;
+    if (
+      this.eventsCache &&
+      this.eventsCache.key === key &&
+      Date.now() - this.eventsCache.fetchedAt < EVENTS_TTL_MS
+    ) {
+      return this.eventsCache.events;
+    }
+    return null;
+  }
+
 
   // ─── Connection status ────────────────────────────────────────────────────
 
