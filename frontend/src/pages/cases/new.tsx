@@ -296,9 +296,7 @@ const NewCase = () => {
               rvu: parseFloat(op.rvu) || 0
             });
           });
-        } catch (err) {
-          console.warn(`[CSV] Error cargando ${csvPath}`);
-        }
+        } catch { /* ignore */ }
       }
     }
 
@@ -411,16 +409,13 @@ const NewCase = () => {
               setLoadingFavoriteRvu(null);
               return fullProc;
             }
-          } catch (err) {
-            console.warn(`[CSV] Error cargando ${csvPath}`);
-          }
+          } catch { /* ignore */ }
         }
       }
 
       setLoadingFavoriteRvu(null);
       return null;
-    } catch (error) {
-      console.error('[NewCase] Error loading favorite RVU:', error);
+    } catch {
       setLoadingFavoriteRvu(null);
       return null;
     }

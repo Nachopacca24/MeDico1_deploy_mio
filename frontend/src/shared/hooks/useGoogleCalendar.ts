@@ -45,13 +45,13 @@ export function useGoogleCalendar() {
     checkConnection();
 
     const onFocus = () => checkConnection();
+    const onVisibility = () => { if (document.visibilityState === 'visible') checkConnection(); };
     window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') checkConnection();
-    });
+    document.addEventListener('visibilitychange', onVisibility);
 
     return () => {
       window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [checkConnection]);
 

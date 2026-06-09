@@ -121,7 +121,6 @@ const EditCase = () => {
       if (!id) return;
 
       try {
-        console.log("[EditCase] Cargando datos iniciales...");
         setLoading(true);
 
         // Cargar hospitales, colegas, favoritos, seguros Y caso en paralelo
@@ -148,7 +147,6 @@ const EditCase = () => {
         }));
 
         setFavoriteProcedures(favProcs);
-
         setPatientName(caseData.patient_name);
         setPatientId(caseData.patient_id || '');
         setPatientAge(caseData.patient_age?.toString() || '');
@@ -174,10 +172,7 @@ const EditCase = () => {
           }));
           setSelectedProcedures(procedures);
         }
-
-        console.log(`[EditCase] Datos iniciales cargados ✅ (${favProcs.length} favoritos)`);
       } catch (error: any) {
-        console.error('[EditCase] Error:', error);
         setError(error.message || 'Error al cargar caso');
         toast.error('Error', 'No se pudieron cargar los datos');
       } finally {
@@ -216,7 +211,6 @@ const EditCase = () => {
     // Solo cargar CSVs la primera vez que se busca
     if (allProcedures.length === 0) {
       setLoadingAllProcedures(true);
-      console.log("[CSV] Primera búsqueda - cargando todos los CSVs...");
 
       const folderStructure: Record<string, Record<string, string>> = {
         "Cardiovascular": {
@@ -303,15 +297,12 @@ const EditCase = () => {
                 rvu: parseFloat(op.rvu) || 0
               });
             });
-          } catch (err) {
-            console.warn(`[CSV] Error cargando ${csvPath}`);
-          }
+          } catch { /* ignore */ }
         }
       }
 
       setAllProcedures(procedures);
       setLoadingAllProcedures(false);
-      console.log(`[CSV] ✅ Cargados ${procedures.length} procedimientos`);
     }
   };
 
@@ -420,16 +411,13 @@ const EditCase = () => {
               setLoadingFavoriteRvu(null);
               return fullProc;
             }
-          } catch (err) {
-            console.warn(`[CSV] Error cargando ${csvPath}`);
-          }
+          } catch { /* ignore */ }
         }
       }
 
       setLoadingFavoriteRvu(null);
       return null;
-    } catch (error) {
-      console.error('[EditCase] Error loading favorite RVU:', error);
+    } catch {
       setLoadingFavoriteRvu(null);
       return null;
     }
@@ -585,8 +573,6 @@ const EditCase = () => {
         caseData.assistant_doctor_name = manualAssistantName;
       }
 
-      console.log('📤 Enviando actualización:', caseData);
-
       // ✅ CRÍTICO: Llamar a updateCase (NO createCase)
       await surgicalCaseService.updateCase(parseInt(id!), caseData);
 
@@ -600,9 +586,7 @@ const EditCase = () => {
               `${API_URL}/api/v1/medico/cases/${id}/images/upload/`,
               { method: 'POST', body: formData }
             );
-          } catch (imgError) {
-            console.warn('Error uploading image:', imgError);
-          }
+          } catch { /* silent */ }
         }));
       }
 
@@ -613,7 +597,6 @@ const EditCase = () => {
 
       navigate(`/cases/${id}`);
     } catch (error: any) {
-      console.error('❌ Error updating case:', error);
       toast.error('Error al actualizar caso', error.message || 'Por favor intenta de nuevo.');
     } finally {
       setSubmitting(false);
