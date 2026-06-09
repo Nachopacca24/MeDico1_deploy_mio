@@ -18,7 +18,7 @@ class FCMToken(models.Model):
     class Meta:
         verbose_name = 'FCM Token'
         verbose_name_plural = 'FCM Tokens'
-        indexes = [models.Index(fields=['user'])]
+        indexes = [models.Index(fields=['user'], name='medico_fcmtoken_user_idx')]
 
     def __str__(self):
         return f"{self.user.email} [{self.platform}]"
