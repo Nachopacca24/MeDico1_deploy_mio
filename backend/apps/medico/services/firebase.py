@@ -33,6 +33,7 @@ def _get_app():
         else:
             _app = firebase_admin.get_app()
 
+        logger.info('[FIREBASE] App initialized OK')
         return _app
     except Exception as e:
         logger.warning(f'Firebase init failed: {e}')
@@ -93,10 +94,12 @@ def notify_user(user, title: str, body: str, data: dict | None = None):
     from apps.medico.models import FCMToken
 
     tokens = list(FCMToken.objects.filter(user=user).values_list('token', flat=True))
+    logger.info('[NOTIFY] user=%s title=%r tokens=%d', user.id, title, len(tokens))
     if not tokens:
         return
 
     result = send_push_notification(tokens, title, body, data)
+    logger.info('[NOTIFY] result: success=%d failed=%d', len(result['success']), len(result['failed_tokens']))
 
     # Clean up tokens that are no longer valid
     if result['failed_tokens']:
