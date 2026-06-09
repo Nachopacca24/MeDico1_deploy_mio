@@ -4,21 +4,38 @@ import { useState, useEffect, useCallback } from 'react';
 import { googleCalendarService, CalendarEvent } from '@/services/googleCalendarService';
 import { useToast } from '@/shared/hooks/use-toast';
 
+const CACHE_KEY = 'medico_gcal_status';
+
+function readCache(): { connected: boolean; email: string } {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : { connected: false, email: '' };
+  } catch {
+    return { connected: false, email: '' };
+  }
+}
+
+function writeCache(connected: boolean, email: string) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ connected, email }));
+}
+
 export function useGoogleCalendar() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // true while checking backend
+  // Initialise from cache so the UI is correct on first render — no flash
+  const cached = readCache();
+  const [isConnected, setIsConnected] = useState(cached.connected);
+  const [userEmail, setUserEmail] = useState<string | null>(cached.email || null);
+  const [isLoading, setIsLoading] = useState(!cached.connected); // skip spinner if cached connected
   const { toast } = useToast();
 
-  // Ask the backend whether this user has a stored connection.
+  // Ask the backend — always runs in background to verify/update the cached state.
   const checkConnection = useCallback(async () => {
     try {
       const status = await googleCalendarService.checkStatus();
       setIsConnected(status.connected);
       setUserEmail(status.connected ? status.email : null);
+      writeCache(status.connected, status.connected ? status.email : '');
     } catch {
-      setIsConnected(false);
-      setUserEmail(null);
+      // Network error: keep showing cached state rather than flashing "disconnected"
     } finally {
       setIsLoading(false);
     }
@@ -27,8 +44,6 @@ export function useGoogleCalendar() {
   useEffect(() => {
     checkConnection();
 
-    // Re-check when the tab/app comes back to focus — another device may have
-    // connected or disconnected in the meantime.
     const onFocus = () => checkConnection();
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', () => {
@@ -49,6 +64,7 @@ export function useGoogleCalendar() {
       await googleCalendarService.disconnect();
       setIsConnected(false);
       setUserEmail(null);
+      writeCache(false, '');
       toast({ title: 'Desconectado', description: 'Tu cuenta de Google Calendar ha sido desconectada' });
     } catch {
       toast({ variant: 'destructive', title: 'Error', description: 'Hubo un problema al desconectar' });
