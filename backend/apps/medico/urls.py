@@ -18,6 +18,7 @@ from apps.medico.views.google_calendar_auth import (
     google_calendar_status,
     disconnect_google_calendar,
 )
+from apps.medico.views.push_token import manage_push_token
 
 app_name = 'medico'
 
@@ -35,6 +36,9 @@ urlpatterns = [
     path('google-calendar/token/', get_google_token, name='google-calendar-token'),
     path('google-calendar/status/', google_calendar_status, name='google-calendar-status'),
     path('google-calendar/disconnect/', disconnect_google_calendar, name='google-calendar-disconnect'),
+
+    # Push notifications
+    path('push-token/', manage_push_token, name='push-token'),
 
     # Custom paths BEFORE router so they aren't swallowed by cases/{pk}/
     path('cases/<int:case_id>/pdf/', export_case_pdf, name='case-pdf'),

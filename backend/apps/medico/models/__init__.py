@@ -6,6 +6,7 @@ from django.conf import settings
 from .surgical_case import SurgicalCase, CaseProcedure
 from .surgery_image import SurgeryImage
 from .google_calendar_token import GoogleCalendarToken
+from .fcm_token import FCMToken
 
 
 class Specialty(models.Model):

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453262658399",
+    "project_id": "medico-android-481c1",
+    "storage_bucket": "medico-android-481c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453262658399:android:8caa9f464a1d504b8f44ea",
+        "android_client_info": {
+          "package_name": "app.medicoapp.medico"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb1DFFRaS8J5iFWzzeFuyDfgtM4W0qNO8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

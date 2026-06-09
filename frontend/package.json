@@ -15,6 +15,7 @@
     "cap:ios": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor-firebase/messaging": "^8.3.0",
     "@capacitor/android": "^8.3.4",
     "@capacitor/app": "^6.0.2",
     "@capacitor/browser": "^6.0.3",
@@ -54,6 +55,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.5.2",
+    "firebase": "^12.14.0",
     "framer-motion": "^12.4.0",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.469.0",
