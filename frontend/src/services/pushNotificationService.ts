@@ -14,27 +14,26 @@ class PushNotificationService {
     if (!Capacitor.isNativePlatform()) return;
 
     try {
+      console.log('[FCM] Iniciando...');
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+      console.log('[FCM] Plugin cargado');
 
-      // Request permission (Android 13+ requires explicit permission)
       const { receive } = await FirebaseMessaging.requestPermissions();
+      console.log('[FCM] Permiso:', receive);
       if (receive !== 'granted') return;
 
-      // Get FCM token and register with backend
       const { token } = await FirebaseMessaging.getToken();
+      console.log('[FCM] Token obtenido:', token ? 'OK' : 'null');
       if (token) await this.registerToken(token);
 
-      // Listen for token refresh
       await FirebaseMessaging.addListener('tokenReceived', async ({ token }) => {
         await this.registerToken(token);
       });
 
-      // Handle notifications received while app is in foreground
       await FirebaseMessaging.addListener('notificationReceived', ({ notification }) => {
         console.log('[FCM] Foreground notification:', notification.title);
       });
 
-      // Handle tap on notification (app in background/killed)
       await FirebaseMessaging.addListener('notificationActionPerformed', ({ notification }) => {
         const data = notification.data as Record<string, string> | undefined;
         if (data?.route) {
@@ -43,8 +42,9 @@ class PushNotificationService {
       });
 
       this.initialized = true;
+      console.log('[FCM] Inicializado correctamente');
     } catch (err) {
-      // FCM not available (emulator, old device) — fail silently
+      console.error('[FCM] Error:', err);
     }
   }
 
