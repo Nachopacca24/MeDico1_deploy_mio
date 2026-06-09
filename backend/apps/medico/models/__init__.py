@@ -7,6 +7,7 @@ from .surgical_case import SurgicalCase, CaseProcedure
 from .surgery_image import SurgeryImage
 from .google_calendar_token import GoogleCalendarToken
 from .fcm_token import FCMToken
+from .system_news import SystemNews
 
 
 class Specialty(models.Model):

@@ -173,6 +173,12 @@ class CustomUser(AbstractUser):
         default='system',
         verbose_name="Tema Preferido"
     )
+
+    surgery_reminder_hours = models.PositiveIntegerField(
+        default=24,
+        verbose_name="Horas de recordatorio de cirugía",
+        help_text="Horas antes de la cirugía para enviar recordatorio push"
+    )
     
     # Metadatos
     created_at = models.DateTimeField(

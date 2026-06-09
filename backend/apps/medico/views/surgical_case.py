@@ -19,6 +19,7 @@ from decimal import Decimal
 logger = logging.getLogger(__name__)
 
 from apps.medico.models import SurgicalCase, CaseProcedure
+from apps.medico.services.firebase import notify_user
 from apps.medico.serializers import (
     SurgicalCaseListSerializer,
     SurgicalCaseDetailSerializer,
@@ -178,6 +179,17 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             ).prefetch_related('procedures').get(pk=case.pk)
 
             response_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
+
+            # Notify assistant if invited
+            if case.assistant_doctor:
+                principal_name = request.user.get_full_name() or request.user.username
+                notify_user(
+                    case.assistant_doctor,
+                    title='Nueva invitación a caso',
+                    body=f'{principal_name} te invitó a un caso quirúrgico.',
+                    data={'route': '/cases/assisted'},
+                )
+
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except rest_serializers.ValidationError as e:
             logger.warning("Validation error creating case for user %s", request.user.id)
@@ -201,6 +213,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        prev_assistant_id = instance.assistant_doctor_id
+
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         case = serializer.save()
@@ -208,6 +222,25 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         case = SurgicalCase.objects.select_related(
             'hospital', 'created_by', 'assistant_doctor', 'insurance_company'
         ).prefetch_related('procedures').get(pk=case.pk)
+
+        principal_name = request.user.get_full_name() or request.user.username
+
+        # New invitation: assistant was added during this edit
+        if case.assistant_doctor and case.assistant_doctor_id != prev_assistant_id:
+            notify_user(
+                case.assistant_doctor,
+                title='Nueva invitación a caso',
+                body=f'{principal_name} te invitó a un caso quirúrgico.',
+                data={'route': '/cases/assisted'},
+            )
+        # Case edited: notify accepted assistant
+        elif case.assistant_doctor and case.assistant_accepted is True:
+            notify_user(
+                case.assistant_doctor,
+                title='Caso actualizado',
+                body=f'{principal_name} editó un caso en el que participás.',
+                data={'route': f'/cases/{case.pk}'},
+            )
 
         detail_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
         return Response(detail_serializer.data)
@@ -318,6 +351,14 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         case.assistant_accepted = True
         case.save()
 
+        assistant_name = request.user.get_full_name() or request.user.username
+        notify_user(
+            case.created_by,
+            title='Invitación aceptada',
+            body=f'{assistant_name} aceptó tu invitación al caso.',
+            data={'route': f'/cases/{case.pk}'},
+        )
+
         serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
         return Response({
             'message': 'Invitación aceptada exitosamente',
@@ -338,11 +379,21 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        principal = case.created_by
+        assistant_name = request.user.get_full_name() or request.user.username
+
         # Rechazar invitación — limpiar la asignación completamente
         # para que el médico principal pueda invitar a alguien más
         case.assistant_doctor = None
         case.assistant_accepted = None
         case.save(update_fields=['assistant_doctor', 'assistant_accepted'])
+
+        notify_user(
+            principal,
+            title='Invitación rechazada',
+            body=f'{assistant_name} rechazó tu invitación al caso.',
+            data={'route': f'/cases/{case.pk}'},
+        )
 
         return Response({
             'message': 'Invitación rechazada.'

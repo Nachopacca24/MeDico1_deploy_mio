@@ -43,6 +43,7 @@ export interface User {
   is_verified: boolean;
   is_email_verified: boolean;
   theme_preference: 'light' | 'dark' | 'system';
+  surgery_reminder_hours: number;
   is_profile_complete: boolean;
   has_usable_password: boolean;
   created_at: string;

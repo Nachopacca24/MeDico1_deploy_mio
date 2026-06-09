@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from ..models import SurgicalCase, SurgeryImage
+from apps.medico.services.firebase import notify_user
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +159,13 @@ def upload_surgery_image(request, case_id):
     if case.assistant_doctor and case.assistant_accepted is True:
         case.assistant_notified_at = timezone.now()
         case.save(update_fields=['assistant_notified_at'])
+        uploader_name = request.user.get_full_name() or request.user.username
+        notify_user(
+            case.assistant_doctor,
+            title='Nueva imagen en caso',
+            body=f'{uploader_name} subió una imagen a un caso en el que participás.',
+            data={'route': f'/cases/{case_id}'},
+        )
         logger.info('[IMG] notified assistant=%s of new image in case=%s', case.assistant_doctor_id, case_id)
 
     return Response({

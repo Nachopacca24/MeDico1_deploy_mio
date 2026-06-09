@@ -28,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
             'phone', 'specialty', 'license_number', 'hospital_default',
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
-            'theme_preference',
+            'theme_preference', 'surgery_reminder_hours',
             'is_profile_complete', 'has_usable_password', 'created_at', 'updated_at'
         ]
         read_only_fields = [

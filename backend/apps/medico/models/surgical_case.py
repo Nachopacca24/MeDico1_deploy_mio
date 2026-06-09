@@ -189,6 +189,13 @@ class SurgicalCase(models.Model):
         verbose_name="Notificación de expiración enviada el",
     )
 
+    surgery_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de cirugía enviado el",
+        help_text="Marca que ya se envió el recordatorio push para esta cirugía"
+    )
+
     # Metadatos
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

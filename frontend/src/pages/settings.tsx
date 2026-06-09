@@ -15,6 +15,7 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
 import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen, Trash2, AlertTriangle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { authService } from "@/shared/services/authService";
 import { useTutorial } from "@/core/contexts/TutorialContext";
 
@@ -119,6 +120,8 @@ const Settings = () => {
     disconnect
   } = useGoogleCalendar();
 
+  const [surgeryReminderHours, setSurgeryReminderHours] = useState<number>(24);
+
   const [settings, setSettings] = useState({
     first_name: "",
     last_name: "",
@@ -143,6 +146,7 @@ const Settings = () => {
         last_name: user.last_name || "",
         email: user.email || "",
       }));
+      setSurgeryReminderHours(user.surgery_reminder_hours ?? 24);
     }
   }, [user]);
 
@@ -206,6 +210,7 @@ const Settings = () => {
       } else {
         htmlElement.classList.remove("dark");
       }
+      await authService.updateProfile({ surgery_reminder_hours: surgeryReminderHours });
       toast({ title: "Preferencias guardadas", description: "Tus preferencias fueron actualizadas." });
     } catch {
       toast({ title: "Error", description: "No se pudieron guardar las preferencias.", variant: "destructive" });
@@ -364,6 +369,29 @@ const Settings = () => {
                   />
                   <p className="text-xs text-muted-foreground">
                     Código de moneda (ej: GTQ para Quetzal guatemalteco)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="surgeryReminder">Recordatorio de cirugía</Label>
+                  <Select
+                    value={String(surgeryReminderHours)}
+                    onValueChange={(v) => setSurgeryReminderHours(Number(v))}
+                  >
+                    <SelectTrigger id="surgeryReminder" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 hora antes</SelectItem>
+                      <SelectItem value="2">2 horas antes</SelectItem>
+                      <SelectItem value="6">6 horas antes</SelectItem>
+                      <SelectItem value="12">12 horas antes</SelectItem>
+                      <SelectItem value="24">24 horas antes (predeterminado)</SelectItem>
+                      <SelectItem value="48">48 horas antes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Recibirás una notificación push antes de cada cirugía programada
                   </p>
                 </div>
               </CardContent>
