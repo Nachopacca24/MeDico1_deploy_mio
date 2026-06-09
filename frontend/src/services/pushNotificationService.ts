@@ -17,16 +17,18 @@ class PushNotificationService {
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
 
       if (!this.listenersRegistered) {
-        // Create notification channel (Android 8+ required)
+        // Create notification channel (Android 8+ only, ignored on older versions)
         if (Capacitor.getPlatform() === 'android') {
-          await FirebaseMessaging.createChannel({
-            id: 'medico_default',
-            name: 'MeDico',
-            importance: 4, // IMPORTANCE_HIGH
-            visibility: 1, // VISIBILITY_PUBLIC
-            vibration: true,
-            lights: true,
-          });
+          try {
+            await FirebaseMessaging.createChannel({
+              id: 'medico_default',
+              name: 'MeDico',
+              importance: 4, // IMPORTANCE_HIGH
+              visibility: 1, // VISIBILITY_PUBLIC
+              vibration: true,
+              lights: true,
+            });
+          } catch { /* Android < 8 doesn't support channels */ }
         }
 
         const { receive } = await FirebaseMessaging.requestPermissions();
