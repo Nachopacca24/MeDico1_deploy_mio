@@ -4,6 +4,7 @@
 // holds a short-lived access token in memory — nothing sensitive in localStorage.
 
 import { Capacitor } from '@capacitor/core';
+import { authService } from '@/shared/services/authService';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -48,21 +49,13 @@ class GoogleCalendarService {
   // In-memory token cache — cleared on page reload (intentional: backend is the source of truth)
   private cachedToken: CachedToken | null = null;
 
-  private getAppJwt(): string | null {
-    return localStorage.getItem('medico_access_token');
-  }
-
-  private authHeaders(): Record<string, string> {
-    const jwt = this.getAppJwt();
-    return jwt ? { Authorization: `Bearer ${jwt}` } : {};
-  }
 
   // ─── Connection status ────────────────────────────────────────────────────
 
   async checkStatus(): Promise<{ connected: boolean; email: string }> {
-    const resp = await fetch(`${API_URL}/api/v1/medico/google-calendar/status/`, {
-      headers: this.authHeaders(),
-    });
+    const resp = await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/google-calendar/status/`
+    );
     if (!resp.ok) return { connected: false, email: '' };
     return resp.json();
   }
@@ -77,9 +70,9 @@ class GoogleCalendarService {
       return this.cachedToken.access_token;
     }
 
-    const resp = await fetch(`${API_URL}/api/v1/medico/google-calendar/token/`, {
-      headers: this.authHeaders(),
-    });
+    const resp = await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/google-calendar/token/`
+    );
 
     if (!resp.ok) {
       this.cachedToken = null;
@@ -165,11 +158,10 @@ class GoogleCalendarService {
     localStorage.removeItem('google_oauth_state');
     if (state !== savedState) throw new Error('Estado de OAuth inválido');
 
-    const resp = await fetch(`${API_URL}/api/v1/medico/google-calendar/connect/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...this.authHeaders() },
-      body: JSON.stringify({ code }),
-    });
+    const resp = await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/google-calendar/connect/`,
+      { method: 'POST', body: JSON.stringify({ code }) }
+    );
 
     if (!resp.ok) {
       const data = await resp.json().catch(() => ({}));
@@ -187,10 +179,10 @@ class GoogleCalendarService {
   }
 
   async disconnect(): Promise<void> {
-    await fetch(`${API_URL}/api/v1/medico/google-calendar/disconnect/`, {
-      method: 'DELETE',
-      headers: this.authHeaders(),
-    });
+    await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/google-calendar/disconnect/`,
+      { method: 'DELETE' }
+    );
     this.cachedToken = null;
   }
 
