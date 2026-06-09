@@ -45,9 +45,19 @@ interface CachedToken {
   email: string;
 }
 
+interface CachedEvents {
+  events: CalendarEvent[];
+  fetchedAt: number;
+  key: string;
+}
+
+const EVENTS_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
 class GoogleCalendarService {
   // In-memory token cache — cleared on page reload (intentional: backend is the source of truth)
   private cachedToken: CachedToken | null = null;
+  // Events cache — persists across navigation (singleton survives component remounts)
+  private eventsCache: CachedEvents | null = null;
 
 
   // ─── Connection status ────────────────────────────────────────────────────
@@ -224,6 +234,15 @@ class GoogleCalendarService {
   // ─── Calendar API — direct REST, no GAPI dependency ──────────────────────
 
   async getEvents(timeMin: Date = new Date(), timeMax?: Date): Promise<CalendarEvent[]> {
+    const cacheKey = `${timeMin.getTime()}-${timeMax?.getTime() ?? ''}`;
+    if (
+      this.eventsCache &&
+      this.eventsCache.key === cacheKey &&
+      Date.now() - this.eventsCache.fetchedAt < EVENTS_TTL_MS
+    ) {
+      return this.eventsCache.events;
+    }
+
     const token = await this.getToken();
     const params = new URLSearchParams({
       calendarId: 'primary',
@@ -234,14 +253,16 @@ class GoogleCalendarService {
     });
     if (timeMax) params.set('timeMax', timeMax.toISOString());
 
-    const resp = await this.calendarFetch(
-      `/calendars/primary/events?${params}`, token
-    );
+    const resp = await this.calendarFetch(`/calendars/primary/events?${params}`, token);
     const data = await this.handleCalendarResponse<{ items?: CalendarEvent[] }>(resp);
-    return data.items || [];
+    const events = data.items || [];
+
+    this.eventsCache = { events, fetchedAt: Date.now(), key: cacheKey };
+    return events;
   }
 
   async createEvent(event: CalendarEvent): Promise<string> {
+    this.eventsCache = null;
     const token = await this.getToken();
     const resp = await this.calendarFetch('/calendars/primary/events', token, {
       method: 'POST',
@@ -252,6 +273,7 @@ class GoogleCalendarService {
   }
 
   async updateEvent(eventId: string, event: CalendarEvent): Promise<void> {
+    this.eventsCache = null;
     const token = await this.getToken();
     const resp = await this.calendarFetch(
       `/calendars/primary/events/${encodeURIComponent(eventId)}`, token, {
@@ -263,6 +285,7 @@ class GoogleCalendarService {
   }
 
   async deleteEvent(eventId: string): Promise<void> {
+    this.eventsCache = null;
     const token = await this.getToken();
     const resp = await this.calendarFetch(
       `/calendars/primary/events/${encodeURIComponent(eventId)}`, token, {
