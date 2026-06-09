@@ -440,6 +440,10 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
+        # If a linked colleague is set, clear the manual name to avoid validation conflict
+        if instance.assistant_doctor_id and instance.assistant_doctor_name:
+            instance.assistant_doctor_name = None
+
         instance.save()
 
         if procedures_data is not None:
