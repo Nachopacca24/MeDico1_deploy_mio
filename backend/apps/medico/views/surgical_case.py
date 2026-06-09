@@ -182,13 +182,16 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
             # Notify assistant if invited
             if case.assistant_doctor:
-                principal_name = request.user.get_full_name() or request.user.username
-                notify_user(
-                    case.assistant_doctor,
-                    title='Nueva invitación a caso',
-                    body=f'{principal_name} te invitó a un caso quirúrgico.',
-                    data={'route': '/cases/assisted'},
-                )
+                try:
+                    principal_name = request.user.get_full_name() or request.user.username
+                    notify_user(
+                        case.assistant_doctor,
+                        title='Nueva invitación a caso',
+                        body=f'{principal_name} te invitó a un caso quirúrgico.',
+                        data={'route': '/cases/assisted'},
+                    )
+                except Exception:
+                    logger.exception('Error sending push notification on case create case=%s', case.pk)
 
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except rest_serializers.ValidationError as e:
@@ -225,22 +228,23 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         principal_name = request.user.get_full_name() or request.user.username
 
-        # New invitation: assistant was added during this edit
-        if case.assistant_doctor and case.assistant_doctor_id != prev_assistant_id:
-            notify_user(
-                case.assistant_doctor,
-                title='Nueva invitación a caso',
-                body=f'{principal_name} te invitó a un caso quirúrgico.',
-                data={'route': '/cases/assisted'},
-            )
-        # Case edited: notify accepted assistant
-        elif case.assistant_doctor and case.assistant_accepted is True:
-            notify_user(
-                case.assistant_doctor,
-                title='Caso actualizado',
-                body=f'{principal_name} editó un caso en el que participás.',
-                data={'route': f'/cases/{case.pk}'},
-            )
+        try:
+            if case.assistant_doctor and case.assistant_doctor_id != prev_assistant_id:
+                notify_user(
+                    case.assistant_doctor,
+                    title='Nueva invitación a caso',
+                    body=f'{principal_name} te invitó a un caso quirúrgico.',
+                    data={'route': '/cases/assisted'},
+                )
+            elif case.assistant_doctor and case.assistant_accepted is True:
+                notify_user(
+                    case.assistant_doctor,
+                    title='Caso actualizado',
+                    body=f'{principal_name} editó un caso en el que participás.',
+                    data={'route': f'/cases/{case.pk}'},
+                )
+        except Exception:
+            logger.exception('Error sending push notification on case update case=%s', case.pk)
 
         detail_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
         return Response(detail_serializer.data)
@@ -352,12 +356,15 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         case.save()
 
         assistant_name = request.user.get_full_name() or request.user.username
-        notify_user(
-            case.created_by,
-            title='Invitación aceptada',
-            body=f'{assistant_name} aceptó tu invitación al caso.',
-            data={'route': f'/cases/{case.pk}'},
-        )
+        try:
+            notify_user(
+                case.created_by,
+                title='Invitación aceptada',
+                body=f'{assistant_name} aceptó tu invitación al caso.',
+                data={'route': f'/cases/{case.pk}'},
+            )
+        except Exception:
+            logger.exception('Error sending push notification on accept invitation case=%s', case.pk)
 
         serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
         return Response({
@@ -388,12 +395,15 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         case.assistant_accepted = None
         case.save(update_fields=['assistant_doctor', 'assistant_accepted'])
 
-        notify_user(
-            principal,
-            title='Invitación rechazada',
-            body=f'{assistant_name} rechazó tu invitación al caso.',
-            data={'route': f'/cases/{case.pk}'},
-        )
+        try:
+            notify_user(
+                principal,
+                title='Invitación rechazada',
+                body=f'{assistant_name} rechazó tu invitación al caso.',
+                data={'route': f'/cases/{case.pk}'},
+            )
+        except Exception:
+            logger.exception('Error sending push notification on reject invitation case=%s', case.pk)
 
         return Response({
             'message': 'Invitación rechazada.'
