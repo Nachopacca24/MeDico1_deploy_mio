@@ -14,6 +14,8 @@ def manage_push_token(request):
 
     if request.method == 'POST':
         platform = request.data.get('platform', 'android')
+        # Delete stale tokens for same user+platform before registering new one
+        FCMToken.objects.filter(user=request.user, platform=platform).exclude(token=token).delete()
         FCMToken.objects.update_or_create(
             token=token,
             defaults={'user': request.user, 'platform': platform},
