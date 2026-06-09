@@ -26,6 +26,18 @@ export function useGoogleCalendar() {
 
   useEffect(() => {
     checkConnection();
+
+    // Re-check when the tab/app comes back to focus — another device may have
+    // connected or disconnected in the meantime.
+    const onFocus = () => checkConnection();
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkConnection();
+    });
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+    };
   }, [checkConnection]);
 
   const connect = useCallback(() => {
