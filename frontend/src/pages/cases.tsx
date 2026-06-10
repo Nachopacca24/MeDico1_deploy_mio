@@ -1,6 +1,8 @@
 // src/pages/cases.tsx
 
 import { useEffect, useState, useMemo } from "react";
+
+const _trackedCaseAds = new Set<number>();
 import React from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
@@ -609,8 +611,10 @@ const CasesPage = () => {
 
     useEffect(() => {
       if (!ad || !adSettings.showBetweenContent) return;
+      if (_trackedCaseAds.has(ad.id)) return;
+      _trackedCaseAds.add(ad.id);
       advertisementService.trackImpression(ad.id);
-    }, [ad, adSettings.showBetweenContent]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [ad?.id, adSettings.showBetweenContent]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!adSettings.showBetweenContent || !ad) return null;
 

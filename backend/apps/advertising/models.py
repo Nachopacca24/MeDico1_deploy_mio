@@ -2,7 +2,7 @@ import logging
 from django.db import models
 from django.conf import settings
 from django.core.validators import URLValidator
-from django.db.models.signals import post_delete, pre_save
+from django.db.models.signals import post_delete, pre_save, post_save
 from django.dispatch import receiver
 from decimal import Decimal
 import os
@@ -420,3 +420,46 @@ def delete_old_image_on_update(sender, instance, **kwargs):
         pass
     except Exception as e:
         logger.warning("Error in pre_save signal: %s", e)
+
+
+@receiver(pre_save, sender=Advertisement)
+def capture_previous_ad_status(sender, instance, **kwargs):
+    """Guarda el estado anterior en el objeto para usarlo en post_save."""
+    if instance.pk:
+        try:
+            instance._prev_status = Advertisement.objects.get(pk=instance.pk).status
+        except Advertisement.DoesNotExist:
+            instance._prev_status = None
+    else:
+        instance._prev_status = None
+
+
+@receiver(post_save, sender=Advertisement)
+def notify_users_on_advertisement_activated(sender, instance, created, **kwargs):
+    """
+    Envía notificación push a todos los usuarios cuando un anuncio se activa
+    (creado como active, o cambia de draft/paused a active).
+    """
+    if instance.status != 'active':
+        return
+
+    prev_status = getattr(instance, '_prev_status', None)
+    # Notificar solo si es nuevo con active, o si pasó de otro estado a active
+    if not created and prev_status == 'active':
+        return
+
+    try:
+        from apps.medico.models import FCMToken
+        from apps.medico.services.firebase import send_push_notification
+
+        tokens = list(FCMToken.objects.values_list('token', flat=True))
+        if not tokens:
+            return
+
+        title = instance.title or instance.campaign_name
+        body = instance.description or 'Mirá las novedades en MeDico'
+
+        send_push_notification(tokens, title=title, body=body, data={'route': '/'})
+        logger.info('[AD] Notificación enviada para anuncio id=%s a %d tokens', instance.pk, len(tokens))
+    except Exception:
+        logger.exception('[AD] Error enviando notificación para anuncio id=%s', instance.pk)
