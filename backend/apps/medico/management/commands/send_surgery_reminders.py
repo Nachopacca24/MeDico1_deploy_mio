@@ -1,9 +1,10 @@
 """
 Envía recordatorios push a los médicos antes de sus cirugías programadas.
 
-Diseñado para correr cada hora via cron en Railway.
+Diseñado para correr cada 5 minutos via cron en Railway.
 Cada usuario configura cuántas horas antes quiere el recordatorio (default: 24h).
 Usa surgery_reminder_sent_at para no enviar el recordatorio más de una vez por caso.
+Si la fecha/hora de la cirugía cambia, surgery_reminder_sent_at se resetea (ver modelo).
 """
 
 import logging
@@ -17,8 +18,8 @@ from apps.medico.services.firebase import notify_user
 
 logger = logging.getLogger(__name__)
 
-# Ventana de tolerancia: ±30 minutos para no perder casos al correr cada hora
-WINDOW_MINUTES = 30
+# Ventana de tolerancia: ±3 minutos (cron corre cada 5 min → máximo 3 min de error)
+WINDOW_MINUTES = 3
 
 
 class Command(BaseCommand):

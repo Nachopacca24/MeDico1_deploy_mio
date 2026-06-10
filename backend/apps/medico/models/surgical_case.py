@@ -265,6 +265,10 @@ class SurgicalCase(models.Model):
                     # Si hay un nuevo ayudante, notificar
                     if self.assistant_doctor:
                         self.assistant_notified_at = timezone.now()
+                # Si cambió la fecha u hora de la cirugía, resetear el recordatorio
+                if (old_instance.surgery_date != self.surgery_date or
+                        old_instance.surgery_time != self.surgery_time):
+                    self.surgery_reminder_sent_at = None
                 # Auto-archivar cuando se marca como cobrado
                 if not old_instance.is_paid and self.is_paid and not self.archived_at:
                     self.archived_at = timezone.now()
