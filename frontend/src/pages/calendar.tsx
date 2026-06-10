@@ -173,6 +173,14 @@ const CalendarPage = () => {
       const allCases = [...cases, ...assistedResp.accepted_cases];
       const result = await calendarSyncService.syncMissingCases(allCases);
 
+      if (result.notConnected && assistedResp.accepted_cases.length > 0) {
+        toast.warning(
+          'Google Calendar no conectado',
+          'Conectá tu Google Calendar en Ajustes para sincronizar tus cirugías como ayudante.'
+        );
+        return;
+      }
+
       if (result.paused) {
         toast.warning(
           'Sincronización pausada',

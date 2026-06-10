@@ -194,9 +194,9 @@ class CalendarSyncService {
    */
   async syncMissingCases(
     cases: SurgicalCase[]
-  ): Promise<{ synced: number; failed: number; paused: boolean; message?: string }> {
+  ): Promise<{ synced: number; failed: number; paused: boolean; notConnected?: boolean; message?: string }> {
     if (!await googleCalendarService.getValidToken()) {
-      return { synced: 0, failed: 0, paused: false };
+      return { synced: 0, failed: 0, paused: false, notConnected: true };
     }
 
     const assistedSynced = this.getAssistedSyncedIds();
