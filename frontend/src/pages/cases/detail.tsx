@@ -32,6 +32,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { authService } from "@/shared/services/authService";
+import { calendarSyncService } from "@/services/calendarSyncService";
+import { googleCalendarService } from "@/services/googleCalendarService";
 
 interface SurgeryImage {
   id: number;
@@ -57,6 +59,7 @@ const CaseDetailPage = () => {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
   const imagesSectionRef = useRef<HTMLDivElement>(null);
+  const [syncingCalendar, setSyncingCalendar] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -191,9 +194,30 @@ const CaseDetailPage = () => {
 
   // Verificar si el usuario actual es el dueño del caso
   const isOwner = surgicalCase?.is_owner || false;
-  
+
   // Verificar si el usuario es el ayudante (usando assistant_doctor directamente del caso)
   const isAssistant = surgicalCase?.can_edit === false && surgicalCase?.assistant_doctor;
+
+  const handleAddToCalendar = async () => {
+    if (!surgicalCase) return;
+    if (!await googleCalendarService.getValidToken()) {
+      toast.warning('Google Calendar', 'Conectá tu Google Calendar primero desde Ajustes.');
+      return;
+    }
+    setSyncingCalendar(true);
+    try {
+      const eventId = await calendarSyncService.createEventForCase(surgicalCase);
+      if (eventId) {
+        toast.success('Agregado al calendario', 'La cirugía fue agregada a tu Google Calendar.');
+      } else {
+        toast.error('Error', 'No se pudo agregar al calendario. Intentá de nuevo.');
+      }
+    } catch {
+      toast.error('Error', 'No se pudo agregar al calendario.');
+    } finally {
+      setSyncingCalendar(false);
+    }
+  };
 
   const isPaid = surgicalCase?.is_paid ?? false;
 
@@ -275,6 +299,22 @@ const CaseDetailPage = () => {
                   <Edit className="w-4 h-4 mr-2" />
                   Editar
                 </Link>
+              </Button>
+            )}
+
+            {isAssistant && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAddToCalendar}
+                disabled={syncingCalendar}
+                className="border-blue-500/40 text-blue-500 hover:bg-blue-500/10"
+              >
+                {syncingCalendar
+                  ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  : <Calendar className="w-4 h-4 mr-2" />
+                }
+                Agregar al calendario
               </Button>
             )}
 

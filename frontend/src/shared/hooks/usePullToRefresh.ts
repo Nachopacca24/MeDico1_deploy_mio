@@ -1,44 +1,66 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const THRESHOLD = 64; // px to pull before releasing triggers refresh
-const MAX_PULL = 80;  // max visual pull distance
+const THRESHOLD = 64;
+const MAX_PULL = 80;
 
 export function usePullToRefresh(onRefresh: () => Promise<void>) {
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+
   const touchStartY = useRef(0);
   const pulling = useRef(false);
-  const containerRef = useRef<HTMLElement | null>(null);
+  const pullDistRef = useRef(0);   // avoids stale closure in onTouchEnd
+  const refreshingRef = useRef(false);
+  const onRefreshRef = useRef(onRefresh);
+  useEffect(() => { onRefreshRef.current = onRefresh; }, [onRefresh]);
+
+  const isAtTop = useCallback(() => {
+    return (window.scrollY ?? document.documentElement.scrollTop ?? document.body.scrollTop) <= 4;
+  }, []);
 
   useEffect(() => {
-    const el = containerRef.current ?? document.documentElement;
-
     const onTouchStart = (e: TouchEvent) => {
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      if (scrollTop > 2) return;
+      if (!isAtTop() || refreshingRef.current) return;
       touchStartY.current = e.touches[0].clientY;
+      pullDistRef.current = 0;
       pulling.current = true;
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      if (!pulling.current || refreshing) return;
+      if (!pulling.current || refreshingRef.current) return;
+      if (!isAtTop()) {
+        pulling.current = false;
+        pullDistRef.current = 0;
+        setPullDistance(0);
+        return;
+      }
       const delta = e.touches[0].clientY - touchStartY.current;
-      if (delta <= 0) { setPullDistance(0); return; }
-      // Prevent native scroll bounce competing with our pull
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      if (scrollTop > 2) { pulling.current = false; setPullDistance(0); return; }
-      setPullDistance(Math.min(delta * 0.5, MAX_PULL));
+      if (delta <= 0) {
+        pullDistRef.current = 0;
+        setPullDistance(0);
+        return;
+      }
+      const dist = Math.min(delta * 0.5, MAX_PULL);
+      pullDistRef.current = dist;
+      setPullDistance(dist);
     };
 
     const onTouchEnd = async () => {
       if (!pulling.current) return;
       pulling.current = false;
-      if (pullDistance >= THRESHOLD) {
+      const dist = pullDistRef.current;
+      pullDistRef.current = 0;
+      setPullDistance(0);
+
+      if (dist >= THRESHOLD) {
+        refreshingRef.current = true;
         setRefreshing(true);
-        setPullDistance(0);
-        try { await onRefresh(); } finally { setRefreshing(false); }
-      } else {
-        setPullDistance(0);
+        try {
+          await onRefreshRef.current();
+        } finally {
+          refreshingRef.current = false;
+          setRefreshing(false);
+        }
       }
     };
 
@@ -50,7 +72,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
     };
-  }, [onRefresh, pullDistance, refreshing]);
+  }, [isAtTop]); // stable — no state in deps, no re-registration on every render
 
-  return { pullDistance, refreshing, containerRef };
+  return { pullDistance, refreshing };
 }

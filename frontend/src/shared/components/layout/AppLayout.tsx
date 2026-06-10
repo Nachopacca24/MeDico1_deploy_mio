@@ -1,6 +1,6 @@
 // src/shared/components/layout/AppLayout.tsx
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/shared/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/layout/Sidebar";
@@ -27,10 +27,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isAdmin = user?.is_admin;
   const isMobile = useIsMobile();
 
-  const handleGlobalRefresh = async () => {
+  const handleGlobalRefresh = useCallback(async () => {
     window.dispatchEvent(new CustomEvent(APP_REFRESH_EVENT));
     await new Promise(r => setTimeout(r, 800));
-  };
+  }, []);
   const { pullDistance, refreshing } = usePullToRefresh(handleGlobalRefresh);
 
   // Pre-warm ad cache using the user's specialty so the exact cache keys match
