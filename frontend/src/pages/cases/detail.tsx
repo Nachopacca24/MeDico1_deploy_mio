@@ -208,6 +208,9 @@ const CaseDetailPage = () => {
     try {
       const eventId = await calendarSyncService.createEventForCase(surgicalCase);
       if (eventId) {
+        if (!surgicalCase.is_owner && surgicalCase.id) {
+          calendarSyncService.markAssistedSynced(surgicalCase.id);
+        }
         toast.success('Agregado al calendario', 'La cirugía fue agregada a tu Google Calendar.');
       } else {
         toast.error('Error', 'No se pudo agregar al calendario. Intentá de nuevo.');
