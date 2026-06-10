@@ -42,6 +42,8 @@ class Command(BaseCommand):
         sent = 0
         skipped = 0
 
+        logger.info('[REMINDER] now=%s candidates=%d', now.isoformat(), candidates.count())
+
         for case in candidates:
             user = case.created_by
             reminder_hours = getattr(user, 'surgery_reminder_hours', 24)
@@ -56,6 +58,14 @@ class Command(BaseCommand):
             target = now + timedelta(hours=reminder_hours)
             window_start = target - timedelta(minutes=WINDOW_MINUTES)
             window_end = target + timedelta(minutes=WINDOW_MINUTES)
+
+            logger.info(
+                '[REMINDER] case=%s user=%s reminder_hours=%s surgery_dt=%s window=[%s,%s] in_window=%s',
+                case.pk, user.id, reminder_hours,
+                surgery_dt.isoformat(),
+                window_start.isoformat(), window_end.isoformat(),
+                window_start <= surgery_dt <= window_end,
+            )
 
             if not (window_start <= surgery_dt <= window_end):
                 skipped += 1

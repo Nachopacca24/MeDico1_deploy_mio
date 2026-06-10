@@ -198,7 +198,7 @@ export function InvitationsList() {
                       <div>
                         <div className="text-muted-foreground mb-1">Fecha</div>
                         <div className="font-medium">
-                          {new Date(surgicalCase.surgery_date).toLocaleDateString()}
+                          {new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()}
                         </div>
                       </div>
                       <div>

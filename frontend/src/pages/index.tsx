@@ -344,7 +344,7 @@ const Index = () => {
                   <div className="text-right flex flex-col items-end pr-2">
                     <div className="font-black text-xl text-slate-900 dark:text-white">Q {case_.total_value?.toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                     <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                      {new Date(case_.surgery_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(case_.surgery_date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </div>
                   </div>
                 </Link>

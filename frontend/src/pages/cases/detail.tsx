@@ -383,7 +383,7 @@ const CaseDetailPage = () => {
                       Fecha de Cirugía
                     </div>
                     <div className="font-medium">
-                      {new Date(surgicalCase.surgery_date).toLocaleDateString('es-GT', {
+                      {new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString('es-GT', {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',

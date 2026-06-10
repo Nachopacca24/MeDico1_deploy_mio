@@ -921,7 +921,7 @@ const CasesPage = () => {
                             <div className="p-1.5 bg-blue-500/10 rounded-lg">
                               <Calendar className="w-4 h-4 text-blue-500" />
                             </div>
-                            <span>{new Date(surgicalCase.surgery_date).toLocaleDateString()}</span>
+                            <span>{new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center gap-2 text-base">
                             <div className="p-1.5 bg-purple-500/10 rounded-lg">
@@ -1136,7 +1136,7 @@ const CasesPage = () => {
                               <div className="p-1.5 bg-blue-500/10 rounded-lg">
                                 <Calendar className="w-4 h-4 text-blue-500" />
                               </div>
-                              <span>{new Date(surgicalCase.surgery_date).toLocaleDateString()}</span>
+                              <span>{new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <div className="p-1.5 bg-purple-500/10 rounded-lg">
