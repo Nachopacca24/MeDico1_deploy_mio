@@ -545,19 +545,19 @@ const CasesPage = () => {
   }, [cases, searchQuery, statusFilter]);
 
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { style: string }> = {
-      scheduled: { style: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
-      completed: { style: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
-      billed: { style: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
-      paid: { style: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
-      cancelled: { style: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+    const config: Record<string, { style: string; label: string }> = {
+      scheduled:  { style: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',       label: 'Programada'  },
+      completed:  { style: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',   label: 'Completada'  },
+      billed:     { style: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300', label: 'Facturada' },
+      paid:       { style: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', label: 'Cobrada' },
+      cancelled:  { style: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',           label: 'Cancelada'   },
     };
 
-    const { style } = config[status] || config.scheduled;
+    const { style, label } = config[status] || config.scheduled;
 
     return (
-      <span className={`px-2 py-1 rounded text-xs font-medium ${style}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${style}`}>
+        {label}
       </span>
     );
   };
@@ -943,19 +943,19 @@ const CasesPage = () => {
                             <div className="p-1.5 bg-teal-500/10 rounded-lg">
                               <Users className="w-4 h-4 text-teal-500" />
                             </div>
-                            <div className="flex items-center gap-2 flex-1">
-                              <span className="text-xs truncate">Ayudante: {surgicalCase.assistant_display_name}</span>
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <span className="text-xs truncate min-w-0">Ayudante: {surgicalCase.assistant_display_name}</span>
                               {surgicalCase.assistant_doctor && (
                                 surgicalCase.assistant_accepted === true ? (
-                                  <Badge variant="default" className="bg-green-600 text-white text-xs">
+                                  <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">
                                     ✓ Aceptó
                                   </Badge>
                                 ) : surgicalCase.assistant_accepted === false ? (
-                                  <Badge variant="destructive" className="bg-red-600 text-white text-xs">
+                                  <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">
                                     ✗ Rechazó
                                   </Badge>
                                 ) : (
-                                  <Badge variant="secondary" className="bg-yellow-600 text-white text-xs">
+                                  <Badge variant="secondary" className="bg-yellow-600 text-white text-xs shrink-0">
                                     ⏳ Pendiente
                                   </Badge>
                                 )
