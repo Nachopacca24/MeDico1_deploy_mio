@@ -290,7 +290,11 @@ class AdvertisementService {
     }
   }
 
+  private _impressedIds = new Set<number>();
+
   async trackImpression(adId: number): Promise<void> {
+    if (this._impressedIds.has(adId)) return;
+    this._impressedIds.add(adId);
     try {
       await fetch(
         `${API_URL}/api/v1/advertising/public/ads/${adId}/impression/`,
