@@ -513,7 +513,7 @@ class SurgicalCaseService {
         const eventId = await calendarSyncService.createEventForCase(surgicalCase);
         
         if (eventId) {
-          console.log('✅ Invitación aceptada y agregada a Google Calendar del ayudante');
+          calendarSyncService.markAssistedSynced(caseId);
         }
       } catch (calendarError) {
         console.error('⚠️ Error sincronizando con Google Calendar (invitación aceptada exitosamente):', calendarError);

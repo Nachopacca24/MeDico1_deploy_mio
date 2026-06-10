@@ -180,7 +180,7 @@ class CalendarSyncService {
     } catch { return new Set(); }
   }
 
-  private markAssistedSynced(id: number) {
+  markAssistedSynced(id: number) {
     const ids = this.getAssistedSyncedIds();
     ids.add(id);
     localStorage.setItem(this.ASSISTED_SYNCED_KEY, JSON.stringify([...ids]));
