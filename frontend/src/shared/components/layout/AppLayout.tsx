@@ -7,13 +7,16 @@ import { AppSidebar } from "@/shared/components/layout/Sidebar";
 import { MobileBottomNav } from "@/shared/components/layout/MobileBottomNav";
 import { Separator } from "@/shared/components/ui/separator";
 import { useAuth } from "@/shared/contexts/AuthContext";
-import { Shield } from "lucide-react";
+import { Shield, Loader2 } from "lucide-react";
 import { advertisementService } from "@/admin/services/advertisementService";
 import { EmailVerificationBanner } from "@/shared/components/EmailVerificationBanner";
 import { MobileForYouSection } from "@/shared/components/ads/MobileForYouSection";
 import { useIsMobile } from "@/shared/hooks/useAdSystem";
 import { WelcomeModal } from "@/core/components/WelcomeModal";
 import { TutorialCard } from "@/core/components/TutorialCard";
+import { usePullToRefresh } from "@/shared/hooks/usePullToRefresh";
+
+export const APP_REFRESH_EVENT = 'app-pull-to-refresh';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -23,6 +26,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useAuth();
   const isAdmin = user?.is_admin;
   const isMobile = useIsMobile();
+
+  const handleGlobalRefresh = async () => {
+    window.dispatchEvent(new CustomEvent(APP_REFRESH_EVENT));
+    await new Promise(r => setTimeout(r, 800));
+  };
+  const { pullDistance, refreshing } = usePullToRefresh(handleGlobalRefresh);
 
   // Pre-warm ad cache using the user's specialty so the exact cache keys match
   useEffect(() => {
@@ -56,6 +65,19 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Link>
           )}
         </header>
+
+        {/* Pull-to-refresh indicator */}
+        {(pullDistance > 0 || refreshing) && (
+          <div
+            className="flex items-center justify-center overflow-hidden transition-all duration-150 bg-background"
+            style={{ height: refreshing ? 48 : pullDistance * 0.75 }}
+          >
+            <Loader2
+              className={`w-5 h-5 text-primary ${refreshing ? 'animate-spin' : ''}`}
+              style={{ opacity: refreshing ? 1 : pullDistance / 64 }}
+            />
+          </div>
+        )}
 
         <main className="flex flex-1 flex-col gap-4 p-4 md:p-6" style={{ paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))' }}>
           <EmailVerificationBanner />

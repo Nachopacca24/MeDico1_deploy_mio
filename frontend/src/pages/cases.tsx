@@ -24,6 +24,7 @@ import { Link } from "react-router-dom";
 import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus } from 'lucide-react';
 import { authService } from "@/shared/services/authService";
 import { useIsUploading } from "@/shared/hooks/useUploadingCases";
+import { APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
 
 function UploadingBadge({ caseId }: { caseId: number }) {
   const uploading = useIsUploading(caseId);
@@ -336,6 +337,17 @@ const CasesPage = () => {
   const [betweenContentAds, setBetweenContentAds] = useState<ActiveAd[]>([]);
   const [loadingAds, setLoadingAds] = useState(true);
   const [currentSidebarAdIndex, setCurrentSidebarAdIndex] = useState(0);
+
+  useEffect(() => {
+    const onRefresh = () => {
+      fetchCases();
+      fetchInvitations();
+      window.dispatchEvent(new CustomEvent(CASE_INVITATIONS_EVENT));
+    };
+    window.addEventListener(APP_REFRESH_EVENT, onRefresh);
+    return () => window.removeEventListener(APP_REFRESH_EVENT, onRefresh);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });

@@ -1,7 +1,7 @@
 // src/pages/novedades.tsx
 
 import { useEffect, useState, useCallback } from "react";
-import { AppLayout } from "@/shared/components/layout/AppLayout";
+import { AppLayout, APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
 import { advertisementService, type FeedAd, type AdCategory } from "@/admin/services/advertisementService";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useNovedadesNew } from "@/shared/hooks/useNovedadesNew";
@@ -190,6 +190,11 @@ const NovedadesPage = () => {
   }, [selectedCategory, specialty, debouncedSearch]);
 
   useEffect(() => { fetchAds(); }, [fetchAds]);
+
+  useEffect(() => {
+    window.addEventListener(APP_REFRESH_EVENT, fetchAds);
+    return () => window.removeEventListener(APP_REFRESH_EVENT, fetchAds);
+  }, [fetchAds]);
 
   const specialtyAds = specialty
     ? allAds.filter(ad => ad.target_specialties.length > 0 && ad.target_specialties.includes(specialty))

@@ -25,6 +25,7 @@ import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
 import { useIsMobile } from "@/shared/hooks/useAdSystem";
 import type { CaseStats } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
+import { APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
 
 const Index = () => {
   const { user } = useAuth();
@@ -38,23 +39,25 @@ const Index = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [loadingAds, setLoadingAds] = useState(true);
 
-  useEffect(() => {
-    if (!user?.is_email_verified) {
+  const fetchStats = async () => {
+    if (!user?.is_email_verified) { setLoadingStats(false); return; }
+    try {
+      const data = await surgicalCaseService.getStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
       setLoadingStats(false);
-      return;
     }
-    const fetchStats = async () => {
-      try {
-        const data = await surgicalCaseService.getStats();
-        setStats(data);
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setLoadingStats(false);
-      }
-    };
-    fetchStats();
-  }, [user?.is_email_verified]);
+  };
+
+  useEffect(() => { fetchStats(); }, [user?.is_email_verified]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    window.addEventListener(APP_REFRESH_EVENT, fetchStats);
+    return () => window.removeEventListener(APP_REFRESH_EVENT, fetchStats);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Cargar anuncios Gold
   useEffect(() => {
