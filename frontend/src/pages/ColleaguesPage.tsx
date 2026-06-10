@@ -225,27 +225,27 @@ export default function ColleaguesPage() {
           </div>
 
           <form onSubmit={handleSearch} className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full">
               <input
                 type="text"
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
-                placeholder="Ingresa el código de colega (ej: ABCD12XY)"
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                placeholder="Código de colega (ej: ABCD12XY)"
+                className="flex-1 min-w-0 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-sm"
                 maxLength={8}
                 disabled={searching}
               />
               <button
                 type="submit"
                 disabled={searching || !searchCode.trim()}
-                className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="shrink-0 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-sm"
               >
                 {searching ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Search className="w-5 h-5" />
-                    Buscar
+                    <Search className="w-4 h-4" />
+                    <span>Buscar</span>
                   </>
                 )}
               </button>
