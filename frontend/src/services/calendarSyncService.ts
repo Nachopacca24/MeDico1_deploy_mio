@@ -170,27 +170,34 @@ class CalendarSyncService {
     }
   }
 
-  // localStorage key for tracking which assisted case IDs have been synced
-  private readonly ASSISTED_SYNCED_KEY = 'medico_assisted_calendar_synced';
+  // localStorage: { [caseId]: eventId } for assisted cases
+  private readonly ASSISTED_SYNCED_KEY = 'medico_assisted_calendar_synced_v2';
 
-  private getAssistedSyncedIds(): Set<number> {
+  private getAssistedEventMap(): Record<number, string> {
     try {
       const raw = localStorage.getItem(this.ASSISTED_SYNCED_KEY);
-      return new Set(raw ? JSON.parse(raw) : []);
-    } catch { return new Set(); }
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
   }
 
-  markAssistedSynced(id: number) {
-    const ids = this.getAssistedSyncedIds();
-    ids.add(id);
-    localStorage.setItem(this.ASSISTED_SYNCED_KEY, JSON.stringify([...ids]));
+  markAssistedSynced(id: number, eventId?: string) {
+    const map = this.getAssistedEventMap();
+    map[id] = eventId ?? map[id] ?? '';
+    localStorage.setItem(this.ASSISTED_SYNCED_KEY, JSON.stringify(map));
+  }
+
+  private getAssistedEventId(caseId: number): string | null {
+    const map = this.getAssistedEventMap();
+    return map[caseId] || null;
   }
 
   /**
    * Sync active cases that are missing a Google Calendar event.
    *
    * Owner cases: saves calendar_event_id to backend.
-   * Assisted cases: tracks synced IDs in localStorage (can't write to backend).
+   * Assisted cases: tracks { caseId → eventId } in localStorage.
+   *   - Case not yet synced → create event
+   *   - Case already synced → update event (handles date/time changes by principal)
    */
   async syncMissingCases(
     cases: SurgicalCase[]
@@ -199,14 +206,14 @@ class CalendarSyncService {
       return { synced: 0, failed: 0, paused: false, notConnected: true };
     }
 
-    const assistedSynced = this.getAssistedSyncedIds();
+    const assistedMap = this.getAssistedEventMap();
 
     const ownedToSync = cases.filter(
       c => c.is_owner && c.surgery_date && !CLOSED_STATUSES.includes(c.status) && !c.calendar_event_id
     );
-    const assistedToSync = cases.filter(
+    const assistedActive = cases.filter(
       c => !c.is_owner && c.assistant_accepted === true && c.surgery_date &&
-           !CLOSED_STATUSES.includes(c.status) && !assistedSynced.has(c.id!)
+           !CLOSED_STATUSES.includes(c.status)
     );
 
     let synced = 0;
@@ -227,15 +234,23 @@ class CalendarSyncService {
       } catch { failed++; }
     }
 
-    for (const surgicalCase of assistedToSync) {
+    for (const surgicalCase of assistedActive) {
       if (!await googleCalendarService.getValidToken()) {
         return { synced, failed, paused: true, message: 'Sincronización pausada: reconecta Google Calendar para continuar' };
       }
+      const storedEventId = assistedMap[surgicalCase.id!];
       try {
-        const eventId = await this.createEventForCase(surgicalCase);
-        if (!eventId) { failed++; continue; }
-        this.markAssistedSynced(surgicalCase.id!);
-        synced++;
+        if (storedEventId) {
+          // Already synced before — update in case principal changed date/time
+          const caseWithEventId = { ...surgicalCase, calendar_event_id: storedEventId };
+          await this.updateEventForCase(caseWithEventId);
+        } else {
+          // First time — create event
+          const eventId = await this.createEventForCase(surgicalCase);
+          if (!eventId) { failed++; continue; }
+          this.markAssistedSynced(surgicalCase.id!, eventId);
+          synced++;
+        }
       } catch { failed++; }
     }
 
