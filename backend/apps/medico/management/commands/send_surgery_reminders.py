@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 is_paid=False,
             )
             .exclude(status='cancelled')
-            .select_related('created_by')
+            .select_related('created_by', 'assistant_doctor')
         )
 
         sent = 0
@@ -79,6 +79,16 @@ class Command(BaseCommand):
                 body=body,
                 data={'route': f'/cases/{case.pk}'},
             )
+
+            # Also notify the assistant doctor if they accepted
+            if case.assistant_doctor and case.assistant_accepted is True:
+                notify_user(
+                    case.assistant_doctor,
+                    title=f'Recordatorio: cirugía en {reminder_hours}h',
+                    body=body,
+                    data={'route': f'/cases/{case.pk}'},
+                )
+                logger.info('[REMINDER] sent to assistant=%s for case=%s', case.assistant_doctor_id, case.pk)
 
             SurgicalCase.objects.filter(pk=case.pk).update(surgery_reminder_sent_at=now)
             sent += 1
