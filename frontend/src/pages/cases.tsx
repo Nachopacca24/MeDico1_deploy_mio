@@ -905,6 +905,9 @@ const CasesPage = () => {
                                 ? <CheckSquare className="w-5 h-5 text-amber-400 flex-shrink-0" />
                                 : <Square className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                             )}
+                            {isOwner && surgicalCase.assistant_doctor && surgicalCase.assistant_accepted !== true && surgicalCase.assistant_accepted !== false && (
+                              <Badge className="bg-yellow-600 text-white text-xs shrink-0 whitespace-nowrap">⏳ Pendiente</Badge>
+                            )}
                             {getStatusBadge(surgicalCase.status)}
                           </div>
                         </div>
@@ -945,20 +948,15 @@ const CasesPage = () => {
                             </div>
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <span className="text-xs truncate min-w-0">Ayudante: {surgicalCase.assistant_display_name}</span>
-                              {surgicalCase.assistant_doctor && (
-                                surgicalCase.assistant_accepted === true ? (
-                                  <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">
-                                    ✓ Aceptó
-                                  </Badge>
-                                ) : surgicalCase.assistant_accepted === false ? (
-                                  <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">
-                                    ✗ Rechazó
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="secondary" className="bg-yellow-600 text-white text-xs shrink-0">
-                                    ⏳ Pendiente
-                                  </Badge>
-                                )
+                              {surgicalCase.assistant_doctor && surgicalCase.assistant_accepted === true && (
+                                <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">
+                                  ✓ Aceptó
+                                </Badge>
+                              )}
+                              {surgicalCase.assistant_doctor && surgicalCase.assistant_accepted === false && (
+                                <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">
+                                  ✗ Rechazó
+                                </Badge>
                               )}
                             </div>
                           </div>
