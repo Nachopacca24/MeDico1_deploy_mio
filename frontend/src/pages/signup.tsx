@@ -275,7 +275,10 @@ export default function SignupForm() {
                   disabled={isLoading}
                   aria-invalid={!!errors.username}
                 />
-                {errors.username && <p className='text-sm text-destructive'>{errors.username}</p>}
+                {errors.username
+                  ? <p className='text-sm text-destructive'>{errors.username}</p>
+                  : <p className='text-xs text-muted-foreground'>Así te reconocerán otros médicos en la plataforma.</p>
+                }
               </div>
 
               <div className='space-y-2'>

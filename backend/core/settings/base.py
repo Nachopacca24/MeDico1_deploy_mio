@@ -203,7 +203,7 @@ REST_FRAMEWORK = {
         'user': '10000/day',
         'login': '5/min',
         'register': '10/hour',
-        'ad_tracking': '60/hour',
+        'ad_tracking': '600/hour',
         'password_reset': '3/hour',
         'colleague_search': '30/hour',
     },
