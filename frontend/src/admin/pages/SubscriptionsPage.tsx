@@ -123,7 +123,8 @@ const SubscriptionsPage = () => {
     const now = new Date();
     const trialEnd = new Date(user.trial_ends_at);
     if (trialEnd > now) return 'active-trial';
-    return 'no-trial'; // expired trial → already reverted to free by backend
+    // Trial expired — backend may not have updated plan yet if user hasn't logged in
+    return 'expired-trial';
   };
 
   const getDaysLeft = (trialEndsAt: string) => {
@@ -138,8 +139,8 @@ const SubscriptionsPage = () => {
     const matchesTab =
       activeTab === 'all' ||
       (activeTab === 'trial' && status === 'active-trial') ||
-      (activeTab === 'premium' && (status === 'permanent' || user.plan === 'premium')) ||
-      (activeTab === 'free' && user.plan === 'free' && status !== 'active-trial' && status !== 'permanent') ||
+      (activeTab === 'premium' && (status === 'permanent' || (user.plan === 'premium' && status !== 'expired-trial'))) ||
+      (activeTab === 'free' && (user.plan === 'free' || status === 'expired-trial') && status !== 'active-trial' && status !== 'permanent') ||
       (activeTab === 'admins' && (user.is_staff || user.role === 0));
 
     if (!matchesTab) return false;
@@ -156,7 +157,7 @@ const SubscriptionsPage = () => {
     total: users.length,
     activeTrial: users.filter(u => getTrialStatus(u) === 'active-trial').length,
     permanent: users.filter(u => u.is_permanent_premium).length,
-    free: users.filter(u => u.plan === 'free' && getTrialStatus(u) === 'no-trial').length,
+    free: users.filter(u => u.plan === 'free' || getTrialStatus(u) === 'expired-trial').length,
     admins: users.filter(u => u.is_staff || u.role === 0).length,
   };
 
@@ -348,6 +349,11 @@ const SubscriptionsPage = () => {
                           Vence: {new Date(user.trial_ends_at).toLocaleDateString('es-ES')}
                         </span>
                       )}
+                      {trialStatus === 'expired-trial' && (
+                        <span className="flex items-center gap-1 text-muted-foreground font-medium">
+                          <BadgeCheck className="h-4 w-4" /> Trial vencido → Free
+                        </span>
+                      )}
                       {trialStatus === 'no-trial' && user.plan === 'premium' && !user.ls_cancelled && (
                         <span className="flex items-center gap-1 text-green-600 font-medium">
                           <CheckCircle2 className="h-4 w-4" /> Premium activo
@@ -358,7 +364,7 @@ const SubscriptionsPage = () => {
                           <Clock className="h-4 w-4" /> Cancelado
                         </span>
                       )}
-                      {trialStatus === 'no-trial' && user.plan === 'free' && (
+                      {(trialStatus === 'no-trial' || trialStatus === 'expired-trial') && user.plan === 'free' && (
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <BadgeCheck className="h-4 w-4" /> Free
                         </span>
