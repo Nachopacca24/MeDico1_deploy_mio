@@ -198,15 +198,12 @@ export default function Login() {
 
         <div className='relative z-10 flex items-center space-x-3 text-2xl font-bold'>
           <div className="bg-white rounded-lg p-1 flex items-center justify-center">
-            <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="" className="h-7 w-7 object-contain" />
+            <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-7 w-7 object-contain" />
           </div>
           <span>MeDico App</span>
         </div>
 
         <div className='relative z-10 space-y-4 max-w-lg'>
-          <div className="bg-white rounded-2xl p-2 inline-flex">
-            <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="" className="h-10 w-10 object-contain" />
-          </div>
           <h1 className='text-4xl font-extrabold tracking-tight sm:text-5xl'>
             Simplifica tu práctica médica diaria.
           </h1>
