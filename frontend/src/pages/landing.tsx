@@ -40,9 +40,14 @@ export default function LandingPage() {
       {/* ── NAV ─────────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex flex-col leading-tight border-l-2 border-primary pl-3">
-            <span className="text-base font-bold tracking-tight text-white">MeDico App</span>
-            <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
+          <div className="flex items-center gap-2.5">
+            <div className="bg-white rounded-xl p-1">
+              <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-7 w-7 object-contain" />
+            </div>
+            <div className="flex flex-col leading-tight border-l-2 border-primary pl-3">
+              <span className="text-base font-bold tracking-tight text-white">MeDico App</span>
+              <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">
@@ -58,23 +63,42 @@ export default function LandingPage() {
       {/* ── HERO ────────────────────────────────────────────────── */}
       <section className="pt-36 pb-20 px-4 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-4xl mx-auto text-center relative">
+        <div className="max-w-5xl mx-auto relative">
 
-          <div className="flex flex-col items-center mb-6">
-            <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="MeDico App" className="h-32 w-auto object-contain rounded-2xl shadow-2xl shadow-primary/20 mb-3" />
-            <span className="text-xs font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-0 mb-10">
+
+            {/* ── Columna izquierda: logo ── */}
+            <div className="flex flex-col items-center justify-center shrink-0 w-full md:w-80 pb-10 md:pb-0 md:pr-16 md:border-r md:border-white/10">
+              <div className="relative mb-5">
+                <div className="absolute inset-0 rounded-3xl bg-primary/35 blur-2xl scale-125" />
+                <div className="relative bg-white rounded-3xl shadow-2xl ring-1 ring-white/10 overflow-hidden w-52 h-52 flex items-center justify-center">
+                  <img
+                    src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg"
+                    alt="MeDico App"
+                    className="w-64 h-64 object-contain scale-110"
+                  />
+                </div>
+              </div>
+              <span className="text-xs font-semibold tracking-widest text-gray-500 uppercase mt-1 text-center">Gestión Quirúrgica · Guatemala</span>
+            </div>
+
+            {/* ── Divisor horizontal en móvil ── */}
+            <div className="w-2/3 h-px bg-white/10 md:hidden mb-10" />
+
+            {/* ── Columna derecha: texto ── */}
+            <div className="flex-1 md:pl-16 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-6">
+                Hecha por médicos, para médicos — Guatemala
+              </div>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.05] mb-8">
+                Las horas de un médico valen{" "}
+                <span className="text-amber-400">oro</span>.
+                <br />
+                <span className="text-primary">Nosotros te ayudamos a aprovecharlas mejor.</span>
+              </h1>
+            </div>
+
           </div>
-
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-6">
-            Hecha por médicos, para médicos
-          </div>
-
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] mb-8">
-            Las horas de un médico valen{" "}
-            <span className="text-amber-400">oro</span>.
-            <br />
-            <span className="text-primary">Nosotros te ayudamos a aprovecharlas mejor.</span>
-          </h1>
 
           {/* Qué es la app */}
           <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
