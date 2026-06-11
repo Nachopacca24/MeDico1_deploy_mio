@@ -9,7 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { useToast } from "@/shared/hooks/use-toast";
-import { Loader2, Activity, HeartPulse } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
@@ -197,12 +197,16 @@ export default function Login() {
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
 
         <div className='relative z-10 flex items-center space-x-3 text-2xl font-bold'>
-          <Activity className="h-8 w-8" />
+          <div className="bg-white rounded-lg p-1 flex items-center justify-center">
+            <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="" className="h-7 w-7 object-contain" />
+          </div>
           <span>MeDico App</span>
         </div>
 
         <div className='relative z-10 space-y-4 max-w-lg'>
-          <HeartPulse className="h-12 w-12 text-white/80" />
+          <div className="bg-white rounded-2xl p-2 inline-flex">
+            <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="" className="h-10 w-10 object-contain" />
+          </div>
           <h1 className='text-4xl font-extrabold tracking-tight sm:text-5xl'>
             Simplifica tu práctica médica diaria.
           </h1>
@@ -221,7 +225,9 @@ export default function Login() {
         <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm'>
           <CardHeader className="space-y-1">
             <div className='flex items-center justify-center space-x-2 text-primary lg:hidden mb-4'>
-              <Activity className="h-6 w-6" />
+              <div className="bg-white rounded-lg p-0.5 flex items-center justify-center">
+                <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="" className="h-6 w-6 object-contain" />
+              </div>
               <span className='text-2xl font-bold'>MeDico App</span>
             </div>
             <CardTitle className='text-2xl font-bold tracking-tight'>Bienvenido de nuevo</CardTitle>
