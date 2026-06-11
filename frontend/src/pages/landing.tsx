@@ -39,7 +39,7 @@ export default function LandingPage() {
 
       {/* ── NAV ─────────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex flex-col leading-tight border-l-2 border-primary pl-3">
             <span className="text-base font-bold tracking-tight text-white">MeDico App</span>
             <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
@@ -56,7 +56,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ────────────────────────────────────────────────── */}
-      <section className="pt-32 pb-20 px-4 relative">
+      <section className="pt-36 pb-20 px-4 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center relative">
 
