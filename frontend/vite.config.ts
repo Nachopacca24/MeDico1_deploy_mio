@@ -1,3 +1,4 @@
+import strip from "@rollup/plugin-strip";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
@@ -12,6 +13,7 @@ export default defineConfig(({ mode }) => {
     base: "/",
     plugins: [
       react(),
+      ...(mode === 'production' ? [strip({ functions: ['console.*', 'debugger'] })] : []),
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.png", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png"],
