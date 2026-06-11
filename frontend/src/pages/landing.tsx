@@ -38,13 +38,11 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gray-950 text-white overflow-x-hidden">
 
       {/* ── NAV ─────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-white rounded-lg px-1.5 py-1">
-              <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-7 w-auto" />
-            </div>
-            <span className="text-lg font-bold tracking-tight text-white">MeDico App</span>
+          <div className="flex flex-col leading-tight border-l-2 border-primary pl-3">
+            <span className="text-base font-bold tracking-tight text-white">MeDico App</span>
+            <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">
@@ -62,12 +60,13 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center relative">
 
-          <div className="flex justify-center mb-6">
-            <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="MeDico App" className="h-32 w-auto object-contain rounded-2xl shadow-2xl shadow-primary/20" />
+          <div className="flex flex-col items-center mb-6">
+            <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="MeDico App" className="h-32 w-auto object-contain rounded-2xl shadow-2xl shadow-primary/20 mb-3" />
+            <span className="text-xs font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
           </div>
 
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-6">
-            Hecha por médicos, para médicos — Guatemala
+            Hecha por médicos, para médicos
           </div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.05] mb-8">
