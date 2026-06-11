@@ -117,22 +117,24 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
-            >
-              14 días de Premium gratis al registrarte.
-              <ChevronRight className="h-5 w-5" />
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center gap-2 border border-white/10 text-gray-300 font-semibold text-lg px-8 py-4 rounded-xl hover:bg-white/5 transition-all"
-            >
-              Ya tengo cuenta
-            </Link>
+          <div className="text-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+              >
+                14 días de Premium gratis al registrarte.
+                <ChevronRight className="h-5 w-5" />
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center gap-2 border border-white/10 text-gray-300 font-semibold text-lg px-8 py-4 rounded-xl hover:bg-white/5 transition-all"
+              >
+                Ya tengo cuenta
+              </Link>
+            </div>
+            <p className="mt-5 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
           </div>
-          <p className="mt-5 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
         </div>
       </section>
 
