@@ -3,7 +3,6 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import {
-  Stethoscope,
   Clock,
   Calculator,
   Users,
@@ -42,8 +41,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Stethoscope className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold tracking-tight">MeDico App</span>
+            <img src="/logo_transparente.png" alt="MeDico App" className="h-8" />
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">
@@ -62,7 +60,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center relative">
 
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-6">
-            <Stethoscope className="h-3.5 w-3.5" />
+            <img src="/logo_transparente.png" alt="" className="h-4 object-contain" />
             Hecha por médicos, para médicos — Guatemala
           </div>
 
@@ -459,7 +457,7 @@ export default function LandingPage() {
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
                 <div className="inline-flex p-3 bg-primary/10 rounded-2xl mb-5">
-                  <Stethoscope className="h-8 w-8 text-primary" />
+                  <img src="/logo_transparente.png" alt="" className="h-8 object-contain" />
                 </div>
                 <h2 className="text-3xl font-black mb-4">
                   Hecha por médicos,<br />para médicos.
@@ -560,8 +558,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/5 py-8 px-4">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
           <div className="flex items-center gap-2">
-            <Stethoscope className="h-4 w-4" />
-            <span>MeDico App — Guatemala</span>
+            <img src="/logo_transparente.png" alt="MeDico App" className="h-5" />
           </div>
           <div className="flex items-center gap-6">
             <Link to="/login"   className="hover:text-gray-400 transition-colors">Iniciar sesión</Link>
