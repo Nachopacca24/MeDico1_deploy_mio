@@ -20,7 +20,7 @@ import {
   Newspaper,
   Briefcase,
   ArrowRight,
-  Infinity,
+  Infinity as InfinityIcon,
   Sparkles,
   ImagePlus,
   Zap,
@@ -41,7 +41,10 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo_transparente.png" alt="MeDico App" className="h-8" />
+            <div className="bg-white rounded-lg px-1.5 py-1">
+              <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-7 w-auto" />
+            </div>
+            <span className="text-lg font-bold tracking-tight text-white">MeDico App</span>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">
@@ -418,7 +421,7 @@ export default function LandingPage() {
                 <div className="w-full h-px bg-amber-400/20 mb-5" />
                 <div className="space-y-3.5 flex-1">
                   {[
-                    { icon: <Infinity    className="h-4 w-4 text-amber-400"   />, text: 'Cirugías activas ilimitadas' },
+                    { icon: <InfinityIcon className="h-4 w-4 text-amber-400"   />, text: 'Cirugías activas ilimitadas' },
                     { icon: <Heart      className="h-4 w-4 text-rose-400"     />, text: 'Procedimientos favoritos ilimitados' },
                     { icon: <Building2  className="h-4 w-4 text-amber-300"    />, text: 'Hospitales favoritos ilimitados' },
                     { icon: <Users      className="h-4 w-4 text-violet-400"   />, text: 'Colegas ilimitados + colaboración' },
@@ -558,7 +561,10 @@ export default function LandingPage() {
       <footer className="border-t border-white/5 py-8 px-4">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
           <div className="flex items-center gap-2">
-            <img src="/logo_transparente.png" alt="MeDico App" className="h-5" />
+            <div className="bg-white rounded px-1 py-0.5">
+              <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-4 w-auto" />
+            </div>
+            <span>MeDico App — Guatemala</span>
           </div>
           <div className="flex items-center gap-6">
             <Link to="/login"   className="hover:text-gray-400 transition-colors">Iniciar sesión</Link>
