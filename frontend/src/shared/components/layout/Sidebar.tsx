@@ -143,8 +143,8 @@ export function AppSidebar() {
       {/* Header con logo/nombre de la app */}
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground flex-shrink-0">
-            <Stethoscope className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white flex-shrink-0 overflow-hidden p-1.5">
+            <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-full w-full object-contain" />
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-sm font-semibold truncate text-sidebar-foreground">MeDico App</span>
