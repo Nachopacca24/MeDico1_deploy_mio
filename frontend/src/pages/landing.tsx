@@ -62,8 +62,11 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center relative">
 
+          <div className="flex justify-center mb-8">
+            <img src="/logo_transparente.png" alt="MeDico App" className="h-20 w-auto drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
+          </div>
+
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-6">
-            <img src="/logo_transparente.png" alt="" className="h-4 object-contain" />
             Hecha por médicos, para médicos — Guatemala
           </div>
 
