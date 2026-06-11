@@ -123,7 +123,8 @@ const SubscriptionsPage = () => {
     const now = new Date();
     const trialEnd = new Date(user.trial_ends_at);
     if (trialEnd > now) return 'active-trial';
-    // Trial expired — backend may not have updated plan yet if user hasn't logged in
+    // Trial expired — but if they have an active paid subscription, treat as normal premium
+    if (user.plan === 'premium' && user.ls_subscription_id && !user.ls_cancelled) return 'no-trial';
     return 'expired-trial';
   };
 
@@ -349,11 +350,6 @@ const SubscriptionsPage = () => {
                           Vence: {new Date(user.trial_ends_at).toLocaleDateString('es-ES')}
                         </span>
                       )}
-                      {trialStatus === 'expired-trial' && (
-                        <span className="flex items-center gap-1 text-muted-foreground font-medium">
-                          <BadgeCheck className="h-4 w-4" /> Trial vencido → Free
-                        </span>
-                      )}
                       {trialStatus === 'no-trial' && user.plan === 'premium' && !user.ls_cancelled && (
                         <span className="flex items-center gap-1 text-green-600 font-medium">
                           <CheckCircle2 className="h-4 w-4" /> Premium activo
@@ -364,7 +360,7 @@ const SubscriptionsPage = () => {
                           <Clock className="h-4 w-4" /> Cancelado
                         </span>
                       )}
-                      {(trialStatus === 'no-trial' || trialStatus === 'expired-trial') && user.plan === 'free' && (
+                      {(trialStatus === 'no-trial' || trialStatus === 'expired-trial') && user.plan !== 'premium' && (
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <BadgeCheck className="h-4 w-4" /> Free
                         </span>
