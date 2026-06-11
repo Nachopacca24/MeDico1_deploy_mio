@@ -79,6 +79,7 @@ const Settings = () => {
     setCancelLoading(true);
     try {
       await cancelSubscription();
+      await refreshUser();
       toast({
         title: 'Suscripción cancelada',
         description: 'Tu plan Premium se mantendrá activo hasta el fin del período de facturación.',
@@ -92,7 +93,7 @@ const Settings = () => {
   };
 
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { restartTutorial, tutorialState } = useTutorial();
 
   const handleDeleteAccount = async () => {
