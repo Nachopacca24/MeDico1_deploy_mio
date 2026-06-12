@@ -59,7 +59,41 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Dry run — no se eliminó nada.'))
             return
 
-        deleted_count, _ = pending.delete()
-        self.stdout.write(
-            self.style.SUCCESS(f'{deleted_count} cuenta(s) eliminada(s) definitivamente.')
-        )
+        deleted_count = 0
+        anonymized_count = 0
+        for user in pending:
+            if user.had_trial:
+                # Anonimizar: borrar datos personales pero conservar email + flag anti-abuso
+                try:
+                    user.created_cases.all().delete()
+                except Exception:
+                    pass
+                try:
+                    user.sent_friend_requests.all().delete()
+                    user.received_friend_requests.all().delete()
+                    user.friendships.all().delete()
+                    user.friends_of.all().delete()
+                except Exception:
+                    pass
+                try:
+                    user.favorite_insurances.all().delete()
+                except Exception:
+                    pass
+                user.first_name = ''
+                user.last_name = ''
+                user.phone = ''
+                user.specialty = ''
+                user.license_number = ''
+                user.hospital_default = None
+                user.deletion_requested_at = None
+                user.set_unusable_password()
+                user.save()
+                anonymized_count += 1
+            else:
+                user.delete()
+                deleted_count += 1
+
+        if deleted_count:
+            self.stdout.write(self.style.SUCCESS(f'{deleted_count} cuenta(s) eliminada(s) definitivamente.'))
+        if anonymized_count:
+            self.stdout.write(self.style.SUCCESS(f'{anonymized_count} cuenta(s) anonimizada(s) (email conservado por anti-abuso).'))

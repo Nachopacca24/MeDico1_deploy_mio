@@ -161,6 +161,13 @@ class CustomUser(AbstractUser):
         verbose_name="Eliminación Solicitada",
         help_text="Fecha en que el usuario solicitó eliminar su cuenta. Se elimina definitivamente a los 30 días."
     )
+
+    # Anti-abuso: trial gratuito
+    had_trial = models.BooleanField(
+        default=False,
+        verbose_name="Ya usó prueba gratuita",
+        help_text="True si este email ya activó el período de prueba de 14 días. Impide obtener otro trial al re-registrarse."
+    )
     
     # Configuraciones personales
     theme_preference = models.CharField(

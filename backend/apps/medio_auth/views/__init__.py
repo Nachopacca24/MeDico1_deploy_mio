@@ -50,14 +50,52 @@ class RegisterView(APIView):
     throttle_classes = [RegisterRateThrottle]
 
     def post(self, request):
+        email = request.data.get('email', '').strip().lower()
+
+        # Reactivación: email conocido, cuenta inactiva, ya usó trial → plan free sin trial
+        returning = User.objects.filter(email=email, is_active=False, had_trial=True).first()
+        if returning:
+            password = request.data.get('password', '')
+            from django.contrib.auth.password_validation import validate_password as _vp
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            try:
+                _vp(password, returning)
+            except DjangoValidationError as e:
+                return Response({'password': list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+
+            returning.set_password(password)
+            returning.first_name = request.data.get('first_name', '')
+            returning.last_name  = request.data.get('last_name', '')
+            returning.phone      = request.data.get('phone', '')
+            returning.specialty  = request.data.get('specialty', '')
+            returning.license_number = request.data.get('license_number', '')
+            returning.plan = 'free'
+            returning.trial_ends_at = None
+            returning.ls_subscription_id = None
+            returning.ls_renews_at = None
+            returning.ls_cancelled = False
+            returning.is_active = True
+            returning.deletion_requested_at = None
+            returning.is_email_verified = False
+            returning.save()
+
+            refresh = RefreshToken.for_user(returning)
+            return Response({
+                'message': 'Cuenta reactivada. Comenzás con el plan gratuito.',
+                'user': UserSerializer(returning).data,
+                'tokens': {'refresh': str(refresh), 'access': str(refresh.access_token)},
+                'email_verification_sent': False,
+            }, status=status.HTTP_201_CREATED)
+
         serializer = RegisterSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             user = serializer.save()
             # Activar prueba de 14 días con acceso premium
             user.trial_ends_at = timezone.now() + timedelta(days=14)
             user.plan = 'premium'
-            user.save(update_fields=['trial_ends_at', 'plan'])
+            user.had_trial = True
+            user.save(update_fields=['trial_ends_at', 'plan', 'had_trial'])
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
 
@@ -911,6 +949,7 @@ class GoogleLoginView(APIView):
                     role=1,
                     trial_ends_at=timezone.now() + timedelta(days=14),
                     plan='premium',
+                    had_trial=True,
                 )
                 user.set_unusable_password()
                 user.save(update_fields=['password'])
@@ -923,8 +962,22 @@ class GoogleLoginView(APIView):
                         {'error': f'Esta cuenta está programada para eliminación el {deletion_date}. Si fue un error, contactá a soporte en contacto@medicoapp.app.'},
                         status=status.HTTP_403_FORBIDDEN
                     )
-                # Verificar que la cuenta esté activa
-                if not user.is_active:
+                # Cuenta inactiva con trial usado → reactivar sin trial (anti-abuso)
+                if not user.is_active and user.had_trial:
+                    user.first_name = first_name
+                    user.last_name = last_name
+                    user.plan = 'free'
+                    user.trial_ends_at = None
+                    user.ls_subscription_id = None
+                    user.ls_renews_at = None
+                    user.ls_cancelled = False
+                    user.is_active = True
+                    user.deletion_requested_at = None
+                    user.is_email_verified = True
+                    user.set_unusable_password()
+                    user.save()
+                    created = True
+                elif not user.is_active:
                     return Response(
                         {'error': 'Esta cuenta está desactivada. Contactá a soporte en contacto@medicoapp.app.'},
                         status=status.HTTP_403_FORBIDDEN
