@@ -79,8 +79,7 @@ class Command(BaseCommand):
                     user.favorite_insurances.all().delete()
                 except Exception:
                     pass
-                user.first_name = ''
-                user.last_name = ''
+                # Conservar email y nombre para el admin, borrar solo datos médicos/personales
                 user.phone = ''
                 user.specialty = ''
                 user.license_number = ''
