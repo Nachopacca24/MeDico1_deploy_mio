@@ -166,6 +166,48 @@ def cleanup_vite():
 atexit.register(cleanup_vite)
 
 
+class SecurityHeadersMiddleware:
+    """
+    Agrega headers de seguridad HTTP que Django no incluye por defecto.
+    Solo activo en producción (DEBUG=False).
+    """
+    _CSP = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "        # React/Vite necesita inline en algunos casos
+        "style-src 'self' 'unsafe-inline'; "         # Tailwind inline styles
+        "img-src 'self' data: blob: "
+            "https://res.cloudinary.com "
+            "https://lh3.googleusercontent.com "
+            "https://lh4.googleusercontent.com; "
+        "connect-src 'self' "
+            "https://*.railway.app "
+            "https://api.lemonsqueezy.com "
+            "https://o*.ingest.sentry.io "
+            "https://sentry.io; "
+        "font-src 'self'; "
+        "frame-src https://app.lemonsqueezy.com; "   # Checkout de Lemon Squeezy
+        "frame-ancestors 'none'; "                   # Clickjacking (más fuerte que X-Frame-Options)
+        "base-uri 'self'; "                          # Evita base-tag injection
+        "form-action 'self'; "                       # Evita hijack de formularios
+        "object-src 'none';"                         # Sin Flash/plugins
+    )
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.enabled = not settings.DEBUG
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if self.enabled:
+            response['Content-Security-Policy'] = self._CSP
+            response['Permissions-Policy'] = (
+                'camera=(), microphone=(), geolocation=(), payment=()'
+            )
+            response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            response['X-Content-Type-Options'] = 'nosniff'
+        return response
+
+
 class DisableCSRFForAPIMiddleware:
     """
     Deshabilitar CSRF para todas las rutas /api/* ya que usamos JWT.

@@ -69,6 +69,9 @@ MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
 
+    # Security headers (CSP, Permissions-Policy, Referrer-Policy)
+    'core.middleware.SecurityHeadersMiddleware',
+
     # Custom
     'core.middleware.ViteDevMiddleware',
 
@@ -199,13 +202,14 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '1000/day',
-        'user': '10000/day',
+        'anon': '500/day',
+        'user': '5000/day',
         'login': '5/min',
         'register': '10/hour',
         'ad_tracking': '600/hour',
         'password_reset': '3/hour',
         'colleague_search': '30/hour',
+        'webhook': '300/min',
     },
 }
 
