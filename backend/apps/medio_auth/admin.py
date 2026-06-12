@@ -4,6 +4,34 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import CustomUser
 
 
+def _anonymize_user(user):
+    """Conserva email, nombre y had_trial; borra todo lo demás."""
+    try:
+        user.created_cases.all().delete()
+    except Exception:
+        pass
+    try:
+        user.sent_friend_requests.all().delete()
+        user.received_friend_requests.all().delete()
+        user.friendships.all().delete()
+        user.friends_of.all().delete()
+    except Exception:
+        pass
+    try:
+        user.favorite_insurances.all().delete()
+    except Exception:
+        pass
+    user.phone = ''
+    user.specialty = ''
+    user.license_number = ''
+    user.hospital_default = None
+    user.deletion_requested_at = None
+    user.had_trial = True
+    user.is_active = False
+    user.set_unusable_password()
+    user.save()
+
+
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
     """Admin personalizado para CustomUser"""
@@ -81,3 +109,12 @@ class CustomUserAdmin(BaseUserAdmin):
     
     # Número de items por página
     list_per_page = 25
+
+    def delete_model(self, request, obj):
+        """Eliminar desde el admin: anonimiza en vez de hard delete."""
+        _anonymize_user(obj)
+
+    def delete_queryset(self, request, queryset):
+        """Eliminar selección múltiple desde el admin: anonimiza cada usuario."""
+        for user in queryset:
+            _anonymize_user(user)

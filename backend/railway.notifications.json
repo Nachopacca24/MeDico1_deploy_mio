@@ -3,6 +3,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py send_surgery_reminders && python manage.py send_pending_invitation_reminders && python manage.py expire_trials"
+    "startCommand": "python manage.py send_surgery_reminders && python manage.py send_pending_invitation_reminders && python manage.py expire_trials && python manage.py delete_pending_accounts"
   }
 }
