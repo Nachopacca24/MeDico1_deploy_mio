@@ -205,14 +205,15 @@ const CaseDetailPage = () => {
       return;
     }
 
-    // Evitar duplicados: si ya existe un evento para este caso, no crear otro
+    // Evitar duplicados: DB first, localStorage as fallback
     const isOwner = surgicalCase.is_owner;
     if (isOwner && surgicalCase.calendar_event_id) {
       toast.success('Ya en calendario', 'Esta cirugía ya está en tu Google Calendar.');
       return;
     }
     if (!isOwner && surgicalCase.id) {
-      const existing = calendarSyncService.getAssistedEventId(surgicalCase.id);
+      const existing = surgicalCase.assistant_calendar_event_id
+        || calendarSyncService.getAssistedEventId(surgicalCase.id);
       if (existing) {
         toast.success('Ya en calendario', 'Esta cirugía ya está en tu Google Calendar.');
         return;
@@ -225,6 +226,8 @@ const CaseDetailPage = () => {
       if (eventId) {
         if (!isOwner && surgicalCase.id) {
           calendarSyncService.markAssistedSynced(surgicalCase.id, eventId);
+          await calendarSyncService.saveAssistedEventIdToDb(surgicalCase.id, eventId);
+          setSurgicalCase(prev => prev ? { ...prev, assistant_calendar_event_id: eventId } : prev);
         }
         toast.success('Agregado al calendario', 'La cirugía fue agregada a tu Google Calendar.');
       } else {

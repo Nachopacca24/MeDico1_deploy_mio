@@ -170,7 +170,7 @@ class CalendarSyncService {
     }
   }
 
-  // localStorage: { [caseId]: eventId } for assisted cases
+  // localStorage: { [caseId]: eventId } for assisted cases — kept as migration fallback only
   private readonly ASSISTED_SYNCED_KEY = 'medico_assisted_calendar_synced_v2';
   // Module-level lock: prevents concurrent sync calls from creating duplicates
   private syncInProgress = false;
@@ -187,7 +187,7 @@ class CalendarSyncService {
     map[id] = eventId;
     try {
       localStorage.setItem(this.ASSISTED_SYNCED_KEY, JSON.stringify(map));
-    } catch { /* storage full — ignore, will retry next sync */ }
+    } catch { /* storage full — ignore */ }
   }
 
   getAssistedEventId(caseId: number): string | null {
@@ -195,17 +195,28 @@ class CalendarSyncService {
     return map[caseId] || null;
   }
 
+  // Persist the assistant's calendar event ID to the DB so it survives page refreshes and devices.
+  async saveAssistedEventIdToDb(caseId: number, eventId: string): Promise<void> {
+    try {
+      await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/${caseId}/sync-assistant-calendar/`,
+        { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
+      );
+    } catch {
+      // Non-critical — localStorage remains as fallback
+    }
+  }
+
   /**
    * Sync active cases with Google Calendar.
    * Uses a module-level lock so concurrent calls (auto-sync + manual button) are no-ops.
    *
    * Owner cases: creates/updates event, saves calendar_event_id to backend.
-   * Assisted cases: tracks { caseId → eventId } in localStorage.
+   * Assisted cases: event ID stored in DB (assistant_calendar_event_id) — localStorage is migration fallback only.
    */
   async syncMissingCases(
     cases: SurgicalCase[]
   ): Promise<{ synced: number; failed: number; paused: boolean; notConnected?: boolean; message?: string }> {
-    // Guard: if a sync is already running, skip this call entirely
     if (this.syncInProgress) {
       return { synced: 0, failed: 0, paused: false };
     }
@@ -227,7 +238,6 @@ class CalendarSyncService {
       const ownedToSync = uniqueCases.filter(
         c => c.is_owner && c.surgery_date && !CLOSED_STATUSES.includes(c.status) && !c.calendar_event_id
       );
-      // All active assisted cases — deduplication vs. self already handled by seenIds above
       const assistedActive = uniqueCases.filter(
         c => !c.is_owner && c.assistant_accepted === true && c.surgery_date &&
              !CLOSED_STATUSES.includes(c.status)
@@ -251,26 +261,34 @@ class CalendarSyncService {
         } catch { failed++; }
       }
 
-      // Read the map ONCE; update the local copy immediately after each write
-      // so that even if the same caseId somehow appears twice, we won't double-create.
-      const assistedMap = this.getAssistedEventMap();
-
       for (const surgicalCase of assistedActive) {
         if (!await googleCalendarService.getValidToken()) {
           return { synced, failed, paused: true, message: 'Sincronización pausada: reconecta Google Calendar para continuar' };
         }
-        const storedEventId = assistedMap[surgicalCase.id!];
+
+        // Priority: DB field (survives refresh/device) → localStorage (migration) → create new
+        let existingEventId = surgicalCase.assistant_calendar_event_id || null;
+
+        if (!existingEventId) {
+          const localEventId = this.getAssistedEventId(surgicalCase.id!);
+          if (localEventId) {
+            existingEventId = localEventId;
+            // Migrate localStorage entry to DB (fire-and-forget)
+            this.saveAssistedEventIdToDb(surgicalCase.id!, localEventId).catch(() => {});
+          }
+        }
+
         try {
-          if (storedEventId) {
-            // Already synced — update event in case principal changed date/time
-            const caseWithEventId = { ...surgicalCase, calendar_event_id: storedEventId };
+          if (existingEventId) {
+            // Already synced — update in case the principal changed date/time
+            const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
             await this.updateEventForCase(caseWithEventId);
           } else {
-            // First time — create and immediately record in local snapshot
+            // First time: create, then save to DB and localStorage
             const eventId = await this.createEventForCase(surgicalCase);
             if (!eventId) { failed++; continue; }
-            assistedMap[surgicalCase.id!] = eventId;   // ← update snapshot so loop can't double-create
             this.markAssistedSynced(surgicalCase.id!, eventId);
+            await this.saveAssistedEventIdToDb(surgicalCase.id!, eventId);
             synced++;
           }
         } catch { failed++; }

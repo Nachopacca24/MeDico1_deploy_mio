@@ -67,7 +67,8 @@ export interface SurgicalCase {
   surgery_date: string;
   surgery_time?: string;
   surgery_end_time?: string;       
-  calendar_event_id?: string;       
+  calendar_event_id?: string;
+  assistant_calendar_event_id?: string;
   diagnosis?: string;
   notes?: string;
   status: CaseStatus;

@@ -353,9 +353,10 @@ class SurgicalCaseService {
                 }
               }
             } else {
-              // Caso asistido: actualizar SOLO el evento del asistente guardado en localStorage.
-              // Nunca crear uno nuevo aquí — eso lo hace syncMissingCases o handleAddToCalendar.
-              const assistedEventId = calendarSyncService.getAssistedEventId(surgicalCase.id!);
+              // Caso asistido: actualizar SOLO el evento del asistente. Nunca crear uno nuevo aquí.
+              // Buscar el eventId: DB first, localStorage as fallback.
+              const assistedEventId = surgicalCase.assistant_calendar_event_id
+                || calendarSyncService.getAssistedEventId(surgicalCase.id!);
               if (assistedEventId) {
                 const caseWithEventId = { ...surgicalCase, calendar_event_id: assistedEventId };
                 await calendarSyncService.updateEventForCase(caseWithEventId);
@@ -511,6 +512,7 @@ class SurgicalCaseService {
         
         if (eventId) {
           calendarSyncService.markAssistedSynced(caseId, eventId);
+          await calendarSyncService.saveAssistedEventIdToDb(caseId, eventId);
         }
       } catch (calendarError) {
         console.error('⚠️ Error sincronizando con Google Calendar (invitación aceptada exitosamente):', calendarError);

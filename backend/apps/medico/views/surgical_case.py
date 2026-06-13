@@ -745,6 +745,30 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         return Response({'calendar_event_id': calendar_event_id}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['post'], url_path='sync-assistant-calendar')
+    def sync_assistant_calendar(self, request, pk=None):
+        """
+        Persist the assistant's Google Calendar event ID for a case.
+        Only the assigned assistant can call this.
+        """
+        case = self.get_object()
+
+        if case.assistant_doctor != request.user:
+            return Response(
+                {'error': 'Solo el ayudante del caso puede sincronizar su calendario'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        calendar_event_id = request.data.get('calendar_event_id')
+        if not calendar_event_id or not isinstance(calendar_event_id, str):
+            return Response(
+                {'error': 'calendar_event_id es requerido'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        SurgicalCase.objects.filter(pk=case.pk).update(assistant_calendar_event_id=calendar_event_id)
+        return Response({'assistant_calendar_event_id': calendar_event_id}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['patch'], url_path='update-status')
     def update_status(self, request, pk=None):
         """
