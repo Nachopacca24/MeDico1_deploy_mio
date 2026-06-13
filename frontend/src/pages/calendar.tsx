@@ -424,7 +424,7 @@ const CalendarPage = () => {
                   <p className="text-muted-foreground text-center max-w-md mb-6">
                     Para ver tus eventos aquí, primero necesitas conectar tu cuenta de Google Calendar
                   </p>
-                  <Button onClick={connect} size="lg">
+                  <Button onClick={connect} size="lg" data-tutorial="calendar-connect">
                     <CalendarIcon className="mr-2 h-5 w-5" />
                     Conectar Google Calendar
                   </Button>

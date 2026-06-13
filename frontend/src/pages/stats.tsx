@@ -340,7 +340,7 @@ export default function StatsPage() {
         </div>
 
         {/* Chart — actividad mensual */}
-        <div className="bg-card border rounded-2xl p-5">
+        <div className="bg-card border rounded-2xl p-5" data-tutorial="stats-chart">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h2 className="font-bold text-lg">Actividad por mes</h2>
             <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">

@@ -144,7 +144,7 @@ function CaseStatusToggles({
   const iconSize = compact ? 'w-3 h-3' : 'w-4 h-4';
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-tutorial="case-status">
       {/* Row 1: status toggles */}
       <div className={`flex ${compact ? 'gap-1' : 'gap-2'} flex-wrap`}>
         <Button
@@ -753,7 +753,7 @@ const CasesPage = () => {
                   <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
                 </div>
               ) : (
-                <Button asChild>
+                <Button asChild data-tutorial="new-case-btn">
                   <Link to="/cases/new">
                     <Plus className="w-4 h-4 mr-2" />
                     Nueva Cirugía

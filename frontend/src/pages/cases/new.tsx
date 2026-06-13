@@ -620,7 +620,7 @@ const NewCase = () => {
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* Patient Information */}
-          <Card className="shadow-sm border-slate-200">
+          <Card className="shadow-sm border-slate-200" data-tutorial="patient-data">
             <CardHeader className="bg-slate-50/50 border-b">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -720,7 +720,7 @@ const NewCase = () => {
           </Card>
 
           {/* Surgery Details */}
-          <Card className="shadow-sm border-slate-200">
+          <Card className="shadow-sm border-slate-200" data-tutorial="hospital-selector">
             <CardHeader className="bg-slate-50/50 border-b">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -902,7 +902,7 @@ const NewCase = () => {
           </Card>
 
           {/* Procedures */}
-          <Card>
+          <Card data-tutorial="procedures-selector">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Stethoscope className="h-5 w-5" />
@@ -1216,7 +1216,7 @@ const NewCase = () => {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" disabled={submitting} data-tutorial="save-case-btn">
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

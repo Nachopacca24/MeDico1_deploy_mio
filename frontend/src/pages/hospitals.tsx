@@ -209,7 +209,7 @@ const HospitalsPage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-6" data-tutorial="hospitals-list">
         {/* Header */}
         <div className="pb-4 border-b">
           <h1 className="text-3xl font-semibold mb-1 tracking-tight flex items-center gap-2">

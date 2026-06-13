@@ -322,6 +322,7 @@ const Operations = () => {
                   setGlobalSearch(e.target.value);
                   setCurrentPage(1);
                 }}
+                data-tutorial="procedures-search"
                 className="w-full pl-10 pr-4 py-2.5 border-2 border-primary/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background font-medium placeholder:text-muted-foreground/60"
               />
             </div>

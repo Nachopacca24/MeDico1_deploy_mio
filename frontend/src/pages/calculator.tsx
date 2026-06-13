@@ -245,7 +245,7 @@ export default function CalculatorPage() {
           <p className="text-muted-foreground text-sm">Estimá honorarios rápidamente sin crear una cirugía</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6" data-tutorial="calculator-form">
 
           {/* Left: config */}
           <div className="md:col-span-1 space-y-4">

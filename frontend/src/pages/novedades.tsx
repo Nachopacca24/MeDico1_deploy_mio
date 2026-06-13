@@ -212,7 +212,7 @@ const NovedadesPage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-6" data-tutorial="novedades-list">
         {/* Header */}
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10 px-6 py-8">
           <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />

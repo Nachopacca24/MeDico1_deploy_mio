@@ -122,7 +122,7 @@ export default function InsurancesPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-6" data-tutorial="insurances-list">
         <div className="pb-4 border-b">
           <h1 className="text-3xl font-semibold mb-1 tracking-tight flex items-center gap-2">
             <ShieldCheck className="h-8 w-8" />

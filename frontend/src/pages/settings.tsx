@@ -253,6 +253,7 @@ const Settings = () => {
                 <button
                   key={t.value}
                   onClick={() => setActiveTab(t.value)}
+                  {...(t.value === 'plan' ? { 'data-tutorial': 'settings-plan-tab' } : {})}
                   className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all border
                     ${activeTab === t.value
                       ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -265,7 +266,7 @@ const Settings = () => {
           ) : (
             <TabsList className="inline-flex gap-1">
               {TAB_OPTIONS.map(t => (
-                <TabsTrigger key={t.value} value={t.value}>{t.label}</TabsTrigger>
+                <TabsTrigger key={t.value} value={t.value} {...(t.value === 'plan' ? { 'data-tutorial': 'settings-plan-tab' } : {})}>{t.label}</TabsTrigger>
               ))}
             </TabsList>
           )}

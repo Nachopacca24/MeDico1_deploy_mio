@@ -179,7 +179,7 @@ export default function ColleaguesPage() {
         </div>
 
         {/* Tu código de colega */}
-        <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6">
+        <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6" data-tutorial="colleague-code">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="font-semibold text-lg mb-1">Tu Código de Colega</h3>
