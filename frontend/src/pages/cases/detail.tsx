@@ -222,7 +222,9 @@ const CaseDetailPage = () => {
 
     setSyncingCalendar(true);
     try {
-      const eventId = await calendarSyncService.createEventForCase(surgicalCase);
+      // Assisted cases use a stable ID so re-adding never creates a duplicate
+      const stableId = (!isOwner && surgicalCase.id) ? `medicocase${surgicalCase.id}` : undefined;
+      const eventId = await calendarSyncService.createEventForCase(surgicalCase, stableId);
       if (eventId) {
         if (!isOwner && surgicalCase.id) {
           calendarSyncService.markAssistedSynced(surgicalCase.id, eventId);

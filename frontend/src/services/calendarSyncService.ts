@@ -11,8 +11,7 @@ class CalendarSyncService {
   /**
    * ✅ MEJORADO: Crear evento con manejo de errores
    */
-  async createEventForCase(surgicalCase: SurgicalCase): Promise<string | null> {
-    // Verificar si está conectado
+  async createEventForCase(surgicalCase: SurgicalCase, stableId?: string): Promise<string | null> {
     if (!await googleCalendarService.getValidToken()) {
       return null;
     }
@@ -27,27 +26,18 @@ class CalendarSyncService {
         ? this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_end_time)
         : this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_time, 2);
 
-      // Guard: end must be strictly after start
       if (endDateTime <= startDateTime) {
         endDateTime = new Date(new Date(startDateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
       }
 
-      // Construir descripción
       const description = this.buildEventDescription(surgicalCase);
 
-      // Crear evento
       const event: CalendarEvent = {
         summary: `Cirugía: ${surgicalCase.patient_name}`,
         description: description,
         location: surgicalCase.hospital_name || 'Hospital',
-        start: {
-          dateTime: startDateTime,
-          timeZone: 'America/Guatemala',
-        },
-        end: {
-          dateTime: endDateTime,
-          timeZone: 'America/Guatemala',
-        },
+        start: { dateTime: startDateTime, timeZone: 'America/Guatemala' },
+        end: { dateTime: endDateTime, timeZone: 'America/Guatemala' },
         reminders: {
           useDefault: false,
           overrides: [
@@ -57,17 +47,14 @@ class CalendarSyncService {
         },
       };
 
-      const eventId = await googleCalendarService.createEvent(event);
-      console.log('✅ Evento creado en Google Calendar:', eventId);
+      const eventId = await googleCalendarService.createEvent(event, stableId);
+      console.log('✅ Evento creado en Google Calendar:', eventId, stableId ? '(stable ID)' : '(auto ID)');
       return eventId;
     } catch (error: any) {
       console.error('❌ Error al crear evento en Google Calendar:', error);
-
-      // Si el error es por token expirado, mostrar mensaje específico
       if (error.message?.includes('expirada')) {
         console.warn('⚠️ Sesión de Google Calendar expirada');
       }
-
       return null;
     }
   }
@@ -198,12 +185,16 @@ class CalendarSyncService {
   // Persist the assistant's calendar event ID to the DB so it survives page refreshes and devices.
   async saveAssistedEventIdToDb(caseId: number, eventId: string): Promise<void> {
     try {
-      await authService.authenticatedFetch(
+      const response = await authService.authenticatedFetch(
         `${API_URL}/api/v1/medico/cases/${caseId}/sync-assistant-calendar/`,
         { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
       );
-    } catch {
-      // Non-critical — localStorage remains as fallback
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        console.error(`❌ sync-assistant-calendar falló para caso ${caseId}: HTTP ${response.status}`, body);
+      }
+    } catch (err) {
+      console.error(`❌ sync-assistant-calendar error para caso ${caseId}:`, err);
     }
   }
 
@@ -284,9 +275,16 @@ class CalendarSyncService {
             const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
             await this.updateEventForCase(caseWithEventId);
           } else {
-            // First time: create, then save to DB and localStorage
-            const eventId = await this.createEventForCase(surgicalCase);
+            // No stored event ID. Use a stable, deterministic ID so that if storage
+            // was lost we never create a second duplicate — the API returns 409 and
+            // googleCalendarService.createEvent returns the stableId on 409.
+            // Format: "medicocase" + caseId (all chars are within base32hex a-v + 0-9).
+            const stableId = `medicocase${surgicalCase.id}`;
+            const eventId = await this.createEventForCase(surgicalCase, stableId);
             if (!eventId) { failed++; continue; }
+            // If the event already existed (409 → stableId returned), update it with fresh data
+            const caseWithEventId = { ...surgicalCase, calendar_event_id: eventId };
+            await this.updateEventForCase(caseWithEventId);
             this.markAssistedSynced(surgicalCase.id!, eventId);
             await this.saveAssistedEventIdToDb(surgicalCase.id!, eventId);
             synced++;

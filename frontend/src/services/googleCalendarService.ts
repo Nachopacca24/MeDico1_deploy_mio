@@ -274,13 +274,18 @@ class GoogleCalendarService {
     return events;
   }
 
-  async createEvent(event: CalendarEvent): Promise<string> {
+  async createEvent(event: CalendarEvent, stableId?: string): Promise<string> {
     this.eventsCache = null;
     const token = await this.getToken();
+    const payload = stableId ? { ...event, id: stableId } : event;
     const resp = await this.calendarFetch('/calendars/primary/events', token, {
       method: 'POST',
-      body: JSON.stringify(event),
+      body: JSON.stringify(payload),
     });
+    // 409 = event already exists with this stable ID — idempotent, treat as success
+    if (stableId && resp.status === 409) {
+      return stableId;
+    }
     const data = await this.handleCalendarResponse<{ id: string }>(resp);
     return data.id;
   }
