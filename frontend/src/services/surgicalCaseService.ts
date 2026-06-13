@@ -341,27 +341,24 @@ class SurgicalCaseService {
 
         if (hasRelevantChanges) {
           try {
-            // Si tiene calendar_event_id, actualizar; si no, crear uno nuevo
-            if (surgicalCase.calendar_event_id) {
-              const success = await calendarSyncService.updateEventForCase(surgicalCase);
-              if (success) {
-                console.log('✅ Evento actualizado en Google Calendar');
+            if (surgicalCase.is_owner) {
+              // Caso propio: actualizar o crear evento del dueño
+              if (surgicalCase.calendar_event_id) {
+                await calendarSyncService.updateEventForCase(surgicalCase);
+              } else {
+                const eventId = await calendarSyncService.createEventForCase(surgicalCase);
+                if (eventId) {
+                  await this.updateCase(surgicalCase.id, { calendar_event_id: eventId } as UpdateCaseData, true);
+                  surgicalCase.calendar_event_id = eventId;
+                }
               }
             } else {
-              // No tiene calendar_event_id, crear uno nuevo
-              console.log('⚠️ Caso sin calendar_event_id, creando evento...');
-              const eventId = await calendarSyncService.createEventForCase(surgicalCase);
-              
-              if (eventId) {
-                // ✅ IMPORTANTE: Usar skipCalendarSync=true para evitar recursión
-                const updatedCase = await this.updateCase(surgicalCase.id, { 
-                  calendar_event_id: eventId 
-                } as UpdateCaseData, true);
-                
-                // ✅ CRÍTICO: Actualizar el objeto local con el eventId
-                surgicalCase.calendar_event_id = eventId;
-                
-                console.log('✅ Evento creado y vinculado en Google Calendar');
+              // Caso asistido: actualizar SOLO el evento del asistente guardado en localStorage.
+              // Nunca crear uno nuevo aquí — eso lo hace syncMissingCases o handleAddToCalendar.
+              const assistedEventId = calendarSyncService.getAssistedEventId(surgicalCase.id!);
+              if (assistedEventId) {
+                const caseWithEventId = { ...surgicalCase, calendar_event_id: assistedEventId };
+                await calendarSyncService.updateEventForCase(caseWithEventId);
               }
             }
           } catch (calendarError) {

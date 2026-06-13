@@ -186,7 +186,7 @@ class CalendarSyncService {
     localStorage.setItem(this.ASSISTED_SYNCED_KEY, JSON.stringify(map));
   }
 
-  private getAssistedEventId(caseId: number): string | null {
+  getAssistedEventId(caseId: number): string | null {
     const map = this.getAssistedEventMap();
     return map[caseId] || null;
   }

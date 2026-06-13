@@ -343,9 +343,9 @@ const Operations = () => {
 
           {/* Recordatorio compacto */}
           <p className="text-xs text-muted-foreground">
-            ¿No encontrás el código?{' '}
+            ¿No encontrás el código? Escríbenos a {' '}
             <a href="mailto:contacto@medicoapp.app" className="text-primary hover:underline font-medium">
-              Escríbenos
+              contacto@medicoapp.app
             </a>
             {' '}y lo agregamos.
           </p>
