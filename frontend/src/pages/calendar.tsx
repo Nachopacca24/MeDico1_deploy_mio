@@ -82,6 +82,7 @@ const CalendarPage = () => {
   const [syncing, setSyncing] = useState(false);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const hasSyncedRef = useRef(false);
+  const runningSyncRef = useRef(false);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -164,6 +165,8 @@ const CalendarPage = () => {
   }, [currentDate, events]);
 
   const runSync = async (showResultAlways: boolean) => {
+    if (runningSyncRef.current) return;
+    runningSyncRef.current = true;
     setSyncing(true);
     try {
       const cases = await surgicalCaseService.getCases();
@@ -209,6 +212,7 @@ const CalendarPage = () => {
         toast.error('Error', 'No se pudieron sincronizar los casos');
       }
     } finally {
+      runningSyncRef.current = false;
       setSyncing(false);
     }
   };
