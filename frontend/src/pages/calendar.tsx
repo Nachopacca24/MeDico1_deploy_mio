@@ -191,10 +191,16 @@ const CalendarPage = () => {
         }
       }
 
+      // If migration ran, re-fetch so canonical IDs are up to date
+      const canonicalCases = result.synced > 0
+        ? await surgicalCaseService.getCases()
+        : cases;
+
       // Refresh events and clean up any duplicate MeDico events
       const freshEvents = await loadMonthEvents();
-      const duplicateIds = calendarSyncService.findDuplicateMedicoEvents(cases, freshEvents);
+      const duplicateIds = calendarSyncService.findDuplicateMedicoEvents(canonicalCases, freshEvents);
       if (duplicateIds.length > 0) {
+        console.log('🗑️ Eliminando eventos duplicados:', duplicateIds);
         await Promise.all(duplicateIds.map(id => googleCalendarService.deleteEvent(id)));
         await loadMonthEvents();
       }

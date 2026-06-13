@@ -386,9 +386,12 @@ class CalendarSyncService {
     const caseKey = new Map<string, string>();
 
     for (const c of cases) {
+      // Protect both the owner's event and the assistant's event from deletion
+      if (c.calendar_event_id) canonicalIds.add(c.calendar_event_id);
+      if (c.assistant_calendar_event_id) canonicalIds.add(c.assistant_calendar_event_id);
+
       const id = c.is_owner ? c.calendar_event_id : c.assistant_calendar_event_id;
       if (!id || !c.patient_name || !c.surgery_date) continue;
-      canonicalIds.add(id);
       caseKey.set(`${c.patient_name}|${c.surgery_date}`, id);
     }
 
