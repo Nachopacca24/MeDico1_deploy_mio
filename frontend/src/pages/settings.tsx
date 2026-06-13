@@ -248,15 +248,20 @@ const Settings = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {isMobile ? (
-            <select
-              value={activeTab}
-              onChange={e => setActiveTab(e.target.value)}
-              className="w-full mb-4 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-            >
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
               {TAB_OPTIONS.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+                <button
+                  key={t.value}
+                  onClick={() => setActiveTab(t.value)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all border
+                    ${activeTab === t.value
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                      : 'bg-muted text-muted-foreground border-transparent hover:border-primary/30'}`}
+                >
+                  {t.label}
+                </button>
               ))}
-            </select>
+            </div>
           ) : (
             <TabsList className="inline-flex gap-1">
               {TAB_OPTIONS.map(t => (

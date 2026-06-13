@@ -156,8 +156,8 @@ export function WelcomeModal() {
 
   // ── Pantalla 2: tutorial ───────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="relative bg-card border border-border rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
+      <div className="relative bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
 
         <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/70 to-primary/40" />
 
@@ -169,59 +169,51 @@ export function WelcomeModal() {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="p-8">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
-                <Stethoscope className="h-10 w-10 text-primary" />
+        <div className="p-5 sm:p-8">
+          {/* Header compacto */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="relative shrink-0">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+                <Stethoscope className="h-6 w-6 text-primary" />
               </div>
-              <div className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 border-2 border-background">
-                <Sparkles className="h-3.5 w-3.5 text-gray-900" />
+              <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 border-2 border-background">
+                <Sparkles className="h-2.5 w-2.5 text-gray-900" />
               </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-black leading-tight">¡Tu cuenta está lista!</h2>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-amber-400">14 días Premium gratis</span> para explorar todo.
+              </p>
             </div>
           </div>
 
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-black mb-2">
-              ¡Tu cuenta está lista!
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Tenés{' '}
-              <span className="font-semibold text-amber-400">14 días de Premium gratis</span>{' '}
-              para explorar todo sin límites.
-            </p>
-          </div>
-
-          <div className="bg-muted/50 rounded-xl p-4 mb-6 space-y-2">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-              El tutorial te va a mostrar
-            </p>
+          {/* Lista compacta */}
+          <div className="bg-muted/50 rounded-xl px-4 py-3 mb-4 grid grid-cols-1 gap-1.5">
             {[
-              '🩺 Cómo usar la Tabla de California',
-              '🔍 Buscar procedimientos — ya divididos por especialidad',
-              '🏥 Configurar hospitales y seguros',
-              '🔪 Registrar tu primera cirugía',
-              '📊 Ver tus estadísticas y exportar PDF',
+              '🩺 Tabla de California',
+              '🔍 Procedimientos por especialidad',
+              '🏥 Hospitales y seguros',
+              '🔪 Registrar cirugías',
+              '📊 Estadísticas y PDF',
             ].map(item => (
-              <div key={item} className="flex items-center gap-2 text-sm text-foreground/80">
-                <span>{item}</span>
-              </div>
+              <p key={item} className="text-sm text-foreground/80">{item}</p>
             ))}
           </div>
 
-          <div className="space-y-3">
-            <button
-              onClick={handleStartTutorial}
-              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 active:scale-95 transition-all"
-            >
-              Empezar el tutorial
-              <ArrowRight className="h-5 w-5" />
-            </button>
+          <div className="flex gap-3">
             <button
               onClick={handleSkipTutorial}
-              className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex-1 py-3 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-xl transition-colors"
             >
-              Ahora no, explorar solo
+              Explorar solo
+            </button>
+            <button
+              onClick={handleStartTutorial}
+              className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold py-3 rounded-xl hover:bg-primary/90 active:scale-95 transition-all"
+            >
+              Tutorial
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
