@@ -359,7 +359,6 @@ class CalendarSyncService {
 
     return description;
   }
-}
 
   /**
    * Scan a list of Google Calendar events and return IDs of duplicate MeDico events.
@@ -369,7 +368,6 @@ class CalendarSyncService {
    */
   findDuplicateMedicoEvents(cases: SurgicalCase[], gcalEvents: CalendarEvent[]): string[] {
     const canonicalIds = new Set<string>();
-    // "PatientName|YYYY-MM-DD" → canonical event ID
     const caseKey = new Map<string, string>();
 
     for (const c of cases) {
