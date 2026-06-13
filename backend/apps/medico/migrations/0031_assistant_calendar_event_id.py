@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('medico', '0028_googlecalendartoken'),
+        ('medico', '0030_notifications'),
     ]
 
     operations = [
