@@ -361,4 +361,40 @@ class CalendarSyncService {
   }
 }
 
+  /**
+   * Scan a list of Google Calendar events and return IDs of duplicate MeDico events.
+   * A duplicate is a MeDico-created event (description contains "Creado con MeDico App")
+   * whose ID is NOT the canonical calendar_event_id / assistant_calendar_event_id for any case,
+   * but whose title and date match a case that does have a canonical event.
+   */
+  findDuplicateMedicoEvents(cases: SurgicalCase[], gcalEvents: CalendarEvent[]): string[] {
+    const canonicalIds = new Set<string>();
+    // "PatientName|YYYY-MM-DD" → canonical event ID
+    const caseKey = new Map<string, string>();
+
+    for (const c of cases) {
+      const id = c.is_owner ? c.calendar_event_id : c.assistant_calendar_event_id;
+      if (!id || !c.patient_name || !c.surgery_date) continue;
+      canonicalIds.add(id);
+      caseKey.set(`${c.patient_name}|${c.surgery_date}`, id);
+    }
+
+    return gcalEvents
+      .filter(e => {
+        if (!e.id || canonicalIds.has(e.id)) return false;
+        if (!e.description?.includes('Creado con MeDico App')) return false;
+        const patientName = e.summary?.startsWith('Cirugía: ')
+          ? e.summary.slice('Cirugía: '.length)
+          : null;
+        if (!patientName) return false;
+        const eventDate = e.start.dateTime
+          ? e.start.dateTime.slice(0, 10)
+          : (e.start.date ?? null);
+        if (!eventDate) return false;
+        return caseKey.has(`${patientName}|${eventDate}`);
+      })
+      .map(e => e.id!);
+  }
+}
+
 export const calendarSyncService = new CalendarSyncService();

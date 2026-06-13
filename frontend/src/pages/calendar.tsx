@@ -190,6 +190,14 @@ const CalendarPage = () => {
           toast.success('Sincronización', 'Todos los casos ya están sincronizados');
         }
       }
+
+      // Refresh events and clean up any duplicate MeDico events
+      const freshEvents = await loadMonthEvents();
+      const duplicateIds = calendarSyncService.findDuplicateMedicoEvents(cases, freshEvents);
+      if (duplicateIds.length > 0) {
+        await Promise.all(duplicateIds.map(id => googleCalendarService.deleteEvent(id)));
+        await loadMonthEvents();
+      }
     } catch {
       if (showResultAlways) {
         toast.error('Error', 'No se pudieron sincronizar los casos');
@@ -199,15 +207,17 @@ const CalendarPage = () => {
     }
   };
 
-  const loadMonthEvents = async () => {
+  const loadMonthEvents = async (): Promise<CalendarEvent[]> => {
     setLoadingEvents(true);
     try {
       const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1, 0, 0, 0, 0);
       const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1, 23, 59, 59, 999);
       const fetchedEvents = await getEvents(startOfMonth, nextMonth);
       setEvents(fetchedEvents);
+      return fetchedEvents;
     } catch {
       toast.error('Error', 'No se pudieron cargar los eventos');
+      return [];
     } finally {
       setLoadingEvents(false);
     }
