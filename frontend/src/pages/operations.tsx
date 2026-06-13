@@ -311,9 +311,9 @@ const Operations = () => {
           </div>
 
           {/* Búsqueda y Filtros */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary w-4 h-4" />
               <input
                 type="text"
                 placeholder="Buscar procedimientos..."
@@ -322,7 +322,7 @@ const Operations = () => {
                   setGlobalSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                className="w-full pl-10 pr-4 py-2.5 border-2 border-primary/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background font-medium placeholder:text-muted-foreground/60"
               />
             </div>
             <select
@@ -331,7 +331,7 @@ const Operations = () => {
                 setSpecialtyFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+              className="px-4 py-2.5 border-2 border-primary/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
             >
               <option value="all">Todas las Especialidades</option>
               {Object.keys(folderStructure).map(specialty => (
@@ -339,33 +339,15 @@ const Operations = () => {
               ))}
             </select>
           </div>
-        </div>
 
-        {/* Missing procedure CTA */}
-        <div className="relative rounded-xl overflow-hidden">
-          {/* Animated glow border */}
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary via-cyan-400 to-primary animate-pulse opacity-40 blur-sm" />
-          <div className="relative flex flex-col sm:flex-row items-center gap-4 bg-primary/10 border border-primary/40 rounded-xl px-5 py-4">
-            <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 animate-bounce">
-              <Stethoscope className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1 text-center sm:text-left">
-              <p className="font-semibold text-foreground">
-                ¿No encuentras el código que buscas?
-              </p>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Escríbenos a{' '}
-                <a
-                  href="mailto:contacto@medicoapp.app"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  contacto@medicoapp.app
-                </a>
-                {' '}y ayúdanos a mantener actualizado el sistema de procedimientos.
-                Esta app es hecha por médicos, para médicos.
-              </p>
-            </div>
-          </div>
+          {/* Recordatorio compacto */}
+          <p className="text-xs text-muted-foreground">
+            ¿No encontrás el código?{' '}
+            <a href="mailto:contacto@medicoapp.app" className="text-primary hover:underline font-medium">
+              Escríbenos
+            </a>
+            {' '}y lo agregamos.
+          </p>
         </div>
 
         {/* Folder Structure Navigation - Grid View */}

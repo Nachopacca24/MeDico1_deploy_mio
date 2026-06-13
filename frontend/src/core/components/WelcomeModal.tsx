@@ -198,6 +198,7 @@ export function WelcomeModal() {
             </p>
             {[
               '🩺 Cómo usar la Tabla de California',
+              '🔍 Buscar procedimientos — ya divididos por especialidad',
               '🏥 Configurar hospitales y seguros',
               '🔪 Registrar tu primera cirugía',
               '📊 Ver tus estadísticas y exportar PDF',
