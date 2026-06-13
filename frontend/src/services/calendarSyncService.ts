@@ -269,17 +269,32 @@ class CalendarSyncService {
           }
         }
 
+        const stableId = `medicocase${surgicalCase.id}`;
         try {
-          if (existingEventId) {
-            // Already synced — update in case the principal changed date/time
+          if (existingEventId && existingEventId === stableId) {
+            // Already on stableId — just update
             const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
             await this.updateEventForCase(caseWithEventId);
+          } else if (existingEventId && existingEventId !== stableId) {
+            // Old random-format ID in DB — migrate: create/confirm stableId, delete old event
+            const newEventId = await this.createEventForCase(surgicalCase, stableId);
+            if (newEventId) {
+              const caseWithNewId = { ...surgicalCase, calendar_event_id: newEventId };
+              await this.updateEventForCase(caseWithNewId);
+              // Delete the old duplicate (best effort — don't fail sync if delete fails)
+              this.deleteEventForCase(existingEventId).catch(() => {});
+              this.markAssistedSynced(surgicalCase.id!, newEventId);
+              await this.saveAssistedEventIdToDb(surgicalCase.id!, newEventId);
+              synced++;
+            } else {
+              // Could not create stableId event — fall back to updating the old one
+              const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
+              await this.updateEventForCase(caseWithEventId);
+            }
           } else {
             // No stored event ID. Use a stable, deterministic ID so that if storage
             // was lost we never create a second duplicate — the API returns 409 and
             // googleCalendarService.createEvent returns the stableId on 409.
-            // Format: "medicocase" + caseId (all chars are within base32hex a-v + 0-9).
-            const stableId = `medicocase${surgicalCase.id}`;
             const eventId = await this.createEventForCase(surgicalCase, stableId);
             if (!eventId) { failed++; continue; }
             // If the event already existed (409 → stableId returned), update it with fresh data
