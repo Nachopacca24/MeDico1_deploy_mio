@@ -1,6 +1,7 @@
 // src/pages/settings.tsx
 
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -95,6 +96,7 @@ const Settings = () => {
   const { toast } = useToast();
   const { user, refreshUser } = useAuth();
   const { restartTutorial, tutorialState } = useTutorial();
+  const { setTheme } = useTheme();
 
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
@@ -152,10 +154,12 @@ const Settings = () => {
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         email: user.email || "",
+        darkMode: user.theme_preference === 'dark',
       }));
       setSurgeryReminderHours(user.surgery_reminder_hours ?? 24);
+      setTheme(user.theme_preference === 'dark' ? 'dark' : 'light');
     }
-  }, [user]);
+  }, [user, setTheme]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -211,15 +215,11 @@ const Settings = () => {
   const handleSavePreferences = async () => {
     setSaving(true);
     try {
-      const htmlElement = document.documentElement;
-      if (settings.darkMode) {
-        htmlElement.classList.add("dark");
-      } else {
-        htmlElement.classList.remove("dark");
-      }
+      const theme = settings.darkMode ? 'dark' : 'light';
+      setTheme(theme);
       await authService.updateProfile({
         surgery_reminder_hours: surgeryReminderHours,
-        theme_preference: settings.darkMode ? 'dark' : 'light',
+        theme_preference: theme,
       });
       toast({ title: "Preferencias guardadas", description: "Tus preferencias fueron actualizadas." });
     } catch {
