@@ -22,15 +22,18 @@ function DeltaBadge({ current, previous, unit = "" }: { current: number; previou
   const diff = current - previous;
   if (diff === 0) return (
     <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
-      <Minus className="h-3 w-3" /> igual que el mes pasado
+      <Minus className="h-3 w-3 shrink-0" />
+      <span className="hidden sm:inline">igual que el mes pasado</span>
+      <span className="sm:hidden">igual</span>
     </span>
   );
   const pct = previous > 0 ? Math.round(Math.abs(diff / previous) * 100) : 100;
   const up = diff > 0;
   return (
     <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${up ? "text-green-500" : "text-red-400"}`}>
-      {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-      {up ? "+" : "-"}{pct}% {unit} vs mes anterior
+      {up ? <TrendingUp className="h-3 w-3 shrink-0" /> : <TrendingDown className="h-3 w-3 shrink-0" />}
+      {up ? "+" : "-"}{pct}%
+      <span className="hidden sm:inline"> {unit} vs mes anterior</span>
     </span>
   );
 }
@@ -40,13 +43,13 @@ function StatCard({ icon: Icon, label, value, sub, accent = false, iconColor = "
   sub?: React.ReactNode; accent?: boolean; iconColor?: string;
 }) {
   return (
-    <div className={`border rounded-2xl p-3 sm:p-5 flex flex-col gap-1.5 sm:gap-2 ${accent ? "bg-primary/5 border-primary/20" : "bg-card"}`}>
-      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-        <Icon className={`h-4 w-4 ${iconColor}`} />
-        {label}
+    <div className={`border rounded-xl sm:rounded-2xl p-2.5 sm:p-5 flex flex-col gap-1 sm:gap-2 min-w-0 overflow-hidden ${accent ? "bg-primary/5 border-primary/20" : "bg-card"}`}>
+      <div className="flex items-center gap-1.5 text-muted-foreground text-xs sm:text-sm min-w-0">
+        <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ${iconColor}`} />
+        <span className="truncate">{label}</span>
       </div>
-      <div className="text-2xl sm:text-3xl font-black text-foreground leading-none">{value}</div>
-      {sub && <div>{sub}</div>}
+      <div className="text-xl sm:text-3xl font-black text-foreground leading-none">{value}</div>
+      {sub && <div className="min-w-0 overflow-hidden">{sub}</div>}
     </div>
   );
 }
@@ -233,21 +236,21 @@ export default function StatsPage() {
             icon={Activity}
             label="Cirugías totales"
             value={stats.total_cases}
-            sub={<span className="text-xs text-muted-foreground">{stats.cases_this_month} este mes <DeltaBadge current={stats.cases_this_month} previous={stats.cases_last_month} /></span>}
+            sub={<span className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-1">{stats.cases_this_month} este mes <DeltaBadge current={stats.cases_this_month} previous={stats.cases_last_month} /></span>}
           />
           <StatCard
             icon={CheckCircle2}
             label="Activas"
             value={active}
             iconColor="text-blue-400"
-            sub={<span className="text-xs text-muted-foreground">programadas + operadas sin cobrar</span>}
+            sub={<span className="text-xs text-muted-foreground truncate block">sin cobrar</span>}
           />
           <StatCard
             icon={DollarSign}
             label="Cobradas"
             value={cPaid}
             iconColor="text-emerald-400"
-            sub={<span className="text-xs text-muted-foreground">de {stats.total_cases} totales</span>}
+            sub={<span className="text-xs text-muted-foreground">de {stats.total_cases}</span>}
           />
           <StatCard
             icon={Users}
@@ -262,12 +265,12 @@ export default function StatsPage() {
             icon={Zap}
             label="RVU este mes"
             value={stats.rvu_this_month.toLocaleString('es-GT', { maximumFractionDigits: 1 })}
-            sub={<DeltaBadge current={stats.rvu_this_month} previous={stats.rvu_last_month} unit="en RVU" />}
+            sub={<DeltaBadge current={stats.rvu_this_month} previous={stats.rvu_last_month} unit="RVU" />}
             accent
           />
-          <StatCard icon={Zap} label="RVU total histórico"   value={stats.total_rvu.toLocaleString('es-GT', { maximumFractionDigits: 1 })} accent />
-          <StatCard icon={Zap} label="RVU promedio / cirugía" value={stats.avg_rvu_per_case} accent />
-          <StatCard icon={TrendingUp} label="Cirugías / semana (prom.)" value={stats.avg_per_week} />
+          <StatCard icon={Zap} label="RVU histórico" value={stats.total_rvu.toLocaleString('es-GT', { maximumFractionDigits: 1 })} accent />
+          <StatCard icon={Zap} label="RVU / cirugía" value={stats.avg_rvu_per_case} accent />
+          <StatCard icon={TrendingUp} label="Cir. / semana" value={stats.avg_per_week} />
         </div>
 
         {/* Pipeline de cirugías */}
