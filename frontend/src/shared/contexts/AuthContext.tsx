@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { authService, User, LoginCredentials, RegisterData, type AuthResponse } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 
 interface AuthContextType {
   user: User | null;
@@ -31,6 +32,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
+
+  // Apply the user's saved theme preference whenever user data changes
+  useEffect(() => {
+    if (user?.theme_preference) {
+      setTheme(user.theme_preference === 'dark' ? 'dark' : 'light');
+    }
+  }, [user?.theme_preference, setTheme]);
 
   /**
    * Cargar información del usuario desde localStorage o servidor
