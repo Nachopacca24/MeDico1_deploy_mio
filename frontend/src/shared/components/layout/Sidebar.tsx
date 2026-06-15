@@ -142,7 +142,7 @@ export function AppSidebar() {
     <Sidebar collapsible="offcanvas" className="border-r bg-sidebar">
       {/* Header con logo/nombre de la app */}
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-3">
+        <div className="flex items-center gap-2 px-2 py-3" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}>
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white flex-shrink-0 overflow-hidden p-1.5">
             <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-full w-full object-contain" />
           </div>

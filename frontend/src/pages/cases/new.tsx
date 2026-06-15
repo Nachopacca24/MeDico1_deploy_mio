@@ -651,9 +651,11 @@ const NewCase = () => {
                   <Input
                     id="patientId"
                     value={patientId}
-                    onChange={(e) => setPatientId(e.target.value)}
-                    placeholder="Ej: 12345-6"
+                    onChange={(e) => setPatientId(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Ej: 123456"
                     className="h-11"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                   />
                 </div>
 
@@ -661,13 +663,13 @@ const NewCase = () => {
                   <Label htmlFor="patientAge" className="text-sm font-semibold">Edad (años)</Label>
                   <Input
                     id="patientAge"
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={patientAge}
-                    onChange={(e) => setPatientAge(e.target.value)}
+                    onChange={(e) => setPatientAge(e.target.value.replace(/\D/g, ''))}
                     placeholder="Ej: 45"
                     className="h-11"
-                    min="0"
-                    max="150"
                   />
                 </div>
 
@@ -805,13 +807,16 @@ const NewCase = () => {
                   <Label htmlFor="rateMultiplier" className="text-sm font-semibold">Multiplicador (Q/RVU)</Label>
                   <Input
                     id="rateMultiplier"
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={rateMultiplier}
-                    onChange={(e) => setRateMultiplier(e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^0-9.]/g, '').replace(/^(\d*\.?\d*).*$/, '$1');
+                      setRateMultiplier(v);
+                    }}
                     placeholder="Por defecto: 1 (total en RVU)"
                     className="h-11"
-                    min="0"
-                    step="0.01"
                   />
                   <p className="text-xs text-muted-foreground">
                     Si ingresas un valor, el total se calculará en Quetzales (Q)
