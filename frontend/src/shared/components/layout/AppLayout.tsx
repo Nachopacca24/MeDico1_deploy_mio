@@ -43,7 +43,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [user?.specialty]);
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={false} className="overflow-x-hidden max-w-full">
       <AppSidebar />
 
       <SidebarInset>

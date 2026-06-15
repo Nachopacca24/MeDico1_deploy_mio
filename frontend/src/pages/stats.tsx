@@ -222,16 +222,16 @@ export default function StatsPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-5xl mx-auto pb-10">
+      <div className="space-y-4 w-full overflow-x-hidden pb-10">
 
         {/* Header */}
-        <div className="border-b pb-4">
-          <h1 className="text-3xl font-semibold tracking-tight mb-1">Estadísticas</h1>
-          <p className="text-muted-foreground">Tu actividad clínica de un vistazo</p>
+        <div className="border-b pb-3">
+          <h1 className="text-2xl font-semibold tracking-tight mb-0.5">Estadísticas</h1>
+          <p className="text-sm text-muted-foreground">Tu actividad clínica</p>
         </div>
 
         {/* KPI — Cirugías */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 gap-2">
           <StatCard
             icon={Activity}
             label="Cirugías totales"
@@ -243,7 +243,7 @@ export default function StatsPage() {
             label="Activas"
             value={active}
             iconColor="text-blue-400"
-            sub={<span className="text-xs text-muted-foreground truncate block">sin cobrar</span>}
+            sub={<span className="text-xs text-muted-foreground">sin cobrar</span>}
           />
           <StatCard
             icon={DollarSign}
@@ -260,7 +260,7 @@ export default function StatsPage() {
         </div>
 
         {/* KPI — RVU */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 gap-2">
           <StatCard
             icon={Zap}
             label="RVU este mes"
@@ -343,19 +343,19 @@ export default function StatsPage() {
         </div>
 
         {/* Chart — actividad mensual */}
-        <div className="bg-card border rounded-2xl p-5" data-tutorial="stats-chart">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <h2 className="font-bold text-lg">Actividad por mes</h2>
+        <div className="bg-card border rounded-2xl p-3" data-tutorial="stats-chart">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h2 className="font-bold text-base">Actividad por mes</h2>
             <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">
               {(["ambos", "cirugias", "rvu"] as ChartMode[]).map(m => (
                 <button
                   key={m}
                   onClick={() => setChartMode(m)}
-                  className={`px-3 py-1 rounded-md font-semibold transition-colors ${
+                  className={`px-2 py-1 rounded-md font-semibold transition-colors ${
                     chartMode === m ? "bg-background shadow text-foreground" : "text-muted-foreground"
                   }`}
                 >
-                  {m === "ambos" ? "Ambos" : m === "cirugias" ? "Cirugías" : "RVU"}
+                  {m === "ambos" ? "Ambos" : m === "cirugias" ? "Cir." : "RVU"}
                 </button>
               ))}
             </div>
@@ -363,25 +363,27 @@ export default function StatsPage() {
           {stats.monthly_trend.every(m => m.count === 0 && m.rvu === 0) ? (
             <p className="text-muted-foreground text-sm text-center py-8">Sin datos en los últimos 6 meses</p>
           ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={stats.monthly_trend} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.06} />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "currentColor", opacity: 0.5 }} axisLine={false} tickLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "currentColor", opacity: 0.5 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13 }}
-                  labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
-                  cursor={{ fill: "currentColor", opacity: 0.04 }}
-                />
-                {(chartMode === "cirugias" || chartMode === "ambos") && (
-                  <Bar dataKey="count" name="Cirugías" fill="hsl(var(--primary))" radius={[4,4,0,0]} maxBarSize={36} />
-                )}
-                {(chartMode === "rvu" || chartMode === "ambos") && (
-                  <Bar dataKey="rvu" name="RVU" fill="hsl(var(--primary) / 0.4)" radius={[4,4,0,0]} maxBarSize={36} />
-                )}
-                {chartMode === "ambos" && <Legend wrapperStyle={{ fontSize: 12 }} />}
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-hidden">
+              <ResponsiveContainer width="99%" height={180}>
+                <BarChart data={stats.monthly_trend} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.06} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: "currentColor", opacity: 0.5 }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: "currentColor", opacity: 0.5 }} axisLine={false} tickLine={false} width={24} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
+                    cursor={{ fill: "currentColor", opacity: 0.04 }}
+                  />
+                  {(chartMode === "cirugias" || chartMode === "ambos") && (
+                    <Bar dataKey="count" name="Cirugías" fill="hsl(var(--primary))" radius={[3,3,0,0]} maxBarSize={28} />
+                  )}
+                  {(chartMode === "rvu" || chartMode === "ambos") && (
+                    <Bar dataKey="rvu" name="RVU" fill="hsl(var(--primary) / 0.4)" radius={[3,3,0,0]} maxBarSize={28} />
+                  )}
+                  {chartMode === "ambos" && <Legend wrapperStyle={{ fontSize: 11 }} />}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
 
