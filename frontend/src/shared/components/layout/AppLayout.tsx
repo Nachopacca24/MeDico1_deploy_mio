@@ -79,7 +79,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         )}
 
-        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6" style={{ paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))' }}>
+        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-x-hidden" style={{ paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))' }}>
           <EmailVerificationBanner />
           {isMobile && user?.plan !== 'premium' && (
             <MobileForYouSection specialty={user?.specialty} />
