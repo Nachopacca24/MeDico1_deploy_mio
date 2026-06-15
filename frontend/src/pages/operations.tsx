@@ -347,7 +347,7 @@ const Operations = () => {
             <a href="mailto:contacto@medicoapp.app" className="text-primary hover:underline font-medium">
               contacto@medicoapp.app
             </a>
-            {' '}y lo agregamos.
+            {' '}y lo agregamos, por que está es una app hecha por médicos, para médicos.
           </p>
         </div>
 
