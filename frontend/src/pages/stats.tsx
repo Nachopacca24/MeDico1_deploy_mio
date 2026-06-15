@@ -184,25 +184,25 @@ export default function StatsPage() {
   // cPaid       = cobrada ✓
   const pipeline = [
     {
-      key: "scheduled", label: "Programadas",
+      key: "scheduled", label: "Programadas", shortLabel: "Prog.",
       count: cScheduled,
       sub: "sin operar todavía",
       icon: Clock, color: "text-blue-400", bar: "bg-blue-500",
     },
     {
-      key: "completed", label: "Operadas",
+      key: "completed", label: "Operadas", shortLabel: "Oper.",
       count: cCompleted,
       sub: "operadas, pendientes de factura",
       icon: CheckCircle2, color: "text-green-400", bar: "bg-green-500",
     },
     {
-      key: "billed", label: "Facturadas",
+      key: "billed", label: "Facturadas", shortLabel: "Fact.",
       count: cBilled,
       sub: "facturadas, esperando cobro",
       icon: FileText, color: "text-yellow-400", bar: "bg-yellow-500",
     },
     {
-      key: "paid", label: "Cobradas",
+      key: "paid", label: "Cobradas", shortLabel: "Cobr.",
       count: cPaid,
       sub: "completamente cobradas ✓",
       icon: DollarSign, color: "text-emerald-400", bar: "bg-emerald-500",
@@ -276,7 +276,7 @@ export default function StatsPage() {
         {/* Pipeline de cirugías */}
         <div className="bg-card border rounded-xl p-3">
           <div className="flex items-center justify-between mb-2 gap-2">
-            <h2 className="font-bold text-sm">Pipeline</h2>
+            <h2 className="font-bold text-sm">Resumen de cirugías</h2>
             <div className="flex gap-0.5 text-xs bg-muted rounded-lg p-0.5 shrink-0">
               {([["all", "Todo"], ["month", "Mes"], ["week", "Sem."]] as const).map(([val, label]) => (
                 <button
@@ -301,12 +301,12 @@ export default function StatsPage() {
           <div className="flex items-center gap-1 mb-3 overflow-x-auto pb-1">
             {pipeline.map((step, i) => (
               <div key={step.key} className="flex items-center gap-1 flex-1 min-w-0">
-                <div className={`flex-1 min-w-0 rounded-xl border p-3 text-center ${
+                <div className={`flex-1 min-w-0 rounded-xl border p-2 text-center ${
                   step.count > 0 ? "border-border bg-muted/30" : "border-border/30 opacity-40"
                 }`}>
-                  <step.icon className={`h-5 w-5 mx-auto mb-1 ${step.color}`} />
-                  <div className="text-xl sm:text-2xl font-black">{step.count}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{step.label}</div>
+                  <step.icon className={`h-4 w-4 mx-auto mb-0.5 ${step.color}`} />
+                  <div className="text-lg font-black">{step.count}</div>
+                  <div className="text-[10px] text-muted-foreground leading-tight">{step.shortLabel}</div>
                 </div>
                 {i < pipeline.length - 1 && (
                   <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />

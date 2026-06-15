@@ -234,7 +234,7 @@ function CaseStatusToggles({
             className="w-full border-amber-400/60 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400"
           >
             <ImagePlus className={`${iconSize} mr-1.5`} />
-            <span>Subir imágenes de la cirugía</span>
+            <span>{compact ? 'Imágenes' : 'Subir imágenes de la cirugía'}</span>
           </Button>
         </Link>
       )}
@@ -905,77 +905,72 @@ const CasesPage = () => {
                     className={`hover:border-primary transition-colors ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400' : ''}`}
                     onClick={selectMode && isOwner ? () => toggleSelect(surgicalCase.id) : undefined}
                   >
-                      <CardHeader>
-                        <div className="flex items-center justify-between mb-2">
+                      <CardHeader className="p-3">
+                        <div className="flex items-center justify-between mb-1">
                           <div className="min-w-0">
-                            <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
+                            <CardTitle className="text-sm font-bold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
                             <UploadingBadge caseId={surgicalCase.id} />
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0">
                             {selectMode && isOwner && (
                               selectedIds.has(surgicalCase.id)
-                                ? <CheckSquare className="w-5 h-5 text-amber-400 flex-shrink-0" />
-                                : <Square className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                                ? <CheckSquare className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                                : <Square className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             )}
                             {isOwner && surgicalCase.assistant_doctor && surgicalCase.assistant_accepted !== true && surgicalCase.assistant_accepted !== false && (
-                              <Badge className="bg-yellow-600 text-white text-xs shrink-0 whitespace-nowrap">⏳ Pendiente</Badge>
+                              <Badge className="bg-yellow-600 text-white text-xs shrink-0 whitespace-nowrap">⏳</Badge>
                             )}
                             {getStatusBadge(surgicalCase.status)}
                           </div>
                         </div>
                         {!isOwner && (
-                          <div className="mb-2">
+                          <div className="mb-1">
                             <ReadOnlyBadge />
                           </div>
                         )}
-                        <CardDescription className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="p-1.5 bg-blue-500/10 rounded-lg">
-                              <Calendar className="w-4 h-4 text-blue-500" />
+                        <CardDescription className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <div className="p-1 bg-blue-500/10 rounded">
+                              <Calendar className="w-3.5 h-3.5 text-blue-500" />
                             </div>
                             <span>{new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-base">
-                            <div className="p-1.5 bg-purple-500/10 rounded-lg">
-                              <Hospital className="w-4 h-4 text-purple-500" />
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <div className="p-1 bg-purple-500/10 rounded">
+                              <Hospital className="w-3.5 h-3.5 text-purple-500" />
                             </div>
                             <span className="truncate">{surgicalCase.hospital_name}</span>
                           </div>
                           {!isOwner && surgicalCase.created_by_name && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="p-1.5 bg-orange-500/10 rounded-lg">
-                              <Users className="w-4 h-4 text-orange-500" />
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <div className="p-1 bg-orange-500/10 rounded">
+                              <Users className="w-3.5 h-3.5 text-orange-500" />
                             </div>
-                             <span className="text-xs">
+                            <span>
                               De: <span className="font-semibold text-blue-600 dark:text-blue-400">{surgicalCase.created_by_name}</span>
                             </span>
                           </div>
                         )}
-                        
-                        {/* Mostrar estado del ayudante si soy el dueño */}
+
                         {isOwner && surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== "Sin ayudante" && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="p-1.5 bg-teal-500/10 rounded-lg">
-                              <Users className="w-4 h-4 text-teal-500" />
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <div className="p-1 bg-teal-500/10 rounded">
+                              <Users className="w-3.5 h-3.5 text-teal-500" />
                             </div>
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="text-xs truncate min-w-0">Ayudante: {surgicalCase.assistant_display_name}</span>
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <span className="truncate min-w-0">Ayud: {surgicalCase.assistant_display_name}</span>
                               {surgicalCase.assistant_doctor && surgicalCase.assistant_accepted === true && (
-                                <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">
-                                  ✓ Aceptó
-                                </Badge>
+                                <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">✓</Badge>
                               )}
                               {surgicalCase.assistant_doctor && surgicalCase.assistant_accepted === false && (
-                                <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">
-                                  ✗ Rechazó
-                                </Badge>
+                                <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">✗</Badge>
                               )}
                             </div>
                           </div>
                         )}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-3">
+                      <CardContent className="p-3 pt-0 space-y-2">
                         {isOwner && (
                           <CaseStatusToggles
                             surgicalCase={surgicalCase}
@@ -985,58 +980,55 @@ const CasesPage = () => {
                           />
                         )}
 
-                       {/* Mostrar valores según si es dueño o ayudante */}
                         {isOwner ? (
-                          // Vista completa para el dueño (con valor monetario)
-                          <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t text-sm">
+                          <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">Proc.</div>
-                              <div className="text-base font-semibold">{surgicalCase.procedure_count || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
+                              <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
                             </div>
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">RVU</div>
-                              <div className="text-base font-semibold">{surgicalCase.total_rvu || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-0.5">RVU</div>
+                              <div className="text-sm font-semibold">{surgicalCase.total_rvu || 0}</div>
                             </div>
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">Valor</div>
-                              <div className="text-base font-semibold">
+                              <div className="text-xs text-muted-foreground mb-0.5">Valor</div>
+                              <div className="text-sm font-bold">
                                 Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </div>
                             </div>
                           </div>
                         ) : (
-                          // Vista simplificada para el ayudante (sin valor monetario)
-                          <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t text-sm">
+                          <div className="grid grid-cols-2 gap-1 text-center pt-1.5 border-t">
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">Procedimientos</div>
-                              <div className="text-lg font-semibold">{surgicalCase.procedure_count || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
+                              <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
                             </div>
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">RVU Total</div>
-                              <div className="text-lg font-semibold">{surgicalCase.total_rvu || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-0.5">RVU</div>
+                              <div className="text-sm font-semibold">{surgicalCase.total_rvu || 0}</div>
                             </div>
                           </div>
                         )}
 
                         {surgicalCase.primary_specialty && (
-                          <div className="text-center py-2 border-t">
-                            <span className="text-sm text-muted-foreground">
+                          <div className="text-center py-1 border-t">
+                            <span className="text-xs text-muted-foreground">
                               {surgicalCase.primary_specialty}
                             </span>
                           </div>
                         )}
 
-                        <div className="flex gap-2 pt-2 border-t">
-                          <Button asChild variant="ghost" size="sm" className="flex-1">
+                        <div className="flex gap-1 pt-1 border-t">
+                          <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
                             <Link to={`/cases/${surgicalCase.id}`}>
-                              <Eye className="w-4 h-4 mr-1" />
+                              <Eye className="w-3.5 h-3.5 mr-1" />
                               Ver
                             </Link>
                           </Button>
                           {canEdit && !(surgicalCase.is_paid) && (
-                            <Button asChild variant="ghost" size="sm" className="flex-1">
+                            <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
                               <Link to={`/cases/${surgicalCase.id}/edit`}>
-                                <Edit className="w-4 h-4 mr-1" />
+                                <Edit className="w-3.5 h-3.5 mr-1" />
                                 Editar
                               </Link>
                             </Button>
@@ -1129,81 +1121,81 @@ const CasesPage = () => {
                         className={`opacity-80 hover:opacity-100 transition-opacity ${archivedSelectMode ? 'cursor-pointer' : ''} ${archivedSelectMode && archivedSelectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 opacity-100' : ''}`}
                         onClick={archivedSelectMode ? () => toggleArchivedSelect(surgicalCase.id) : undefined}
                       >
-                        <CardHeader>
+                        <CardHeader className="p-3">
                           <div className="flex items-center justify-between mb-1">
-                            <CardTitle className="text-lg font-semibold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
-                            <div className="flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
+                            <div className="flex items-center gap-1.5">
                               {archivedSelectMode && (
                                 archivedSelectedIds.has(surgicalCase.id)
-                                  ? <CheckSquare className="w-5 h-5 text-amber-400 flex-shrink-0" />
-                                  : <Square className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                                  ? <CheckSquare className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                                  : <Square className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                               )}
-                              <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                              <span className="px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                                 Cobrado
                               </span>
                             </div>
                           </div>
-                          <CardDescription className="space-y-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <div className="p-1.5 bg-blue-500/10 rounded-lg">
-                                <Calendar className="w-4 h-4 text-blue-500" />
+                          <CardDescription className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <div className="p-1 bg-blue-500/10 rounded">
+                                <Calendar className="w-3.5 h-3.5 text-blue-500" />
                               </div>
                               <span>{new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <div className="p-1.5 bg-purple-500/10 rounded-lg">
-                                <Hospital className="w-4 h-4 text-purple-500" />
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <div className="p-1 bg-purple-500/10 rounded">
+                                <Hospital className="w-3.5 h-3.5 text-purple-500" />
                               </div>
                               <span className="truncate">{surgicalCase.hospital_name}</span>
                             </div>
                             {surgicalCase.invoice_number && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="text-xs text-muted-foreground">Factura:</span>
-                                <span className="text-xs font-medium">#{surgicalCase.invoice_number}</span>
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <span className="text-muted-foreground">Factura:</span>
+                                <span className="font-medium">#{surgicalCase.invoice_number}</span>
                               </div>
                             )}
                             {(imagesPurgeDate || casePurgeDate) && (
-                              <div className="text-xs mt-1 space-y-0.5">
+                              <div className="text-xs mt-0.5 space-y-0.5">
                                 {imagesPurgeDate && (
                                   imagesAlreadyPurged ? (
                                     <p className="text-muted-foreground">Imágenes eliminadas</p>
                                   ) : (
                                     <p className="text-amber-600 dark:text-amber-400">
-                                      Imágenes se eliminan el {imagesPurgeDate.toLocaleDateString()}
+                                      Imgs. eliminan el {imagesPurgeDate.toLocaleDateString()}
                                     </p>
                                   )
                                 )}
                                 {casePurgeDate && (
                                   <p className="text-muted-foreground">
-                                    Caso se elimina el {casePurgeDate.toLocaleDateString()}
+                                    Caso elimina el {casePurgeDate.toLocaleDateString()}
                                   </p>
                                 )}
                               </div>
                             )}
                           </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t text-sm">
+                        <CardContent className="p-3 pt-0 space-y-2">
+                          <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">Proc.</div>
-                              <div className="text-base font-semibold">{surgicalCase.procedure_count || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
+                              <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
                             </div>
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">RVU</div>
-                              <div className="text-base font-semibold">{surgicalCase.total_rvu || 0}</div>
+                              <div className="text-xs text-muted-foreground mb-0.5">RVU</div>
+                              <div className="text-sm font-semibold">{surgicalCase.total_rvu || 0}</div>
                             </div>
                             <div>
-                              <div className="text-xs text-muted-foreground mb-1">Valor</div>
-                              <div className="text-base font-semibold">
+                              <div className="text-xs text-muted-foreground mb-0.5">Valor</div>
+                              <div className="text-sm font-bold">
                                 Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </div>
                             </div>
                           </div>
-                          <div className="flex gap-2 pt-2 border-t">
-                            <Button asChild variant="ghost" size="sm" className="flex-1">
+                          <div className="flex gap-1 pt-1 border-t">
+                            <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
                               <Link to={`/cases/${surgicalCase.id}`}>
-                                <Eye className="w-4 h-4 mr-1" />
-                                Ver detalle
+                                <Eye className="w-3.5 h-3.5 mr-1" />
+                                Ver
                               </Link>
                             </Button>
                           </div>
