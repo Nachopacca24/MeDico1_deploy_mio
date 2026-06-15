@@ -1,5 +1,5 @@
 //operations.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { loadCSV } from "@/shared/utils/csvLoader";
 import { ChevronDown, ChevronRight, Folder, FolderOpen, Search, Star, Stethoscope } from "lucide-react";
@@ -105,7 +105,7 @@ export function SimpleOperationCard({
   const grupo = operation?.grupo || 'N/A';
   
   return (
-    <div className="group relative border rounded-lg p-4 bg-card hover:border-primary transition-colors">
+    <div className="group relative rounded-lg p-4 bg-card border border-border border-l-[3px] border-l-primary/70 hover:border-primary hover:bg-primary/5 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <button
           onClick={onToggleFavorite}
@@ -163,6 +163,8 @@ const Operations = () => {
   const [globalSearch, setGlobalSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
+  const [lastExpandedSubkey, setLastExpandedSubkey] = useState<string | null>(null);
+  const procedureSectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const itemsPerPage = 24;
 
   // Usar el contexto de favoritos
@@ -260,11 +262,26 @@ const Operations = () => {
   };
 
   const toggleSubcategory = (key: string) => {
+    const isOpening = !expandedSubcategories[key];
     setExpandedSubcategories(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
+    if (isOpening) {
+      setLastExpandedSubkey(key);
+    }
   };
+
+  useEffect(() => {
+    if (!lastExpandedSubkey) return;
+    const el = procedureSectionRefs.current[lastExpandedSubkey];
+    if (el) {
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+    setLastExpandedSubkey(null);
+  }, [lastExpandedSubkey]);
 
   if (loading) {
     return (
@@ -508,7 +525,7 @@ const Operations = () => {
                           : allOperations;
 
                         return (
-                          <div key={`ops-${subKey}`} className="space-y-3">
+                          <div key={`ops-${subKey}`} className="space-y-3" ref={(el) => { procedureSectionRefs.current[subKey] = el; }}>
                             <div className="flex items-center gap-2 px-2">
                               <Stethoscope className="w-4 h-4 text-primary" />
                               <h4 className="font-semibold text-base">{subName}</h4>
