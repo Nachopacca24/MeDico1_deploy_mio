@@ -139,7 +139,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r bg-sidebar">
+    <Sidebar collapsible="offcanvas" className="border-r bg-sidebar">
       {/* Header con logo/nombre de la app */}
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-3">

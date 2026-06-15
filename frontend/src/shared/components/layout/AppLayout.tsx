@@ -43,7 +43,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [user?.specialty]);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <AppSidebar />
 
       <SidebarInset>
