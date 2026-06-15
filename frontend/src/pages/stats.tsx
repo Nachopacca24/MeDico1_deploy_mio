@@ -274,15 +274,15 @@ export default function StatsPage() {
         </div>
 
         {/* Pipeline de cirugías */}
-        <div className="bg-card border rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
-            <h2 className="font-bold text-lg">Pipeline de cirugías</h2>
-            <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">
-              {([["all", "Todo"], ["month", "Este mes"], ["week", "Esta semana"]] as const).map(([val, label]) => (
+        <div className="bg-card border rounded-xl p-3 overflow-hidden w-full">
+          <div className="flex items-center justify-between mb-2 gap-2">
+            <h2 className="font-bold text-sm">Pipeline</h2>
+            <div className="flex gap-0.5 text-xs bg-muted rounded-lg p-0.5 shrink-0">
+              {([["all", "Todo"], ["month", "Mes"], ["week", "Sem."]] as const).map(([val, label]) => (
                 <button
                   key={val}
                   onClick={() => setPipelinePeriod(val)}
-                  className={`px-3 py-1 rounded-md font-semibold transition-colors ${
+                  className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
                     pipelinePeriod === val ? "bg-background shadow text-foreground" : "text-muted-foreground"
                   }`}
                 >
@@ -291,14 +291,14 @@ export default function StatsPage() {
               ))}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mb-5">
+          <p className="text-xs text-muted-foreground mb-3">
             {pipelinePeriod === "week" ? "Cirugías con fecha en esta semana" :
              pipelinePeriod === "month" ? "Cirugías con fecha en este mes" :
              "Todas tus cirugías históricas"}
           </p>
 
           {/* Funnel visual */}
-          <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
+          <div className="flex items-center gap-1 mb-3 overflow-x-auto pb-1">
             {pipeline.map((step, i) => (
               <div key={step.key} className="flex items-center gap-1 flex-1 min-w-0">
                 <div className={`flex-1 min-w-0 rounded-xl border p-3 text-center ${
@@ -388,35 +388,35 @@ export default function StatsPage() {
         </div>
 
         {/* Top procedimientos + Hospitales por RVU */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="w-full min-w-0 space-y-3">
 
-          <div className="bg-card border rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-              <h2 className="font-bold text-lg">Top procedimientos</h2>
-              <div className="flex gap-1 text-xs bg-muted rounded-lg p-1">
-                <button onClick={() => setProcedureSort("count")} className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${procedureSort === "count" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
-                  Por cantidad
+          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+            <div className="flex items-center justify-between mb-3 gap-2 min-w-0">
+              <h2 className="font-bold text-sm truncate">Top procedimientos</h2>
+              <div className="flex gap-0.5 text-xs bg-muted rounded-lg p-0.5 shrink-0">
+                <button onClick={() => setProcedureSort("count")} className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${procedureSort === "count" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
+                  Cant.
                 </button>
-                <button onClick={() => setProcedureSort("rvu")} className={`px-2.5 py-1 rounded-md font-semibold transition-colors ${procedureSort === "rvu" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
-                  Por RVU
+                <button onClick={() => setProcedureSort("rvu")} className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${procedureSort === "rvu" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}>
+                  RVU
                 </button>
               </div>
             </div>
             {topProcedures.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Sin datos</p>
+              <p className="text-muted-foreground text-xs">Sin datos</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {topProcedures.map((p, i) => {
                   const val = procedureSort === "count" ? p.count : p.total_rvu;
                   const pct = maxProcVal > 0 ? Math.round((val / maxProcVal) * 100) : 0;
                   return (
-                    <div key={p.name + i}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
-                        <span className="flex-1 text-sm font-medium truncate">{p.name}</span>
-                        <span className="shrink-0 text-xs text-muted-foreground">{p.count}× · <span className="text-primary font-bold">{p.total_rvu} RVU</span></span>
+                    <div key={p.name + i} className="min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1 min-w-0 w-full">
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">{i + 1}</span>
+                        <span className="flex-1 text-xs font-medium truncate min-w-0">{p.name}</span>
+                        <span className="shrink-0 text-[10px] font-bold text-primary ml-1">{val}</span>
                       </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
+                      <div className="h-1 bg-muted rounded-full overflow-hidden ml-5">
                         <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
@@ -426,24 +426,22 @@ export default function StatsPage() {
             )}
           </div>
 
-          <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-bold text-lg mb-1">Hospitales por RVU</h2>
-            <p className="text-xs text-muted-foreground mb-4">Donde generas más unidades de valor relativo</p>
+          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+            <h2 className="font-bold text-sm mb-2">Hospitales por RVU</h2>
             {stats.top_hospitals_by_rvu.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Sin datos</p>
+              <p className="text-muted-foreground text-xs">Sin datos</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {stats.top_hospitals_by_rvu.map((h, i) => {
                   const pct = maxHospitalRvu > 0 ? Math.round((h.total_rvu / maxHospitalRvu) * 100) : 0;
                   return (
-                    <div key={h.name + i}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
-                        <Hospital className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="flex-1 text-sm font-medium truncate">{h.name}</span>
-                        <span className="shrink-0 text-xs text-muted-foreground">{h.count} cir. · <span className="text-primary font-bold">{h.total_rvu} RVU</span></span>
+                    <div key={h.name + i} className="min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1 min-w-0 w-full">
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">{i + 1}</span>
+                        <span className="flex-1 text-xs font-medium truncate min-w-0">{h.name}</span>
+                        <span className="shrink-0 text-[10px] font-bold text-primary ml-1">{h.total_rvu}</span>
                       </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
+                      <div className="h-1 bg-muted rounded-full overflow-hidden ml-5">
                         <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
@@ -456,27 +454,25 @@ export default function StatsPage() {
         </div>
 
         {/* Top seguros */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="w-full min-w-0 space-y-3">
 
-          <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-bold text-lg mb-1">Seguros por cirugías</h2>
-            <p className="text-xs text-muted-foreground mb-4">Con qué seguros operás más frecuentemente</p>
+          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+            <h2 className="font-bold text-sm mb-2">Seguros por cirugías</h2>
             {stats.top_insurers_by_count.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Sin datos — registrá el seguro al crear una cirugía</p>
+              <p className="text-muted-foreground text-xs">Sin datos</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {stats.top_insurers_by_count.map((ins, i) => {
                   const max = stats.top_insurers_by_count[0]?.count ?? 1;
                   const pct = Math.round((ins.count / max) * 100);
                   return (
-                    <div key={ins.name + i}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
-                        <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="flex-1 text-sm font-medium truncate">{ins.name}</span>
-                        <span className="shrink-0 text-xs font-bold text-primary">{ins.count} cir.</span>
+                    <div key={ins.name + i} className="min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1 min-w-0 w-full">
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">{i + 1}</span>
+                        <span className="flex-1 text-xs font-medium truncate min-w-0">{ins.name}</span>
+                        <span className="shrink-0 text-[10px] font-bold text-primary ml-1">{ins.count}</span>
                       </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
+                      <div className="h-1 bg-muted rounded-full overflow-hidden ml-5">
                         <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
@@ -486,25 +482,23 @@ export default function StatsPage() {
             )}
           </div>
 
-          <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-bold text-lg mb-1">Seguros por RVU</h2>
-            <p className="text-xs text-muted-foreground mb-4">Con qué seguros generás más valor relativo</p>
+          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+            <h2 className="font-bold text-sm mb-2">Seguros por RVU</h2>
             {stats.top_insurers_by_rvu.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Sin datos — registrá el seguro al crear una cirugía</p>
+              <p className="text-muted-foreground text-xs">Sin datos</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {stats.top_insurers_by_rvu.map((ins, i) => {
                   const max = stats.top_insurers_by_rvu[0]?.total_rvu ?? 1;
                   const pct = Math.round((ins.total_rvu / max) * 100);
                   return (
-                    <div key={ins.name + i}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">{i + 1}</span>
-                        <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="flex-1 text-sm font-medium truncate">{ins.name}</span>
-                        <span className="shrink-0 text-xs text-muted-foreground">{ins.count} cir. · <span className="text-primary font-bold">{ins.total_rvu} RVU</span></span>
+                    <div key={ins.name + i} className="min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1 min-w-0 w-full">
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">{i + 1}</span>
+                        <span className="flex-1 text-xs font-medium truncate min-w-0">{ins.name}</span>
+                        <span className="shrink-0 text-[10px] font-bold text-primary ml-1">{ins.total_rvu}</span>
                       </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-7">
+                      <div className="h-1 bg-muted rounded-full overflow-hidden ml-5">
                         <div className="h-full bg-primary/60 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
