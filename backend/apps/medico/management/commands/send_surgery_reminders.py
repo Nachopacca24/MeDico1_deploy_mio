@@ -55,25 +55,28 @@ class Command(BaseCommand):
                 datetime.combine(case.surgery_date, surgery_time)
             )
 
-            # Ventana objetivo: [now + hours - 30min, now + hours + 30min]
-            target = now + timedelta(hours=reminder_hours)
-            window_start = target - timedelta(minutes=WINDOW_MINUTES)
-            window_end = target + timedelta(minutes=WINDOW_MINUTES)
-
-            logger.info(
-                '[REMINDER] case=%s user=%s reminder_hours=%s surgery_dt=%s window=[%s,%s] in_window=%s',
-                case.pk, user.id, reminder_hours,
-                surgery_dt.isoformat(),
-                window_start.isoformat(), window_end.isoformat(),
-                window_start <= surgery_dt <= window_end,
-            )
-
-            if not (window_start <= surgery_dt <= window_end):
+            # No enviar si la cirugía ya pasó
+            if surgery_dt <= now:
                 skipped += 1
                 continue
 
-            # No enviar si la cirugía ya pasó
-            if surgery_dt <= now:
+            # Ventana objetivo: [now + hours - WINDOW, now + hours + WINDOW]
+            # Si la ventana ya pasó (caso creado con menos de reminder_hours de anticipación)
+            # pero la cirugía aún no ocurrió, mandar igual — es mejor tarde que nunca.
+            target = now + timedelta(hours=reminder_hours)
+            window_start = target - timedelta(minutes=WINDOW_MINUTES)
+            window_end = target + timedelta(minutes=WINDOW_MINUTES)
+            past_window = surgery_dt < window_start  # ventana ya pasó
+
+            in_window = window_start <= surgery_dt <= window_end
+
+            logger.info(
+                '[REMINDER] case=%s user=%s reminder_hours=%s surgery_dt=%s in_window=%s past_window=%s',
+                case.pk, user.id, reminder_hours,
+                surgery_dt.isoformat(), in_window, past_window,
+            )
+
+            if not in_window and not past_window:
                 skipped += 1
                 continue
 
