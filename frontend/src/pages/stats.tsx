@@ -222,7 +222,7 @@ export default function StatsPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-4 w-full overflow-x-hidden pb-10">
+      <div className="space-y-4 w-full pb-10">
 
         {/* Header */}
         <div className="border-b pb-3">
@@ -274,7 +274,7 @@ export default function StatsPage() {
         </div>
 
         {/* Pipeline de cirugías */}
-        <div className="bg-card border rounded-xl p-3 overflow-hidden w-full">
+        <div className="bg-card border rounded-xl p-3">
           <div className="flex items-center justify-between mb-2 gap-2">
             <h2 className="font-bold text-sm">Pipeline</h2>
             <div className="flex gap-0.5 text-xs bg-muted rounded-lg p-0.5 shrink-0">
@@ -390,7 +390,7 @@ export default function StatsPage() {
         {/* Top procedimientos + Hospitales por RVU */}
         <div className="w-full min-w-0 space-y-3">
 
-          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+          <div className="bg-card border rounded-xl p-3 min-w-0">
             <div className="flex items-center justify-between mb-3 gap-2 min-w-0">
               <h2 className="font-bold text-sm truncate">Top procedimientos</h2>
               <div className="flex gap-0.5 text-xs bg-muted rounded-lg p-0.5 shrink-0">
@@ -426,7 +426,7 @@ export default function StatsPage() {
             )}
           </div>
 
-          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+          <div className="bg-card border rounded-xl p-3 min-w-0">
             <h2 className="font-bold text-sm mb-2">Hospitales por RVU</h2>
             {stats.top_hospitals_by_rvu.length === 0 ? (
               <p className="text-muted-foreground text-xs">Sin datos</p>
@@ -456,7 +456,7 @@ export default function StatsPage() {
         {/* Top seguros */}
         <div className="w-full min-w-0 space-y-3">
 
-          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+          <div className="bg-card border rounded-xl p-3 min-w-0">
             <h2 className="font-bold text-sm mb-2">Seguros por cirugías</h2>
             {stats.top_insurers_by_count.length === 0 ? (
               <p className="text-muted-foreground text-xs">Sin datos</p>
@@ -482,7 +482,7 @@ export default function StatsPage() {
             )}
           </div>
 
-          <div className="bg-card border rounded-xl p-3 overflow-hidden w-full min-w-0">
+          <div className="bg-card border rounded-xl p-3 min-w-0">
             <h2 className="font-bold text-sm mb-2">Seguros por RVU</h2>
             {stats.top_insurers_by_rvu.length === 0 ? (
               <p className="text-muted-foreground text-xs">Sin datos</p>
