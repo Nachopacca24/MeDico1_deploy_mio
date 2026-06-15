@@ -217,7 +217,10 @@ const Settings = () => {
       } else {
         htmlElement.classList.remove("dark");
       }
-      await authService.updateProfile({ surgery_reminder_hours: surgeryReminderHours });
+      await authService.updateProfile({
+        surgery_reminder_hours: surgeryReminderHours,
+        theme_preference: settings.darkMode ? 'dark' : 'light',
+      });
       toast({ title: "Preferencias guardadas", description: "Tus preferencias fueron actualizadas." });
     } catch {
       toast({ title: "Error", description: "No se pudieron guardar las preferencias.", variant: "destructive" });

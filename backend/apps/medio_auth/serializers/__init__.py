@@ -236,7 +236,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'first_name', 'last_name', 'phone', 'specialty',
             'license_number', 'hospital_default', 'avatar',
-            'signature_image', 'theme_preference'
+            'signature_image', 'theme_preference', 'surgery_reminder_hours',
         ]
     
     def validate_license_number(self, value):
