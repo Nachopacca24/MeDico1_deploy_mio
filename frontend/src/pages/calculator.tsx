@@ -235,7 +235,7 @@ export default function CalculatorPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto pb-10 space-y-6 min-w-0">
+      <div className="max-w-4xl mx-auto pb-10 space-y-6 min-w-0 px-2">
 
         <div className="border-b pb-4 min-w-0">
           <h1 className="text-xl sm:text-3xl font-semibold tracking-tight mb-1 flex items-center gap-2 min-w-0">
