@@ -235,12 +235,12 @@ export default function CalculatorPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto pb-10 space-y-6">
+      <div className="max-w-4xl mx-auto pb-10 space-y-6 min-w-0">
 
-        <div className="border-b pb-4">
-          <h1 className="text-3xl font-semibold tracking-tight mb-1 flex items-center gap-2">
-            <Calculator className="h-8 w-8" />
-            Calculadora de honorarios
+        <div className="border-b pb-4 min-w-0">
+          <h1 className="text-xl sm:text-3xl font-semibold tracking-tight mb-1 flex items-center gap-2 min-w-0">
+            <Calculator className="h-6 w-6 sm:h-8 sm:w-8 shrink-0" />
+            <span className="truncate">Calculadora de honorarios</span>
           </h1>
           <p className="text-muted-foreground text-sm">Estimá honorarios rápidamente sin crear una cirugía</p>
         </div>
@@ -332,7 +332,7 @@ export default function CalculatorPage() {
                     </div>
                     <div className="flex justify-between items-baseline">
                       <span className="text-sm font-semibold">Con regla múltiple</span>
-                      <span className="font-black text-2xl text-primary">
+                      <span className="font-black text-xl text-primary">
                         Q {adjustedVal.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
@@ -340,7 +340,7 @@ export default function CalculatorPage() {
                 ) : (
                   <div className="flex justify-between items-baseline">
                     <span className="text-sm font-semibold">Honorario</span>
-                    <span className="font-black text-2xl text-primary">
+                    <span className="font-black text-xl text-primary">
                       Q {totalVal.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
