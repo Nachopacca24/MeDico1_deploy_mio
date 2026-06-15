@@ -157,9 +157,10 @@ const Settings = () => {
         darkMode: user.theme_preference === 'dark',
       }));
       setSurgeryReminderHours(user.surgery_reminder_hours ?? 24);
-      setTheme(user.theme_preference === 'dark' ? 'dark' : 'light');
+      // Theme is applied by AuthContext — calling setTheme here too causes an
+      // infinite reset loop when setTheme's reference changes on re-render.
     }
-  }, [user, setTheme]);
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

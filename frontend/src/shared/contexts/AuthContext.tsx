@@ -34,12 +34,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const navigate = useNavigate();
   const { setTheme } = useTheme();
 
-  // Apply the user's saved theme preference whenever user data changes
+  // Apply the user's saved theme preference whenever user data changes.
+  // setTheme is intentionally omitted from deps — it can change reference on every
+  // next-themes re-render, which would cause an infinite reset loop.
   useEffect(() => {
     if (user?.theme_preference) {
       setTheme(user.theme_preference === 'dark' ? 'dark' : 'light');
     }
-  }, [user?.theme_preference, setTheme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.theme_preference]);
 
   /**
    * Cargar información del usuario desde localStorage o servidor
