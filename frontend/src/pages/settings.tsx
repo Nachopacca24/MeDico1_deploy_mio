@@ -173,6 +173,9 @@ const Settings = () => {
 
   const handleSwitchChange = (name: string, checked: boolean) => {
     setSettings(prev => ({ ...prev, [name]: checked }));
+    if (name === 'darkMode') {
+      setTheme(checked ? 'dark' : 'light');
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -221,6 +224,7 @@ const Settings = () => {
         surgery_reminder_hours: surgeryReminderHours,
         theme_preference: theme,
       });
+      await refreshUser();
       toast({ title: "Preferencias guardadas", description: "Tus preferencias fueron actualizadas." });
     } catch {
       toast({ title: "Error", description: "No se pudieron guardar las preferencias.", variant: "destructive" });
