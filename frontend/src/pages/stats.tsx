@@ -40,7 +40,7 @@ function StatCard({ icon: Icon, label, value, sub, accent = false, iconColor = "
   sub?: React.ReactNode; accent?: boolean; iconColor?: string;
 }) {
   return (
-    <div className={`border rounded-2xl p-5 flex flex-col gap-2 ${accent ? "bg-primary/5 border-primary/20" : "bg-card"}`}>
+    <div className={`border rounded-2xl p-3 sm:p-5 flex flex-col gap-1.5 sm:gap-2 ${accent ? "bg-primary/5 border-primary/20" : "bg-card"}`}>
       <div className="flex items-center gap-2 text-muted-foreground text-sm">
         <Icon className={`h-4 w-4 ${iconColor}`} />
         {label}
@@ -228,7 +228,7 @@ export default function StatsPage() {
         </div>
 
         {/* KPI — Cirugías */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
           <StatCard
             icon={Activity}
             label="Cirugías totales"
@@ -257,7 +257,7 @@ export default function StatsPage() {
         </div>
 
         {/* KPI — RVU */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
           <StatCard
             icon={Zap}
             label="RVU este mes"
