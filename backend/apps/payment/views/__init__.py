@@ -175,8 +175,10 @@ def cancel_subscription(request):
         if not resp.ok:
             logger.error('[LS cancel] LS error body=%s', resp.text)
         resp.raise_for_status()
-        # LS will send subscription_cancelled webhook which triggers _deactivate_premium
-        logger.info('[LS cancel] subscription cancelled for user=%s — awaiting webhook', user.id)
+        # Mark as cancelled optimistically so frontend reflects it immediately.
+        # The webhook (subscription_cancelled) will later add ls_renews_at (end date).
+        User.objects.filter(pk=user.pk).update(ls_cancelled=True)
+        logger.info('[LS cancel] subscription cancelled for user=%s — marked ls_cancelled optimistically', user.id)
         return Response({'ok': True, 'message': 'Suscripción cancelada. Se mantendrá activa hasta el fin del período.'})
     except requests.HTTPError as e:
         logger.error('[LS cancel] HTTPError status=%s body=%s', e.response.status_code, e.response.text)

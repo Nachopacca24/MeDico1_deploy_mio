@@ -1,7 +1,8 @@
 // src/pages/settings.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
+import { useSearchParams } from "react-router-dom";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -126,9 +127,51 @@ const Settings = () => {
 
   const [surgeryReminderHours, setSurgeryReminderHours] = useState<number>(2);
   const [notifStatus, setNotifStatus] = useState<'active' | 'no-permission' | 'no-token' | 'not-native' | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const upgradePollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     pushNotificationService.checkStatus().then(setNotifStatus);
+  }, []);
+
+  // Stop upgrade polling once plan becomes premium
+  useEffect(() => {
+    if (user?.plan === 'premium' && upgradePollingRef.current) {
+      clearInterval(upgradePollingRef.current);
+      upgradePollingRef.current = null;
+      toast({ title: '¡Ya sos Premium! 🎉', description: 'Tu plan se activó correctamente.', duration: 5000 });
+    }
+  }, [user?.plan]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle redirect back from LemonSqueezy checkout (?upgraded=1)
+  useEffect(() => {
+    if (searchParams.get('upgraded') !== '1') return;
+
+    // Remove the query param immediately to avoid re-triggering on refresh
+    setSearchParams({}, { replace: true });
+    setActiveTab('plan');
+
+    toast({
+      title: '¡Gracias por suscribirte!',
+      description: 'Estamos activando tu plan Premium. Puede tomar unos segundos...',
+      duration: 8000,
+    });
+
+    let attempts = 0;
+    upgradePollingRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        await refreshUser();
+      } catch { /* ignore */ }
+      if (attempts >= 10) {
+        clearInterval(upgradePollingRef.current!);
+      }
+    }, 3000);
+
+    return () => {
+      if (upgradePollingRef.current) clearInterval(upgradePollingRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [settings, setSettings] = useState({
