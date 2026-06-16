@@ -124,7 +124,7 @@ const Settings = () => {
     disconnect
   } = useGoogleCalendar();
 
-  const [surgeryReminderHours, setSurgeryReminderHours] = useState<number>(24);
+  const [surgeryReminderHours, setSurgeryReminderHours] = useState<number>(2);
   const [notifStatus, setNotifStatus] = useState<'active' | 'no-permission' | 'no-token' | 'not-native' | null>(null);
 
   useEffect(() => {

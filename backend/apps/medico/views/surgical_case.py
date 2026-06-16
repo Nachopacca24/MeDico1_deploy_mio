@@ -184,10 +184,16 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             if case.assistant_doctor:
                 try:
                     principal_name = request.user.get_full_name() or request.user.username
+                    date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+                    time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
+                    inv_body = f'{principal_name} te invitó a asistir el {date_str}'
+                    if time_str:
+                        inv_body += f' a las {time_str}'
+                    inv_body += '. Revisá la sección Cirugías.'
                     notify_user(
                         case.assistant_doctor,
-                        title='Nueva invitación a caso',
-                        body=f'{principal_name} te invitó a una cirugía.',
+                        title='Nueva invitación a cirugía',
+                        body=inv_body,
                         data={'route': '/cases/assisted'},
                     )
                 except Exception:
@@ -230,10 +236,16 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         try:
             if case.assistant_doctor and case.assistant_doctor_id != prev_assistant_id:
+                date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+                time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
+                inv_body = f'{principal_name} te invitó a asistir el {date_str}'
+                if time_str:
+                    inv_body += f' a las {time_str}'
+                inv_body += '. Revisá la sección Cirugías.'
                 notify_user(
                     case.assistant_doctor,
-                    title='Nueva invitación a caso',
-                    body=f'{principal_name} te invitó a una cirugía.',
+                    title='Nueva invitación a cirugía',
+                    body=inv_body,
                     data={'route': '/cases/assisted'},
                 )
             elif case.assistant_doctor and case.assistant_accepted is True:

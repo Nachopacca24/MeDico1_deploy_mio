@@ -182,7 +182,7 @@ class CustomUser(AbstractUser):
     )
 
     surgery_reminder_hours = models.PositiveIntegerField(
-        default=24,
+        default=2,
         verbose_name="Horas de recordatorio de cirugía",
         help_text="Horas antes de la cirugía para enviar recordatorio push"
     )

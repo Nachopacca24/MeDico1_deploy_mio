@@ -666,9 +666,22 @@ class SendFriendRequestView(APIView):
             to_user=to_user,
             status='pending'
         )
-        
+
+        # Notificar al receptor que llegó una solicitud de colega
+        try:
+            from apps.medico.services.firebase import notify_user
+            sender_name = request.user.get_full_name() or request.user.username
+            notify_user(
+                to_user,
+                title='Nueva solicitud de colega',
+                body=f'{sender_name} quiere agregarte como colega en MeDico App.',
+                data={'route': '/colleagues'},
+            )
+        except Exception:
+            logger.exception('Error sending colleague request notification to user=%s', to_user.pk)
+
         serializer = FriendRequestSerializer(friend_request)
-        
+
         return Response({
             'message': 'Solicitud enviada correctamente',
             'friend_request': serializer.data
