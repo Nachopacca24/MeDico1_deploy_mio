@@ -96,7 +96,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 14, route: '/stats', emoji: '📊', target: 'stats-chart',
     title: 'Estadísticas',
-    description: 'Cada cirugía que pasás a "Cobrado" suma acá. Ves tus ingresos por mes, los hospitales donde más operás y los procedimientos más frecuentes.',
+    description: 'Cada cirugía que pasás a "Cobrado" suma acá. Ves tu rendimiento por mes, los hospitales donde más operás y los procedimientos más frecuentes.',
     hint: 'Usá los filtros de fecha para ver por semana, mes o rango personalizado.',
   },
   {
@@ -108,8 +108,8 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 16, route: '/settings', emoji: '⚙️', target: 'settings-plan-tab',
     title: '¡Listo! Configuración final',
-    description: 'Último paso: revisá tu perfil en Configuración. Asegurate de tener tu especialidad médica guardada — afecta las estadísticas, novedades y contenido personalizado.',
-    hint: 'Tu especialidad se configura en la pestaña "Perfil" dentro de Configuración.',
+    description: 'Último paso: revisá Configuración. En "Perfil" guardás tu especialidad. En "Preferencias" elegís modo oscuro o claro y configurás el recordatorio de notificaciones para tus cirugías.',
+    hint: 'El recordatorio de cirugía te avisa con anticipación — podés elegir cuántas horas antes querés recibirlo.',
   },
 ];
 
