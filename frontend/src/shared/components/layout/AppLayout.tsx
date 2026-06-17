@@ -47,10 +47,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       <AppSidebar />
 
       <SidebarInset>
-        {/* Header — fixed at top so app name is always visible (branding) */}
-        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/98 backdrop-blur-md shadow-sm px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        {/* Header mobile: fixed (igual que MobileBottomNav). Desktop: sticky */}
+        <header className="fixed top-[var(--sat,0px)] left-0 right-0 z-50 flex h-14 items-center gap-2 border-b border-border bg-background/98 backdrop-blur-md shadow-sm px-4 md:sticky md:top-0 md:left-auto md:right-auto md:z-40 md:shrink-0">
           <div className="flex items-center gap-2 flex-1">
-            {/* SidebarTrigger visible only on desktop — mobile uses MobileBottomNav */}
             <SidebarTrigger className="-ml-1 hidden md:flex" />
             <Separator orientation="vertical" className="mr-2 h-4 hidden md:flex" />
             <h2 className="text-lg font-bold tracking-tight">MeDico App</h2>
@@ -79,7 +78,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         )}
 
-        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-x-hidden" style={{ paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))' }}>
+        <main
+          className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-x-hidden"
+          style={{
+            paddingTop: isMobile ? 'calc(3.5rem + var(--sat, 0px) + 1rem)' : undefined,
+            paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : 'calc(5rem + var(--sab, 0px))',
+          }}
+        >
           <EmailVerificationBanner />
           {isMobile && user?.plan !== 'premium' && (
             <MobileForYouSection specialty={user?.specialty} />
