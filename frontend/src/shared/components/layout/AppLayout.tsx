@@ -53,9 +53,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             {/* SidebarTrigger visible only on desktop — mobile uses MobileBottomNav */}
             <SidebarTrigger className="-ml-1 hidden md:flex" />
             <Separator orientation="vertical" className="mr-2 h-4 hidden md:flex" />
-            <h2 className="text-lg font-bold tracking-tight">
-              <span className="text-primary">Me</span>Dico App
-            </h2>
+            <h2 className="text-lg font-bold tracking-tight">MeDico App</h2>
           </div>
           {isAdmin && (
             <Link
