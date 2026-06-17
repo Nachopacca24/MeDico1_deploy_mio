@@ -15,85 +15,102 @@ export interface TutorialStep {
 }
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
-  { step: 1,  route: '/operations', emoji: '🩺', target: 'procedures-search',
-    title: 'Tabla de California',
-    description: 'Más de 4,000 procedimientos quirúrgicos con su código CPT y valor en RVU. Esta es la base de todos tus cálculos de honorarios. Están divididos por especialidad.',
-    hint: 'Buscá un procedimiento que usés frecuentemente y tocá ⭐ para agregarlo a favoritos.' },
-
-  { step: 2,  route: '/hospitals', emoji: '🏥', target: 'hospitals-list',
-    title: 'Hospitales',
-    description: 'Registrá los hospitales donde operás. A cada uno le podés configurar tu multiplicador RVU — así MeDico App calcula el honorario exacto según el hospital.',
-    hint: 'Buscá tu hospital principal y marcalo como favorito.' },
-
-  { step: 3,  route: '/insurances', emoji: '🛡️', target: 'insurances-list',
+  {
+    step: 1, route: '/operations', emoji: '🩺', target: 'procedures-search',
+    title: 'Buscá tus procedimientos',
+    description: 'Acá están los +4,000 procedimientos de la Tabla de California con su código y valor en RVU. Antes de crear tu primera cirugía, guardá los que más usás.',
+    hint: 'Escribí el nombre de un procedimiento → tocá ⭐ para guardarlo como favorito. Se cargarán automáticamente en cada cirugía.',
+  },
+  {
+    step: 2, route: '/hospitals', emoji: '🏥', target: 'hospitals-list',
+    title: 'Configurá tu hospital',
+    description: 'Registrá los hospitales donde operás. Cada hospital tiene su propio multiplicador RVU — ese número convierte el valor RVU en el honorario real que cobrás.',
+    hint: 'Encontrá tu hospital → tocá ⭐ → abrilo y configurá el multiplicador RVU. Sin esto el cálculo no funciona.',
+  },
+  {
+    step: 3, route: '/insurances', emoji: '🛡️', target: 'insurances-list',
     title: 'Seguros médicos',
-    description: 'Guardá los seguros médicos que manejás frecuentemente. Al registrar una cirugía, los podés seleccionar rápidamente sin tener que escribirlos cada vez.',
-    hint: 'Agregá un seguro que usés seguido como favorito.' },
-
-  { step: 4,  route: '/favorites', emoji: '⭐', target: 'favorites-list',
+    description: 'Guardá los seguros que manejás frecuentemente. Al crear una cirugía se cargan solos, sin necesidad de escribirlos cada vez.',
+    hint: 'Tocá ⭐ en los seguros que más usás para guardarlos.',
+  },
+  {
+    step: 4, route: '/favorites', emoji: '⭐', target: 'favorites-list',
     title: 'Tus favoritos',
-    description: 'Acá aparecen todos tus favoritos: procedimientos, hospitales y seguros. Al crear una cirugía, estos se cargan primero para que puedas registrar más rápido.',
-    hint: 'Revisá que tus favoritos estén aquí — se pre-cargan cada vez que creés una nueva cirugía.' },
-
-  { step: 5,  route: '/colleagues', emoji: '👥', target: 'colleague-code',
+    description: 'Todo lo que marcaste con ⭐ aparece acá: procedimientos, hospitales y seguros. Cuando creés una cirugía nueva, estos se pre-cargan para que sea más rápido.',
+    hint: 'Si no ves algo, volvé a la sección correspondiente y marcalo con ⭐.',
+  },
+  {
+    step: 5, route: '/colleagues', emoji: '👥', target: 'colleague-code',
     title: 'Colegas y ayudantes',
-    description: 'Tu código de colega es único y personal. Compartilo con otros médicos para que te envíen solicitudes de colaboración, o buscá el código de un colega para enviarle una solicitud vos.',
-    hint: 'Copiá tu código personal (aparece arriba de la página) y enviáselo a un colega.' },
-
-  { step: 6,  route: '/calendar', emoji: '📅', target: 'calendar-connect',
+    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".',
+    hint: 'Copiá tu código (aparece arriba de la pantalla) y enviáselo a un colega por WhatsApp o mensaje.',
+  },
+  {
+    step: 6, route: '/calendar', emoji: '📅', target: 'calendar-connect',
     title: 'Google Calendar',
-    description: 'Conectá tu Google Calendar y cada cirugía que registrés aparece automáticamente en tu agenda con fecha, hora, hospital y procedimientos.',
-    hint: 'Tocá "Conectar Google Calendar" para autorizar la sincronización.' },
-
-  { step: 7,  route: '/cases', emoji: '📋', target: 'new-case-btn',
-    title: 'Mis cirugías',
-    description: 'Acá vas a ver todas tus cirugías registradas. Vamos a crear una cirugía de simulación — podés eliminarla después cuando esté en estado "Cobrado".',
-    hint: 'Tocá el botón "+ Nueva Cirugía" para comenzar la simulación.' },
-
-  { step: 8,  route: '/cases/new', emoji: '👤', target: 'patient-data',
-    title: 'Datos del paciente',
-    description: 'Usá estos datos de prueba: Nombre → Juan Pérez · ID → 123 · completá Edad, Género y Diagnóstico principal.',
-    hint: 'Completá los datos del paciente y bajá a la siguiente sección.' },
-
-  { step: 9,  route: '/cases/new', emoji: '🏥', target: 'hospital-selector',
-    title: 'Hospital, seguro y fecha',
-    description: 'Seleccioná el hospital — tus favoritos aparecen primero. Lo mismo para el seguro. El multiplicador RVU lo define el hospital; podés dejarlo en blanco para practicar.',
-    hint: 'RVU × multiplicador = honorario final.' },
-
-  { step: 10, route: '/cases/new', emoji: '🩺', target: 'procedures-selector',
-    title: 'Procedimientos quirúrgicos',
-    description: 'Seleccioná los procedimientos realizados. Tus favoritos aparecen al inicio. Podés agregar más de uno y buscar cualquier otro en "Buscar otros procedimientos".',
-    hint: 'Agregá al menos un procedimiento — es obligatorio para guardar.' },
-
-  { step: 11, route: '/cases/new', emoji: '🤝', target: 'save-case-btn',
-    title: 'Guardar cirugía',
-    description: 'Ya casi terminás. Si tenés un colega vinculado podés seleccionarlo como ayudante. También podés subir hasta 5 imágenes por cirugía.',
-    hint: 'Tocá "Crear Caso" para guardar tu cirugía de simulación.' },
-
-  { step: 12, route: '/cases', emoji: '🔄', target: 'case-status',
-    title: 'Los 3 estados',
-    description: '① Operado — cirugía realizada. ② Facturado — registrás el número de factura. ③ Cobrado — honorario cobrado, el caso se archiva. Desde cualquier estado podés exportar PDF.',
-    hint: 'Tocá "Ver" en cualquier caso para ver todas las opciones, incluido exportar PDF.' },
-
-  { step: 13, route: '/stats', emoji: '📊', target: 'stats-chart',
+    description: 'Conectá tu cuenta de Google y cada cirugía que registrés aparece automáticamente en tu agenda con fecha, hora, hospital y procedimientos.',
+    hint: 'Tocá "Conectar Google Calendar" y autorizá el acceso. Solo se necesita hacer una vez.',
+  },
+  {
+    step: 7, route: '/cases', emoji: '📋', target: 'new-case-btn',
+    title: 'Crear una cirugía',
+    description: 'Acá vas a ver todas tus cirugías. Ahora vamos a crear una de práctica juntos. Cuando termines el tutorial podés eliminarla desde el detalle del caso.',
+    hint: 'Tocá el botón "+ Nueva Cirugía" para empezar.',
+  },
+  {
+    step: 8, route: '/cases/new', emoji: '👤', target: 'patient-data',
+    title: '① Datos del paciente',
+    description: 'Completá el nombre, ID de expediente, edad, género y diagnóstico del paciente. Para practicar usá: Nombre → Juan Pérez · ID → 123 · Edad → 45.',
+    hint: 'Los datos del paciente están cifrados — solo vos podés verlos.',
+  },
+  {
+    step: 9, route: '/cases/new', emoji: '🏥', target: 'hospital-selector',
+    title: '② Hospital, seguro y fecha',
+    description: 'Seleccioná el hospital (tus favoritos aparecen primero), el seguro médico y la fecha de la cirugía. El multiplicador se carga solo según el hospital elegido.',
+    hint: 'RVU × multiplicador del hospital = honorario en Q. Podés cambiarlo manualmente si necesitás.',
+  },
+  {
+    step: 10, route: '/cases/new', emoji: '🩺', target: 'procedures-selector',
+    title: '③ Procedimientos',
+    description: 'Seleccioná los procedimientos realizados — tus favoritos aparecen primero. Podés agregar varios. El sistema suma los RVU y calcula el honorario total.',
+    hint: 'Tenés que agregar al menos un procedimiento para poder guardar la cirugía.',
+  },
+  {
+    step: 11, route: '/cases/new', emoji: '💾', target: 'save-case-btn',
+    title: '④ Guardar la cirugía',
+    description: 'Revisá el resumen: paciente, hospital, procedimientos y honorario calculado. Si operaste con un colega podés asignarlo como ayudante — recibirá una notificación.',
+    hint: 'Tocá "Crear Caso" para guardar. La cirugía queda guardada en estado Operado.',
+  },
+  {
+    step: 12, route: '/cases', emoji: '👁️', target: 'case-status',
+    title: 'Ver y editar una cirugía',
+    description: 'Tocá "Ver" en cualquier cirugía para abrir el detalle completo. Desde ahí podés: editar todos los datos, cambiar el estado, exportar un PDF y subir fotos de la cirugía.',
+    hint: 'Tocá "Editar" para modificar cualquier dato. Tocá "PDF" para exportar el resumen.',
+  },
+  {
+    step: 13, route: '/cases', emoji: '🔄', target: 'case-status',
+    title: 'Los 3 estados de una cirugía',
+    description: '① Operado: cirugía realizada. ② Facturado: ingresás el número de factura cuando la enviás. ③ Cobrado: honorario recibido — el caso se archiva en la pestaña "Cobrados".',
+    hint: 'Cada estado se cambia desde el detalle del caso. Los casos cobrados van al historial.',
+  },
+  {
+    step: 14, route: '/stats', emoji: '📊', target: 'stats-chart',
     title: 'Estadísticas',
-    description: 'Visualizá cuánto generaste por mes, por hospital y por procedimiento. Se actualizan cada vez que marcás un caso como cobrado.',
-    hint: 'Explorá los filtros de fecha y hospital para ver tu práctica en números.' },
-
-  { step: 14, route: '/calculator', emoji: '🧮', target: 'calculator-form',
-    title: 'Calculadora de honorarios',
-    description: 'Calculá el honorario de cualquier procedimiento al instante, sin crear una cirugía. Útil para cotizaciones rápidas.',
-    hint: 'Seleccioná un procedimiento y tu hospital favorito para ver el cálculo.' },
-
-  { step: 15, route: '/novedades', emoji: '📰', target: 'novedades-list',
-    title: 'Novedades',
-    description: 'Contenido de hospitales, casas médicas y laboratorios segmentado por tu especialidad. Congresos, nuevos equipos, actualizaciones de tarifas.',
-    hint: 'El contenido se actualiza constantemente — revisá Novedades frecuentemente.' },
-
-  { step: 16, route: '/settings', emoji: '⚙️', target: 'settings-plan-tab',
-    title: 'Tu perfil y plan',
-    description: '¡Último paso! Actualizá tu especialidad, mirá tu plan actual y gestioná tu suscripción desde aquí.',
-    hint: 'Revisá que tu especialidad esté bien configurada — afecta estadísticas y anuncios.' },
+    description: 'Cada cirugía que pasás a "Cobrado" suma acá. Ves tus ingresos por mes, los hospitales donde más operás y los procedimientos más frecuentes.',
+    hint: 'Usá los filtros de fecha para ver por semana, mes o rango personalizado.',
+  },
+  {
+    step: 15, route: '/calculator', emoji: '🧮', target: 'calculator-form',
+    title: 'Calculadora rápida',
+    description: 'Calculá el honorario de cualquier procedimiento sin crear una cirugía. Ideal para dar una cotización rápida al paciente o al seguro.',
+    hint: 'Seleccioná un procedimiento y tu hospital — el valor en Q aparece de inmediato.',
+  },
+  {
+    step: 16, route: '/settings', emoji: '⚙️', target: 'settings-plan-tab',
+    title: '¡Listo! Configuración final',
+    description: 'Último paso: revisá tu perfil en Configuración. Asegurate de tener tu especialidad médica guardada — afecta las estadísticas, novedades y contenido personalizado.',
+    hint: 'Tu especialidad se configura en la pestaña "Perfil" dentro de Configuración.',
+  },
 ];
 
 const STORAGE_KEY = 'medico_tutorial';
