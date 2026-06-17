@@ -43,12 +43,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [user?.specialty]);
 
   return (
-    <SidebarProvider defaultOpen={false} className="overflow-x-hidden max-w-full">
+    <SidebarProvider defaultOpen={!isMobile} className="overflow-x-hidden max-w-full">
       <AppSidebar />
 
       <SidebarInset>
-        {/* Header always fixed — sidebar uses overlay so no offset needed */}
-        <header className="fixed top-[var(--sat,0px)] left-0 right-0 z-50 flex h-14 items-center gap-2 border-b border-border bg-background/98 backdrop-blur-md shadow-sm px-4">
+        {/* Mobile: fixed header. Desktop: sticky inside SidebarInset (sidebar handles nav) */}
+        <header className="fixed top-[var(--sat,0px)] left-0 right-0 z-50 flex h-14 items-center gap-2 border-b border-border bg-background/98 backdrop-blur-md shadow-sm px-4 md:static md:sticky md:top-0 md:left-auto md:right-auto md:z-40 md:shrink-0">
           <div className="flex items-center gap-2 flex-1">
             <SidebarTrigger className="-ml-1 hidden md:flex" />
             <Separator orientation="vertical" className="mr-2 h-4 hidden md:flex" />
@@ -81,7 +81,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <main
           className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-x-hidden"
           style={{
-            paddingTop: 'calc(3.5rem + var(--sat, 0px) + 1rem)',
+            paddingTop: isMobile ? 'calc(3.5rem + var(--sat, 0px) + 1rem)' : undefined,
             paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : '2rem',
           }}
         >
