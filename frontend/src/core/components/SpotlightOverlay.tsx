@@ -19,6 +19,9 @@ export function useSpotlightRect(target: string | undefined, step: number) {
       const el = document.querySelector(`[data-tutorial="${target}"]`);
       if (!el) { setRect(null); return; }
       const r = el.getBoundingClientRect();
+      // If element is mostly out of viewport, hide spotlight so the fallback card shows
+      const inView = r.bottom > 80 && r.top < window.innerHeight - 80;
+      if (!inView) { setRect(null); return; }
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
     };
 
@@ -27,12 +30,12 @@ export function useSpotlightRect(target: string | undefined, step: number) {
       const el = document.querySelector(`[data-tutorial="${target}"]`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const t2 = setTimeout(update, 350);
+        const t2 = setTimeout(update, 600);
         return () => clearTimeout(t2);
       } else {
         update();
       }
-    }, 200);
+    }, 300);
 
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);

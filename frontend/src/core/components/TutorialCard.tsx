@@ -116,7 +116,13 @@ export function TutorialCard() {
     );
   }
 
-  // ── Fallback: tarjeta fija abajo (sin target o elemento no encontrado) ──
+  // ── Fallback: tarjeta fija abajo (sin target, elemento fuera de vista o no encontrado) ──
+  const scrollToTarget = () => {
+    if (!currentStepData?.target) return;
+    const el = document.querySelector(`[data-tutorial="${currentStepData.target}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   return (
     <div
       className={`
@@ -173,8 +179,16 @@ export function TutorialCard() {
             onClick={skipTutorial}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors py-1 px-2"
           >
-            Saltar tutorial
+            Saltar
           </button>
+          {currentStepData?.target && (
+            <button
+              onClick={scrollToTarget}
+              className="text-xs text-primary hover:text-primary/80 transition-colors py-1 px-2 font-medium"
+            >
+              ↑ Ver paso
+            </button>
+          )}
           <button
             onClick={nextStep}
             className="flex items-center gap-1.5 bg-primary text-primary-foreground text-sm font-bold px-4 py-2 rounded-xl hover:bg-primary/90 active:scale-95 transition-all"
