@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tutorial highlight — resalta el elemento objetivo sin bloquear interacción */
+.tutorial-highlight {
+  outline: 2px solid rgba(0, 168, 204, 0.9) !important;
+  outline-offset: 3px;
+  border-radius: 10px;
+  animation: tutorialPulse 1.8s ease-in-out infinite;
+  position: relative;
+  z-index: 10;
+}
+
+@keyframes tutorialPulse {
+  0%, 100% { box-shadow: 0 0 0 0px rgba(0, 168, 204, 0.3); }
+  50%       { box-shadow: 0 0 0 6px rgba(0, 168, 204, 0.1); }
+}
+
 /* Capacitor safe area — required with viewport-fit=cover */
 :root {
   --sat: env(safe-area-inset-top, 0px);

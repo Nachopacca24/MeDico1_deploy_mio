@@ -924,7 +924,7 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  El tutorial te lleva paso a paso por la Tabla de California, hospitales, seguros, colegas, Google Calendar, registro de cirugías, estadísticas, calculadora y configuración.
+                  El tutorial te muestra paso a paso cómo registrar una cirugía, calcular honorarios, gestionar hospitales y seguros, conectar colegas, ver estadísticas y usar la calculadora rápida. Son 16 pasos breves.
                 </p>
                 <Button onClick={restartTutorial} className="gap-2">
                   <BookOpen className="h-4 w-4" />

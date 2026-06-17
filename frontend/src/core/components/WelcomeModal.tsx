@@ -191,29 +191,29 @@ export function WelcomeModal() {
           {/* Lista compacta */}
           <div className="bg-muted/50 rounded-xl px-4 py-3 mb-4 grid grid-cols-1 gap-1.5">
             {[
-              '🩺 Tabla de California',
-              '🔍 Procedimientos por especialidad',
-              '🏥 Hospitales y seguros',
-              '🔪 Registrar cirugías',
-              '📊 Estadísticas y PDF',
+              '📋 Registrá cada cirugía con honorarios calculados',
+              '🩺 +4.000 procedimientos médicos con valor en RVU',
+              '💰 Cálculo automático según hospital y seguro',
+              '📊 Estadísticas de ingresos mensuales',
+              '📄 Resumen PDF listo para imprimir',
             ].map(item => (
               <p key={item} className="text-sm text-foreground/80">{item}</p>
             ))}
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={handleSkipTutorial}
-              className="flex-1 py-3 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-xl transition-colors"
-            >
-              Explorar solo
-            </button>
+          <div className="flex flex-col gap-2">
             <button
               onClick={handleStartTutorial}
-              className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold py-3 rounded-xl hover:bg-primary/90 active:scale-95 transition-all"
+              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 active:scale-95 transition-all"
             >
-              Tutorial
+              Empezar tutorial guiado
               <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleSkipTutorial}
+              className="w-full py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Ya sé usarla, explorar solo
             </button>
           </div>
         </div>
