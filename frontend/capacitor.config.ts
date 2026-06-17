@@ -16,6 +16,10 @@ const config: CapacitorConfig = {
     cleartext: false,
   },
   plugins: {
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
+    },
     GoogleAuth: {
       scopes: ['profile', 'email'],
       serverClientId: '425899211446-4l33eafrfc1k4kco3aiupdhk41lur5l7.apps.googleusercontent.com',
