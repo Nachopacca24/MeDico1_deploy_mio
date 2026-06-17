@@ -47,13 +47,15 @@ export function AppLayout({ children }: AppLayoutProps) {
       <AppSidebar />
 
       <SidebarInset>
-        {/* Header — sticky so the menu trigger is always visible when scrolling */}
-        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur-sm px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        {/* Header — fixed at top so app name is always visible (branding) */}
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/98 backdrop-blur-md shadow-sm px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 flex-1">
             {/* SidebarTrigger visible only on desktop — mobile uses MobileBottomNav */}
             <SidebarTrigger className="-ml-1 hidden md:flex" />
             <Separator orientation="vertical" className="mr-2 h-4 hidden md:flex" />
-            <h2 className="text-lg font-semibold">MeDico App</h2>
+            <h2 className="text-lg font-bold tracking-tight">
+              <span className="text-primary">Me</span>Dico App
+            </h2>
           </div>
           {isAdmin && (
             <Link
