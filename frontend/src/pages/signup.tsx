@@ -277,7 +277,7 @@ export default function SignupForm() {
                 />
                 {errors.username
                   ? <p className='text-sm text-destructive'>{errors.username}</p>
-                  : <p className='text-xs text-muted-foreground'>Así te reconocerán otros médicos en la plataforma.</p>
+                  : <p className='text-xs text-muted-foreground'>Sin espacios. Así te reconocerán otros médicos en la plataforma.</p>
                 }
               </div>
 
