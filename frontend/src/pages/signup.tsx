@@ -15,6 +15,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 
 // Lista de especialidades médicas basadas en tu sistema
 const SPECIALTIES = [
+  "Anestesiología",
   "Cardiovascular",
   "Dermatología",
   "Digestivo",
