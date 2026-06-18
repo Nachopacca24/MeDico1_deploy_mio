@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/shared/hooks/use-toast";
 import { Loader2, Activity, HeartPulse, Crown } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 // Lista de especialidades médicas basadas en tu sistema
 const SPECIALTIES = [
@@ -182,6 +184,39 @@ export default function SignupForm() {
     onSuccess: handleGoogleSuccess,
     onError: () => toast({ variant: "destructive", title: "Error", description: "Fallo al conectar con Google. Intentá de nuevo." }),
   });
+
+  const handleGoogleNative = async () => {
+    setIsLoading(true);
+    try {
+      await GoogleAuth.initialize();
+      const googleUser = await GoogleAuth.signIn();
+      const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
+      await loginWithGoogle(token);
+      toast({ title: "¡Bienvenido/a! Tienes 14 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+    } catch (error: unknown) {
+      const cancelled =
+        (error as any)?.error === 'popup_closed_by_user' ||
+        (error as any)?.message === 'User cancelled' ||
+        (error as any)?.code === 12501;
+      if (!cancelled) {
+        let msg = "No se pudo registrar con Google.";
+        if (error instanceof AuthError) msg = error.getUserMessage();
+        else if (error instanceof NetworkError) msg = "Sin conexión a internet. Verificá tu red e intentá de nuevo.";
+        else if (error instanceof Error) msg = error.message;
+        toast({ variant: "destructive", title: "Error al registrarse", description: msg });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleClick = () => {
+    if (Capacitor.getPlatform() === 'android') {
+      handleGoogleNative();
+    } else {
+      loginGoogle();
+    }
+  };
 
   // Si ya está autenticado, redirigir al dashboard
   if (isAuthenticated) {
@@ -381,7 +416,7 @@ export default function SignupForm() {
                 type="button"
                 variant="outline"
                 className="w-full text-md h-12"
-                onClick={() => loginGoogle()}
+                onClick={handleGoogleClick}
                 disabled={isLoading}
               >
                 <svg className="mr-2 h-5 w-5" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
