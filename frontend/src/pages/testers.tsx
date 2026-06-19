@@ -4,8 +4,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 
 const CONTACT_EMAIL = "contacto@medicoapp.app";
-// Reemplazá este link con el tuyo desde Play Console → Closed testing → Manage track → Copy link
-const PLAY_STORE_OPT_IN_URL = "https://play.google.com/apps/testing/TU_APP_ID";
 
 const steps = {
   ios: [
@@ -15,9 +13,10 @@ const steps = {
     { icon: <CheckCircle className="h-5 w-5" />, title: "¡Listo!", desc: 'MeDico App aparecerá como ícono en tu pantalla. Abrila y registrate.' },
   ],
   android: [
-    { icon: <Chrome className="h-5 w-5" />, title: "Aceptá la invitación", desc: 'Hacé clic en el botón de abajo para unirte al programa de pruebas en Google Play.' },
-    { icon: <Download className="h-5 w-5" />, title: "Instalá la app", desc: 'Una vez aceptada la invitación, buscá MeDico App en Play Store e instalá.' },
-    { icon: <CheckCircle className="h-5 w-5" />, title: "¡Listo!", desc: 'Abrí la app, registrate y explorá. Tu feedback cuenta mucho.' },
+    { icon: <Mail className="h-5 w-5" />, title: "Escribinos tu correo de Google Play", desc: `Enviá un mail a ${CONTACT_EMAIL} indicando el correo que tenés registrado en Google Play Store. Sin ese correo no podemos darte acceso.` },
+    { icon: <Chrome className="h-5 w-5" />, title: "Recibís tu invitación", desc: 'En unas horas te enviamos un link personalizado para unirte al programa de pruebas. La app no es pública — solo acceden quienes reciben la invitación.' },
+    { icon: <Download className="h-5 w-5" />, title: "Instalá desde Play Store", desc: 'Seguí el link, aceptá la invitación en Google Play y descargá MeDico App.' },
+    { icon: <CheckCircle className="h-5 w-5" />, title: "¡Listo!", desc: 'Abrí la app, registrate y explorá. Tu feedback nos ayuda a mejorar antes del lanzamiento oficial.' },
   ],
 };
 
@@ -48,9 +47,9 @@ export default function TestersPage() {
             Somos un proyecto independiente y necesitamos médicos reales que prueben la app antes del lanzamiento oficial en Android. Tu experiencia vale más que cualquier automatización.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href={`#android`}>
+            <a href="#android">
               <Button size="lg" className="bg-sky-700 hover:bg-sky-800 text-white w-full sm:w-auto gap-2">
-                <Smartphone className="h-5 w-5" /> Unirme desde Android
+                <Smartphone className="h-5 w-5" /> Ser tester en Android
               </Button>
             </a>
             <a href="#ios">
@@ -104,15 +103,15 @@ export default function TestersPage() {
             ))}
           </div>
 
-          <a href={PLAY_STORE_OPT_IN_URL} target="_blank" rel="noopener noreferrer">
+          <a href={`mailto:${CONTACT_EMAIL}?subject=Quiero ser tester Android de MeDico App&body=Hola! Quiero unirme como tester en Android. Mi correo de Google Play es: `}>
             <Button size="lg" className="bg-sky-700 hover:bg-sky-800 text-white w-full gap-2">
-              <Smartphone className="h-5 w-5" />
-              Unirme al programa de pruebas en Google Play
+              <Mail className="h-5 w-5" />
+              Enviar mi correo de Google Play
               <ArrowRight className="h-4 w-4" />
             </Button>
           </a>
           <p className="text-xs text-slate-400 text-center mt-2">
-            Requiere cuenta de Google. El proceso toma menos de 1 minuto.
+            Abre tu app de correo con el mensaje listo. Solo completá tu email de Google Play y enviá.
           </p>
         </div>
       </div>
