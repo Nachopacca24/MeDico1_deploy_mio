@@ -239,6 +239,8 @@ def admin_activity(request):
 @permission_classes([IsAuthenticated, IsAdminUser])
 def admin_users(request):
     """Lista completa de usuarios con plan, especialidad y conteo de casos."""
+    from apps.medico.models import Favorite, FavoriteHospital, FavoriteInsurance
+
     users = User.objects.all().values(
         'id', 'username', 'email', 'first_name', 'last_name',
         'is_staff', 'is_active', 'is_superuser', 'is_verified',
@@ -251,6 +253,20 @@ def admin_users(request):
     case_counts = {
         row['created_by_id']: row['total']
         for row in SurgicalCase.objects.values('created_by_id').annotate(total=Count('id'))
+    }
+
+    # Contar favoritos (suma de los 3 tipos) en una sola consulta por tipo
+    fav_counts = {
+        row['user_id']: row['total']
+        for row in Favorite.objects.values('user_id').annotate(total=Count('id'))
+    }
+    fav_hosp_counts = {
+        row['user_id']: row['total']
+        for row in FavoriteHospital.objects.values('user_id').annotate(total=Count('id'))
+    }
+    fav_ins_counts = {
+        row['user_id']: row['total']
+        for row in FavoriteInsurance.objects.values('user_id').annotate(total=Count('id'))
     }
 
     now = timezone.now()
@@ -270,7 +286,11 @@ def admin_users(request):
         full_name = f"{user['first_name']} {user['last_name']}".strip()
         user['full_name'] = full_name if full_name else user['username']
         user['total_cases'] = case_counts.get(user['id'], 0)
-        user['total_favorites'] = 0
+        user['total_favorites'] = (
+            fav_counts.get(user['id'], 0) +
+            fav_hosp_counts.get(user['id'], 0) +
+            fav_ins_counts.get(user['id'], 0)
+        )
         users_list.append(user)
 
     return Response(users_list)
