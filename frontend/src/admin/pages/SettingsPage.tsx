@@ -5,13 +5,13 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { useToast } from '@/shared/hooks/use-toast';
 import { siteSettingsService, type SiteSettings } from '@/services/siteSettingsService';
-import { Loader2, DollarSign, Clock, Save, CalendarDays, Smartphone } from 'lucide-react';
+import { Loader2, DollarSign, Clock, Save, CalendarDays, Smartphone, RefreshCw } from 'lucide-react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12' });
+  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0' });
 
   useEffect(() => {
     siteSettingsService.getAdmin()
@@ -134,6 +134,23 @@ export default function SettingsPage() {
             />
             <p className="text-xs text-muted-foreground">
               Se muestra en la página /testers como contador público. Actualizalo cada vez que sumes uno nuevo.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="min-version" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Versión mínima Android
+            </Label>
+            <Input
+              id="min-version"
+              type="text"
+              placeholder="ej: 1.2"
+              value={form.ANDROID_MIN_VERSION}
+              onChange={e => setForm(f => ({ ...f, ANDROID_MIN_VERSION: e.target.value }))}
+            />
+            <p className="text-xs text-muted-foreground">
+              Si un usuario tiene una versión menor a esta, verá un aviso para actualizar desde Play Store. Actualizá este valor cada vez que subas una nueva versión.
             </p>
           </div>
 
