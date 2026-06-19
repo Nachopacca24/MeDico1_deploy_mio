@@ -237,7 +237,7 @@ export default function LandingPage() {
               {
                 icon: Shield,
                 title: "Datos cifrados",
-                desc: "El nombre e identificación del paciente, diagnóstico y notas se cifran en el servidor con AES-128-CBC antes de guardarse. Nadie más puede leerlos.",
+                desc: "El nombre, identificación, diagnóstico y notas del paciente se cifran con Fernet (AES-128-CBC + HMAC-SHA256) antes de guardarse en el servidor. Ni siquiera nosotros podemos leerlos.",
                 color: "text-emerald-400",
                 bg: "bg-emerald-400/10",
               },

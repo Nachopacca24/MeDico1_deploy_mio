@@ -25,6 +25,7 @@ import CompleteProfilePage from "@/pages/complete-profile";
 
 // Landing page
 import LandingPage from "@/pages/landing";
+import NotFoundPage from "@/pages/not-found";
 
 // Main pages
 import Index from "@/pages/index";
@@ -97,6 +98,7 @@ export const AppRouter = () => {
         <Route path='/calendar' element={<CalendarPage />} />
         <Route path='/stats' element={<StatsPage />} />
       </Route>
+      <Route path='*' element={<NotFoundPage />} />
     </Routes>
   );
 };

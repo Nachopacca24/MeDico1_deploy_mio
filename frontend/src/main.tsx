@@ -10,6 +10,7 @@ import { AuthProvider } from "@/shared/contexts/AuthContext";
 import { FavoritesProvider } from "@/core/contexts/FavoritesContext";
 import { QueryProvider, TooltipProviderWrapper } from "@/core/providers";
 import { AppRouter } from "@/core/router";
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import { NotificationInitializer } from "@/core/components/NotificationInitializer";
 import { TutorialProvider } from "@/core/contexts/TutorialContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -33,6 +34,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
 
 createRoot(document.getElementById("root")!).render(
+  <ErrorBoundary>
   <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <BrowserRouter>
       <QueryProvider>
@@ -54,4 +56,5 @@ createRoot(document.getElementById("root")!).render(
       </QueryProvider>
     </BrowserRouter>
   </GoogleOAuthProvider>
+  </ErrorBoundary>
 );

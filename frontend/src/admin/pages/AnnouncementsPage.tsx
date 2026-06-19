@@ -41,8 +41,11 @@ export default function AnnouncementsPage() {
     }
     setSaving(true);
     try {
+      // Desactivar todos los anuncios activos antes de crear el nuevo
+      const activos = announcements.filter(a => a.is_active);
+      await Promise.all(activos.map(a => announcementService.adminToggle(a.id, false)));
       const created = await announcementService.adminCreate(form.title, form.body);
-      setAnnouncements(prev => [created, ...prev]);
+      setAnnouncements(prev => [created, ...prev.map(a => ({ ...a, is_active: false }))]);
       setForm({ title: '', body: '' });
       toast.success('Anuncio enviado', 'Todos los usuarios verán el mensaje en el inicio.');
     } catch (e: any) {
