@@ -189,7 +189,7 @@ export default function Login() {
   }
 
   return (
-    <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950'>
+    <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 max-lg:bg-primary'>
       {/* Panel izquierdo (Branding) */}
       <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-primary via-primary/80 to-secondary p-12 text-white overflow-hidden relative'>
         <div className="absolute inset-0 bg-black/10 z-0"></div>
@@ -225,7 +225,7 @@ export default function Login() {
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className='relative flex items-center gap-3 mb-3'>
-            <img src="/logo_transparente.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow" />
+            <img src="/favicon.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow" />
             <span className='text-2xl font-bold tracking-tight'>MeDico App</span>
           </div>
           <p className='relative text-white/70 text-sm'>Tu práctica médica, organizada.</p>
