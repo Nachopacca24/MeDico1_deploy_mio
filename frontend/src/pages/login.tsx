@@ -221,11 +221,11 @@ export default function Login() {
       <div className='flex w-full items-center justify-center lg:p-6 lg:w-1/2 animate-slide-up flex-col'>
 
         {/* Mobile brand header */}
-        <div className='lg:hidden w-full bg-gradient-to-br from-primary via-primary/85 to-secondary px-6 pt-10 pb-8 text-white relative overflow-hidden'>
+        <div className='lg:hidden w-full bg-gradient-to-br from-secondary via-primary/85 to-primary px-6 pt-10 pb-8 text-white relative overflow-hidden'>
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className='relative flex items-center gap-3 mb-3'>
-            <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="MeDico App" className="h-10 w-10 object-contain rounded-lg drop-shadow" />
+            <img src="/favicon.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow" />
             <span className='text-2xl font-bold tracking-tight'>MeDico App</span>
           </div>
           <p className='relative text-white/70 text-sm'>Tu práctica médica, organizada.</p>
