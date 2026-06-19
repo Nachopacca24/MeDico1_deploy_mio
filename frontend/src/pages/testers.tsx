@@ -8,27 +8,27 @@ const CONTACT_EMAIL = "contacto@medicoapp.app";
 
 const iosSteps = [
   {
-    img: "/MeDico inicio.JPG",
+    img: "/medico-inicio.jpg",
     title: "Abrí Safari y entrá a la app",
     desc: "Abrí Safari en tu iPhone o iPad y visitá la página de MeDico App. Tocá los tres puntos (•••) o el ícono de compartir en la barra del navegador.",
   },
   {
-    img: "/MeDico compartir.JPG",
+    img: "/medico-compartir.jpg",
     title: "Tocá el ícono de Compartir",
     desc: "En la barra inferior de Safari, tocá el ícono de compartir (la cajita con la flechita hacia arriba ⬆️).",
   },
   {
-    img: "/MeDico ver mas.JPG",
+    img: "/medico-ver-mas.jpg",
     title: "Tocá \"Ver más\"",
     desc: "En el menú que se despliega, deslizá hacia abajo y tocá el botón \"Ver más\" para ver todas las opciones disponibles.",
   },
   {
-    img: "/MeDico Menu.JPG",
+    img: "/medico-menu.jpg",
     title: "Seleccioná \"Agregar a inicio\"",
     desc: "Buscá la opción \"Agregar a pantalla de inicio\" y tocála. Aparecerá una pantalla de confirmación.",
   },
   {
-    img: "/MeDico Agregar.JPG",
+    img: "/medico-agregar.jpg",
     title: "Confirmá el nombre y tocá Agregar",
     desc: "Verificá que el nombre diga \"MeDico App\". Si no está, escribilo. Luego tocá \"Agregar\" en la esquina superior derecha. ¡Listo!",
   },
