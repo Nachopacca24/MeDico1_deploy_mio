@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Smartphone, Apple, Mail, CheckCircle, Users, Star, ArrowRight, Chrome, Share2, PlusSquare, Download } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
 
 const CONTACT_EMAIL = "contacto@medicoapp.app";
 
@@ -28,6 +29,9 @@ const benefits = [
 ];
 
 export default function TestersPage() {
+  const settings = useSiteSettings();
+  const testerCount = parseInt(settings.ANDROID_TESTERS_COUNT ?? '12', 10);
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
 
@@ -43,6 +47,15 @@ export default function TestersPage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-sky-900 leading-tight mb-4">
             Ayudanos a llevar MeDico App<br className="hidden sm:block" /> a todos los médicos
           </h1>
+
+          {/* Contador de testers */}
+          <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm border border-sky-200 rounded-full px-5 py-2 mb-6 shadow-sm">
+            <span className="text-lg">🎉</span>
+            <span className="text-sky-900 font-semibold text-sm">
+              ¡Ya tenemos <span className="text-sky-600 font-extrabold text-base">{testerCount}</span> testers oficiales en Android. ¡Unite!
+            </span>
+          </div>
+
           <p className="text-sky-800/80 text-lg mb-8 max-w-xl mx-auto">
             Somos un proyecto independiente y necesitamos médicos reales que prueben la app antes del lanzamiento oficial en Android. Tu experiencia vale más que cualquier automatización.
           </p>

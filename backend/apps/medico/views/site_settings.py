@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from apps.medico.models.site_setting import SiteSetting
 
 
-ALLOWED_KEYS = {'PREMIUM_PRICE', 'ANNUAL_PRICE', 'TRIAL_DAYS'}
+ALLOWED_KEYS = {'PREMIUM_PRICE', 'ANNUAL_PRICE', 'TRIAL_DAYS', 'ANDROID_TESTERS_COUNT'}
 
 
 def _build_settings(raw):
@@ -16,6 +16,7 @@ def _build_settings(raw):
         'PREMIUM_PRICE': raw.get('PREMIUM_PRICE', '7'),
         'ANNUAL_PRICE': raw.get('ANNUAL_PRICE', annual_default),
         'TRIAL_DAYS': raw.get('TRIAL_DAYS', '30'),
+        'ANDROID_TESTERS_COUNT': raw.get('ANDROID_TESTERS_COUNT', '12'),
     }
 
 
@@ -65,5 +66,15 @@ def site_settings_admin(request):
             updated['TRIAL_DAYS'] = str(days)
         except (ValueError, TypeError):
             return Response({'error': 'Días inválidos'}, status=400)
+
+    if 'ANDROID_TESTERS_COUNT' in data:
+        try:
+            count = int(data['ANDROID_TESTERS_COUNT'])
+            if count < 0:
+                return Response({'error': 'El contador debe ser 0 o más'}, status=400)
+            SiteSetting.set('ANDROID_TESTERS_COUNT', str(count))
+            updated['ANDROID_TESTERS_COUNT'] = str(count)
+        except (ValueError, TypeError):
+            return Response({'error': 'Contador inválido'}, status=400)
 
     return Response({'updated': updated})

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { siteSettingsService, type SiteSettings } from '@/services/siteSettingsService';
 
-const DEFAULT: SiteSettings = { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30' };
+const DEFAULT: SiteSettings = { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12' };
 
 let cached: SiteSettings | null = null;
 

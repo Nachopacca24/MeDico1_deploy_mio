@@ -5,13 +5,13 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { useToast } from '@/shared/hooks/use-toast';
 import { siteSettingsService, type SiteSettings } from '@/services/siteSettingsService';
-import { Loader2, DollarSign, Clock, Save, CalendarDays } from 'lucide-react';
+import { Loader2, DollarSign, Clock, Save, CalendarDays, Smartphone } from 'lucide-react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30' });
+  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12' });
 
   useEffect(() => {
     siteSettingsService.getAdmin()
@@ -117,6 +117,24 @@ export default function SettingsPage() {
               onChange={e => setForm(f => ({ ...f, TRIAL_DAYS: e.target.value }))}
             />
             <p className="text-xs text-muted-foreground">Solo aplica a usuarios que se registren a partir de ahora.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="testers" className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4" />
+              Testers oficiales Android
+            </Label>
+            <Input
+              id="testers"
+              type="number"
+              min="0"
+              step="1"
+              value={form.ANDROID_TESTERS_COUNT}
+              onChange={e => setForm(f => ({ ...f, ANDROID_TESTERS_COUNT: e.target.value }))}
+            />
+            <p className="text-xs text-muted-foreground">
+              Se muestra en la página /testers como contador público. Actualizalo cada vez que sumes uno nuevo.
+            </p>
           </div>
 
           <Button onClick={handleSave} disabled={saving} className="w-full">

@@ -6,12 +6,13 @@ export interface SiteSettings {
   PREMIUM_PRICE: string;
   ANNUAL_PRICE: string;
   TRIAL_DAYS: string;
+  ANDROID_TESTERS_COUNT: string;
 }
 
 export const siteSettingsService = {
   async getPublic(): Promise<SiteSettings> {
     const res = await fetch(`${API_URL}/api/v1/settings/`);
-    if (!res.ok) return { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30' };
+    if (!res.ok) return { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12' };
     return res.json();
   },
 

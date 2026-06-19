@@ -141,6 +141,12 @@ export default function LandingPage() {
               >
                 Ya tengo cuenta
               </Link>
+              <Link
+                to="/testers"
+                className="inline-flex items-center justify-center gap-2 border border-amber-400/40 text-amber-400 font-semibold text-lg px-8 py-4 rounded-xl hover:bg-amber-400/10 transition-all"
+              >
+                🧪 Beta Testers oficiales
+              </Link>
             </div>
             <p className="mt-5 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
           </div>
