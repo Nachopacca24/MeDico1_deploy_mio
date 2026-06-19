@@ -26,6 +26,7 @@ import CompleteProfilePage from "@/pages/complete-profile";
 
 // Landing page
 import LandingPage from "@/pages/landing";
+import TestersPage from "@/pages/testers";
 import NotFoundPage from "@/pages/not-found";
 
 // Main pages
@@ -53,6 +54,7 @@ export const AppRouter = () => {
       <Route path='/' element={
         Capacitor.isNativePlatform() ? <Navigate to="/login" replace /> : <LandingPage />
       } />
+      <Route path='/testers' element={<TestersPage />} />
       <Route path='/login' element={<LoginPage />} />
       <Route path='/signup' element={<SignupForm />} />
       <Route path='/logout' element={<LogoutPage />} />
