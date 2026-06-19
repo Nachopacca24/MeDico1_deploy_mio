@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Badge } from '@/shared/components/ui/badge';
 import {
   Users, Stethoscope, TrendingUp, Calendar, Loader2, AlertCircle,
-  Star, Eye, MousePointerClick, Megaphone, Activity
+  Star, Eye, MousePointerClick, Megaphone, Activity, UserCheck, UserPlus
 } from 'lucide-react';
 import { adminService } from '@/admin/services/adminService';
 import type { AdminStats, RecentActivity } from '@/admin/services/adminService';
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* ─── Métricas principales ─── */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Total Médicos</CardTitle>
@@ -142,6 +142,32 @@ const AdminDashboard = () => {
           <CardContent>
             <div className="text-3xl font-bold">{stats?.adStats?.activeAds ?? 0}</div>
             <p className="text-xs text-muted-foreground mt-1">campañas en curso</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-emerald-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Activos esta semana</CardTitle>
+            <div className="p-2 rounded-lg bg-emerald-50">
+              <UserCheck className="h-5 w-5 text-emerald-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-emerald-600">{stats?.activeThisWeek ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">iniciaron sesión</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-sky-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Nuevos esta semana</CardTitle>
+            <div className="p-2 rounded-lg bg-sky-50">
+              <UserPlus className="h-5 w-5 text-sky-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-sky-600">{stats?.newThisWeek ?? 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">registros nuevos</p>
           </CardContent>
         </Card>
       </div>

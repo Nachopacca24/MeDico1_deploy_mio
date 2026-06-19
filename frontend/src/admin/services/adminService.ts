@@ -10,6 +10,8 @@ export interface AdminStats {
   casesThisMonth: number;
   premiumUsers: number;
   freeUsers: number;
+  activeThisWeek: number;
+  newThisWeek: number;
   specialtyStats: { specialty: string; count: number }[];
   adStats: {
     activeAds: number;

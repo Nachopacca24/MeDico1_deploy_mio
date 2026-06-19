@@ -158,12 +158,18 @@ def admin_stats(request):
         .order_by('-impressions')[:5]
     )
 
+    week_ago = timezone.now() - timedelta(days=7)
+    active_this_week = User.objects.filter(last_login__gte=week_ago).count()
+    new_this_week = User.objects.filter(date_joined__gte=week_ago).count()
+
     return Response({
         'totalUsers': total_users,
         'totalCases': total_cases,
         'casesThisMonth': cases_this_month,
         'premiumUsers': premium_count,
         'freeUsers': free_count,
+        'activeThisWeek': active_this_week,
+        'newThisWeek': new_this_week,
         'specialtyStats': list(specialty_stats),
         'adStats': {
             'activeAds': active_ads,
