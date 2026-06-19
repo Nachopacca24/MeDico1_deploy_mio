@@ -224,7 +224,7 @@ export default function SignupForm() {
   }
 
   return (
-    <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950'>
+    <div className='force-light flex min-h-screen w-full bg-slate-50'>
       {/* Panel izquierdo (Branding) */}
       <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-sky-50 via-sky-200 to-sky-400 p-12 overflow-hidden relative'>
         <div className="absolute top-40 -left-20 w-80 h-80 bg-white/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
