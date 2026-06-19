@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Smartphone, Apple, Mail, CheckCircle, Users, Star, ArrowRight, Clock } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
@@ -63,6 +64,10 @@ const benefits = [
 export default function TestersPage() {
   const settings = useSiteSettings();
   const testerCount = parseInt(settings.ANDROID_TESTERS_COUNT ?? '12', 10);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
