@@ -37,6 +37,11 @@ interface User {
   is_active: boolean;
   date_joined: string;
   plan: 'free' | 'premium';
+  is_permanent_premium: boolean;
+  trial_ends_at: string | null;
+  ls_renews_at: string | null;
+  ls_cancelled: boolean;
+  ls_subscription_id: string | null;
   total_cases: number;
   total_favorites: number;
   deletion_requested_at: string | null;
@@ -350,6 +355,36 @@ const UsersPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Subscription status */}
+                {user.plan === 'premium' && !user.is_permanent_premium && (() => {
+                  const now = new Date();
+                  const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+                  const daysLeft = (d: string) => Math.max(0, Math.ceil((new Date(d).getTime() - now.getTime()) / 86400000));
+                  if (user.trial_ends_at) {
+                    const days = daysLeft(user.trial_ends_at);
+                    return (
+                      <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300">
+                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                        <span>Trial · vence el <strong>{fmt(user.trial_ends_at)}</strong> · <strong>{days} días restantes</strong></span>
+                      </div>
+                    );
+                  }
+                  if (user.ls_renews_at) {
+                    const days = daysLeft(user.ls_renews_at);
+                    const label = user.ls_cancelled ? 'Cancelado · acceso hasta' : 'Se renueva el';
+                    const color = user.ls_cancelled
+                      ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+                      : 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300';
+                    return (
+                      <div className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border ${color}`}>
+                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                        <span>{label} <strong>{fmt(user.ls_renews_at)}</strong> · <strong>{days} días restantes</strong></span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2 border-t flex-wrap">
