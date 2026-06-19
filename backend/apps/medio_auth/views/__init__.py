@@ -18,6 +18,7 @@ from django.db.models import Q
 from datetime import timedelta
 import requests
 import uuid
+from apps.medico.models.site_setting import SiteSetting
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -91,8 +92,8 @@ class RegisterView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            # Activar prueba de 14 días con acceso premium
-            user.trial_ends_at = timezone.now() + timedelta(days=14)
+            trial_days = int(SiteSetting.get('TRIAL_DAYS', '30'))
+            user.trial_ends_at = timezone.now() + timedelta(days=trial_days)
             user.plan = 'premium'
             user.had_trial = True
             user.save(update_fields=['trial_ends_at', 'plan', 'had_trial'])
@@ -960,7 +961,7 @@ class GoogleLoginView(APIView):
                     last_name=last_name,
                     is_email_verified=True,
                     role=1,
-                    trial_ends_at=timezone.now() + timedelta(days=14),
+                    trial_ends_at=timezone.now() + timedelta(days=int(SiteSetting.get('TRIAL_DAYS', '30'))),
                     plan='premium',
                     had_trial=True,
                 )

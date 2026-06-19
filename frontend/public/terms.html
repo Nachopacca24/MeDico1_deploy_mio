@@ -208,7 +208,7 @@
 
     <div class="price-box">
       <p style="font-size:14px; color:#166534; margin-bottom:4px;">Plan de suscripción Premium</p>
-      <p class="price">$9.00 USD / mes</p>
+      <p class="price" id="premium-price">$7.00 USD / mes</p>
       <p style="font-size:14px; color:#374151; margin-top:8px; margin-bottom:0;">Acceso completo a todas las funcionalidades sin publicidad. La disponibilidad del plan gratuito permite usar el servicio con funcionalidades básicas e incluye publicidad.</p>
     </div>
 
@@ -397,5 +397,18 @@
     </div>
 
   </div>
+
+  <script>
+    fetch('/api/v1/settings/')
+      .then(r => r.json())
+      .then(s => {
+        const el = document.getElementById('premium-price');
+        if (el && s.PREMIUM_PRICE) {
+          const p = parseFloat(s.PREMIUM_PRICE).toFixed(2);
+          el.textContent = '$' + p + ' USD / mes';
+        }
+      })
+      .catch(() => {});
+  </script>
 </body>
 </html>

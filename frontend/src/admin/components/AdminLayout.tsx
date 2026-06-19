@@ -17,6 +17,7 @@ import {
   Megaphone,
   CreditCard,
   Bell,
+  Settings,
 } from 'lucide-react';
 
 const adminMenuItems = [
@@ -54,6 +55,11 @@ const adminMenuItems = [
     title: 'Procedimientos',
     href: '/admin/procedures',
     icon: Stethoscope
+  },
+  {
+    title: 'Configuración',
+    href: '/admin/settings',
+    icon: Settings
   },
 ];
 

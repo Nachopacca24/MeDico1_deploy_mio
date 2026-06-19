@@ -2,6 +2,7 @@
 
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
 import {
   Clock,
   Calculator,
@@ -30,6 +31,9 @@ import {
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
+  const { PREMIUM_PRICE, TRIAL_DAYS } = useSiteSettings();
+  const price = Number(PREMIUM_PRICE).toFixed(0);
+  const trialDays = Number(TRIAL_DAYS);
 
   if (loading) return null;
   if (user) return <Navigate to="/dashboard" replace />;
@@ -123,7 +127,7 @@ export default function LandingPage() {
                 to="/signup"
                 className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
               >
-                14 días de Premium gratis al registrarte.
+                {trialDays} días de Premium gratis al registrarte.
                 <ChevronRight className="h-5 w-5" />
               </Link>
               <Link
@@ -435,13 +439,13 @@ export default function LandingPage() {
                     <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Premium</span>
                   </div>
                   <span className="text-xs font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2.5 py-0.5 rounded-full">
-                    14 días gratis
+                    {trialDays} días gratis
                   </span>
                 </div>
                 <h3 className="text-2xl font-bold text-white">MeDico App Premium</h3>
                 <p className="text-sm text-gray-400 mt-1">Experiencia completa, sin límites</p>
                 <div className="flex items-end gap-1 mt-4 mb-2">
-                  <span className="text-5xl font-extrabold tracking-tight text-amber-400">$9</span>
+                  <span className="text-5xl font-extrabold tracking-tight text-amber-400">${price}</span>
                   <span className="text-gray-400 text-sm mb-2">/mes</span>
                 </div>
               </div>
@@ -472,7 +476,7 @@ export default function LandingPage() {
                   to="/signup"
                   className="block text-center bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-400/20 mt-6"
                 >
-                  Empezar — 14 días gratis
+                  Empezar — {trialDays} días gratis
                 </Link>
               </div>
             </div>
@@ -551,7 +555,7 @@ export default function LandingPage() {
             Registrarme gratis
             <ChevronRight className="h-5 w-5" />
           </Link>
-          <p className="mt-4 text-sm text-gray-600">14 días Premium sin tarjeta de crédito.</p>
+          <p className="mt-4 text-sm text-gray-600">{trialDays} días Premium sin tarjeta de crédito.</p>
         </div>
       </section>
 

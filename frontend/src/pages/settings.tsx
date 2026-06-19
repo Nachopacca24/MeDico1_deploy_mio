@@ -1,6 +1,7 @@
 // src/pages/settings.tsx
 
 import { useState, useEffect, useRef } from "react";
+import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
 import { useTheme } from "next-themes";
 import { useSearchParams } from "react-router-dom";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
@@ -54,6 +55,8 @@ const TAB_OPTIONS = [
 ];
 
 const Settings = () => {
+  const { PREMIUM_PRICE } = useSiteSettings();
+  const price = Number(PREMIUM_PRICE).toFixed(0);
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
@@ -665,7 +668,7 @@ const Settings = () => {
                     <h3 className="text-2xl font-bold">MeDico App Premium</h3>
                     <p className="text-sm text-muted-foreground mt-1">Experiencia completa, sin límites</p>
                     <div className="flex items-end gap-1 mt-4">
-                      <span className="text-5xl font-extrabold tracking-tight text-amber-400">$9</span>
+                      <span className="text-5xl font-extrabold tracking-tight text-amber-400">${price}</span>
                       <span className="text-muted-foreground text-sm mb-2">/mes</span>
                     </div>
                   </div>
@@ -705,7 +708,7 @@ const Settings = () => {
                         >
                           {checkoutLoading
                             ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
-                            : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — $9/mes</>
+                            : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — ${price}/mes</>
                           }
                         </Button>
                       )}

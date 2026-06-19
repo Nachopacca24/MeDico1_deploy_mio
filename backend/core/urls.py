@@ -17,6 +17,7 @@ from core.views import (
     cancel_account_deletion,
 )
 from apps.communication.views import admin_announcements, admin_announcement_detail
+from apps.medico.views.site_settings import site_settings_public, site_settings_admin
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -50,6 +51,8 @@ urlpatterns = [
     path('api/admin/procedures/', admin_procedures, name='admin_procedures'),
     path('api/admin/announcements/', admin_announcements, name='admin_announcements'),
     path('api/admin/announcements/<int:pk>/', admin_announcement_detail, name='admin_announcement_detail'),
+    path('api/v1/settings/', site_settings_public, name='site_settings_public'),
+    path('api/admin/settings/', site_settings_admin, name='site_settings_admin'),
     
     # Django REST Framework
     path('api-auth/', include('rest_framework.urls')),

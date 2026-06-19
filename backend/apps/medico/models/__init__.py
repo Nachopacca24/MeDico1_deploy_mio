@@ -8,6 +8,7 @@ from .surgery_image import SurgeryImage
 from .google_calendar_token import GoogleCalendarToken
 from .fcm_token import FCMToken
 from .system_news import SystemNews
+from .site_setting import SiteSetting
 
 
 class Specialty(models.Model):
