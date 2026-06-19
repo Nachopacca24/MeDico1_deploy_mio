@@ -10,7 +10,8 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { useToast } from "@/shared/hooks/use-toast";
-import { Loader2, Activity, HeartPulse, Crown } from "lucide-react";
+import { Loader2, ArrowRight, Star, ShieldCheck, FileText, Sparkles } from "lucide-react";
+import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
@@ -36,6 +37,8 @@ const SPECIALTIES = [
 ];
 
 export default function SignupForm() {
+  const { TRIAL_DAYS } = useSiteSettings();
+  const trialDays = Number(TRIAL_DAYS);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -223,228 +226,203 @@ export default function SignupForm() {
     return <Navigate to='/dashboard' replace />;
   }
 
+  const GOOGLE_ICON = (
+    <svg className="mr-2 h-4 w-4" aria-hidden="true" viewBox="0 0 488 512" xmlns="http://www.w3.org/2000/svg">
+      <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
+    </svg>
+  );
+
   return (
-    <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950'>
-      {/* Panel izquierdo (Branding) */}
-      <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-primary via-primary/80 to-secondary p-12 text-white overflow-hidden relative'>
-        <div className="absolute inset-0 bg-black/10 z-0"></div>
-        <div className="absolute top-40 -left-20 w-80 h-80 bg-white/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
-        <div className="absolute -bottom-20 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
+    <div className="flex min-h-screen w-full bg-gray-950">
 
-        <div className='relative z-10 flex items-center space-x-3 text-2xl font-bold'>
-          <Activity className="h-8 w-8" />
-          <span>MeDico App</span>
+      {/* ── Panel izquierdo — branding ───────────────────────────── */}
+      <div className="hidden lg:flex lg:w-[42%] flex-col justify-between p-12 overflow-hidden relative shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-gray-950 to-gray-950 pointer-events-none" />
+        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 bg-amber-500/8 rounded-full blur-[100px] pointer-events-none" />
+
+        {/* Logo */}
+        <div className="relative z-10 flex items-center gap-3">
+          <img src="/logo_transparente.png" alt="MeDico App" className="h-9 w-9 object-contain" />
+          <span className="text-white text-xl font-bold tracking-tight">MeDico App</span>
         </div>
 
-        <div className='relative z-10 space-y-4 max-w-lg'>
-          <HeartPulse className="h-12 w-12 text-white/80" />
-          <h1 className='text-4xl font-extrabold tracking-tight sm:text-5xl'>
-            Únete a la evolución médica.
-          </h1>
-          <p className='text-lg text-white/80'>
-            Regístrate hoy para transformar la forma en que interactúas con tus pacientes, citas y facturación.
-          </p>
+        {/* Main copy */}
+        <div className="relative z-10 space-y-8">
+          {/* Premium badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400/10 border border-amber-400/20">
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+            <span className="text-sm font-bold text-amber-400">{trialDays} días Premium gratis · Sin tarjeta</span>
+          </div>
+
+          <div className="space-y-4">
+            <h1 className="text-5xl font-black tracking-tight text-white leading-[1.1]">
+              Únete a la<br />
+              <span className="text-primary">evolución</span><br />
+              médica.
+            </h1>
+            <p className="text-gray-400 text-base leading-relaxed max-w-xs">
+              La plataforma que los médicos guatemaltecos eligieron para organizar su práctica quirúrgica.
+            </p>
+          </div>
+
+          {/* Feature list */}
+          <div className="space-y-3">
+            {[
+              { icon: <ShieldCheck className="h-4 w-4 text-emerald-400" />, text: 'Datos cifrados con AES-128-CBC' },
+              { icon: <FileText className="h-4 w-4 text-sky-400" />, text: 'Exporta cirugías en PDF' },
+              { icon: <Sparkles className="h-4 w-4 text-amber-400" />, text: 'Acceso anticipado a nuevas funciones' },
+            ].map(({ icon, text }) => (
+              <div key={text} className="flex items-center gap-3 text-sm text-gray-400">
+                <div className="p-1.5 rounded-lg bg-gray-800 shrink-0">{icon}</div>
+                {text}
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className='relative z-10 text-sm text-white/60'>
-          © {new Date().getFullYear()} MeDico App Todos los derechos reservados.
+        <div className="relative z-10 text-xs text-gray-700">
+          © {new Date().getFullYear()} MeDico App · Todos los derechos reservados
         </div>
       </div>
 
-      {/* Panel derecho (Signup Form) */}
-      <div className='flex w-full items-center justify-center p-6 lg:w-1/2 animate-slide-up overflow-y-auto max-h-screen'>
-        <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm my-10'>
-          <CardHeader className="space-y-1">
-            <div className='flex items-center justify-center space-x-2 text-primary lg:hidden mb-4'>
-              <Activity className="h-6 w-6" />
-              <span className='text-2xl font-bold'>MeDico App</span>
-            </div>
-            <CardTitle className='text-2xl font-bold tracking-tight'>Crear cuenta</CardTitle>
-            <CardDescription className="text-muted-foreground">Ingresa tus datos para registrar tu perfil profesional</CardDescription>
-            <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <Crown className="h-4 w-4 text-yellow-600 shrink-0" />
-              <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                14 días de acceso Premium gratis al registrarte
-              </span>
-            </div>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className='space-y-4'>
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='first_name'>Nombre</Label>
-                  <Input
-                    id='first_name'
-                    name='first_name'
-                    placeholder='Juan'
-                    value={formData.first_name}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    aria-invalid={!!errors.first_name}
-                  />
-                  {errors.first_name && <p className='text-sm text-destructive'>{errors.first_name}</p>}
-                </div>
+      {/* ── Panel derecho — formulario ───────────────────────────── */}
+      <div className="flex flex-1 items-start justify-center p-6 overflow-y-auto">
+        <div className="w-full max-w-md animate-slide-up py-8">
 
-                <div className='space-y-2'>
-                  <Label htmlFor='last_name'>Apellido</Label>
-                  <Input
-                    id='last_name'
-                    name='last_name'
-                    placeholder='Pérez'
-                    value={formData.last_name}
-                    onChange={handleChange}
-                    disabled={isLoading}
+          {/* Logo móvil */}
+          <div className="flex items-center justify-center gap-3 lg:hidden mb-6">
+            <img src="/logo_transparente.png" alt="MeDico App" className="h-10 w-10 object-contain" />
+            <span className="text-2xl font-bold text-white">MeDico App</span>
+          </div>
+
+          {/* Badge móvil */}
+          <div className="flex items-center justify-center gap-2 mb-5 lg:hidden">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/20">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-xs font-bold text-amber-400">{trialDays} días Premium gratis</span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-gray-900 border border-gray-800 shadow-2xl p-7">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-1">Crear cuenta</h2>
+              <p className="text-gray-500 text-sm">Perfil profesional médico en minutos</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="first_name" className="text-gray-300 text-sm">Nombre</Label>
+                  <Input id="first_name" name="first_name" placeholder="Juan"
+                    value={formData.first_name} onChange={handleChange} disabled={isLoading}
+                    aria-invalid={!!errors.first_name}
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary" />
+                  {errors.first_name && <p className="text-xs text-destructive">{errors.first_name}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="last_name" className="text-gray-300 text-sm">Apellido</Label>
+                  <Input id="last_name" name="last_name" placeholder="Pérez"
+                    value={formData.last_name} onChange={handleChange} disabled={isLoading}
                     aria-invalid={!!errors.last_name}
-                  />
-                  {errors.last_name && <p className='text-sm text-destructive'>{errors.last_name}</p>}
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary" />
+                  {errors.last_name && <p className="text-xs text-destructive">{errors.last_name}</p>}
                 </div>
               </div>
 
-              <div className='space-y-2'>
-                <Label htmlFor='username'>Usuario</Label>
-                <Input
-                  id='username'
-                  name='username'
-                  placeholder='doctor123'
-                  value={formData.username}
-                  onChange={handleChange}
-                  disabled={isLoading}
+              <div className="space-y-1.5">
+                <Label htmlFor="username" className="text-gray-300 text-sm">Usuario</Label>
+                <Input id="username" name="username" placeholder="dr.juanperez"
+                  value={formData.username} onChange={handleChange} disabled={isLoading}
                   aria-invalid={!!errors.username}
-                />
+                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary" />
                 {errors.username
-                  ? <p className='text-sm text-destructive'>{errors.username}</p>
-                  : <p className='text-xs text-muted-foreground'>Sin espacios. Así te reconocerán otros médicos en la plataforma.</p>
+                  ? <p className="text-xs text-destructive">{errors.username}</p>
+                  : <p className="text-xs text-gray-600">Sin espacios. Así te verán tus colegas.</p>
                 }
               </div>
 
-              <div className='space-y-2'>
-                <Label htmlFor='email'>Email</Label>
-                <Input
-                  id='email'
-                  name='email'
-                  type='email'
-                  placeholder='doctor@example.com'
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={isLoading}
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-gray-300 text-sm">Email</Label>
+                <Input id="email" name="email" type="email" placeholder="doctor@ejemplo.com"
+                  value={formData.email} onChange={handleChange} disabled={isLoading}
                   aria-invalid={!!errors.email}
-                />
-                {errors.email && <p className='text-sm text-destructive'>{errors.email}</p>}
+                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary" />
+                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
 
-              {/* Campo de Especialidad */}
-              <div className='space-y-2'>
-                <Label htmlFor='specialty'>Especialidad Médica</Label>
-                <Select
-                  value={formData.specialty}
-                  onValueChange={handleSpecialtyChange}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger
-                    id='specialty'
-                    aria-invalid={!!errors.specialty}
-                    className={errors.specialty ? 'border-destructive' : ''}
-                  >
-                    <SelectValue placeholder='Selecciona tu especialidad' />
+              <div className="space-y-1.5">
+                <Label htmlFor="specialty" className="text-gray-300 text-sm">Especialidad médica</Label>
+                <Select value={formData.specialty} onValueChange={handleSpecialtyChange} disabled={isLoading}>
+                  <SelectTrigger id="specialty" aria-invalid={!!errors.specialty}
+                    className={`bg-gray-800 border-gray-700 text-white ${errors.specialty ? 'border-destructive' : ''}`}>
+                    <SelectValue placeholder="Selecciona tu especialidad" />
                   </SelectTrigger>
                   <SelectContent>
-                    {SPECIALTIES.map((specialty) => (
-                      <SelectItem key={specialty} value={specialty}>
-                        {specialty}
-                      </SelectItem>
-                    ))}
+                    {SPECIALTIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                {errors.specialty && <p className='text-sm text-destructive'>{errors.specialty}</p>}
+                {errors.specialty && <p className="text-xs text-destructive">{errors.specialty}</p>}
               </div>
 
-              <div className='space-y-2'>
-                <Label htmlFor='password'>Contraseña</Label>
-                <Input
-                  id='password'
-                  name='password'
-                  type='password'
-                  placeholder='••••••••'
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  aria-invalid={!!errors.password}
-                />
-                {errors.password && <p className='text-sm text-destructive'>{errors.password}</p>}
-              </div>
-
-              <div className='space-y-2'>
-                <Label htmlFor='password2'>Confirmar Contraseña</Label>
-                <Input
-                  id='password2'
-                  name='password2'
-                  type='password'
-                  placeholder='••••••••'
-                  value={formData.password2}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  aria-invalid={!!errors.password2}
-                />
-                {errors.password2 && <p className='text-sm text-destructive'>{errors.password2}</p>}
-              </div>
-            </CardContent>
-
-            <CardFooter className='flex flex-col space-y-4'>
-              <Button type='submit' className='w-full text-md h-12' disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className='mr-2 h-5 w-5 animate-spin' />
-                    Creando cuenta...
-                  </>
-                ) : (
-                  "Comenzar"
-                )}
-              </Button>
-
-              <div className="relative w-full">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="password" className="text-gray-300 text-sm">Contraseña</Label>
+                  <Input id="password" name="password" type="password" placeholder="••••••••"
+                    value={formData.password} onChange={handleChange} disabled={isLoading}
+                    aria-invalid={!!errors.password}
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary" />
+                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-slate-900 px-2 text-muted-foreground">
-                    O regístrate con
-                  </span>
+                <div className="space-y-1.5">
+                  <Label htmlFor="password2" className="text-gray-300 text-sm">Confirmar</Label>
+                  <Input id="password2" name="password2" type="password" placeholder="••••••••"
+                    value={formData.password2} onChange={handleChange} disabled={isLoading}
+                    aria-invalid={!!errors.password2}
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary" />
+                  {errors.password2 && <p className="text-xs text-destructive">{errors.password2}</p>}
                 </div>
               </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full text-md h-12"
-                onClick={handleGoogleClick}
-                disabled={isLoading}
-              >
-                <svg className="mr-2 h-5 w-5" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                  <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-                </svg>
-                Google
+              <Button type="submit" className="w-full h-11 font-semibold mt-2" disabled={isLoading}>
+                {isLoading
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando cuenta...</>
+                  : <><ArrowRight className="mr-2 h-4 w-4" /> Crear cuenta gratis</>
+                }
               </Button>
+            </form>
 
-              <p className='text-center text-sm text-muted-foreground'>
-                ¿Ya tienes cuenta?{" "}
-                <Link to='/login' className='text-primary font-medium underline-offset-4 hover:underline'>
-                  Inicia sesión aquí
-                </Link>
-              </p>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-800" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-gray-900 px-3 text-gray-600">O regístrate con</span>
+              </div>
+            </div>
 
-              <p className='text-center text-xs text-muted-foreground/70 pt-2 border-t border-slate-100 dark:border-slate-800'>
-                Al crear tu cuenta aceptas nuestros{" "}
-                <a href='/terms.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
-                  Términos de Uso
-                </a>{" "}
-                y{" "}
-                <a href='/privacy.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
-                  Política de Privacidad
-                </a>
-              </p>
-            </CardFooter>
-          </form>
-        </Card>
+            <Button type="button" variant="outline"
+              className="w-full h-11 border-gray-700 bg-gray-800 hover:bg-gray-750 text-gray-200 hover:text-white"
+              onClick={handleGoogleClick} disabled={isLoading}>
+              {GOOGLE_ICON}
+              Continuar con Google
+            </Button>
+
+            <p className="text-center text-sm text-gray-500 mt-5">
+              ¿Ya tienes cuenta?{" "}
+              <Link to="/login" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                Inicia sesión
+              </Link>
+            </p>
+
+            <div className="text-center text-xs text-gray-700 mt-4 pt-4 border-t border-gray-800">
+              Al crear tu cuenta aceptas nuestros{" "}
+              <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="text-primary/80 hover:text-primary transition-colors">Términos de Uso</a>{" "}
+              y{" "}
+              <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="text-primary/80 hover:text-primary transition-colors">Política de Privacidad</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
