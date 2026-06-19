@@ -204,13 +204,11 @@ export default function TestersPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-slate-800 mb-1">{step.title}</p>
                   <p className="text-slate-500 text-sm mb-3">{step.desc}</p>
-                  <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-                    <img
-                      src={step.img}
-                      alt={step.title}
-                      className="w-full object-contain max-h-64"
-                    />
-                  </div>
+                  <img
+                    src={step.img}
+                    alt={step.title}
+                    className="w-full object-contain max-h-64 rounded-xl"
+                  />
                 </div>
               </div>
             ))}
