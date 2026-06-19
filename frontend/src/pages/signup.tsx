@@ -224,9 +224,9 @@ export default function SignupForm() {
   }
 
   return (
-    <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 max-lg:bg-sky-100'>
+    <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950'>
       {/* Panel izquierdo (Branding) */}
-      <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-sky-300 via-sky-400 to-sky-600 p-12 text-white overflow-hidden relative'>
+      <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-sky-200 via-sky-500 to-sky-700 p-12 text-white overflow-hidden relative'>
         <div className="absolute top-40 -left-20 w-80 h-80 bg-white/20 rounded-full blur-3xl z-0 pointer-events-none"></div>
         <div className="absolute -bottom-20 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl z-0 pointer-events-none"></div>
 
@@ -251,10 +251,10 @@ export default function SignupForm() {
       </div>
 
       {/* Panel derecho (Signup Form) */}
-      <div className='flex w-full flex-col items-center justify-start lg:justify-center lg:p-6 lg:w-1/2 animate-slide-up overflow-y-auto max-h-screen'>
+      <div className='flex w-full flex-col items-center justify-start lg:justify-center lg:p-6 lg:w-1/2 lg:animate-slide-up overflow-y-auto max-h-screen'>
 
         {/* Mobile brand header */}
-        <div className='lg:hidden w-full bg-gradient-to-br from-sky-100 via-sky-300 to-sky-500 px-6 pt-10 pb-8 text-white relative overflow-hidden shrink-0'>
+        <div className='lg:hidden w-full bg-gradient-to-br from-sky-200 via-sky-500 to-sky-700 px-6 pt-10 pb-8 text-white relative overflow-hidden shrink-0'>
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className='relative flex items-center gap-3 mb-3'>
