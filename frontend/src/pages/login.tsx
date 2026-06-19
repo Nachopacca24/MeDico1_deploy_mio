@@ -9,7 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { useToast } from "@/shared/hooks/use-toast";
-import { Loader2, Shield, BarChart2, Users, ArrowRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
@@ -188,164 +188,149 @@ export default function Login() {
     return <Navigate to='/dashboard' replace />;
   }
 
-  const GOOGLE_ICON = (
-    <svg className="mr-2 h-4 w-4" aria-hidden="true" viewBox="0 0 488 512" xmlns="http://www.w3.org/2000/svg">
-      <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
-    </svg>
-  );
-
   return (
-    <div className="flex min-h-screen w-full bg-gray-950">
+    <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950'>
+      {/* Panel izquierdo (Branding) */}
+      <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-primary via-primary/80 to-secondary p-12 text-white overflow-hidden relative'>
+        <div className="absolute inset-0 bg-black/10 z-0"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
 
-      {/* ── Panel izquierdo — branding ───────────────────────────── */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-gray-950 to-gray-950 pointer-events-none" />
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-secondary/10 rounded-full blur-[100px] pointer-events-none" />
-
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <img src="/logo_transparente.png" alt="MeDico App" className="h-9 w-9 object-contain drop-shadow" />
-          <span className="text-white text-xl font-bold tracking-tight">MeDico App</span>
+        <div className='relative z-10 flex items-center space-x-3 text-2xl font-bold'>
+          <div className="bg-white rounded-lg p-1 flex items-center justify-center">
+            <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-7 w-7 object-contain" />
+          </div>
+          <span>MeDico App</span>
         </div>
 
-        {/* Main copy */}
-        <div className="relative z-10 space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-5xl font-black tracking-tight text-white leading-[1.1]">
-              Tu práctica médica,<br />
-              <span className="text-primary">organizada.</span>
-            </h1>
-            <p className="text-gray-400 text-lg leading-relaxed max-w-sm">
-              Registro de cirugías, estadísticas y colaboración con colegas. Diseñado para médicos en Guatemala.
-            </p>
-          </div>
-
-          {/* Feature highlights */}
-          <div className="space-y-3">
-            {[
-              { icon: <Shield className="h-4 w-4 text-primary" />, title: 'Privacidad total', desc: 'Cifrado AES-128-CBC en todos tus datos' },
-              { icon: <BarChart2 className="h-4 w-4 text-emerald-400" />, title: 'Estadísticas avanzadas', desc: 'Seguimiento completo de tu práctica' },
-              { icon: <Users className="h-4 w-4 text-violet-400" />, title: 'Colaboración médica', desc: 'Comparte casos con colegas de confianza' },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} className="flex items-center gap-4 p-3.5 rounded-xl bg-white/5 border border-white/8 backdrop-blur-sm">
-                <div className="p-2 rounded-lg bg-gray-800 shrink-0">{icon}</div>
-                <div>
-                  <div className="text-sm font-semibold text-white">{title}</div>
-                  <div className="text-xs text-gray-500">{desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className='relative z-10 space-y-4 max-w-lg'>
+          <h1 className='text-4xl font-extrabold tracking-tight sm:text-5xl'>
+            Simplifica tu práctica médica diaria.
+          </h1>
+          <p className='text-lg text-white/80'>
+            La plataforma integral para gestionar pacientes, citas y facturación con seguridad y precisión.
+          </p>
         </div>
 
-        <div className="relative z-10 text-xs text-gray-700">
-          © {new Date().getFullYear()} MeDico App · Todos los derechos reservados
+        <div className='relative z-10 text-sm text-white/60'>
+          © {new Date().getFullYear()} MeDico App Todos los derechos reservados.
         </div>
       </div>
 
-      {/* ── Panel derecho — formulario ───────────────────────────── */}
-      <div className="flex w-full items-center justify-center p-6 lg:w-1/2">
-        <div className="w-full max-w-md animate-slide-up">
-
-          {/* Logo móvil */}
-          <div className="flex items-center justify-center gap-3 lg:hidden mb-8">
-            <img src="/logo_transparente.png" alt="MeDico App" className="h-10 w-10 object-contain" />
-            <span className="text-2xl font-bold text-white">MeDico App</span>
-          </div>
-
-          <div className="rounded-2xl bg-gray-900 border border-gray-800 shadow-2xl p-8">
-            <div className="mb-7">
-              <h2 className="text-2xl font-bold text-white mb-1">Bienvenido de nuevo</h2>
-              <p className="text-gray-500 text-sm">Ingresa a tu cuenta médica</p>
+      {/* Panel derecho (Login Form) */}
+      <div className='flex w-full items-center justify-center p-6 lg:w-1/2 animate-slide-up'>
+        <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm'>
+          <CardHeader className="space-y-1">
+            <div className='flex items-center justify-center space-x-2 text-primary lg:hidden mb-4'>
+              <div className="bg-white rounded-lg p-0.5 flex items-center justify-center">
+                <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="" className="h-6 w-6 object-contain" />
+              </div>
+              <span className='text-2xl font-bold'>MeDico App</span>
             </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-300">Correo electrónico</Label>
+            <CardTitle className='text-2xl font-bold tracking-tight'>Bienvenido de nuevo</CardTitle>
+            <CardDescription className="text-muted-foreground">Ingresa tus credenciales para acceder a tu cuenta médica</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className='space-y-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='email'>Correo electrónico</Label>
                 <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="doctor@ejemplo.com"
+                  id='email'
+                  name='email'
+                  type='email'
+                  placeholder='john@example.com'
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
                   aria-invalid={!!errors.email}
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary"
                 />
-                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                {errors.email && <p className='text-sm text-destructive'>{errors.email}</p>}
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-gray-300">Contraseña</Label>
-                  <Link to="/forgot-password" className="text-xs text-primary hover:text-primary/80 transition-colors">
+              <div className='space-y-2'>
+                <div className='flex items-center justify-between'>
+                  <Label htmlFor='password'>Contraseña</Label>
+                  <Link to='/forgot-password' className='text-sm text-primary underline-offset-4 hover:underline'>
                     ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
                 <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
+                  id='password'
+                  name='password'
+                  type='password'
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
                   aria-invalid={!!errors.password}
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-primary"
                 />
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                {errors.password && <p className='text-sm text-destructive'>{errors.password}</p>}
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox id="rememberMe" checked={formData.rememberMe} onCheckedChange={handleCheckboxChange} />
-                <Label htmlFor="rememberMe" className="text-sm font-normal text-gray-400">Recuérdame</Label>
+              <div className='flex items-center space-x-2'>
+                <Checkbox id='rememberMe' checked={formData.rememberMe} onCheckedChange={handleCheckboxChange} />
+                <Label htmlFor='rememberMe' className='text-sm font-normal'>
+                  Recuérdame
+                </Label>
               </div>
+            </CardContent>
 
-              <Button type="submit" className="w-full h-11 font-semibold mt-2" disabled={isLoading}>
-                {isLoading
-                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Iniciando sesión...</>
-                  : <><ArrowRight className="mr-2 h-4 w-4" /> Iniciar sesión</>
-                }
+            <CardFooter className='flex flex-col space-y-4'>
+              <Button type='submit' className='w-full' disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    Iniciando sesión...
+                  </>
+                ) : (
+                  "Iniciar sesión"
+                )}
               </Button>
-            </form>
 
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-800" />
+              <div className="relative w-full">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-slate-900 px-2 text-muted-foreground">
+                    O continúa con
+                  </span>
+                </div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-gray-900 px-3 text-gray-600">O continúa con</span>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleClick}
+                disabled={isLoading}
+              >
+                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                  <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                </svg>
+                Google
+              </Button>
+
+              <p className='text-center text-sm text-muted-foreground'>
+                ¿No tienes cuenta?{" "}
+                <Link to='/signup' className='text-primary font-medium underline-offset-4 hover:underline'>
+                  Regístrate ahora
+                </Link>
+              </p>
+
+              <div className='text-center text-xs text-muted-foreground/70 pt-2 border-t border-slate-100 dark:border-slate-800'>
+                Al usar MeDico App aceptas nuestros{" "}
+                <a href='/terms.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
+                  Términos de Uso
+                </a>{" "}
+                y{" "}
+                <a href='/privacy.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 dark:text-primary dark:hover:text-primary/70 transition-colors'>
+                  Política de Privacidad
+                </a>
               </div>
-            </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-11 border-gray-700 bg-gray-800 hover:bg-gray-750 text-gray-200 hover:text-white"
-              onClick={handleGoogleClick}
-              disabled={isLoading}
-            >
-              {GOOGLE_ICON}
-              Continuar con Google
-            </Button>
-
-            <p className="text-center text-sm text-gray-500 mt-5">
-              ¿No tienes cuenta?{" "}
-              <Link to="/signup" className="text-primary font-semibold hover:text-primary/80 transition-colors">
-                Regístrate gratis
-              </Link>
-            </p>
-
-            <div className="text-center text-xs text-gray-700 mt-4 pt-4 border-t border-gray-800">
-              Al usar MeDico App aceptas nuestros{" "}
-              <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="text-primary/80 hover:text-primary transition-colors">Términos de Uso</a>{" "}
-              y{" "}
-              <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="text-primary/80 hover:text-primary transition-colors">Política de Privacidad</a>
-            </div>
-          </div>
-        </div>
+            </CardFooter>
+          </form>
+        </Card>
       </div>
     </div>
   );
