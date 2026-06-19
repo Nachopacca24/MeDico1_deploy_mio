@@ -93,8 +93,15 @@ export default function TestersPage() {
             </span>
           </div>
 
-          <p className="text-sky-800/80 text-lg mb-8 max-w-xl mx-auto">
+          <p className="text-sky-800/80 text-lg mb-4 max-w-xl mx-auto">
             Somos un proyecto independiente y necesitamos médicos reales que prueben la app antes del lanzamiento oficial. Tu experiencia vale más que cualquier automatización.
+          </p>
+          <p className="text-sky-800/70 text-sm mb-8 max-w-xl mx-auto">
+            Cualquier duda, sugerencia, opinión o problema que encuentres en la app, escribinos a{" "}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold underline underline-offset-2 hover:text-sky-900">
+              {CONTACT_EMAIL}
+            </a>
+            . Estamos para ayudarte.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="#android">
