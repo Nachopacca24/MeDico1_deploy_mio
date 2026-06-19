@@ -252,13 +252,21 @@ export default function SignupForm() {
       </div>
 
       {/* Panel derecho (Signup Form) */}
-      <div className='flex w-full items-center justify-center p-6 lg:w-1/2 animate-slide-up overflow-y-auto max-h-screen'>
-        <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm my-10'>
+      <div className='flex w-full flex-col items-center justify-start lg:justify-center lg:p-6 lg:w-1/2 animate-slide-up overflow-y-auto max-h-screen'>
+
+        {/* Mobile brand header */}
+        <div className='lg:hidden w-full bg-gradient-to-br from-primary via-primary/85 to-secondary px-6 pt-10 pb-8 text-white relative overflow-hidden shrink-0'>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className='relative flex items-center gap-3 mb-3'>
+            <img src="/logo_transparente.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow" />
+            <span className='text-2xl font-bold tracking-tight'>MeDico App</span>
+          </div>
+          <p className='relative text-white/70 text-sm'>Únete y obtén {/* trial days shown below */} días Premium gratis al registrarte.</p>
+        </div>
+
+        <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm lg:my-10 lg:rounded-xl rounded-t-none'>
           <CardHeader className="space-y-1">
-            <div className='flex items-center justify-center space-x-2 text-primary lg:hidden mb-4'>
-              <Activity className="h-6 w-6" />
-              <span className='text-2xl font-bold'>MeDico App</span>
-            </div>
             <CardTitle className='text-2xl font-bold tracking-tight'>Crear cuenta</CardTitle>
             <CardDescription className="text-muted-foreground">Ingresa tus datos para registrar tu perfil profesional</CardDescription>
             <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">

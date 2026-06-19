@@ -218,15 +218,21 @@ export default function Login() {
       </div>
 
       {/* Panel derecho (Login Form) */}
-      <div className='flex w-full items-center justify-center p-6 lg:w-1/2 animate-slide-up'>
-        <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm'>
+      <div className='flex w-full items-center justify-center lg:p-6 lg:w-1/2 animate-slide-up flex-col'>
+
+        {/* Mobile brand header */}
+        <div className='lg:hidden w-full bg-gradient-to-br from-primary via-primary/85 to-secondary px-6 pt-10 pb-8 text-white relative overflow-hidden'>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className='relative flex items-center gap-3 mb-3'>
+            <img src="/logo_transparente.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow" />
+            <span className='text-2xl font-bold tracking-tight'>MeDico App</span>
+          </div>
+          <p className='relative text-white/70 text-sm'>Tu práctica médica, organizada.</p>
+        </div>
+
+        <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm lg:rounded-xl rounded-t-none'>
           <CardHeader className="space-y-1">
-            <div className='flex items-center justify-center space-x-2 text-primary lg:hidden mb-4'>
-              <div className="bg-white rounded-lg p-0.5 flex items-center justify-center">
-                <img src="/MEDICO-BAJA-01-fondo-balnco-solido.jpg" alt="" className="h-6 w-6 object-contain" />
-              </div>
-              <span className='text-2xl font-bold'>MeDico App</span>
-            </div>
             <CardTitle className='text-2xl font-bold tracking-tight'>Bienvenido de nuevo</CardTitle>
             <CardDescription className="text-muted-foreground">Ingresa tus credenciales para acceder a tu cuenta médica</CardDescription>
           </CardHeader>
