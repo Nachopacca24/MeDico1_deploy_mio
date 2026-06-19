@@ -25,9 +25,10 @@ import { pushNotificationService } from "@/services/pushNotificationService";
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
-async function createCheckout(): Promise<string> {
+async function createCheckout(planType: 'monthly' | 'annual' = 'monthly'): Promise<string> {
   const response = await authService.authenticatedFetch(`${API_URL}/api/v1/payment/checkout/`, {
     method: 'POST',
+    body: JSON.stringify({ plan_type: planType }),
   });
   if (!response.ok) throw new Error('Error al crear checkout');
   const data = await response.json();
@@ -55,8 +56,12 @@ const TAB_OPTIONS = [
 ];
 
 const Settings = () => {
-  const { PREMIUM_PRICE } = useSiteSettings();
-  const price = Number(PREMIUM_PRICE).toFixed(0);
+  const { PREMIUM_PRICE, ANNUAL_PRICE } = useSiteSettings();
+  const monthlyPrice = Number(PREMIUM_PRICE);
+  const annualPrice = Number(ANNUAL_PRICE);
+  const price = monthlyPrice.toFixed(0);
+  const annualSavingPct = Math.round((1 - annualPrice / (monthlyPrice * 12)) * 100);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
@@ -71,7 +76,7 @@ const Settings = () => {
   const handleUpgrade = async () => {
     setCheckoutLoading(true);
     try {
-      const url = await createCheckout();
+      const url = await createCheckout(billingCycle);
       window.open(url, '_blank');
     } catch {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo abrir el checkout. Intenta de nuevo.' });
@@ -651,10 +656,32 @@ const Settings = () => {
                 </div>
 
                 {/* ── Premium ──────────────────────────────────────── */}
-                <div className={`premium-glow rounded-2xl flex flex-col overflow-hidden ring-1 ring-amber-400/50 bg-card`}>
-                  {/* subtle top accent bar */}
+                <div className={`premium-glow rounded-2xl flex flex-col overflow-hidden ring-2 ring-amber-400/60 bg-card`}>
+                  {/* top accent bar */}
                   <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500" />
-                  <div className="p-6 pb-4">
+
+                  {/* Billing toggle tab */}
+                  <div className="flex items-center gap-1 mx-6 mt-5 p-1 rounded-xl bg-muted w-fit">
+                    <button
+                      onClick={() => setBillingCycle('monthly')}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      Mensual
+                    </button>
+                    <button
+                      onClick={() => setBillingCycle('annual')}
+                      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'annual' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      Anual
+                      {annualSavingPct > 0 && (
+                        <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+                          -{annualSavingPct}%
+                        </span>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="p-6 pb-4 pt-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <Star className="float-star h-5 w-5 fill-amber-400 text-amber-400" />
@@ -667,10 +694,27 @@ const Settings = () => {
                     </div>
                     <h3 className="text-2xl font-bold">MeDico App Premium</h3>
                     <p className="text-sm text-muted-foreground mt-1">Experiencia completa, sin límites</p>
-                    <div className="flex items-end gap-1 mt-4">
-                      <span className="text-5xl font-extrabold tracking-tight text-amber-400">${price}</span>
-                      <span className="text-muted-foreground text-sm mb-2">/mes</span>
-                    </div>
+                    {billingCycle === 'monthly' ? (
+                      <div className="flex items-end gap-1 mt-4">
+                        <span className="text-5xl font-extrabold tracking-tight text-amber-400">${price}</span>
+                        <span className="text-muted-foreground text-sm mb-2">/mes</span>
+                      </div>
+                    ) : (
+                      <div className="mt-4">
+                        <div className="flex items-end gap-1">
+                          <span className="text-5xl font-extrabold tracking-tight text-amber-400">
+                            ${(annualPrice / 12).toFixed(2)}
+                          </span>
+                          <span className="text-muted-foreground text-sm mb-2">/mes</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          ${annualPrice.toFixed(0)} facturado anualmente
+                          {annualSavingPct > 0 && (
+                            <span className="ml-2 text-emerald-500 font-semibold">· Ahorrás ${(monthlyPrice * 12 - annualPrice).toFixed(0)}</span>
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="px-6 pb-6 flex-1 flex flex-col">
                     <div className="w-full h-px bg-amber-400/20 mb-5" />
@@ -708,7 +752,9 @@ const Settings = () => {
                         >
                           {checkoutLoading
                             ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando...</>
-                            : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — ${price}/mes</>
+                            : billingCycle === 'annual'
+                              ? <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — ${annualPrice.toFixed(0)}/año</>
+                              : <><CreditCard className="h-4 w-4 mr-2" /> Suscribirme — ${price}/mes</>
                           }
                         </Button>
                       )}

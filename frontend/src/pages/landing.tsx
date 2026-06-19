@@ -1,5 +1,6 @@
 // src/pages/landing.tsx
 
+import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
@@ -31,9 +32,13 @@ import {
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
-  const { PREMIUM_PRICE, TRIAL_DAYS } = useSiteSettings();
-  const price = Number(PREMIUM_PRICE).toFixed(0);
+  const { PREMIUM_PRICE, ANNUAL_PRICE, TRIAL_DAYS } = useSiteSettings();
+  const monthlyPrice = Number(PREMIUM_PRICE);
+  const annualPrice = Number(ANNUAL_PRICE);
+  const price = monthlyPrice.toFixed(0);
   const trialDays = Number(TRIAL_DAYS);
+  const annualSavingPct = Math.round((1 - annualPrice / (monthlyPrice * 12)) * 100);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   if (loading) return null;
   if (user) return <Navigate to="/dashboard" replace />;
@@ -430,9 +435,31 @@ export default function LandingPage() {
             </div>
 
             {/* ── Premium ───────────────────────────────────────── */}
-            <div className="rounded-2xl flex flex-col overflow-hidden ring-1 ring-amber-400/50 bg-gray-900">
+            <div className="rounded-2xl flex flex-col overflow-hidden ring-2 ring-amber-400/60 bg-gray-900">
               <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500" />
-              <div className="p-6 pb-4">
+
+              {/* Billing toggle */}
+              <div className="flex items-center gap-1 mx-6 mt-5 p-1 rounded-xl bg-gray-800 w-fit">
+                <button
+                  onClick={() => setBillingCycle('monthly')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'monthly' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                >
+                  Mensual
+                </button>
+                <button
+                  onClick={() => setBillingCycle('annual')}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'annual' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                >
+                  Anual
+                  {annualSavingPct > 0 && (
+                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
+                      -{annualSavingPct}%
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <div className="p-6 pb-4 pt-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
@@ -444,10 +471,27 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-bold text-white">MeDico App Premium</h3>
                 <p className="text-sm text-gray-400 mt-1">Experiencia completa, sin límites</p>
-                <div className="flex items-end gap-1 mt-4 mb-2">
-                  <span className="text-5xl font-extrabold tracking-tight text-amber-400">${price}</span>
-                  <span className="text-gray-400 text-sm mb-2">/mes</span>
-                </div>
+                {billingCycle === 'monthly' ? (
+                  <div className="flex items-end gap-1 mt-4 mb-2">
+                    <span className="text-5xl font-extrabold tracking-tight text-amber-400">${price}</span>
+                    <span className="text-gray-400 text-sm mb-2">/mes</span>
+                  </div>
+                ) : (
+                  <div className="mt-4 mb-2">
+                    <div className="flex items-end gap-1">
+                      <span className="text-5xl font-extrabold tracking-tight text-amber-400">
+                        ${(annualPrice / 12).toFixed(2)}
+                      </span>
+                      <span className="text-gray-400 text-sm mb-2">/mes</span>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">
+                      ${annualPrice.toFixed(0)} facturado anualmente
+                      {annualSavingPct > 0 && (
+                        <span className="ml-2 text-emerald-400 font-semibold">· Ahorrás ${(monthlyPrice * 12 - annualPrice).toFixed(0)}</span>
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="px-6 pb-6 flex-1 flex flex-col">
                 <div className="w-full h-px bg-amber-400/20 mb-5" />
@@ -478,6 +522,9 @@ export default function LandingPage() {
                 >
                   Empezar — {trialDays} días gratis
                 </Link>
+                {billingCycle === 'annual' && (
+                  <p className="text-center text-xs text-gray-500 mt-2">Facturado como ${annualPrice.toFixed(0)}/año</p>
+                )}
               </div>
             </div>
 

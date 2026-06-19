@@ -4,13 +4,14 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 export interface SiteSettings {
   PREMIUM_PRICE: string;
+  ANNUAL_PRICE: string;
   TRIAL_DAYS: string;
 }
 
 export const siteSettingsService = {
   async getPublic(): Promise<SiteSettings> {
     const res = await fetch(`${API_URL}/api/v1/settings/`);
-    if (!res.ok) return { PREMIUM_PRICE: '7', TRIAL_DAYS: '30' };
+    if (!res.ok) return { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30' };
     return res.json();
   },
 

@@ -6,31 +6,36 @@ from rest_framework.response import Response
 from apps.medico.models.site_setting import SiteSetting
 
 
-ALLOWED_KEYS = {'PREMIUM_PRICE', 'TRIAL_DAYS'}
+ALLOWED_KEYS = {'PREMIUM_PRICE', 'ANNUAL_PRICE', 'TRIAL_DAYS'}
+
+
+def _build_settings(raw):
+    monthly = float(raw.get('PREMIUM_PRICE', '7'))
+    annual_default = str(round(monthly * 12, 2))
+    return {
+        'PREMIUM_PRICE': raw.get('PREMIUM_PRICE', '7'),
+        'ANNUAL_PRICE': raw.get('ANNUAL_PRICE', annual_default),
+        'TRIAL_DAYS': raw.get('TRIAL_DAYS', '30'),
+    }
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def site_settings_public(request):
-    settings = {s.key: s.value for s in SiteSetting.objects.filter(key__in=ALLOWED_KEYS)}
-    return Response({
-        'PREMIUM_PRICE': settings.get('PREMIUM_PRICE', '7'),
-        'TRIAL_DAYS': settings.get('TRIAL_DAYS', '30'),
-    })
+    raw = {s.key: s.value for s in SiteSetting.objects.filter(key__in=ALLOWED_KEYS)}
+    return Response(_build_settings(raw))
 
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def site_settings_admin(request):
     if request.method == 'GET':
-        settings = {s.key: s.value for s in SiteSetting.objects.filter(key__in=ALLOWED_KEYS)}
-        return Response({
-            'PREMIUM_PRICE': settings.get('PREMIUM_PRICE', '7'),
-            'TRIAL_DAYS': settings.get('TRIAL_DAYS', '30'),
-        })
+        raw = {s.key: s.value for s in SiteSetting.objects.filter(key__in=ALLOWED_KEYS)}
+        return Response(_build_settings(raw))
 
     data = request.data
     updated = {}
+
     if 'PREMIUM_PRICE' in data:
         try:
             price = float(data['PREMIUM_PRICE'])
@@ -39,7 +44,17 @@ def site_settings_admin(request):
             SiteSetting.set('PREMIUM_PRICE', str(price))
             updated['PREMIUM_PRICE'] = str(price)
         except (ValueError, TypeError):
-            return Response({'error': 'Precio inválido'}, status=400)
+            return Response({'error': 'Precio mensual inválido'}, status=400)
+
+    if 'ANNUAL_PRICE' in data:
+        try:
+            price = float(data['ANNUAL_PRICE'])
+            if price <= 0:
+                return Response({'error': 'El precio anual debe ser mayor a 0'}, status=400)
+            SiteSetting.set('ANNUAL_PRICE', str(price))
+            updated['ANNUAL_PRICE'] = str(price)
+        except (ValueError, TypeError):
+            return Response({'error': 'Precio anual inválido'}, status=400)
 
     if 'TRIAL_DAYS' in data:
         try:

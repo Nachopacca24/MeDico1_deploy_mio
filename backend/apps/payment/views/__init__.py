@@ -21,17 +21,19 @@ User = get_user_model()
 LS_API_BASE = 'https://api.lemonsqueezy.com/v1'
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://medico1deploymio.vercel.app')
 
-_LS_API_KEY        = os.environ.get('LEMONSQUEEZY_API_KEY', '')
-_LS_WEBHOOK_SECRET = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', '')
-_LS_VARIANT_ID     = os.environ.get('LEMONSQUEEZY_VARIANT_ID', '1725636')
-_LS_STORE_ID       = os.environ.get('LEMONSQUEEZY_STORE_ID', '')
+_LS_API_KEY             = os.environ.get('LEMONSQUEEZY_API_KEY', '')
+_LS_WEBHOOK_SECRET      = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', '')
+_LS_VARIANT_ID          = os.environ.get('LEMONSQUEEZY_VARIANT_ID', '1725636')
+_LS_ANNUAL_VARIANT_ID   = os.environ.get('LEMONSQUEEZY_ANNUAL_VARIANT_ID', '')
+_LS_STORE_ID            = os.environ.get('LEMONSQUEEZY_STORE_ID', '')
 
 logger.warning(
-    '[LS] env check — API_KEY=%s WEBHOOK_SECRET=%s STORE_ID=%s VARIANT_ID=%s FRONTEND_URL=%s',
+    '[LS] env check — API_KEY=%s WEBHOOK_SECRET=%s STORE_ID=%s VARIANT_ID=%s ANNUAL_VARIANT_ID=%s FRONTEND_URL=%s',
     'SET' if _LS_API_KEY else 'MISSING',
     'SET' if _LS_WEBHOOK_SECRET else 'MISSING',
     _LS_STORE_ID or 'MISSING',
     _LS_VARIANT_ID or 'MISSING',
+    _LS_ANNUAL_VARIANT_ID or 'MISSING',
     FRONTEND_URL,
 )
 
@@ -52,12 +54,19 @@ def _ls_headers():
 def create_checkout(request):
     api_key    = os.environ.get('LEMONSQUEEZY_API_KEY', _LS_API_KEY)
     store_id   = os.environ.get('LEMONSQUEEZY_STORE_ID', _LS_STORE_ID)
-    variant_id = os.environ.get('LEMONSQUEEZY_VARIANT_ID', _LS_VARIANT_ID)
     user = request.user
 
+    plan_type = request.data.get('plan_type', 'monthly')
+    if plan_type == 'annual':
+        variant_id = os.environ.get('LEMONSQUEEZY_ANNUAL_VARIANT_ID', _LS_ANNUAL_VARIANT_ID)
+        if not variant_id:
+            return Response({'error': 'Plan anual no configurado'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    else:
+        variant_id = os.environ.get('LEMONSQUEEZY_VARIANT_ID', _LS_VARIANT_ID)
+
     logger.info(
-        '[LS checkout] user=%s api_key=%s store_id=%s variant_id=%s',
-        user.id, 'SET' if api_key else 'MISSING', store_id or 'MISSING', variant_id,
+        '[LS checkout] user=%s plan_type=%s api_key=%s store_id=%s variant_id=%s',
+        user.id, plan_type, 'SET' if api_key else 'MISSING', store_id or 'MISSING', variant_id,
     )
 
     if not api_key:

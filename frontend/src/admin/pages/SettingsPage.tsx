@@ -5,13 +5,13 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { useToast } from '@/shared/hooks/use-toast';
 import { siteSettingsService, type SiteSettings } from '@/services/siteSettingsService';
-import { Loader2, DollarSign, Clock, Save } from 'lucide-react';
+import { Loader2, DollarSign, Clock, Save, CalendarDays } from 'lucide-react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', TRIAL_DAYS: '30' });
+  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30' });
 
   useEffect(() => {
     siteSettingsService.getAdmin()
@@ -74,6 +74,33 @@ export default function SettingsPage() {
                 onChange={e => setForm(f => ({ ...f, PREMIUM_PRICE: e.target.value }))}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="annual-price" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Precio anual (USD)
+              {Number(form.PREMIUM_PRICE) > 0 && Number(form.ANNUAL_PRICE) > 0 && (
+                <span className="ml-auto text-xs text-emerald-600 font-semibold">
+                  {Math.round((1 - Number(form.ANNUAL_PRICE) / (Number(form.PREMIUM_PRICE) * 12)) * 100)}% descuento vs mensual
+                </span>
+              )}
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">$</span>
+              <Input
+                id="annual-price"
+                type="number"
+                min="0.01"
+                step="0.01"
+                className="pl-7"
+                value={form.ANNUAL_PRICE}
+                onChange={e => setForm(f => ({ ...f, ANNUAL_PRICE: e.target.value }))}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Por defecto: ${(Number(form.PREMIUM_PRICE) * 12).toFixed(2)} (mensual × 12). Bajá este valor para dar descuento anual.
+            </p>
           </div>
 
           <div className="space-y-2">
