@@ -96,13 +96,18 @@ export default function TestersPage() {
           <p className="text-sky-800/80 text-lg mb-4 max-w-xl mx-auto">
             Somos un proyecto independiente y necesitamos médicos reales que prueben la app antes del lanzamiento oficial. Tu experiencia vale más que cualquier automatización.
           </p>
-          <p className="text-sky-800/70 text-sm mb-8 max-w-xl mx-auto">
-            Cualquier duda, sugerencia, opinión o problema que encuentres en la app, escribinos a{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold underline underline-offset-2 hover:text-sky-900">
-              {CONTACT_EMAIL}
-            </a>
-            . Estamos para ayudarte.
-          </p>
+          <div className="max-w-xl mx-auto mb-8 space-y-2 text-sm text-sky-800/70">
+            <p>
+              Cualquier duda, sugerencia, opinión o problema que encuentres en la app, escribinos a{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold underline underline-offset-2 hover:text-sky-900">
+                {CONTACT_EMAIL}
+              </a>
+              . Estamos para ayudarte.
+            </p>
+            <p>
+              📲 Las notificaciones push funcionan en <span className="font-semibold">Android</span>. En <span className="font-semibold">iPhone con Safari</span> no están disponibles por ahora.
+            </p>
+          </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="#android">
               <Button size="lg" className="bg-sky-700 hover:bg-sky-800 text-white w-full sm:w-auto gap-2">
