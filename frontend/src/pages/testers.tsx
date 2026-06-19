@@ -172,7 +172,7 @@ export default function TestersPage() {
           <div className="mt-10 border-t border-slate-100 pt-8">
             <h3 className="font-bold text-slate-800 mb-2">¿Qué vas a ver cuando te enviemos el link?</h3>
             <p className="text-slate-500 text-sm mb-5">
-              Una vez que nos escribas, te agregamos como tester y te mandamos el link personalizado. Al abrirlo vas a ver esto — ya vas a estar registrado, solo tocá <span className="font-semibold text-sky-700">«download it on Google Play»</span> para descargar la app.
+              Una vez que nos escribas, te agregamos como tester y te mandamos el link personalizado. Al abrirlo vas a ver una página como esta:
             </p>
 
             <img
@@ -181,9 +181,26 @@ export default function TestersPage() {
               className="w-full max-w-sm mx-auto rounded-2xl shadow-md mb-6"
             />
 
-            <p className="text-slate-500 text-sm text-center mb-4">
-              El texto <span className="font-semibold text-emerald-600">«You are a tester.»</span> en verde confirma que estás dentro del programa.
-            </p>
+            <ol className="space-y-3 mb-6">
+              <li className="flex gap-3 items-start">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs mt-0.5">1</span>
+                <p className="text-slate-600 text-sm">
+                  Tocá el botón azul <span className="font-semibold text-sky-700">«Become a tester»</span> para aceptar la invitación.
+                </p>
+              </li>
+              <li className="flex gap-3 items-start">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs mt-0.5">2</span>
+                <p className="text-slate-600 text-sm">
+                  Vas a ver <span className="font-semibold text-emerald-600">«You are a tester.»</span> en verde — eso confirma que estás dentro.
+                </p>
+              </li>
+              <li className="flex gap-3 items-start">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs mt-0.5">3</span>
+                <p className="text-slate-600 text-sm">
+                  Tocá el link azul <span className="font-semibold text-sky-700">«download it on Google Play»</span> para descargar la app.
+                </p>
+              </li>
+            </ol>
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
               <p className="font-semibold mb-1">¿No te llega el link o no funciona?</p>
