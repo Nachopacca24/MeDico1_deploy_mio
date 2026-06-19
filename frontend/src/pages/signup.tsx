@@ -226,26 +226,26 @@ export default function SignupForm() {
   return (
     <div className='flex min-h-screen w-full bg-slate-50 dark:bg-slate-950'>
       {/* Panel izquierdo (Branding) */}
-      <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-sky-200 via-sky-400 to-sky-600 p-12 text-white overflow-hidden relative'>
-        <div className="absolute top-40 -left-20 w-80 h-80 bg-white/15 rounded-full blur-3xl z-0 pointer-events-none"></div>
-        <div className="absolute -bottom-20 right-0 w-96 h-96 bg-white/15 rounded-full blur-3xl z-0 pointer-events-none"></div>
+      <div className='hidden w-full lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-sky-50 via-sky-200 to-sky-400 p-12 overflow-hidden relative'>
+        <div className="absolute top-40 -left-20 w-80 h-80 bg-white/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
+        <div className="absolute -bottom-20 right-0 w-96 h-96 bg-white/40 rounded-full blur-3xl z-0 pointer-events-none"></div>
 
-        <div className='relative z-10 flex items-center space-x-3 text-2xl font-bold'>
+        <div className='relative z-10 flex items-center space-x-3 text-2xl font-bold text-sky-900'>
           <Activity className="h-8 w-8" />
           <span>MeDico App</span>
         </div>
 
         <div className='relative z-10 space-y-4 max-w-lg'>
-          <HeartPulse className="h-12 w-12 text-white/80" />
-          <h1 className='text-4xl font-extrabold tracking-tight sm:text-5xl'>
+          <HeartPulse className="h-12 w-12 text-sky-700/70" />
+          <h1 className='text-4xl font-extrabold tracking-tight sm:text-5xl text-sky-900'>
             Únete a la evolución médica.
           </h1>
-          <p className='text-lg text-white/80'>
+          <p className='text-lg text-sky-800/80'>
             Regístrate hoy para transformar la forma en que interactúas con tus pacientes, citas y facturación.
           </p>
         </div>
 
-        <div className='relative z-10 text-sm text-white/60'>
+        <div className='relative z-10 text-sm text-sky-800/60'>
           © {new Date().getFullYear()} MeDico App Todos los derechos reservados.
         </div>
       </div>
@@ -254,14 +254,14 @@ export default function SignupForm() {
       <div className='flex w-full flex-col items-center justify-start lg:justify-center lg:p-6 lg:w-1/2 lg:animate-slide-up overflow-y-auto max-h-[100dvh]'>
 
         {/* Mobile brand header */}
-        <div className='lg:hidden w-full bg-gradient-to-br from-sky-200 via-sky-400 to-sky-600 px-6 pt-10 pb-8 text-white relative overflow-hidden shrink-0'>
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className='relative flex items-center gap-3 mb-3'>
-            <img src="/favicon.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow" />
+        <div className='lg:hidden w-full bg-gradient-to-br from-sky-50 via-sky-200 to-sky-400 px-6 pt-10 pb-8 relative overflow-hidden shrink-0'>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/50 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/50 rounded-full blur-2xl pointer-events-none" />
+          <div className='relative flex items-center gap-3 mb-3 text-sky-900'>
+            <img src="/favicon.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow-sm" />
             <span className='text-2xl font-bold tracking-tight'>MeDico App</span>
           </div>
-          <p className='relative text-white/70 text-sm'>Únete y obtén {/* trial days shown below */} días Premium gratis al registrarte.</p>
+          <p className='relative text-sky-800/70 text-sm'>Únete y obtén 14 días Premium gratis al registrarte.</p>
         </div>
 
         <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm lg:my-10 lg:rounded-xl rounded-t-none'>
