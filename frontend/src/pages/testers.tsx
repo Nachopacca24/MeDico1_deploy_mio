@@ -1,25 +1,57 @@
 import { Link } from "react-router-dom";
-import { Smartphone, Apple, Mail, CheckCircle, Users, Star, ArrowRight, Chrome, Share2, PlusSquare, Download } from "lucide-react";
+import { Smartphone, Apple, Mail, CheckCircle, Users, Star, ArrowRight, Clock } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
 
 const CONTACT_EMAIL = "contacto@medicoapp.app";
 
-const steps = {
-  ios: [
-    { icon: <Share2 className="h-5 w-5" />, title: "Abrí Safari", desc: 'En tu iPhone o iPad, abrí la app en Safari (no Chrome).' },
-    { icon: <Share2 className="h-5 w-5" />, title: 'Tocá el ícono de compartir', desc: 'El botón ⬆️ en la barra inferior de Safari.' },
-    { icon: <PlusSquare className="h-5 w-5" />, title: '"Agregar a pantalla de inicio"', desc: 'Buscá esa opción en el menú y tocá Agregar.' },
-    { icon: <CheckCircle className="h-5 w-5" />, title: "¡Listo!", desc: 'MeDico App aparecerá como ícono en tu pantalla. Abrila y registrate.' },
-  ],
-  android: [
-    { icon: <Mail className="h-5 w-5" />, title: "Escribinos tu correo de Google Play", desc: `Enviá un mail a ${CONTACT_EMAIL} indicando el correo que tenés registrado en Google Play Store. Sin ese correo no podemos darte acceso.` },
-    { icon: <Chrome className="h-5 w-5" />, title: "Recibís tu invitación", desc: 'En unas horas te enviamos un link personalizado para unirte al programa de pruebas. La app no es pública — solo acceden quienes reciben la invitación.' },
-    { icon: <Download className="h-5 w-5" />, title: "Instalá desde Play Store", desc: 'Seguí el link, aceptá la invitación en Google Play y descargá MeDico App.' },
-    { icon: <CheckCircle className="h-5 w-5" />, title: "¡Listo!", desc: 'Abrí la app, registrate y explorá. Tu feedback nos ayuda a mejorar antes del lanzamiento oficial.' },
-  ],
-};
+const iosSteps = [
+  {
+    img: "/MeDico inicio.JPG",
+    title: "Abrí Safari y entrá a la app",
+    desc: "Abrí Safari en tu iPhone o iPad y visitá la página de MeDico App. Tocá los tres puntos (•••) o el ícono de compartir en la barra del navegador.",
+  },
+  {
+    img: "/MeDico compartir.JPG",
+    title: "Tocá el ícono de Compartir",
+    desc: "En la barra inferior de Safari, tocá el ícono de compartir (la cajita con la flechita hacia arriba ⬆️).",
+  },
+  {
+    img: "/MeDico ver mas.JPG",
+    title: "Tocá \"Ver más\"",
+    desc: "En el menú que se despliega, deslizá hacia abajo y tocá el botón \"Ver más\" para ver todas las opciones disponibles.",
+  },
+  {
+    img: "/MeDico Menu.JPG",
+    title: "Seleccioná \"Agregar a inicio\"",
+    desc: "Buscá la opción \"Agregar a pantalla de inicio\" y tocála. Aparecerá una pantalla de confirmación.",
+  },
+  {
+    img: "/MeDico Agregar.JPG",
+    title: "Confirmá el nombre y tocá Agregar",
+    desc: "Verificá que el nombre diga \"MeDico App\". Si no está, escribilo. Luego tocá \"Agregar\" en la esquina superior derecha. ¡Listo!",
+  },
+];
+
+const androidSteps = [
+  {
+    title: "Escribinos tu correo de Google Play",
+    desc: `Enviá un mail a ${CONTACT_EMAIL} indicando el correo que tenés registrado en Google Play Store. Sin ese correo no podemos darte acceso.`,
+  },
+  {
+    title: "Recibís tu invitación",
+    desc: "En unas horas te enviamos un link personalizado para unirte al programa de pruebas. La app no es pública — solo acceden quienes reciben la invitación.",
+  },
+  {
+    title: "Instalá desde Play Store",
+    desc: "Seguí el link, aceptá la invitación en Google Play y descargá MeDico App.",
+  },
+  {
+    title: "¡Listo!",
+    desc: "Abrí la app, registrate y explorá. Tu feedback nos ayuda a mejorar antes del lanzamiento oficial.",
+  },
+];
 
 const benefits = [
   { icon: <Star className="h-5 w-5 text-yellow-500" />, text: "Acceso Premium gratuito durante todo el período de prueba" },
@@ -57,7 +89,7 @@ export default function TestersPage() {
           </div>
 
           <p className="text-sky-800/80 text-lg mb-8 max-w-xl mx-auto">
-            Somos un proyecto independiente y necesitamos médicos reales que prueben la app antes del lanzamiento oficial en Android. Tu experiencia vale más que cualquier automatización.
+            Somos un proyecto independiente y necesitamos médicos reales que prueben la app antes del lanzamiento oficial. Tu experiencia vale más que cualquier automatización.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="#android">
@@ -67,7 +99,7 @@ export default function TestersPage() {
             </a>
             <a href="#ios">
               <Button size="lg" variant="outline" className="border-sky-700 text-sky-800 hover:bg-sky-50 w-full sm:w-auto gap-2">
-                <Apple className="h-5 w-5" /> Unirme desde iPhone
+                <Apple className="h-5 w-5" /> Instalar en iPhone
               </Button>
             </a>
           </div>
@@ -92,18 +124,27 @@ export default function TestersPage() {
       {/* Android */}
       <div id="android" className="bg-white border-y border-slate-100 px-6 py-14 scroll-mt-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-2">
             <div className="bg-sky-100 rounded-xl p-2.5">
               <Smartphone className="h-6 w-6 text-sky-700" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">Android — Google Play</h2>
-              <p className="text-sm text-slate-500">Instalación oficial desde Play Store</p>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800">Android — Google Play</h2>
+                <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-200">
+                  <Clock className="h-3 w-3" /> En proceso
+                </span>
+              </div>
+              <p className="text-sm text-slate-500">Programa de pruebas cerrado — cupos limitados</p>
             </div>
           </div>
 
+          <p className="text-slate-500 text-sm mb-8">
+            Estamos en fase de pruebas cerradas en Google Play. Para unirte necesitamos agregar tu correo manualmente al programa.
+          </p>
+
           <div className="space-y-4 mb-8">
-            {steps.android.map((step, i) => (
+            {androidSteps.map((step, i) => (
               <div key={i} className="flex gap-4 items-start">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm">
                   {i + 1}
@@ -132,32 +173,47 @@ export default function TestersPage() {
       {/* iOS */}
       <div id="ios" className="px-6 py-14 scroll-mt-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-2">
             <div className="bg-slate-100 rounded-xl p-2.5">
               <Apple className="h-6 w-6 text-slate-700" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">iPhone / iPad — Instalar como app</h2>
-              <p className="text-sm text-slate-500">Sin App Store. Se instala desde el navegador en segundos.</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl font-bold text-slate-800">iPhone / iPad — Safari</h2>
+                <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 text-xs font-semibold px-2.5 py-1 rounded-full border border-slate-200">
+                  <Clock className="h-3 w-3" /> App Store próximamente
+                </span>
+              </div>
+              <p className="text-sm text-slate-500">Instalá como app desde Safari — sin necesidad de App Store</p>
             </div>
           </div>
 
-          <div className="space-y-4 mb-8">
-            {steps.ios.map((step, i) => (
-              <div key={i} className="flex gap-4 items-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm">
-                  {i + 1}
+          <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-8 text-sm text-sky-800">
+            <strong>Importante:</strong> Abrí esta página en <strong>Safari</strong> (no Chrome ni otro navegador) para que aparezcan todas las opciones del menú.
+          </div>
+
+          {/* Pasos con imágenes */}
+          <div className="space-y-8 mb-8">
+            {iosSteps.map((step, i) => (
+              <div key={i} className="flex flex-col sm:flex-row gap-4 items-start">
+                <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm">
+                    {i + 1}
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-800">{step.title}</p>
-                  <p className="text-slate-500 text-sm">{step.desc}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-800 mb-1">{step.title}</p>
+                  <p className="text-slate-500 text-sm mb-3">{step.desc}</p>
+                  <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                    <img
+                      src={step.img}
+                      alt={step.title}
+                      className="w-full object-contain max-h-64"
+                    />
+                  </div>
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-6 text-sm text-sky-800">
-            <strong>Importante:</strong> Abrí esta página en <strong>Safari</strong> (no Chrome ni otro navegador) para que aparezca la opción "Agregar a pantalla de inicio".
           </div>
 
           <a href={typeof window !== 'undefined' ? window.location.origin : 'https://medicoapp.app'} target="_blank" rel="noopener noreferrer">
@@ -174,9 +230,9 @@ export default function TestersPage() {
       <div className="bg-gradient-to-br from-sky-50 via-sky-100 to-sky-200 px-6 py-14 text-center">
         <div className="max-w-xl mx-auto">
           <Mail className="h-10 w-10 text-sky-700 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-sky-900 mb-3">¿Querés ser tester o tenés preguntas?</h2>
+          <h2 className="text-2xl font-bold text-sky-900 mb-3">¿Tenés preguntas o querés ser tester?</h2>
           <p className="text-sky-800/80 mb-6">
-            Escribinos directamente. Te respondemos rápido y te guiamos en el proceso de instalación.
+            Escribinos directamente. Te respondemos rápido y te guiamos en el proceso paso a paso.
           </p>
           <a href={`mailto:${CONTACT_EMAIL}`}>
             <Button size="lg" className="bg-sky-700 hover:bg-sky-800 text-white gap-2 text-base px-8">
