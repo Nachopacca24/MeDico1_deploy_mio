@@ -599,8 +599,8 @@ const Settings = () => {
 
               {/* Over-limit warning: shown when free user tries to create and backend returns 403 */}
               {user?.plan === 'free' && (
-                <Alert className="border-slate-700 bg-slate-800/50">
-                  <AlertDescription className="text-slate-400 text-sm">
+                <Alert className="border-border bg-muted">
+                  <AlertDescription className="text-muted-foreground text-sm">
                     Plan gratuito: hasta <strong>5 cirugías activas</strong>, 3 colegas, 5 procedimientos y 2 hospitales favoritos.
                     Si superás el límite al pasar a free, archivá cirugías para volver a crear nuevas.
                   </AlertDescription>
