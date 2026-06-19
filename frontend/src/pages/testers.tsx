@@ -167,6 +167,38 @@ export default function TestersPage() {
           <p className="text-xs text-slate-400 text-center mt-2">
             Abre tu app de correo con el mensaje listo. Solo completá tu email de Google Play y enviá.
           </p>
+
+          {/* Qué verás cuando recibas el link */}
+          <div className="mt-10 border-t border-slate-100 pt-8">
+            <h3 className="font-bold text-slate-800 mb-2">¿Qué vas a ver cuando te enviemos el link?</h3>
+            <p className="text-slate-500 text-sm mb-5">
+              Una vez que nos escribas, te agregamos como tester y te mandamos el link personalizado. Al abrirlo vas a ver esto — ya vas a estar registrado, solo tocá <span className="font-semibold text-sky-700">«download it on Google Play»</span> para descargar la app.
+            </p>
+
+            <img
+              src="/andoridtest.jpeg"
+              alt="Página de Google Play Testing — You are a tester"
+              className="w-full max-w-sm mx-auto rounded-2xl shadow-md mb-6"
+            />
+
+            <p className="text-slate-500 text-sm text-center mb-4">
+              El texto <span className="font-semibold text-emerald-600">«You are a tester.»</span> en verde confirma que estás dentro del programa.
+            </p>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+              <p className="font-semibold mb-1">¿No te llega el link o no funciona?</p>
+              <p className="mb-2">Entrá directamente desde acá:</p>
+              <a
+                href="https://play.google.com/apps/testing/app.medicoapp.medico"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sky-600 font-semibold hover:underline break-all"
+              >
+                <ArrowRight className="h-3.5 w-3.5 flex-shrink-0" />
+                play.google.com/apps/testing/app.medicoapp.medico
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
