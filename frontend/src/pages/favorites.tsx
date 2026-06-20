@@ -1,63 +1,11 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
-import { loadCSV } from "@/shared/utils/csvLoader";
 import { Star, StarOff, Building2, Shield, Stethoscope, Loader2 } from "lucide-react";
 import { favoritesService, Favorite } from "@/services/favoritesService";
 import { hospitalService } from "@/services/hospitalService";
 import { insuranceService } from "@/services/insuranceService";
 import { useFavorites } from "@/core/contexts/FavoritesContext";
 import { useToast } from "@/shared/hooks/useToast";
-
-const folderStructure = {
-  Cardiovascular: {
-    "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
-    "Corazón": "Cardiovascular/Corazón.csv",
-    "Vasos Periféricos": "Cardiovascular/Vasos_periféricos.csv",
-    "Tórax": "Cardiovascular/torax.csv",
-  },
-  Dermatología: { "Dermatología": "Dermatología/Dermatología.csv" },
-  Digestivo: {
-    "Digestivo": "Digestivo/Digestivo.csv",
-    "Estómago e Intestino": "Digestivo/Estómago_e_intestino.csv",
-    "Hígado y Páncreas": "Digestivo/Hígado_Páncreas.csv",
-    "Peritoneo y Hernias": "Digestivo/Peritoneo_y_hernias.csv",
-  },
-  Endocrino: { "Endocrino": "Endocrino/Endocrino.csv" },
-  Ginecología: { "Ginecología": "Ginecología/Ginecología.csv" },
-  Mama: { "Mama": "Mama/Mama.csv" },
-  Maxilofacial: { "Maxilofacial": "Maxilofacial/Maxilofacial.csv" },
-  Neurocirugía: {
-    "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
-    "Columna": "Neurocirugía/Columna.csv",
-    "Cráneo y Columna": "Neurocirugía/Cráneo_y_columna.csv",
-  },
-  Obstetricia: { "Obstetricia": "Obstetricia/Obstetricia.csv" },
-  Oftalmología: { "Oftalmología": "Oftalmología/Oftalmología.csv" },
-  Ortopedia: {
-    "Ortopedia": "Ortopedia/Ortopedia.csv",
-    "Cadera": "Ortopedia/Cadera.csv",
-    "Hombro": "Ortopedia/Hombro.csv",
-    "Muñeca y Mano": "Ortopedia/Muñeca_y_mano.csv",
-    "Pie": "Ortopedia/Pie.csv",
-    "Yesos y Férulas": "Ortopedia/Yesos_y_ferulas.csv",
-    "Injertos, Implantes y Replantación": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
-    "Artroscopias": "Ortopedia/Artroscopia.csv",
-  },
-  Otorrino: {
-    "Laringe y Tráqueas": "Otorrino/Laringe_y_traqueas.csv",
-    "Nariz y Senos Paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
-    "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-    "Tórax": "Otorrino/torax.csv",
-  },
-  Plástica: { "Cirugía Plástica": "Plastica/Plastica.csv" },
-  "Procesos Variados": {
-    "Cirugía General": "Procesos_variados/Cirugía_General.csv",
-    "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
-    "Reparaciones (Suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
-    "Uñas y Piel": "Procesos_variados/Uñas___piel.csv",
-  },
-  Urología: { "Urología": "Urología/Urología.csv" },
-};
 
 // ── Sección con título ────────────────────────────────────────────────────────
 function Section({ icon, title, count, children }: {
@@ -78,14 +26,16 @@ function Section({ icon, title, count, children }: {
   );
 }
 
-// ── Tarjeta procedimiento ─────────────────────────────────────────────────────
-function ProcedureCard({ op, isRemoving, onRemove }: {
-  op: any; isRemoving: boolean; onRemove: () => void;
+// ── Tarjeta procedimiento (datos de la API, sin cargar CSVs) ──────────────────
+function ProcedureCard({ fav, isRemoving, onRemove }: {
+  fav: Favorite; isRemoving: boolean; onRemove: () => void;
 }) {
   return (
     <div className="border rounded-xl p-4 bg-card flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
-        <p className="font-semibold text-sm leading-tight flex-1">{op.cirugia || 'Sin nombre'}</p>
+        <p className="font-semibold text-sm leading-tight flex-1">
+          {fav.surgery_name || fav.surgery_code}
+        </p>
         <button
           onClick={onRemove}
           disabled={isRemoving}
@@ -98,12 +48,8 @@ function ProcedureCard({ op, isRemoving, onRemove }: {
         </button>
       </div>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{op.especialidad || '—'}</span>
-        <span className="font-mono">{op.codigo}</span>
-      </div>
-      <div className="flex items-center justify-between text-xs pt-1 border-t">
-        <span className="text-muted-foreground">RVU</span>
-        <span className="font-bold text-base">{op.rvu || '0'}</span>
+        <span>{fav.specialty || '—'}</span>
+        <span className="font-mono">{fav.surgery_code}</span>
       </div>
     </div>
   );
@@ -135,73 +81,43 @@ const FavoritesPage = () => {
   const { refreshFavorites } = useFavorites();
   const { toast } = useToast();
 
-  const [procedures, setProcedures] = useState<any[]>([]);
+  const [procedures, setProcedures] = useState<Favorite[]>([]);
   const [hospitals, setHospitals] = useState<any[]>([]);
   const [insurances, setInsurances] = useState<any[]>([]);
-  const [procedureFavs, setProcedureFavs] = useState<Favorite[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [removingProcedure, setRemovingProcedure] = useState<number | null>(null);
   const [removingHospital, setRemovingHospital] = useState<number | null>(null);
   const [removingInsurance, setRemovingInsurance] = useState<number | null>(null);
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [apiFavs, favHospitals, allInsurances] = await Promise.all([
-        favoritesService.getFavorites(),
-        hospitalService.getFavoriteHospitals(),
-        insuranceService.getInsurances(),
-      ]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        // 3 llamadas en paralelo — sin cargar ningún CSV
+        const [apiFavs, favHospitals, allInsurances] = await Promise.all([
+          favoritesService.getFavorites(),
+          hospitalService.getFavoriteHospitals(),
+          insuranceService.getInsurances(),
+        ]);
 
-      const favsArray: Favorite[] = Array.isArray(apiFavs) ? apiFavs : [];
-      setProcedureFavs(favsArray);
-      setHospitals(Array.isArray(favHospitals) ? favHospitals : []);
-      setInsurances(Array.isArray(allInsurances) ? allInsurances.filter((i: any) => i.is_favorite) : []);
-
-      if (favsArray.length === 0) {
-        setProcedures([]);
+        setProcedures(Array.isArray(apiFavs) ? apiFavs : []);
+        setHospitals(Array.isArray(favHospitals) ? favHospitals : []);
+        setInsurances(Array.isArray(allInsurances) ? allInsurances.filter((i: any) => i.is_favorite) : []);
+      } catch {
+        toast.error('Error', 'No se pudieron cargar los favoritos.');
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const favCodes = new Set(favsArray.map(f => String(f.surgery_code).trim()));
-      const found: any[] = [];
-      const foundCodes = new Set<string>();
-
-      for (const subcategories of Object.values(folderStructure)) {
-        for (const csvPath of Object.values(subcategories)) {
-          try {
-            const ops = await loadCSV(csvPath);
-            ops.forEach((op: any) => {
-              const code = String(op?.codigo || '').trim();
-              if (favCodes.has(code) && !foundCodes.has(code)) {
-                const fav = favsArray.find(f => String(f.surgery_code).trim() === code);
-                found.push({ ...op, favorite_id: fav?.id });
-                foundCodes.add(code);
-              }
-            });
-          } catch { /* skip */ }
-        }
-      }
-
-      setProcedures(found);
-    } catch {
-      toast.error('Error', 'No se pudieron cargar los favoritos.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, []);
+    };
+    load();
+  }, []);
 
   const removeProcedure = async (favoriteId: number) => {
     setRemovingProcedure(favoriteId);
     try {
       await favoritesService.removeFavorite(favoriteId);
       await refreshFavorites();
-      setProcedures(prev => prev.filter(p => p.favorite_id !== favoriteId));
-      setProcedureFavs(prev => prev.filter(f => f.id !== favoriteId));
+      setProcedures(prev => prev.filter(p => p.id !== favoriteId));
     } catch {
       toast.error('Error', 'No se pudo quitar el favorito.');
     } finally {
@@ -256,7 +172,9 @@ const FavoritesPage = () => {
         <div className="flex items-center justify-between border-b pb-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Mis Favoritos</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{total} elemento{total !== 1 ? 's' : ''} guardado{total !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {total} elemento{total !== 1 ? 's' : ''} guardado{total !== 1 ? 's' : ''}
+            </p>
           </div>
         </div>
 
@@ -265,34 +183,32 @@ const FavoritesPage = () => {
             <StarOff className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Aún no tenés favoritos</h3>
             <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              Guardá procedimientos, hospitales y seguros con la estrella ⭐ para encontrarlos rápido acá.
+              Guardá procedimientos, hospitales y seguros con la estrella para encontrarlos rápido acá.
             </p>
           </div>
         ) : (
           <>
-            {/* Procedimientos */}
             {procedures.length > 0 && (
               <Section icon={<Stethoscope className="w-4 h-4" />} title="Procedimientos" count={procedures.length}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {procedures.map((op, i) => (
+                  {procedures.map(fav => (
                     <ProcedureCard
-                      key={`proc-${op.codigo}-${i}`}
-                      op={op}
-                      isRemoving={removingProcedure === op.favorite_id}
-                      onRemove={() => removeProcedure(op.favorite_id)}
+                      key={fav.id}
+                      fav={fav}
+                      isRemoving={removingProcedure === fav.id}
+                      onRemove={() => removeProcedure(fav.id)}
                     />
                   ))}
                 </div>
               </Section>
             )}
 
-            {/* Hospitales */}
             {hospitals.length > 0 && (
               <Section icon={<Building2 className="w-4 h-4" />} title="Hospitales" count={hospitals.length}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {hospitals.map(h => (
                     <SimpleCard
-                      key={`hosp-${h.id}`}
+                      key={h.id}
                       name={h.name}
                       isRemoving={removingHospital === h.id}
                       onRemove={() => removeHospital(h.id)}
@@ -302,13 +218,12 @@ const FavoritesPage = () => {
               </Section>
             )}
 
-            {/* Seguros */}
             {insurances.length > 0 && (
               <Section icon={<Shield className="w-4 h-4" />} title="Seguros" count={insurances.length}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {insurances.map(ins => (
                     <SimpleCard
-                      key={`ins-${ins.id}`}
+                      key={ins.id}
                       name={ins.name}
                       isRemoving={removingInsurance === ins.id}
                       onRemove={() => removeInsurance(ins.id)}

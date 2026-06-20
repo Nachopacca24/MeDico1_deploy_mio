@@ -68,15 +68,23 @@ export const csvMap: Record<string, string> = {
   "Plastica/Plastica.csv": "surgeries/Plastica/Plastica.csv",
 };
 
-export async function loadCSV(path: string) {
+// In-memory cache: survives navigation, cleared on full page reload
+const csvCache = new Map<string, any[]>();
+
+// Deduplicate in-flight requests: same CSV requested twice won't fetch twice
+const inflightRequests = new Map<string, Promise<any[]>>();
+
+export async function loadCSV(path: string): Promise<any[]> {
+  if (csvCache.has(path)) return csvCache.get(path)!;
+  if (inflightRequests.has(path)) return inflightRequests.get(path)!;
+
   const url = csvMap[path];
   if (!url) {
     throw new Error(`CSV no encontrado para la ruta: ${path}`);
   }
 
+  const promise = (async () => {
   try {
-    // ❌ ANTES: await fetch`/${url}`)
-    // ✅ AHORA: await fetch(`/${url}`)
     const response = await fetch(`/${url}`);
 
     if (!response.ok) {
@@ -96,10 +104,19 @@ export async function loadCSV(path: string) {
       transformHeader: (header) => header.trim()
     });
 
-    return parsed.data;
+    const data = parsed.data as any[];
+    csvCache.set(path, data);
+    return data;
 
   } catch (error) {
     console.error(`Error cargando ${path}:`, error);
+    inflightRequests.delete(path);
     throw error;
   }
+  })();
+
+  inflightRequests.set(path, promise);
+  const result = await promise;
+  inflightRequests.delete(path);
+  return result;
 }

@@ -192,38 +192,42 @@ const Operations = () => {
   useEffect(() => {
     async function fetchAllCSV() {
       try {
-        console.log("[Operations] Iniciando carga de CSVs...");
         setLoading(true);
-        const data: Record<string, any[]> = {};
-        
-        const specialties = Object.entries(folderStructure);
-        for (const [specialty, subcategories] of specialties) {
-          for (const [subName, csvPath] of Object.entries(subcategories)) {
-            try {
-              console.log(`[Operations] Cargando: ${csvPath}`);
-              const csvContent = await loadCSV(csvPath);
-              data[csvPath] = csvContent.map(op => ({
-                ...op,
-                especialidad: specialty,
-                subespecialidad: subName
-              }));
-            } catch (err) {
-              console.error(`[Operations] Error cargando ${csvPath}:`, err);
-            }
-          }
-          setCsvData({ ...data });
-        }
-        
-        console.log("[Operations] Carga completa. Expandiendo carpetas...");
-        const allSpecialtiesExpanded = Object.keys(folderStructure).reduce((acc, specialty) => ({
-          ...acc,
-          [specialty]: true
-        }), {});
-        setExpandedSpecialties(allSpecialtiesExpanded);
 
-      } catch (err: any) {
-        console.error("[Operations] Error general:", err);
-        setError(err.message);
+        // Collect all (specialty, subName, csvPath) tuples
+        const tasks: Array<{ specialty: string; subName: string; csvPath: string }> = [];
+        for (const [specialty, subcategories] of Object.entries(folderStructure)) {
+          for (const [subName, csvPath] of Object.entries(subcategories)) {
+            tasks.push({ specialty, subName, csvPath });
+          }
+        }
+
+        // Load all CSVs in parallel (cache makes re-visits instant)
+        const results = await Promise.allSettled(
+          tasks.map(({ csvPath }) => loadCSV(csvPath))
+        );
+
+        const data: Record<string, CSVOperation[]> = {};
+        results.forEach((result, i) => {
+          if (result.status === 'fulfilled') {
+            const { specialty, subName, csvPath } = tasks[i];
+            data[csvPath] = result.value.map(op => ({
+              ...op,
+              especialidad: specialty,
+              subespecialidad: subName,
+            }));
+          }
+        });
+
+        setCsvData(data);
+
+        const allExpanded = Object.keys(folderStructure).reduce<Record<string, boolean>>(
+          (acc, s) => ({ ...acc, [s]: true }), {}
+        );
+        setExpandedSpecialties(allExpanded);
+
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al cargar procedimientos');
       } finally {
         setLoading(false);
       }
