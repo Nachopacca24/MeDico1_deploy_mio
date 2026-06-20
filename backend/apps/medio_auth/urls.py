@@ -34,6 +34,9 @@ from .views import (
 
     # Delete Account
     DeleteAccountView,
+
+    # Tutorial
+    complete_tutorial,
 )
 
 app_name = 'medio_auth'
@@ -86,4 +89,5 @@ urlpatterns = [
     # ELIMINACIÓN DE CUENTA
     # ============================================
     path('delete-account/', DeleteAccountView.as_view(), name='delete_account'),
+    path('tutorial-complete/', complete_tutorial, name='complete_tutorial'),
 ]

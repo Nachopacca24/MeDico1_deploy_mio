@@ -23,7 +23,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework.decorators import throttle_classes
+from rest_framework.decorators import throttle_classes, api_view, permission_classes
 from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle, ColleagueSearchThrottle
 
 from ..serializers import (
@@ -1294,3 +1294,12 @@ class ResetPasswordView(APIView):
             {'message': 'Contraseña restablecida exitosamente. Ya podés iniciar sesión.'},
             status=status.HTTP_200_OK
         )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_tutorial(request):
+    """Mark the onboarding tutorial as completed for the authenticated user."""
+    request.user.tutorial_completed = True
+    request.user.save(update_fields=['tutorial_completed'])
+    return Response({'ok': True})

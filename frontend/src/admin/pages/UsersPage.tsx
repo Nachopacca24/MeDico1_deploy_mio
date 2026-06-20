@@ -36,6 +36,7 @@ interface User {
   total_favorites: number;
   has_google_calendar: boolean;
   has_colleagues: boolean;
+  tutorial_completed: boolean;
   deletion_requested_at: string | null;
 }
 
@@ -369,6 +370,9 @@ const UsersPage = () => {
 
                   {/* Feature adoption */}
                   <div className="flex gap-2 flex-wrap">
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.tutorial_completed ? 'bg-green-50 border-green-200 text-green-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                      <span>{user.tutorial_completed ? '✓' : '○'}</span> Tutorial
+                    </span>
                     <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.has_google_calendar ? 'bg-green-50 border-green-200 text-green-700' : 'bg-muted border-border text-muted-foreground'}`}>
                       <span>{user.has_google_calendar ? '✓' : '○'}</span> Google Calendar
                     </span>

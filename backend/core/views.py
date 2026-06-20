@@ -249,6 +249,7 @@ def admin_users(request):
         'date_joined', 'last_login', 'plan', 'specialty', 'phone',
         'trial_ends_at', 'is_permanent_premium', 'role',
         'ls_renews_at', 'ls_cancelled', 'ls_subscription_id',
+        'tutorial_completed',
     )
 
     # Feature adoption — simple flat ID sets
@@ -296,6 +297,7 @@ def admin_users(request):
         user['full_name'] = full_name if full_name else user['username']
         user['has_google_calendar'] = user['id'] in calendar_ids
         user['has_colleagues'] = user['id'] in colleague_ids
+        user['tutorial_completed'] = user.get('tutorial_completed', False)
         user['total_cases'] = case_counts.get(user['id'], 0)
         user['total_favorites'] = (
             fav_counts.get(user['id'], 0) +

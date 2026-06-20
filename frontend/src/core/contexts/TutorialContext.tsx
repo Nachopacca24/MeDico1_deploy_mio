@@ -2,6 +2,9 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '@/shared/services/authService';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export interface TutorialStep {
   step: number;
@@ -175,6 +178,8 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     const nextStepNum = tutorialState.step + 1;
     if (nextStepNum > TUTORIAL_STEPS.length) {
       update({ active: false, completed: true });
+      // Notify backend — fire and forget
+      authService.authenticatedFetch(`${API_URL}/api/auth/tutorial-complete/`, { method: 'POST' }).catch(() => {});
     } else {
       update({ step: nextStepNum });
       navigate(TUTORIAL_STEPS[nextStepNum - 1].route);

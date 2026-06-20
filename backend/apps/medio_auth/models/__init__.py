@@ -124,6 +124,11 @@ class CustomUser(AbstractUser):
         verbose_name="Suscripción cancelada",
         help_text="True si el usuario canceló pero aún tiene acceso hasta ls_renews_at"
     )
+
+    tutorial_completed = models.BooleanField(
+        default=False,
+        verbose_name="Tutorial completado",
+    )
     
     # Verificación de Email - CAMPOS NUEVOS
     is_email_verified = models.BooleanField(
