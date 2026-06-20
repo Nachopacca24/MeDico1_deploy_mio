@@ -315,12 +315,15 @@ export default function Login() {
                 Google
               </Button>
 
-              <p className='text-center text-sm text-muted-foreground'>
-                ¿No tienes cuenta?{" "}
-                <Link to='/signup' className='text-primary font-medium underline-offset-4 hover:underline'>
-                  Regístrate ahora
+              <div className='flex flex-col items-center gap-1.5'>
+                <p className='text-sm text-muted-foreground'>¿No tienes cuenta?</p>
+                <Link
+                  to='/signup'
+                  className='w-full flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 active:scale-95 text-amber-900 font-bold py-3 rounded-xl transition-all text-sm'
+                >
+                  ✨ Regístrate ahora — 30 días gratis
                 </Link>
-              </p>
+              </div>
 
               <div className='text-center text-xs text-muted-foreground/70 pt-2 border-t border-slate-100 dark:border-slate-800'>
                 Al usar MeDico App aceptas nuestros{" "}
