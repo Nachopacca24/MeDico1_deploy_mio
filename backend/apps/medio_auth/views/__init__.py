@@ -167,6 +167,8 @@ class LoginView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             user.check_trial_expiry()
+            user.last_login = timezone.now()
+            user.save(update_fields=['last_login'])
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
 
@@ -1003,11 +1005,13 @@ class GoogleLoginView(APIView):
                 user.save(update_fields=['is_email_verified'])
 
             user.check_trial_expiry()
+            user.last_login = timezone.now()
+            user.save(update_fields=['last_login'])
 
             # Generar tokens nativos
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
-            
+
             return Response({
                 'message': 'Login con Google exitoso' if not created else 'Registro con Google exitoso',
                 'user': user_data,
