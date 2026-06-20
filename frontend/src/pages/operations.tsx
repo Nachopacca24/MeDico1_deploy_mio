@@ -286,10 +286,10 @@ const Operations = () => {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-start justify-center pt-24">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">Cargando cirugías...</p>
+            <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">Cargando procedimientos...</p>
           </div>
         </div>
       </AppLayout>
