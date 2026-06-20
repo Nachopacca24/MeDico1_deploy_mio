@@ -130,6 +130,7 @@ const NewCase = () => {
   const [showFavorites, setShowFavorites] = useState(true);
   const [loadingFavoriteRvu, setLoadingFavoriteRvu] = useState<string | null>(null);
   const [loadingAllProcedures, setLoadingAllProcedures] = useState(false);
+  const [togglingFavorite, setTogglingFavorite] = useState<string | null>(null);
 
   // Cargar cada sección de forma independiente — el formulario se muestra de inmediato
   useEffect(() => {
@@ -195,229 +196,67 @@ const NewCase = () => {
       .slice(0, 50);
   }, [searchQuery, allProcedures]);
 
-  // ✅ BÚSQUEDA: Carga CSVs solo cuando el usuario busca
-  // ✅ BÚSQUEDA: Carga CSVs solo cuando el usuario busca
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
-
-    if (query.length < 2) {
-      setShowProcedureSearch(false);
-      return;
-    }
-
+    if (query.length < 2) { setShowProcedureSearch(false); return; }
     setShowProcedureSearch(true);
 
-  // Solo cargar CSVs la primera vez que se busca
-  if (allProcedures.length === 0) {
-    setLoadingAllProcedures(true);
-
-    const folderStructure: Record<string, Record<string, string>> = {
-      "Cardiovascular": {
-        "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
-        "Corazón": "Cardiovascular/Corazón.csv",
-        "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
-        "Tórax": "Cardiovascular/torax.csv",
-      },
-      "Dermatología": {
-        "Dermatología": "Dermatología/Dermatología.csv",
-      },
-      "Digestivo": {
-        "Digestivo": "Digestivo/Digestivo.csv",
-        "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
-        "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
-        "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
-      },
-      "Endocrino": {
-        "Endocrino": "Endocrino/Endocrino.csv",
-      },
-      "Ginecología": {
-        "Ginecología": "Ginecología/Ginecología.csv",
-      },
-      "Mama": {
-        "Mama": "Mama/Mama.csv",
-      },
-      "Maxilofacial": {
-        "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
-      },
-      "Neurocirugía": {
-        "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
-        "Columna": "Neurocirugía/Columna.csv",
-        "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
-      },
-      "Obstetricia": {
-        "Obstetricia": "Obstetricia/Obstetricia.csv",
-      },
-      "Oftalmología": {
-        "Oftalmología": "Oftalmología/Oftalmología.csv",
-      },
-      "Ortopedia": {
-        "Ortopedia": "Ortopedia/Ortopedia.csv",
-        "Cadera": "Ortopedia/Cadera.csv",
-        "Hombro": "Ortopedia/Hombro.csv",
-        "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
-        "Pie": "Ortopedia/Pie.csv",
-        "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
-        "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
-        "Artroscopia": "Ortopedia/Artroscopia.csv",
-      },
-      "Otorrinolaringología": {
-        "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
-        "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
-        "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-        "Tórax": "Otorrino/torax.csv",
-      },
-      "Plástica": {
-        "Plástica": "Plastica/Plastica.csv",
-      },
-      "Procesos variados": {
-        "Cirugía General": "Procesos_variados/Cirugía_General.csv",
-        "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
-        "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
-        "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
-      },
-      "Urología": {
-        "Urología": "Urología/Urología.csv",
-      },
-    };
-
-    const procedures: ProcedureData[] = [];
-
-    for (const [specialty, subcategories] of Object.entries(folderStructure)) {
-      for (const [subName, csvPath] of Object.entries(subcategories)) {
-        try {
-          const csvContent = await loadCSV(csvPath);
-          csvContent.forEach((op: any) => {
-            procedures.push({
-              codigo: String(op.codigo || '').trim(),
+    if (allProcedures.length === 0) {
+      setLoadingAllProcedures(true);
+      const tasks: Array<{ specialty: string; subName: string; csvPath: string }> = [];
+      for (const [specialty, subcategories] of Object.entries(FOLDER_STRUCTURE)) {
+        for (const [subName, csvPath] of Object.entries(subcategories)) {
+          tasks.push({ specialty, subName, csvPath });
+        }
+      }
+      const results = await Promise.allSettled(tasks.map(({ csvPath }) => loadCSV(csvPath)));
+      const procedures: ProcedureData[] = [];
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') {
+          const { specialty, subName } = tasks[i];
+          result.value.forEach((op: Record<string, string>) => {
+            if (op.codigo) procedures.push({
+              codigo: String(op.codigo).trim(),
               cirugia: op.cirugia || '',
               especialidad: specialty,
               subespecialidad: subName,
               grupo: op.grupo || '',
-              rvu: parseFloat(op.rvu) || 0
+              rvu: parseFloat(op.rvu) || 0,
             });
           });
-        } catch { /* ignore */ }
-      }
+        }
+      });
+      setAllProcedures(procedures);
+      setLoadingAllProcedures(false);
     }
-
-    setAllProcedures(procedures);
-    setLoadingAllProcedures(false);
-  }
-};
-  // ✅ NUEVA FUNCIÓN: Cargar RVU de un favorito específico
+  };
   const loadFavoriteRvu = async (proc: ProcedureData): Promise<ProcedureData | null> => {
+    setLoadingFavoriteRvu(proc.codigo);
     try {
-      setLoadingFavoriteRvu(proc.codigo);
-
-      // Si allProcedures ya está cargado, buscar ahí
       if (allProcedures.length > 0) {
         const found = allProcedures.find(p => p.codigo === proc.codigo);
-        if (found) {
-          setLoadingFavoriteRvu(null);
-          return found;
-        }
+        if (found) return found;
       }
-
-      // Si no está cargado, buscar en los CSVs por especialidad
-      const folderStructure: Record<string, Record<string, string>> = {
-        "Cardiovascular": {
-          "Cardiovascular": "Cardiovascular/Cardiovascular.csv",
-          "Corazón": "Cardiovascular/Corazón.csv",
-          "Vasos periféricos": "Cardiovascular/Vasos_periféricos.csv",
-          "Tórax": "Cardiovascular/torax.csv",
-        },
-        "Dermatología": {
-          "Dermatología": "Dermatología/Dermatología.csv",
-        },
-        "Digestivo": {
-          "Digestivo": "Digestivo/Digestivo.csv",
-          "Estómago e intestino": "Digestivo/Estómago_e_intestino.csv",
-          "Hígado Páncreas": "Digestivo/Hígado_Páncreas.csv",
-          "Peritoneo y hernias": "Digestivo/Peritoneo_y_hernias.csv",
-        },
-        "Endocrino": {
-          "Endocrino": "Endocrino/Endocrino.csv",
-        },
-        "Ginecología": {
-          "Ginecología": "Ginecología/Ginecología.csv",
-        },
-        "Mama": {
-          "Mama": "Mama/Mama.csv",
-        },
-        "Maxilofacial": {
-          "Maxilofacial": "Maxilofacial/Maxilofacial.csv",
-        },
-        "Neurocirugía": {
-          "Neurocirugía": "Neurocirugía/Neurocirugía.csv",
-          "Columna": "Neurocirugía/Columna.csv",
-          "Cráneo y columna": "Neurocirugía/Cráneo_y_columna.csv",
-        },
-        "Obstetricia": {
-          "Obstetricia": "Obstetricia/Obstetricia.csv",
-        },
-        "Oftalmología": {
-          "Oftalmología": "Oftalmología/Oftalmología.csv",
-        },
-        "Ortopedia": {
-          "Ortopedia": "Ortopedia/Ortopedia.csv",
-          "Cadera": "Ortopedia/Cadera.csv",
-          "Hombro": "Ortopedia/Hombro.csv",
-          "Muñeca y mano": "Ortopedia/Muñeca_y_mano.csv",
-          "Pie": "Ortopedia/Pie.csv",
-          "Yesos y férulas": "Ortopedia/Yesos_y_ferulas.csv",
-          "Injertos implantes": "Ortopedia/ortopedia_injertos_implantes_replantacion.csv",
-          "Artroscopia": "Ortopedia/Artroscopia.csv",
-        },
-        "Otorrinolaringología": {
-          "Laringe y tráqueas": "Otorrino/Laringe_y_traqueas.csv",
-          "Nariz y senos paranasales": "Otorrino/Nariz_y_senos_paranasales.csv",
-          "Otorrinolaringología": "Otorrino/Otorrinolaringología.csv",
-          "Tórax": "Otorrino/torax.csv",
-        },
-        "Plástica": {
-          "Plástica": "Plastica/Plastica.csv",
-        },
-        "Procesos variados": {
-          "Cirugía General": "Procesos_variados/Cirugía_General.csv",
-          "Drenajes e Incisiones": "Procesos_variados/Drenajes___Incisiones.csv",
-          "Reparaciones (suturas)": "Procesos_variados/Reparaciones_(suturas).csv",
-          "Uñas y piel": "Procesos_variados/Uñas___piel.csv",
-        },
-        "Urología": {
-          "Urología": "Urología/Urología.csv",
-        },
-      };
-
-      // Buscar solo en la especialidad del procedimiento
-      const subcategories = folderStructure[proc.especialidad];
-      if (subcategories) {
-        for (const csvPath of Object.values(subcategories)) {
-          try {
-            const csvContent = await loadCSV(csvPath);
-            const found = csvContent.find((op: any) => 
-              String(op.codigo || '').trim() === proc.codigo
-            );
-
-            if (found) {
-              const fullProc: ProcedureData = {
-                codigo: String(found.codigo || '').trim(),
-                cirugia: found.cirugia || '',
-                especialidad: proc.especialidad,
-                grupo: found.grupo || '',
-                rvu: parseFloat(found.rvu) || 0
-              };
-              setLoadingFavoriteRvu(null);
-              return fullProc;
-            }
-          } catch { /* ignore */ }
-        }
+      const subcategories = FOLDER_STRUCTURE[proc.especialidad];
+      const paths = subcategories
+        ? Object.values(subcategories)
+        : Object.values(FOLDER_STRUCTURE).flatMap(s => Object.values(s));
+      for (const csvPath of paths) {
+        try {
+          const rows = await loadCSV(csvPath);
+          const found = rows.find((r: Record<string, string>) => String(r.codigo || '').trim() === proc.codigo);
+          if (found) return {
+            codigo: String(found.codigo || '').trim(),
+            cirugia: found.cirugia || '',
+            especialidad: proc.especialidad,
+            grupo: found.grupo || '',
+            rvu: parseFloat(found.rvu) || 0,
+          };
+        } catch { /* ignore */ }
       }
-
-      setLoadingFavoriteRvu(null);
       return null;
-    } catch {
+    } finally {
       setLoadingFavoriteRvu(null);
-      return null;
     }
   };
 
@@ -439,6 +278,31 @@ const NewCase = () => {
         'RVU no encontrado',
         `No se pudo cargar el RVU para ${proc.cirugia}. Búscalo manualmente.`
       );
+    }
+  };
+
+  // Set of favorite codes for fast lookup in search results
+  const favoriteCodes = useMemo(() => new Set(favoriteProcedures.map(p => p.codigo)), [favoriteProcedures]);
+
+  const handleToggleFavoriteInSearch = async (e: React.MouseEvent, proc: ProcedureData) => {
+    e.stopPropagation();
+    setTogglingFavorite(proc.codigo);
+    try {
+      if (favoriteCodes.has(proc.codigo)) {
+        await favoritesService.removeFavoriteByCode(proc.codigo);
+        setFavoriteProcedures(prev => prev.filter(p => p.codigo !== proc.codigo));
+      } else {
+        await favoritesService.addFavorite({
+          surgery_code: proc.codigo,
+          surgery_name: proc.cirugia,
+          specialty: proc.especialidad,
+        });
+        setFavoriteProcedures(prev => [...prev, proc]);
+      }
+    } catch {
+      toast.error('Error', 'No se pudo actualizar el favorito.');
+    } finally {
+      setTogglingFavorite(null);
     }
   };
 
@@ -997,23 +861,36 @@ const NewCase = () => {
 
                       {showProcedureSearch && !loadingAllProcedures && filteredProcedures.length > 0 && (
                         <Card className="absolute z-10 mt-2 w-full max-h-80 overflow-y-auto">
-                      <CardContent className="p-2">
-                        {filteredProcedures.map((proc, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleAddProcedure(proc)}
-                            className="w-full text-left p-3 rounded-lg hover:bg-accent transition-colors"
-                          >
-                            <div className="font-medium">{proc.cirugia}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {proc.codigo} • {proc.especialidad} • RVU: {proc.rvu}
-                            </div>
-                          </button>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  )}
+                          <CardContent className="p-2">
+                            {filteredProcedures.map((proc, index) => (
+                              <div key={index} className="flex items-center gap-1 rounded-lg hover:bg-accent transition-colors">
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddProcedure(proc)}
+                                  className="flex-1 text-left p-3"
+                                >
+                                  <div className="font-medium">{proc.cirugia}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {proc.codigo} · {proc.especialidad} · RVU: {proc.rvu}
+                                  </div>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleToggleFavoriteInSearch(e, proc)}
+                                  disabled={togglingFavorite === proc.codigo}
+                                  className="p-2 shrink-0 hover:text-yellow-500 transition-colors disabled:opacity-50"
+                                  title={favoriteCodes.has(proc.codigo) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                                >
+                                  {togglingFavorite === proc.codigo
+                                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                                    : <Star className={`h-4 w-4 ${favoriteCodes.has(proc.codigo) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                                  }
+                                </button>
+                              </div>
+                            ))}
+                          </CardContent>
+                        </Card>
+                      )}
                 </div>
               </div>
 
