@@ -305,7 +305,7 @@ export default function Login() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full bg-white border-sky-400 hover:border-sky-500 hover:bg-white"
                 onClick={handleGoogleClick}
                 disabled={isLoading}
               >
