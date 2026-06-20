@@ -34,6 +34,8 @@ interface User {
   ls_subscription_id: string | null;
   total_cases: number;
   total_favorites: number;
+  has_google_calendar: boolean;
+  has_colleagues: boolean;
   deletion_requested_at: string | null;
 }
 
@@ -363,6 +365,16 @@ const UsersPage = () => {
                       <Award className="h-6 w-6 mx-auto mb-1 text-purple-600" />
                       <div className="text-xs text-muted-foreground font-medium">{(user.plan || 'free').toUpperCase()}</div>
                     </div>
+                  </div>
+
+                  {/* Feature adoption */}
+                  <div className="flex gap-2 flex-wrap">
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.has_google_calendar ? 'bg-green-50 border-green-200 text-green-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                      <span>{user.has_google_calendar ? '✓' : '○'}</span> Google Calendar
+                    </span>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.has_colleagues ? 'bg-green-50 border-green-200 text-green-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                      <span>{user.has_colleagues ? '✓' : '○'}</span> Colegas
+                    </span>
                   </div>
 
                   {/* Suscripción */}
