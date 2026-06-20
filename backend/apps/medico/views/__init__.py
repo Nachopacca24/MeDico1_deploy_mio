@@ -7,7 +7,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Count, Exists, OuterRef
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -162,12 +162,11 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             total_cases=Count('surgicalcase', distinct=True),
             total_favorites=Count('favorite', distinct=True),
             has_google_calendar=Exists(
-                GoogleCalendarToken.objects.filter(user=OuterRef('pk'))
+                GoogleCalendarToken.objects.filter(user_id=OuterRef('pk'))
             ),
-            has_colleagues=Exists(
-                Friendship.objects.filter(
-                    Q(user=OuterRef('pk')) | Q(friend=OuterRef('pk'))
-                )
+            has_colleagues=(
+                Exists(Friendship.objects.filter(user_id=OuterRef('pk'))) |
+                Exists(Friendship.objects.filter(friend_id=OuterRef('pk')))
             ),
         ).values(
             'id', 'username', 'email', 'first_name', 'last_name',
