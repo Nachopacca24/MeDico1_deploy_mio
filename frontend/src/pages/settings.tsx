@@ -171,7 +171,7 @@ const Settings = () => {
       try {
         await refreshUser();
       } catch { /* ignore */ }
-      if (attempts >= 10) {
+      if (attempts >= 20) {  // 20 × 3s = 60s
         clearInterval(upgradePollingRef.current!);
       }
     }, 3000);
