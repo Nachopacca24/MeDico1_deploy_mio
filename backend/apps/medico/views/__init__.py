@@ -224,6 +224,20 @@ class AdminUserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @action(detail=False, methods=['get'], url_path='debug_adoption')
+    def debug_adoption(self, request):
+        """Temporary debug: check raw DB values for calendar tokens and friendships."""
+        calendar_ids = list(GoogleCalendarToken.objects.values_list('user_id', flat=True))
+        friendships_user = list(Friendship.objects.values_list('user_id', flat=True))
+        friendships_friend = list(Friendship.objects.values_list('friend_id', flat=True))
+        all_user_ids = list(User.objects.values_list('id', flat=True))
+        return Response({
+            'all_user_ids': all_user_ids,
+            'calendar_user_ids': calendar_ids,
+            'friendship_user_ids': friendships_user,
+            'friendship_friend_ids': friendships_friend,
+        })
+
     @action(detail=True, methods=['patch'], url_path='toggle_active')
     def toggle_active(self, request, pk=None):
         """
