@@ -181,9 +181,9 @@ export function WeekCalendarWidget() {
                 <CalendarIcon className="h-10 w-10 text-primary opacity-80" />
               </div>
             </div>
-            <h4 className="text-lg font-semibold mb-2">Eventos no disponibles</h4>
+            <h4 className="text-lg font-semibold mb-2">Conecta tu agenda</h4>
             <p className="text-sm text-slate-500 max-w-xs mb-6 leading-relaxed">
-              Conecta tu calendario para visualizar tus citas y procedimientos programados aquí.
+              Sincroniza Google Calendar para ver tus citas y cirugías programadas directamente acá.
             </p>
             <Button 
               onClick={connect} 

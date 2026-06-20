@@ -8,6 +8,7 @@ import { Star, Trash2, StarOff, AlertCircle } from "lucide-react";
 import { favoritesService, Favorite } from "@/services/favoritesService";
 import { useFavorites } from "@/core/contexts/FavoritesContext";
 import { useAuth } from "@/shared/contexts/AuthContext";
+import { useToast } from "@/shared/hooks/useToast";
 
 const FREE_SURGERY_FAV_LIMIT = 5;
 
@@ -152,6 +153,7 @@ const FavoritesPage = () => {
 
   // Usar el contexto de favoritos
   const { refreshFavorites } = useFavorites();
+  const { toast } = useToast();
 
   useEffect(() => {
     async function loadFavorites() {
@@ -223,7 +225,7 @@ const FavoritesPage = () => {
       await refreshFavorites();
       setRefreshTrigger(prev => prev + 1);
     } catch (error) {
-      alert('Error al eliminar favorito. Por favor intenta de nuevo.');
+      toast.error('Error', 'No se pudo quitar el favorito. Intentá de nuevo.');
     } finally {
       setRemoving(null);
     }
@@ -240,9 +242,9 @@ const FavoritesPage = () => {
       const result = await favoritesService.clearAll();
       await refreshFavorites();
       setRefreshTrigger(prev => prev + 1);
-      alert(`${result.count} favorito(s) eliminado(s) correctamente`);
+      toast.success('Favoritos eliminados', `${result.count} favorito(s) eliminado(s)`);
     } catch (error) {
-      alert('Error al limpiar favoritos. Por favor intenta de nuevo.');
+      toast.error('Error', 'No se pudieron limpiar los favoritos. Intentá de nuevo.');
     } finally {
       setLoading(false);
     }
