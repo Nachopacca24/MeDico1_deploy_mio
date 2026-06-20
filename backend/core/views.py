@@ -240,6 +240,8 @@ def admin_activity(request):
 def admin_users(request):
     """Lista completa de usuarios con plan, especialidad y conteo de casos."""
     from apps.medico.models import Favorite, FavoriteHospital, FavoriteInsurance
+    from apps.medico.models.google_calendar_token import GoogleCalendarToken
+    from apps.medio_auth.models import Friendship
 
     users = User.objects.all().values(
         'id', 'username', 'email', 'first_name', 'last_name',
@@ -247,6 +249,13 @@ def admin_users(request):
         'date_joined', 'last_login', 'plan', 'specialty', 'phone',
         'trial_ends_at', 'is_permanent_premium', 'role',
         'ls_renews_at', 'ls_cancelled', 'ls_subscription_id',
+    )
+
+    # Feature adoption — simple flat ID sets
+    calendar_ids = set(GoogleCalendarToken.objects.values_list('user_id', flat=True))
+    colleague_ids = set(
+        list(Friendship.objects.values_list('user_id', flat=True)) +
+        list(Friendship.objects.values_list('friend_id', flat=True))
     )
 
     # Contar casos en una sola consulta
@@ -285,6 +294,8 @@ def admin_users(request):
             user['ls_renews_at'] = user['ls_renews_at'].isoformat()
         full_name = f"{user['first_name']} {user['last_name']}".strip()
         user['full_name'] = full_name if full_name else user['username']
+        user['has_google_calendar'] = user['id'] in calendar_ids
+        user['has_colleagues'] = user['id'] in colleague_ids
         user['total_cases'] = case_counts.get(user['id'], 0)
         user['total_favorites'] = (
             fav_counts.get(user['id'], 0) +
