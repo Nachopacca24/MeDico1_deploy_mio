@@ -319,7 +319,7 @@ export default function Login() {
                 <p className='text-sm text-muted-foreground'>¿No tienes cuenta?</p>
                 <Link
                   to='/signup'
-                  className='w-full flex items-center justify-center gap-2 bg-white border-2 border-amber-400 hover:border-amber-500 active:scale-95 text-amber-600 font-bold py-3 rounded-xl transition-all text-sm shadow-[0_0_12px_2px_rgba(251,191,36,0.35)] hover:shadow-[0_0_18px_4px_rgba(251,191,36,0.45)]'
+                  className='w-full flex items-center justify-center bg-white border-2 border-amber-400 hover:border-amber-500 active:scale-95 text-gray-900 font-bold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_12px_2px_rgba(251,191,36,0.35)] hover:shadow-[0_0_18px_4px_rgba(251,191,36,0.45)] whitespace-nowrap'
                 >
                   Regístrate ahora — 30 días gratis
                 </Link>
