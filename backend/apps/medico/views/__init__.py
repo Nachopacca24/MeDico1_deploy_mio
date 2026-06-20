@@ -7,7 +7,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -161,26 +161,25 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         users = User.objects.annotate(
             total_cases=Count('surgicalcase', distinct=True),
             total_favorites=Count('favorite', distinct=True),
-            has_google_calendar=Exists(
-                GoogleCalendarToken.objects.filter(user_id=OuterRef('pk'))
-            ),
-            has_colleagues=(
-                Exists(Friendship.objects.filter(user_id=OuterRef('pk'))) |
-                Exists(Friendship.objects.filter(friend_id=OuterRef('pk')))
-            ),
         ).values(
             'id', 'username', 'email', 'first_name', 'last_name',
             'phone', 'specialty', 'is_superuser', 'is_staff',
             'is_active', 'date_joined', 'plan',
             'total_cases', 'total_favorites',
-            'has_google_calendar', 'has_colleagues',
             'deletion_requested_at',
         ).order_by('is_active', 'deletion_requested_at', 'date_joined')
 
+        # Fetch feature-adoption sets with simple flat queries (2 extra DB hits, very fast)
+        calendar_ids = set(GoogleCalendarToken.objects.values_list('user_id', flat=True))
+        colleague_ids = set(
+            list(Friendship.objects.values_list('user_id', flat=True)) +
+            list(Friendship.objects.values_list('friend_id', flat=True))
+        )
+
         result = []
         for u in users:
-            # Usuarios inactivos sin fecha = solicitaron eliminación antes de que
-            # existiera el campo; marcar con fecha actual para que el admin los reconozca
+            u['has_google_calendar'] = u['id'] in calendar_ids
+            u['has_colleagues'] = u['id'] in colleague_ids
             if not u['is_active'] and not u['is_superuser'] and not u['is_staff'] and not u['deletion_requested_at']:
                 u['deletion_requested_at'] = timezone.now().isoformat()
             elif u['deletion_requested_at']:
