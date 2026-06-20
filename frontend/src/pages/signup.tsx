@@ -137,7 +137,7 @@ export default function SignupForm() {
       });
 
       toast({
-        title: "¡Cuenta creada! Tienes 14 días Premium gratis",
+        title: "¡Cuenta creada! Tienes 30 días Premium gratis",
         description: "Bienvenido/a a MeDico App. Disfruta de acceso completo durante tu período de prueba.",
       });
 
@@ -168,7 +168,7 @@ export default function SignupForm() {
     setIsLoading(true);
     try {
       await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
-      toast({ title: "¡Bienvenido/a! Tienes 14 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+      toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
     } catch (error: unknown) {
       let msg = "No se pudo registrar con Google.";
       if (error instanceof AuthError) msg = error.getUserMessage();
@@ -192,7 +192,7 @@ export default function SignupForm() {
       const googleUser = await GoogleAuth.signIn();
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
       await loginWithGoogle(token);
-      toast({ title: "¡Bienvenido/a! Tienes 14 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+      toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
     } catch (error: unknown) {
       const cancelled =
         (error as any)?.error === 'popup_closed_by_user' ||
@@ -261,17 +261,17 @@ export default function SignupForm() {
             <img src="/favicon.png" alt="MeDico App" className="h-10 w-10 object-contain drop-shadow-sm" />
             <span className='text-2xl font-bold tracking-tight'>MeDico App</span>
           </div>
-          <p className='relative text-sky-800/70 text-sm'>Únete y obtén 14 días Premium gratis al registrarte.</p>
+          <p className='relative text-sky-800/70 text-sm'>Únete y obtén 30 días Premium gratis al registrarte.</p>
         </div>
 
         <Card className='w-full max-w-md border-0 shadow-lg sm:border sm:shadow-sm lg:my-10 lg:rounded-xl rounded-t-none'>
           <CardHeader className="space-y-1">
             <CardTitle className='text-2xl font-bold tracking-tight'>Crear cuenta</CardTitle>
             <CardDescription className="text-muted-foreground">Ingresa tus datos para registrar tu perfil profesional</CardDescription>
-            <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <Crown className="h-4 w-4 text-yellow-600 shrink-0" />
-              <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                14 días de acceso Premium gratis al registrarte
+            <div className="flex items-center gap-2 mt-2 px-3 py-2.5 bg-amber-400 rounded-lg">
+              <Crown className="h-4 w-4 text-amber-900 shrink-0" />
+              <span className="text-sm font-bold text-amber-900">
+                30 días de acceso Premium gratis al registrarte
               </span>
             </div>
           </CardHeader>

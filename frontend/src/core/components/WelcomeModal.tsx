@@ -1,4 +1,4 @@
-// src/core/components/WelcomeModal.tsx
+﻿// src/core/components/WelcomeModal.tsx
 
 import { useState, useEffect } from 'react';
 import { Stethoscope, Sparkles, ArrowRight, X, Mail, Loader2 } from 'lucide-react';
@@ -27,12 +27,12 @@ export function WelcomeModal() {
   );
   const [screen, setScreen] = useState<Screen>(() => {
     if (step === 'show_tutorial') return 'tutorial';
-    // verify_email: si el usuario ya está verificado (ej. Google OAuth), ir directo al tutorial
+    // verify_email: si el usuario ya estÃ¡ verificado (ej. Google OAuth), ir directo al tutorial
     if (step === 'verify_email' && user?.is_email_verified) return 'tutorial';
     return 'email';
   });
 
-  // Escuchar cambios en localStorage desde otras pestañas (ej. verificación en pestaña nueva)
+  // Escuchar cambios en localStorage desde otras pestaÃ±as (ej. verificaciÃ³n en pestaÃ±a nueva)
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key !== ONBOARDING_KEY) return;
@@ -72,13 +72,13 @@ export function WelcomeModal() {
       await emailVerificationService.resendVerificationEmail(accessToken);
       toast({
         title: 'Email enviado',
-        description: 'Revisá tu bandeja de entrada y la carpeta de spam.',
+        description: 'RevisÃ¡ tu bandeja de entrada y la carpeta de spam.',
         duration: 5000,
       });
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'No se pudo reenviar el email. Intentá más tarde.',
+        description: error.message || 'No se pudo reenviar el email. IntentÃ¡ mÃ¡s tarde.',
         variant: 'destructive',
       });
     } finally {
@@ -90,7 +90,7 @@ export function WelcomeModal() {
 
   const firstName = user?.first_name || user?.username || 'Doctor';
 
-  // ── Pantalla 1: verificación de email ──────────────────────────────────────
+  // â”€â”€ Pantalla 1: verificaciÃ³n de email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (screen === 'email') {
     return (
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -115,10 +115,10 @@ export function WelcomeModal() {
 
             <div className="text-center mb-6">
               <h2 className="text-2xl font-black mb-2">
-                ¡Bienvenido, {firstName}!
+                Â¡Bienvenido, {firstName}!
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Para activar todas las funciones necesitás verificar tu cuenta.
+                Para activar todas las funciones necesitÃ¡s verificar tu cuenta.
                 Te enviamos un email a{' '}
                 <span className="font-semibold text-foreground">{user?.email}</span>.
               </p>
@@ -126,7 +126,7 @@ export function WelcomeModal() {
 
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
               <p className="text-sm text-amber-800 dark:text-amber-200 text-center">
-                📧 Revisá tu bandeja de entrada y la carpeta de spam.
+                ðŸ“§ RevisÃ¡ tu bandeja de entrada y la carpeta de spam.
                 El link expira en 24 horas.
               </p>
             </div>
@@ -145,7 +145,7 @@ export function WelcomeModal() {
               >
                 {isResending
                   ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
-                  : 'Reenviar email de verificación'}
+                  : 'Reenviar email de verificaciÃ³n'}
               </button>
             </div>
           </div>
@@ -154,7 +154,7 @@ export function WelcomeModal() {
     );
   }
 
-  // ── Pantalla 2: tutorial ───────────────────────────────────────────────────
+  // â”€â”€ Pantalla 2: tutorial â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
       <div className="relative bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
@@ -181,9 +181,9 @@ export function WelcomeModal() {
               </div>
             </div>
             <div>
-              <h2 className="text-xl font-black leading-tight">¡Tu cuenta está lista!</h2>
+              <h2 className="text-xl font-black leading-tight">Â¡Tu cuenta estÃ¡ lista!</h2>
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-amber-400">14 días Premium gratis</span> para explorar todo.
+                <span className="font-semibold text-amber-400">14 dÃ­as Premium gratis</span> para explorar todo.
               </p>
             </div>
           </div>
@@ -191,11 +191,11 @@ export function WelcomeModal() {
           {/* Lista compacta */}
           <div className="bg-muted/50 rounded-xl px-4 py-3 mb-4 grid grid-cols-1 gap-1.5">
             {[
-              '📋 Registrá cada cirugía con honorarios calculados',
-              '🩺 +4.000 procedimientos médicos con valor en RVU',
-              '💰 Cálculo automático según hospital y seguro',
-              '📊 Estadísticas de ingresos mensuales',
-              '📄 Resumen PDF listo para imprimir',
+              'ðŸ“‹ RegistrÃ¡ cada cirugÃ­a con honorarios calculados',
+              'ðŸ©º +4.000 procedimientos mÃ©dicos con valor en RVU',
+              'ðŸ’° CÃ¡lculo automÃ¡tico segÃºn hospital y seguro',
+              'ðŸ“Š EstadÃ­sticas de ingresos mensuales',
+              'ðŸ“„ Resumen PDF listo para imprimir',
             ].map(item => (
               <p key={item} className="text-sm text-foreground/80">{item}</p>
             ))}
@@ -213,7 +213,7 @@ export function WelcomeModal() {
               onClick={handleSkipTutorial}
               className="w-full py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Ya sé usarla, explorar solo
+              Ya sÃ© usarla, explorar solo
             </button>
           </div>
         </div>
@@ -221,3 +221,4 @@ export function WelcomeModal() {
     </div>
   );
 }
+

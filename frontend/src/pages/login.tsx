@@ -296,7 +296,7 @@ export default function Login() {
                   <span className="w-full border-t border-slate-200 dark:border-slate-800" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-slate-900 px-2 text-muted-foreground">
+                  <span className="bg-card px-2 text-muted-foreground">
                     O continúa con
                   </span>
                 </div>
