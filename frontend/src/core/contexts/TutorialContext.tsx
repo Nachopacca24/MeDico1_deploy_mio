@@ -94,7 +94,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     step: 13, route: '/cases', emoji: '🔄', target: 'case-status',
     title: 'Los 3 estados de una cirugía',
     description: '① Operado: cirugía realizada. ② Facturado: ingresás el número de factura cuando la enviás. ③ Cobrado: honorario recibido — el caso se archiva en la pestaña "Cobrados".',
-    hint: 'Cada estado se cambia desde el detalle del caso. Los casos cobrados van al historial.',
+    hint: 'Los botones azul, violeta y verde aparecen en cada tarjeta de cirugía. Tocá cualquiera para cambiar el estado.',
   },
   {
     step: 14, route: '/stats', emoji: '📊', target: 'stats-chart',

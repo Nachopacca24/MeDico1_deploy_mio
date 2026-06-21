@@ -154,8 +154,8 @@ function CaseStatusToggles({
           disabled={updating !== null || !canEdit}
           className={
             isOperated
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
+              ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+              : 'border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-950 dark:hover:border-blue-500'
           }
         >
           {updating === 'operated' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
@@ -170,8 +170,8 @@ function CaseStatusToggles({
           disabled={updating !== null || (!isOperated && !isBilled) || !canEdit}
           className={
             isBilled
-              ? 'bg-purple-600 hover:bg-purple-700 text-white'
-              : 'hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300'
+              ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600'
+              : 'border-purple-300 text-purple-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-400 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-950 dark:hover:border-purple-500'
           }
         >
           {updating === 'billed' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
@@ -186,8 +186,8 @@ function CaseStatusToggles({
           disabled={updating !== null || (!isBilled && !isPaid) || !canEdit}
           className={
             isPaid
-              ? 'bg-green-600 hover:bg-green-700 text-white'
-              : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+              ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
+              : 'border-green-300 text-green-600 hover:bg-green-50 hover:text-green-700 hover:border-green-400 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-950 dark:hover:border-green-500'
           }
         >
           {updating === 'paid' && <Loader2 className={`${iconSize} animate-spin ${compact ? '' : 'mr-1.5'}`} />}
