@@ -38,7 +38,7 @@
   "rewrites": [
     {
       "source": "/.well-known/(.*)",
-      "destination": "/.well-known/$1"
+      "destination": "/well-known/$1"
     },
     {
       "source": "/(.*)",
