@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
           // Never cache API calls
           navigateFallback: "/index.html",
-          navigateFallbackDenylist: [/^\/api/],
+          navigateFallbackDenylist: [/^\/api/, /^\/.well-known\//, /^\/well-known\//],
           runtimeCaching: [
             {
               // Cache API responses for read-only data (procedures, hospitals)
