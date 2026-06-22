@@ -111,7 +111,7 @@ export default function LandingPage() {
 
           {/* Qué es la app */}
           <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            MeDico App es la plataforma que gestioná tu práctica quirúrgica desde un solo lugar. Registrá cirugías, calculá honorarios con la Tabla de California, generá reportes en PDF, sincronizá automáticamente con Google Calendar, subí imágenes de cada cirugía y mantené toda tu información organizada y siempre disponible.
+            MeDico App es la plataforma que gestioná tu práctica quirúrgica desde un solo lugar. Registrá cirugías y sincronizalas automáticamente con Google Calendar, calculá honorarios con la Tabla de California, generá reportes en PDF, subí imágenes de cada cirugía y mantené toda tu información organizada y siempre disponible.
           </p>
 
           {/* Por qué existe */}
