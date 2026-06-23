@@ -15,11 +15,13 @@ export default function InvitePage() {
   const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'error'>('loading');
 
   useEffect(() => {
+    // Guardar el código inmediatamente, antes de saber si está autenticado
+    if (ref) localStorage.setItem('referral_code', ref);
+
     if (loading) return; // esperar a que AuthContext termine de cargar
     if (!ref) { navigate('/'); return; }
 
     if (!isAuthenticated) {
-      localStorage.setItem('referral_code', ref);
       navigate(`/signup?ref=${ref}`);
       return;
     }
@@ -32,6 +34,7 @@ export default function InvitePage() {
     // Crear amistad directamente
     authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ friend_code: ref }),
     })
       .then(res => res.json())

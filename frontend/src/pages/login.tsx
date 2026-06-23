@@ -3,6 +3,22 @@ import { useState } from "react";
 import { useNavigate, Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
+import { authService } from '@/shared/services/authService';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+
+async function processPendingInvite() {
+  const code = localStorage.getItem('referral_code');
+  if (!code) return;
+  try {
+    await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ friend_code: code }),
+    });
+  } catch {}
+  localStorage.removeItem('referral_code');
+}
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
@@ -75,13 +91,13 @@ export default function Login() {
         password: formData.password,
       });
 
+      await processPendingInvite();
+
       toast({
         title: "¡Bienvenido!",
         description: "Has iniciado sesión exitosamente.",
       });
 
-      // La redirección se maneja automáticamente en AuthContext
-      // If there was a 'from' state, navigate there, otherwise to home
       if (location.state?.from) {
         navigate(location.state.from);
       } else {

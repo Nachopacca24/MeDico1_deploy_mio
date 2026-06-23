@@ -4,6 +4,22 @@ import { useState, useEffect } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
+import { authService } from '@/shared/services/authService';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+
+async function processPendingInvite() {
+  const code = localStorage.getItem('referral_code');
+  if (!code) return;
+  try {
+    await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ friend_code: code }),
+    });
+  } catch {}
+  localStorage.removeItem('referral_code');
+}
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
@@ -180,6 +196,7 @@ export default function SignupForm() {
     setIsLoading(true);
     try {
       await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
+      await processPendingInvite();
       toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
     } catch (error: unknown) {
       let msg = "No se pudo registrar con Google.";
@@ -204,6 +221,7 @@ export default function SignupForm() {
       const googleUser = await GoogleAuth.signIn();
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
       await loginWithGoogle(token);
+      await processPendingInvite();
       toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
     } catch (error: unknown) {
       const cancelled =
