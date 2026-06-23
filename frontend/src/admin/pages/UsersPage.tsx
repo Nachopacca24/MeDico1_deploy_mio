@@ -443,12 +443,14 @@ const UsersPage = () => {
                           ? <><StarOff className="h-4 w-4 mr-2" />Quitar Premium</>
                           : <><Star className="h-4 w-4 mr-2" />Hacer Premium</>}
                     </Button>
-                    <Button variant="outline" size="sm"
-                      onClick={() => handleExtendTrial(user.id, 15)}
-                      disabled={extendingTrialId === user.id || user.is_superuser}
-                      className="flex-1 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300">
-                      {extendingTrialId === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Clock className="h-4 w-4 mr-2" />+15 días</>}
-                    </Button>
+                    {user.plan === 'free' && !user.is_permanent_premium && (
+                      <Button variant="outline" size="sm"
+                        onClick={() => handleExtendTrial(user.id, 15)}
+                        disabled={extendingTrialId === user.id}
+                        className="flex-1 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300">
+                        {extendingTrialId === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Clock className="h-4 w-4 mr-2" />+15 días</>}
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm"
                       onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
                       className="flex-1 hover:bg-destructive hover:text-destructive-foreground"
