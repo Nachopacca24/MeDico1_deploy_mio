@@ -4,7 +4,8 @@ import { COLLEAGUE_REQUESTS_EVENT } from '@/shared/hooks/useInvitationBadges';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { ColleagueCard } from '@/shared/components/ColleagueCard';
 import { FriendRequestCard } from '@/shared/components/FriendRequestCard';
-import { InviteCard } from '@/shared/components/ui/InviteCard';
+import { InviteCard, ReferralStats } from '@/shared/components/ui/InviteCard';
+import { authService } from '@/shared/services/authService';
 import { 
   colleaguesService, 
   Colleague, 
@@ -43,6 +44,7 @@ export default function ColleaguesPage() {
   const [sendingRequest, setSendingRequest] = useState(false);
   const [activeTab, setActiveTab] = useState<'colleagues' | 'received' | 'sent'>('colleagues');
   const [codeCopied, setCodeCopied] = useState(false);
+  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
 
   useEffect(() => {
     loadData();
@@ -50,16 +52,19 @@ export default function ColleaguesPage() {
   }, []);
 
   const loadData = async () => {
+    const apiUrl = import.meta.env.VITE_API_URL || '';
     setLoading(true);
     try {
-      const [colleaguesData, requestsData] = await Promise.all([
+      const [colleaguesData, requestsData, statsRes] = await Promise.all([
         colleaguesService.getColleagues(),
-        colleaguesService.getFriendRequests()
+        colleaguesService.getFriendRequests(),
+        authService.authenticatedFetch(`${apiUrl}/api/auth/referral-stats/`).then(r => r.json()).catch(() => null),
       ]);
 
       setColleagues(colleaguesData.colleagues);
       setReceivedRequests(requestsData.received.requests);
       setSentRequests(requestsData.sent.requests);
+      if (statsRes) setReferralStats(statsRes);
     } catch (error: any) {
       console.error('Error cargando datos:', error);
     } finally {
@@ -205,7 +210,7 @@ export default function ColleaguesPage() {
 
         {/* Invitar por link / QR */}
         {user?.friend_code && (
-          <InviteCard friendCode={user.friend_code} />
+          <InviteCard friendCode={user.friend_code} stats={referralStats} />
         )}
 
         {/* Buscar colega */}

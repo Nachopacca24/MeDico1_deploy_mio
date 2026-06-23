@@ -1,16 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Copy, Check, Gift } from 'lucide-react';
 import { Button } from './button';
-import { authService } from '@/shared/services/authService';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
-
-interface InviteCardProps {
-  friendCode: string;
-}
-
-interface ReferralStats {
+export interface ReferralStats {
   count: number;
   progress: number;
   threshold: number;
@@ -18,17 +11,14 @@ interface ReferralStats {
   reward_days: number;
 }
 
-export function InviteCard({ friendCode }: InviteCardProps) {
-  const [copied, setCopied] = useState(false);
-  const [stats, setStats] = useState<ReferralStats | null>(null);
-  const inviteUrl = `https://medicoapp.app/invite?ref=${friendCode}`;
+interface InviteCardProps {
+  friendCode: string;
+  stats?: ReferralStats | null;
+}
 
-  useEffect(() => {
-    authService.authenticatedFetch(`${API_URL}/api/auth/referral-stats/`)
-      .then(r => r.json())
-      .then(setStats)
-      .catch(() => {});
-  }, []);
+export function InviteCard({ friendCode, stats }: InviteCardProps) {
+  const [copied, setCopied] = useState(false);
+  const inviteUrl = `https://medicoapp.app/invite?ref=${friendCode}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(inviteUrl);
