@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          skipWaiting: true,
+          clientsClaim: true,
           // Cache HTML, JS, CSS, fonts, images
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
           // Never cache API calls
