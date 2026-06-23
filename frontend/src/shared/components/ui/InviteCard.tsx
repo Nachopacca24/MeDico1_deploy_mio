@@ -30,24 +30,26 @@ export function InviteCard({ friendCode, stats }: InviteCardProps) {
     <div className="space-y-4">
       {/* Promo banner */}
       {stats && (
-        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+        <div className="relative overflow-hidden rounded-lg p-4 bg-amber-400">
+          {/* Efecto de brillo animado */}
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
           <div className="flex items-center gap-2 mb-2">
-            <Gift className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-sm font-semibold text-primary">Promoción: invitá médicos y ganá días gratis</span>
+            <Gift className="h-4 w-4 text-amber-900 shrink-0" />
+            <span className="text-sm font-bold text-amber-900">Promoción: invitá médicos y ganá días gratis</span>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">
+          <p className="text-xs text-amber-900 mb-3">
             Por cada 5 médicos que se registren con tu link, te sumamos <strong>10 días Premium</strong> gratis — repetible e ilimitado. Seguí invitando y seguís ganando días.
             {stats.rewards_given > 0 && ` Ya ganaste ${stats.rewards_given * 10} días extra.`}
           </p>
           {/* Barra de progreso */}
           <div className="space-y-1">
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-amber-900/80">
               <span>{stats.progress} de {stats.threshold} médicos</span>
               <span>{stats.threshold - stats.progress} para el próximo premio</span>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-2 bg-amber-200/60 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary rounded-full transition-all"
+                className="h-full bg-amber-900 rounded-full transition-all duration-700"
                 style={{ width: `${(stats.progress / stats.threshold) * 100}%` }}
               />
             </div>
