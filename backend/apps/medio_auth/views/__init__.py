@@ -151,19 +151,9 @@ class RegisterView(APIView):
                             user=min(referrer, user, key=lambda u: u.id),
                             friend=max(referrer, user, key=lambda u: u.id),
                         )
-                        # Marcar quién refirió al nuevo usuario
-                        user.referred_by = referrer
-                        user.save(update_fields=['referred_by'])
-                        # Recompensar al referidor cada 5 referidos exitosos
-                        referral_count = User.objects.filter(referred_by=referrer).count()
-                        if referral_count % 5 == 0:
-                            base = max(referrer.trial_ends_at or timezone.now(), timezone.now())
-                            referrer.trial_ends_at = base + timedelta(days=10)
-                            if referrer.plan == 'free':
-                                referrer.plan = 'premium'
-                            referrer.save(update_fields=['trial_ends_at', 'plan'])
-                except User.DoesNotExist:
-                    pass  # Código inválido — no bloquear el registro
+                        _apply_referral(user, referrer)
+                except Exception:
+                    pass  # No bloquear el registro por ningún error de referral
 
             return Response({
                 'message': 'Usuario registrado exitosamente',
@@ -1330,6 +1320,21 @@ def complete_tutorial(request):
     return Response({'ok': True})
 
 
+def _apply_referral(new_user, referrer):
+    """Registra referred_by y aplica recompensa al referidor si corresponde."""
+    if new_user.referred_by_id:
+        return  # ya tiene referidor, no pisar
+    new_user.referred_by = referrer
+    new_user.save(update_fields=['referred_by'])
+    referral_count = User.objects.filter(referred_by=referrer).count()
+    if referral_count > 0 and referral_count % 5 == 0:
+        base = max(referrer.trial_ends_at or timezone.now(), timezone.now())
+        referrer.trial_ends_at = base + timedelta(days=10)
+        if referrer.plan == 'free':
+            referrer.plan = 'premium'
+        referrer.save(update_fields=['trial_ends_at', 'plan'])
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def referral_stats(request):
@@ -1364,6 +1369,11 @@ def accept_invite(request):
         user=min(other, request.user, key=lambda u: u.id),
         friend=max(other, request.user, key=lambda u: u.id),
     )
+    # Si el que abrió el link no tiene referidor, lo marca (other es el invitador)
+    try:
+        _apply_referral(request.user, other)
+    except Exception:
+        pass
     return Response({
         'ok': True,
         'created': created,
