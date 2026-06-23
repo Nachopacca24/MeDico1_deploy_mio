@@ -717,7 +717,7 @@ class ListColleaguesView(APIView):
         # Obtener todas las amistades donde el usuario participa
         friendships = Friendship.objects.filter(
             Q(user=user) | Q(friend=user)
-        )
+        ).select_related('user', 'friend')
         
         # Extraer los colegas
         colleagues = []
@@ -748,13 +748,13 @@ class ListFriendRequestsView(APIView):
         received_requests = FriendRequest.objects.filter(
             to_user=user,
             status='pending'
-        )
-        
+        ).select_related('from_user', 'to_user')
+
         # Solicitudes enviadas (pendientes)
         sent_requests = FriendRequest.objects.filter(
             from_user=user,
             status='pending'
-        )
+        ).select_related('from_user', 'to_user')
         
         received_serializer = FriendRequestSerializer(received_requests, many=True)
         sent_serializer = FriendRequestSerializer(sent_requests, many=True)
@@ -1337,4 +1337,8 @@ def accept_invite(request):
         user=min(other, request.user, key=lambda u: u.id),
         friend=max(other, request.user, key=lambda u: u.id),
     )
-    return Response({'ok': True, 'created': created})
+    return Response({
+        'ok': True,
+        'created': created,
+        'colleague_name': f"{other.first_name} {other.last_name}".strip() or other.username,
+    })

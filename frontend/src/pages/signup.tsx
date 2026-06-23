@@ -8,17 +8,20 @@ import { authService } from '@/shared/services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
-async function processPendingInvite() {
+async function processPendingInvite(): Promise<string | null> {
   const code = localStorage.getItem('referral_code');
-  if (!code) return;
+  if (!code) return null;
+  localStorage.removeItem('referral_code');
   try {
-    await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
+    const res = await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ friend_code: code }),
     });
+    const data = await res.json();
+    if (data.ok && data.created) return data.colleague_name || null;
   } catch {}
-  localStorage.removeItem('referral_code');
+  return null;
 }
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -162,12 +165,21 @@ export default function SignupForm() {
         specialty: formData.specialty,
         ...(referralCode ? { referral_code: referralCode } : {}),
       });
-      localStorage.removeItem('referral_code');
+
+      // processPendingInvite obtiene el nombre del colega (el backend ya creó la amistad)
+      const colleagueName = await processPendingInvite();
 
       toast({
         title: "¡Cuenta creada! Tienes 30 días Premium gratis",
         description: "Bienvenido/a a MeDico App. Disfruta de acceso completo durante tu período de prueba.",
       });
+
+      if (colleagueName) {
+        setTimeout(() => toast({
+          title: "¡Ya son colegas!",
+          description: `Quedaste conectado con ${colleagueName} automáticamente.`,
+        }), 800);
+      }
 
       // El navigate lo hace el AuthContext automáticamente
     } catch (error: any) {
@@ -196,8 +208,11 @@ export default function SignupForm() {
     setIsLoading(true);
     try {
       await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
-      await processPendingInvite();
+      const colleagueNameGoogle = await processPendingInvite();
       toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+      if (colleagueNameGoogle) {
+        setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${colleagueNameGoogle} automáticamente.` }), 800);
+      }
     } catch (error: unknown) {
       let msg = "No se pudo registrar con Google.";
       if (error instanceof AuthError) msg = error.getUserMessage();
@@ -221,8 +236,11 @@ export default function SignupForm() {
       const googleUser = await GoogleAuth.signIn();
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
       await loginWithGoogle(token);
-      await processPendingInvite();
+      const colleagueNameNative = await processPendingInvite();
       toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+      if (colleagueNameNative) {
+        setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${colleagueNameNative} automáticamente.` }), 800);
+      }
     } catch (error: unknown) {
       const cancelled =
         (error as any)?.error === 'popup_closed_by_user' ||

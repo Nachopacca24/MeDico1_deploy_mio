@@ -7,17 +7,20 @@ import { authService } from '@/shared/services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
-async function processPendingInvite() {
+async function processPendingInvite(): Promise<string | null> {
   const code = localStorage.getItem('referral_code');
-  if (!code) return;
+  if (!code) return null;
+  localStorage.removeItem('referral_code');
   try {
-    await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
+    const res = await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ friend_code: code }),
     });
+    const data = await res.json();
+    if (data.ok && data.created) return data.colleague_name || null;
   } catch {}
-  localStorage.removeItem('referral_code');
+  return null;
 }
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -91,12 +94,19 @@ export default function Login() {
         password: formData.password,
       });
 
-      await processPendingInvite();
+      const colleagueName = await processPendingInvite();
 
       toast({
         title: "¡Bienvenido!",
         description: "Has iniciado sesión exitosamente.",
       });
+
+      if (colleagueName) {
+        setTimeout(() => toast({
+          title: "¡Ya son colegas!",
+          description: `Quedaste conectado con ${colleagueName} automáticamente.`,
+        }), 800);
+      }
 
       if (location.state?.from) {
         navigate(location.state.from);
