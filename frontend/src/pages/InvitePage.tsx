@@ -9,12 +9,13 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   const navigate = useNavigate();
   const ref = (searchParams.get('ref') || '').toUpperCase();
   const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'error'>('loading');
 
   useEffect(() => {
+    if (loading) return; // esperar a que AuthContext termine de cargar
     if (!ref) { navigate('/'); return; }
 
     if (!isAuthenticated) {
@@ -39,7 +40,7 @@ export default function InvitePage() {
         else setStatus('error');
       })
       .catch(() => setStatus('error'));
-  }, [isAuthenticated, ref]);
+  }, [loading, isAuthenticated, ref]);
 
   if (status === 'loading') {
     return (
