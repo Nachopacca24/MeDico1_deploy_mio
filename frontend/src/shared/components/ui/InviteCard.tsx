@@ -10,7 +10,7 @@ interface InviteCardProps {
 export function InviteCard({ friendCode }: InviteCardProps) {
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
-  const inviteUrl = `https://medicoapp.app/registro?ref=${friendCode}`;
+  const inviteUrl = `https://medicoapp.app/invite?ref=${friendCode}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(inviteUrl);

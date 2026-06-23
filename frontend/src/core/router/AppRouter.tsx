@@ -23,6 +23,7 @@ import VerifyEmailPage from "@/pages/verify-email";
 import ForgotPasswordPage from "@/pages/forgot-password";
 import ResetPasswordPage from "@/pages/reset-password";
 import CompleteProfilePage from "@/pages/complete-profile";
+import InvitePage from "@/pages/InvitePage";
 
 // Landing page
 import LandingPage from "@/pages/landing";
@@ -61,6 +62,7 @@ export const AppRouter = () => {
       <Route path='/verify-email' element={<VerifyEmailPage />} />
       <Route path='/forgot-password' element={<ForgotPasswordPage />} />
       <Route path='/reset-password' element={<ResetPasswordPage />} />
+      <Route path='/invite' element={<InvitePage />} />
 
       {/* Admin routes */}
       <Route

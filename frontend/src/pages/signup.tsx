@@ -53,12 +53,12 @@ export default function SignupForm() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
 
   useEffect(() => {
-    const ref = searchParams.get('ref') || localStorage.getItem('referral_code');
+    const ref = searchParams.get('ref') || localStorage.getItem('referral_code') || '';
     if (ref) {
       setReferralCode(ref);
       localStorage.setItem('referral_code', ref);
     }
-  }, [searchParams]);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
