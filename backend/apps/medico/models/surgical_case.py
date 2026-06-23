@@ -222,7 +222,7 @@ class SurgicalCase(models.Model):
     class Meta:
         verbose_name = 'Caso Quirúrgico'
         verbose_name_plural = 'Casos Quirúrgicos'
-        ordering = ['-surgery_date', '-created_at']
+        ordering = ['surgery_date', '-created_at']
         indexes = [
             models.Index(fields=['created_by', 'surgery_date']),
             models.Index(fields=['hospital', 'surgery_date']),
