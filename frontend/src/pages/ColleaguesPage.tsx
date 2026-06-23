@@ -205,10 +205,7 @@ export default function ColleaguesPage() {
 
         {/* Invitar por link / QR */}
         {user?.friend_code && (
-          <div className="bg-card border rounded-lg p-6">
-            <h3 className="font-semibold text-lg mb-1">Invitar por link</h3>
-            <InviteCard friendCode={user.friend_code} />
-          </div>
+          <InviteCard friendCode={user.friend_code} />
         )}
 
         {/* Buscar colega */}
