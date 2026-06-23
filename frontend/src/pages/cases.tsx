@@ -902,7 +902,7 @@ const CasesPage = () => {
                 return (
                   <React.Fragment key={`case-${surgicalCase.id}`}>
                     <Card
-                    className={`hover:border-primary transition-colors ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400' : ''}`}
+                    className={`hover:border-primary transition-colors border-border/70 border-l-4 border-l-primary ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400' : ''}`}
                     onClick={selectMode && isOwner ? () => toggleSelect(surgicalCase.id) : undefined}
                   >
                       <CardHeader className="p-3">
