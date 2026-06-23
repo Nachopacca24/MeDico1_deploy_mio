@@ -181,37 +181,35 @@ export default function ColleaguesPage() {
 
         {/* Tu código de colega */}
         <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6" data-tutorial="colleague-code">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-lg mb-1">Tu Código de Colega</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Comparte este código con otros médicos para que puedan agregarte
-              </p>
-              <div className="flex items-center gap-3">
-                <code className="text-2xl font-mono font-bold bg-background px-4 py-2 rounded-lg border-2">
-                  {user?.friend_code}
-                </code>
-                <button
-                  onClick={copyFriendCode}
-                  className="p-2 hover:bg-background rounded-lg transition-colors"
-                  title="Copiar código"
-                >
-                  {codeCopied ? (
-                    <Check className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Copy className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-            {user?.friend_code && (
-              <div className="pt-3 border-t border-primary/20">
-                <h4 className="font-medium text-sm mb-2">O invitá por link</h4>
-                <InviteCard friendCode={user.friend_code} />
-              </div>
-            )}
+          <h3 className="font-semibold text-lg mb-1">Tu Código de Colega</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Comparte este código con otros médicos para que puedan agregarte
+          </p>
+          <div className="flex items-center gap-3">
+            <code className="text-2xl font-mono font-bold bg-background px-4 py-2 rounded-lg border-2">
+              {user?.friend_code}
+            </code>
+            <button
+              onClick={copyFriendCode}
+              className="p-2 hover:bg-background rounded-lg transition-colors"
+              title="Copiar código"
+            >
+              {codeCopied ? (
+                <Check className="w-5 h-5 text-green-600" />
+              ) : (
+                <Copy className="w-5 h-5" />
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Invitar por link / QR */}
+        {user?.friend_code && (
+          <div className="bg-card border rounded-lg p-6">
+            <h3 className="font-semibold text-lg mb-1">Invitar por link</h3>
+            <InviteCard friendCode={user.friend_code} />
+          </div>
+        )}
 
         {/* Buscar colega */}
         <div className="bg-card border rounded-lg p-6">
