@@ -18,6 +18,7 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
 import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen, Trash2, AlertTriangle } from "lucide-react";
+import { InviteCard } from '@/shared/components/ui/InviteCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { authService } from "@/shared/services/authService";
 import { useTutorial } from "@/core/contexts/TutorialContext";
@@ -781,24 +782,7 @@ const Settings = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {user?.friend_code && (() => {
-                  const inviteUrl = `https://medicoapp.app/registro?ref=${user.friend_code}`;
-                  return (
-                    <div className="flex gap-2">
-                      <input
-                        readOnly
-                        value={inviteUrl}
-                        className="flex-1 text-sm bg-muted border border-border rounded-md px-3 py-2 text-muted-foreground"
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={() => { navigator.clipboard.writeText(inviteUrl); toast({ title: 'Link copiado', description: 'Compartilo con tus colegas.' }); }}
-                      >
-                        Copiar
-                      </Button>
-                    </div>
-                  );
-                })()}
+                {user?.friend_code && <InviteCard friendCode={user.friend_code} />}
               </CardContent>
             </Card>
 

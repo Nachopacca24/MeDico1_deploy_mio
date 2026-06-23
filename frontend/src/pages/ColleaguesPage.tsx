@@ -4,6 +4,7 @@ import { COLLEAGUE_REQUESTS_EVENT } from '@/shared/hooks/useInvitationBadges';
 import { AppLayout } from '@/shared/components/layout/AppLayout';
 import { ColleagueCard } from '@/shared/components/ColleagueCard';
 import { FriendRequestCard } from '@/shared/components/FriendRequestCard';
+import { InviteCard } from '@/shared/components/ui/InviteCard';
 import { 
   colleaguesService, 
   Colleague, 
@@ -180,7 +181,7 @@ export default function ColleaguesPage() {
 
         {/* Tu código de colega */}
         <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6" data-tutorial="colleague-code">
-          <div className="flex items-start justify-between gap-4">
+          <div className="space-y-4">
             <div>
               <h3 className="font-semibold text-lg mb-1">Tu Código de Colega</h3>
               <p className="text-sm text-muted-foreground mb-3">
@@ -203,6 +204,12 @@ export default function ColleaguesPage() {
                 </button>
               </div>
             </div>
+            {user?.friend_code && (
+              <div className="pt-3 border-t border-primary/20">
+                <h4 className="font-medium text-sm mb-2">O invitá por link</h4>
+                <InviteCard friendCode={user.friend_code} />
+              </div>
+            )}
           </div>
         </div>
 
