@@ -36,8 +36,8 @@ export function InviteCard({ friendCode, stats }: InviteCardProps) {
             <span className="text-sm font-semibold text-primary">Promoción: invitá médicos y ganá días gratis</span>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
-            Por cada 5 médicos que se registren con tu link, te sumamos <strong>10 días Premium</strong> gratis.
-            {stats.rewards_given > 0 && ` Ya ganaste ${stats.rewards_given * 10} días.`}
+            Por cada 5 médicos que se registren con tu link, te sumamos <strong>10 días Premium</strong> gratis — repetible e ilimitado. Seguí invitando y seguís ganando días.
+            {stats.rewards_given > 0 && ` Ya ganaste ${stats.rewards_given * 10} días extra.`}
           </p>
           {/* Barra de progreso */}
           <div className="space-y-1">
