@@ -257,7 +257,7 @@ const CasesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'activos' | 'facturados'>('activos');
   const [archivedCases, setArchivedCases] = useState<SurgicalCase[]>([]);
@@ -545,16 +545,15 @@ const CasesPage = () => {
 
   const filteredCases = useMemo(() => {
     return cases.filter(case_ => {
-      const matchesSearch = searchQuery === "" || 
+      return searchQuery === "" ||
         case_.patient_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         case_.patient_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         case_.hospital_name?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesStatus = statusFilter === "all" || case_.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
+    }).sort((a, b) => {
+      const diff = new Date(a.surgery_date).getTime() - new Date(b.surgery_date).getTime();
+      return sortOrder === 'asc' ? diff : -diff;
     });
-  }, [cases, searchQuery, statusFilter]);
+  }, [cases, searchQuery, sortOrder]);
 
   const getStatusBadge = (status: string) => {
     const config: Record<string, { style: string; label: string }> = {
@@ -832,34 +831,20 @@ const CasesPage = () => {
                   className="pl-10"
                 />
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2">
                 <Button
-                  variant={statusFilter === "all" ? "default" : "outline"}
+                  variant={sortOrder === "asc" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setStatusFilter("all")}
+                  onClick={() => setSortOrder("asc")}
                 >
-                  Todos
+                  Más cercana
                 </Button>
                 <Button
-                  variant={statusFilter === "scheduled" ? "default" : "outline"}
+                  variant={sortOrder === "desc" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setStatusFilter("scheduled")}
+                  onClick={() => setSortOrder("desc")}
                 >
-                  Programados
-                </Button>
-                <Button
-                  variant={statusFilter === "completed" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setStatusFilter("completed")}
-                >
-                  Completados
-                </Button>
-                <Button
-                  variant={statusFilter === "paid" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setStatusFilter("paid")}
-                >
-                  Pagados
+                  Más lejana
                 </Button>
               </div>
             </div>
