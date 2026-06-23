@@ -1317,3 +1317,24 @@ def complete_tutorial(request):
     request.user.tutorial_completed = True
     request.user.save(update_fields=['tutorial_completed'])
     return Response({'ok': True})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_invite(request):
+    """Crea una amistad directa a partir de un friend_code de invitación."""
+    friend_code = request.data.get('friend_code', '').strip().upper()
+    if not friend_code:
+        return Response({'error': 'Código requerido'}, status=400)
+    try:
+        other = User.objects.get(friend_code=friend_code)
+    except User.DoesNotExist:
+        return Response({'error': 'Código inválido'}, status=404)
+    if other == request.user:
+        return Response({'error': 'No podés agregarte a vos mismo'}, status=400)
+    from apps.medio_auth.models import Friendship
+    _, created = Friendship.objects.get_or_create(
+        user=min(other, request.user, key=lambda u: u.id),
+        friend=max(other, request.user, key=lambda u: u.id),
+    )
+    return Response({'ok': True, 'created': created})
