@@ -219,6 +219,16 @@ class CustomUser(AbstractUser):
         verbose_name="Código de Colega",
         help_text="Código único para compartir con otros médicos"
     )
+
+    # Referidos
+    referred_by = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='referrals',
+        verbose_name="Referido por",
+    )
     
     class Meta:
         verbose_name = 'Usuario'

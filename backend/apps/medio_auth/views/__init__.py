@@ -140,7 +140,7 @@ class RegisterView(APIView):
             except Exception as e:
                 print(f"Error enviando email de verificación: {e}")
             
-            # Conectar como colegas si vino con referral_code
+            # Conectar como colegas y registrar referido si vino con referral_code
             referral_code = request.data.get('referral_code', '').strip()
             if referral_code:
                 try:
@@ -151,6 +151,17 @@ class RegisterView(APIView):
                             user=min(referrer, user, key=lambda u: u.id),
                             friend=max(referrer, user, key=lambda u: u.id),
                         )
+                        # Marcar quién refirió al nuevo usuario
+                        user.referred_by = referrer
+                        user.save(update_fields=['referred_by'])
+                        # Recompensar al referidor cada 5 referidos exitosos
+                        referral_count = User.objects.filter(referred_by=referrer).count()
+                        if referral_count % 5 == 0:
+                            base = max(referrer.trial_ends_at or timezone.now(), timezone.now())
+                            referrer.trial_ends_at = base + timedelta(days=10)
+                            if referrer.plan == 'free':
+                                referrer.plan = 'premium'
+                            referrer.save(update_fields=['trial_ends_at', 'plan'])
                 except User.DoesNotExist:
                     pass  # Código inválido — no bloquear el registro
 
@@ -1317,6 +1328,22 @@ def complete_tutorial(request):
     request.user.tutorial_completed = True
     request.user.save(update_fields=['tutorial_completed'])
     return Response({'ok': True})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def referral_stats(request):
+    count = User.objects.filter(referred_by=request.user).count()
+    threshold = 5
+    rewards_given = count // threshold
+    progress = count % threshold
+    return Response({
+        'count': count,
+        'progress': progress,
+        'threshold': threshold,
+        'rewards_given': rewards_given,
+        'reward_days': 10,
+    })
 
 
 @api_view(['POST'])
