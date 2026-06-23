@@ -18,7 +18,7 @@ async function processPendingInvite(): Promise<string | null> {
       body: JSON.stringify({ friend_code: code }),
     });
     const data = await res.json();
-    if (data.ok && data.created) return data.colleague_name || null;
+    if (data.ok && data.colleague_name) return data.colleague_name;
   } catch {}
   return null;
 }
