@@ -443,7 +443,7 @@ const UsersPage = () => {
                           ? <><StarOff className="h-4 w-4 mr-2" />Quitar Premium</>
                           : <><Star className="h-4 w-4 mr-2" />Hacer Premium</>}
                     </Button>
-                    {user.plan === 'free' && !user.is_permanent_premium && (
+                    {(user.plan === 'free' || (user.plan === 'premium' && !!user.trial_ends_at && !user.ls_subscription_id)) && !user.is_permanent_premium && (
                       <Button variant="outline" size="sm"
                         onClick={() => handleExtendTrial(user.id, 15)}
                         disabled={extendingTrialId === user.id}
