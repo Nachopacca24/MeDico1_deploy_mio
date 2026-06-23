@@ -127,6 +127,14 @@ class AdminService {
     }
   }
 
+  async extendTrial(userId: number, days: number): Promise<{ trial_ends_at: string }> {
+    const response = await authService.authenticatedFetch(
+      `${API_URL}/api/admin/users/${userId}/extend-trial/`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ days }) }
+    );
+    return await this.handleResponse(response);
+  }
+
   async setPermanentPremium(userId: number, isPermanent: boolean): Promise<void> {
     try {
       const response = await authService.authenticatedFetch(

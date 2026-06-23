@@ -15,6 +15,7 @@ from core.views import (
     update_user_plan,
     set_permanent_premium,
     cancel_account_deletion,
+    extend_trial,
 )
 from apps.communication.views import admin_announcements, admin_announcement_detail
 from apps.medico.views.site_settings import site_settings_public, site_settings_admin
@@ -47,6 +48,7 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/plan/', update_user_plan, name='update_user_plan'),
     path('api/admin/users/<int:user_id>/permanent-premium/', set_permanent_premium, name='set_permanent_premium'),
     path('api/admin/users/<int:user_id>/cancel-deletion/', cancel_account_deletion, name='cancel_account_deletion'),
+    path('api/admin/users/<int:user_id>/extend-trial/', extend_trial, name='extend_trial'),
     path('api/admin/hospitals/', admin_hospitals, name='admin_hospitals'),
     path('api/admin/procedures/', admin_procedures, name='admin_procedures'),
     path('api/admin/announcements/', admin_announcements, name='admin_announcements'),

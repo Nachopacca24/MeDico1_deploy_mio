@@ -368,6 +368,23 @@ def update_user_plan(request, user_id):
         return Response({'message': 'Usuario no encontrado'}, status=404)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def extend_trial(request, user_id):
+    """Extiende el trial de un usuario X días."""
+    days = int(request.data.get('days', 15))
+    try:
+        target = User.objects.get(pk=user_id)
+        base = max(target.trial_ends_at or timezone.now(), timezone.now())
+        target.trial_ends_at = base + timedelta(days=days)
+        if target.plan == 'free':
+            target.plan = 'premium'
+        target.save(update_fields=['trial_ends_at', 'plan'])
+        return Response({'success': True, 'trial_ends_at': target.trial_ends_at.isoformat()})
+    except User.DoesNotExist:
+        return Response({'message': 'Usuario no encontrado'}, status=404)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def admin_hospitals(request):

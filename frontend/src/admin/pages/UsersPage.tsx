@@ -69,6 +69,7 @@ const UsersPage = () => {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [updatingPlanId, setUpdatingPlanId] = useState<number | null>(null);
   const [cancellingDeletionId, setCancellingDeletionId] = useState<number | null>(null);
+  const [extendingTrialId, setExtendingTrialId] = useState<number | null>(null);
 
   useEffect(() => { fetchUsers(); }, []);
 
@@ -136,6 +137,19 @@ const UsersPage = () => {
       toast.error('Error', error.message || 'No se pudo cancelar la eliminación.');
     } finally {
       setCancellingDeletionId(null);
+    }
+  };
+
+  const handleExtendTrial = async (userId: number, days: number) => {
+    setExtendingTrialId(userId);
+    try {
+      const result = await adminService.extendTrial(userId, days);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: 'premium', trial_ends_at: result.trial_ends_at } : u));
+      toast.success('Trial extendido', `Se agregaron ${days} días de trial`);
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudo extender el trial');
+    } finally {
+      setExtendingTrialId(null);
     }
   };
 
@@ -428,6 +442,12 @@ const UsersPage = () => {
                         user.plan === 'premium'
                           ? <><StarOff className="h-4 w-4 mr-2" />Quitar Premium</>
                           : <><Star className="h-4 w-4 mr-2" />Hacer Premium</>}
+                    </Button>
+                    <Button variant="outline" size="sm"
+                      onClick={() => handleExtendTrial(user.id, 15)}
+                      disabled={extendingTrialId === user.id || user.is_superuser}
+                      className="flex-1 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300">
+                      {extendingTrialId === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Clock className="h-4 w-4 mr-2" />+15 días</>}
                     </Button>
                     <Button variant="outline" size="sm"
                       onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
