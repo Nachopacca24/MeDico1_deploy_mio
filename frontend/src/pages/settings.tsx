@@ -770,6 +770,40 @@ const Settings = () => {
           <TabsContent value="calendar">
             <Card>
               <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
+                    <Users className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+                  </div>
+                  <div>
+                    <CardTitle>Invitar colegas</CardTitle>
+                    <CardDescription>Compartí tu link y quedán conectados automáticamente como colegas</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {user?.friend_code && (() => {
+                  const inviteUrl = `https://medicoapp.app/registro?ref=${user.friend_code}`;
+                  return (
+                    <div className="flex gap-2">
+                      <input
+                        readOnly
+                        value={inviteUrl}
+                        className="flex-1 text-sm bg-muted border border-border rounded-md px-3 py-2 text-muted-foreground"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => { navigator.clipboard.writeText(inviteUrl); toast({ title: 'Link copiado', description: 'Compartilo con tus colegas.' }); }}
+                      >
+                        Copiar
+                      </Button>
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">

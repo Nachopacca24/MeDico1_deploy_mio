@@ -71,6 +71,7 @@ export interface RegisterData {
   specialty?: string;
   license_number?: string;
   hospital_default?: string;
+  referral_code?: string;
 }
 
 export interface AuthResponse {

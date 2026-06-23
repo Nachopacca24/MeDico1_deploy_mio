@@ -1,7 +1,7 @@
 import type React from "react";
 
-import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
 import { Button } from "@/shared/components/ui/button";
@@ -49,6 +49,16 @@ export default function SignupForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const { register, isAuthenticated, loginWithGoogle } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const ref = searchParams.get('ref') || localStorage.getItem('referral_code');
+    if (ref) {
+      setReferralCode(ref);
+      localStorage.setItem('referral_code', ref);
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -134,7 +144,9 @@ export default function SignupForm() {
         first_name: formData.first_name,
         last_name: formData.last_name,
         specialty: formData.specialty,
+        ...(referralCode ? { referral_code: referralCode } : {}),
       });
+      localStorage.removeItem('referral_code');
 
       toast({
         title: "¡Cuenta creada! Tienes 30 días Premium gratis",

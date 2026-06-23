@@ -140,6 +140,20 @@ class RegisterView(APIView):
             except Exception as e:
                 print(f"Error enviando email de verificación: {e}")
             
+            # Conectar como colegas si vino con referral_code
+            referral_code = request.data.get('referral_code', '').strip()
+            if referral_code:
+                try:
+                    referrer = User.objects.get(friend_code=referral_code)
+                    if referrer.id != user.id:
+                        from apps.medio_auth.models import Friendship
+                        Friendship.objects.get_or_create(
+                            user=min(referrer, user, key=lambda u: u.id),
+                            friend=max(referrer, user, key=lambda u: u.id),
+                        )
+                except User.DoesNotExist:
+                    pass  # Código inválido — no bloquear el registro
+
             return Response({
                 'message': 'Usuario registrado exitosamente',
                 'user': user_data,
