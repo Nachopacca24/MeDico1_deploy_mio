@@ -41,6 +41,7 @@ export const csvMap: Record<string, string> = {
 
   // Ortopedia
   "Ortopedia/Ortopedia.csv": "surgeries/Ortopedia/Ortopedia.csv",
+  "Ortopedia/Brazo.csv": "surgeries/Ortopedia/Brazo.csv",
   "Ortopedia/Cadera.csv": "surgeries/Ortopedia/Cadera.csv",
   "Ortopedia/Hombro.csv": "surgeries/Ortopedia/Hombro.csv",
   "Ortopedia/Muñeca_y_mano.csv": "surgeries/Ortopedia/Muñeca_y_mano.csv",
