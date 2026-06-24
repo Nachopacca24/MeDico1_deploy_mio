@@ -74,7 +74,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     step: 10, route: '/cases/new', emoji: '🩺', target: 'procedures-selector',
-    title: '③ Procedimientos',
+    title: '③ Tabla de Códigos',
     description: 'Seleccioná los procedimientos realizados — tus favoritos aparecen primero. Podés agregar varios. El sistema suma los RVU y calcula el honorario total.',
     hint: 'Tenés que agregar al menos un procedimiento para poder guardar la cirugía.',
   },

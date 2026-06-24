@@ -66,7 +66,7 @@ const workItems = [
     icon: BarChart2,
   },
   {
-    title: "Procedimientos",
+    title: "Tabla de Códigos",
     url: "/operations",
     icon: Stethoscope,
   },

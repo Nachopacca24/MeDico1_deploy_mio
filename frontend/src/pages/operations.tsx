@@ -56,6 +56,7 @@ const folderStructure = {
     "Oftalmología": "Oftalmología/Oftalmología.csv",
   },
   Ortopedia: {
+    "Brazo": "Ortopedia/Brazo.csv",
     "Cadera": "Ortopedia/Cadera.csv",
     "Hombro": "Ortopedia/Hombro.csv",
     "Muñeca y Mano": "Ortopedia/Muñeca_y_mano.csv",
@@ -318,7 +319,7 @@ const Operations = () => {
         <div className="space-y-4 pb-4 border-b">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-semibold mb-1 tracking-tight">Base de Procedimientos</h1>
+              <h1 className="text-3xl font-semibold mb-1 tracking-tight">Tabla de Códigos</h1>
               <div className="flex items-center gap-4 flex-wrap text-muted-foreground">
                 <span>{Object.values(csvData).reduce((total, ops) => total + ops.length, 0)} procedimientos</span>
                 {favorites.size > 0 && (
