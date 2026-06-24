@@ -7,6 +7,26 @@ import { useFavorites } from "@/core/contexts/FavoritesContext";
 import { ScrollToTop } from "@/shared/components/ui/scroll-to-top";
 import { useToast } from "@/shared/hooks/useToast";
 import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
+import { useAuth } from "@/shared/contexts/AuthContext";
+
+// Maps user.specialty value → folderStructure key
+const SPECIALTY_TO_FOLDER: Record<string, string> = {
+  "Cardiovascular":       "Cardiovascular",
+  "Dermatología":         "Dermatología",
+  "Digestivo":            "Digestivo",
+  "Endocrino":            "Endocrino",
+  "Ginecología":          "Ginecología",
+  "Mama":                 "Mama",
+  "Maxilofacial":         "Maxilofacial",
+  "Neurocirugía":         "Neurocirugía",
+  "Obstetricia":          "Obstetricia",
+  "Oftalmología":         "Oftalmología",
+  "Ortopedia":            "Ortopedia",
+  "Otorrinolaringología": "Otorrino",
+  "Plástica":             "Plástica",
+  "Procesos variados":    "Procesos Variados",
+  "Urología":             "Urología",
+};
 
 // Tipo para las operaciones del CSV
 interface CSVOperation {
@@ -171,6 +191,18 @@ const Operations = () => {
   // Usar el contexto de favoritos
   const { favorites, toggleFavorite: toggleFavoriteContext } = useFavorites();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const userSpecialty = user?.specialty || '';
+  const userFolder = SPECIALTY_TO_FOLDER[userSpecialty] || null;
+  const isAnesthesiology = userSpecialty === 'Anestesiología';
+
+  // Sorted specialty entries: user's folder first, then the rest alphabetically
+  const sortedSpecialtyEntries = Object.entries(folderStructure).sort(([a], [b]) => {
+    if (a === userFolder) return -1;
+    if (b === userFolder) return 1;
+    return 0;
+  });
 
   // Toggle favorito usando el contexto
   const handleToggleFavorite = async (codigo: string, operation: any) => {
@@ -375,16 +407,36 @@ const Operations = () => {
 
         {/* Folder Structure Navigation - Grid View */}
         <div>
+          {/* Anestesiología banner (no folder yet) */}
+          {isAnesthesiology && specialtyFilter === "all" && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-4 flex items-start gap-3">
+              <span className="text-2xl">🩺</span>
+              <div>
+                <p className="font-semibold text-amber-800 dark:text-amber-300">Anestesiología · En proceso</p>
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
+                  Estamos organizando los códigos de anestesia. Por ahora podés buscarlos directamente en el buscador de arriba — todos los códigos están disponibles.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* "Según tu especialidad" label */}
+          {userFolder && specialtyFilter === "all" && !globalSearch && (
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-3">
+              Según tu especialidad
+            </p>
+          )}
+
           {/* Show message if no specialties match */}
-          {Object.entries(folderStructure).every(([specialty]) => {
+          {sortedSpecialtyEntries.every(([specialty]) => {
             if (specialtyFilter !== "all" && specialty !== specialtyFilter) {
               return true;
             }
             const subcategories = folderStructure[specialty as keyof typeof folderStructure];
-            const hasSearchResults = globalSearch 
+            const hasSearchResults = globalSearch
               ? Object.values(subcategories).some(csvPath => {
                   const operations = csvData[csvPath] || [];
-                  return operations.some(op => 
+                  return operations.some(op =>
                     op?.cirugia?.toLowerCase().includes(globalSearch.toLowerCase()) ||
                     op?.codigo?.toLowerCase().includes(globalSearch.toLowerCase()) ||
                     op?.especialidad?.toLowerCase().includes(globalSearch.toLowerCase())
@@ -400,7 +452,9 @@ const Operations = () => {
 
           {/* Specialty Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(folderStructure).map(([specialty, subcategories]) => {
+            {sortedSpecialtyEntries.map(([specialty, subcategories], entryIdx) => {
+              // Separator between user's specialty and the rest
+              const showRestLabel = userFolder && specialtyFilter === "all" && !globalSearch && entryIdx === 1;
               // Filter by specialty if selected
               if (specialtyFilter !== "all" && specialty !== specialtyFilter) {
                 return null;
@@ -437,6 +491,11 @@ const Operations = () => {
 
               return (
                 <div key={specialty} className="col-span-full">
+                  {showRestLabel && (
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 mt-2">
+                      Todas las especialidades
+                    </p>
+                  )}
                   {/* Specialty Card */}
                   <button
                     onClick={() => toggleSpecialty(specialty)}
