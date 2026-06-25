@@ -98,7 +98,7 @@ class Command(BaseCommand):
       </tr>'''
 
         count = len(cases)
-        subject = f'Tus imágenes quirúrgicas se eliminan pronto — MéDico'
+        subject = f'Tus imágenes quirúrgicas se eliminan pronto — MeDico App'
         plain = (
             f'Hola {display_name}, tenés {count} cirugía(s) con imágenes que se eliminan '
             f'en los próximos {WARNING_DAYS} días. Entrá a {cobrados_url} para exportar el PDF antes.'
@@ -108,7 +108,7 @@ class Command(BaseCommand):
   <div style="max-width:640px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
 
     <div style="background-color:#00BCD4;padding:28px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MeDico App</h1>
     </div>
 
     <div style="padding:36px;">
@@ -150,7 +150,7 @@ class Command(BaseCommand):
     </div>
 
     <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
-      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MeDico App</p>
     </div>
   </div>
 </div>'''

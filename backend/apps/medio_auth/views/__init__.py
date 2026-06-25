@@ -108,13 +108,13 @@ class RegisterView(APIView):
                 display_name = escape(user.first_name or user.username)
 
                 send_mail(
-                    subject='¡Bienvenido a MéDico! - Verifica tu email',
-                    message=f'¡Bienvenido a MéDico! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
+                    subject='¡Bienvenido a MeDico App! - Verifica tu email',
+                    message=f'¡Bienvenido a MeDico App! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
                     html_message=f'''
 <div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
     <div style="background-color:#00BCD4;padding:28px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MeDico App</h1>
     </div>
     <div style="padding:36px;">
       <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">¡Bienvenido, {display_name}!</h2>
@@ -127,7 +127,7 @@ class RegisterView(APIView):
       <p style="color:#6b7280;font-size:12px;margin-top:24px;">Este enlace expirará en 24 horas.</p>
     </div>
     <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
-      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MeDico App</p>
     </div>
   </div>
 </div>
@@ -377,24 +377,24 @@ class SendVerificationEmailView(APIView):
             display_name = escape(user.first_name or user.username)
 
             send_mail(
-                subject='Verifica tu email - MéDico',
+                subject='Verifica tu email - MeDico App',
                 message=f'Hola {user.first_name or user.username}! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
                 html_message=f'''
 <div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
     <div style="background-color:#00BCD4;padding:28px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MeDico App</h1>
     </div>
     <div style="padding:36px;">
       <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">Verifica tu email</h2>
-      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, has solicitado verificar tu cuenta en MéDico.</p>
+      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, has solicitado verificar tu cuenta en MeDico App.</p>
       <div style="text-align:center;margin:32px 0;">
         <a href="{verification_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Verificar mi email</a>
       </div>
       <p style="color:#6b7280;font-size:12px;margin-top:24px;">Este enlace expirará en 24 horas.</p>
     </div>
     <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
-      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MeDico App</p>
     </div>
   </div>
 </div>
@@ -500,24 +500,24 @@ class ResendVerificationEmailView(APIView):
             display_name = escape(user.first_name or user.username)
 
             send_mail(
-                subject='Nuevo enlace de verificación - MéDico',
+                subject='Nuevo enlace de verificación - MeDico App',
                 message=f'Hola {user.first_name or user.username}! Tu nuevo enlace de verificación: {verification_url}\n\nEste enlace expira en 24 horas.',
                 html_message=f'''
 <div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
     <div style="background-color:#00BCD4;padding:28px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MeDico App</h1>
     </div>
     <div style="padding:36px;">
       <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">Nuevo enlace de verificación</h2>
-      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, aquí tienes un nuevo enlace para verificar tu cuenta en MéDico.</p>
+      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, aquí tienes un nuevo enlace para verificar tu cuenta en MeDico App.</p>
       <div style="text-align:center;margin:32px 0;">
         <a href="{verification_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Verificar mi email</a>
       </div>
       <p style="color:#6b7280;font-size:12px;margin-top:24px;">Este enlace expirará en 24 horas.</p>
     </div>
     <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
-      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MeDico App</p>
     </div>
   </div>
 </div>
@@ -1136,7 +1136,7 @@ class DeleteAccountView(APIView):
             sub_status = 'Cancelada correctamente' if sub_cancelled else '⚠ Error al cancelar — revisar en Lemon Squeezy'
             try:
                 send_mail(
-                    subject=f'[MéDico App] Solicitud de eliminación de cuenta — {user.email}',
+                    subject=f'[MeDico App App] Solicitud de eliminación de cuenta — {user.email}',
                     message=(
                         f'El usuario {user.get_full_name() or user.username} ({user.email}) '
                         f'solicitó eliminar su cuenta.\n\n'
@@ -1210,17 +1210,17 @@ class ForgotPasswordView(APIView):
                         user.email, settings.EMAIL_BACKEND, settings.EMAIL_HOST)
             try:
                 send_mail(
-                    subject='Restablecer contraseña — MéDico',
+                    subject='Restablecer contraseña — MeDico App',
                     message=f'Usá este link para restablecer tu contraseña: {reset_url}\n\nExpira en 1 hora.',
                     html_message=f'''
 <div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
     <div style="background-color:#00BCD4;padding:28px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MéDico</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MeDico App</h1>
     </div>
     <div style="padding:36px;">
       <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">Restablecer contraseña</h2>
-      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, recibimos una solicitud para restablecer la contraseña de tu cuenta en MéDico.</p>
+      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Hola <strong style="color:#ffffff;">{display_name}</strong>, recibimos una solicitud para restablecer la contraseña de tu cuenta en MeDico App.</p>
       <div style="text-align:center;margin:32px 0;">
         <a href="{reset_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Restablecer contraseña</a>
       </div>
@@ -1228,7 +1228,7 @@ class ForgotPasswordView(APIView):
       <p style="color:#6b7280;font-size:12px;margin:0;">Si no solicitaste esto, ignorá este correo.</p>
     </div>
     <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
-      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MéDico</p>
+      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MeDico App</p>
     </div>
   </div>
 </div>

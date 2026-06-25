@@ -244,7 +244,7 @@ if _resend_key:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'MéDico <contacto@medicoapp.app>')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'MeDico App <contacto@medicoapp.app>')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # URL del frontend para enlaces de verificación
