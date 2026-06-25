@@ -352,7 +352,7 @@ export default function Login() {
 
               <Link
                 to='/signup'
-                className='w-full flex items-center justify-center gap-2 h-12 rounded-xl border-2 border-sky-400 text-sky-700 font-semibold text-sm hover:bg-sky-50 hover:border-sky-500 active:scale-[0.98] transition-all duration-150'
+                className='amber-cta w-full flex items-center justify-center gap-2 h-12 rounded-xl border-2 border-amber-400 text-amber-700 font-semibold text-sm hover:bg-amber-50 hover:border-amber-500'
               >
                 Crear cuenta — 30 días Premium gratis
               </Link>

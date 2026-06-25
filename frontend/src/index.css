@@ -12,6 +12,17 @@
   z-index: 10;
 }
 
+@keyframes amberGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0), 0 2px 8px rgba(0,0,0,0.06); }
+  50%       { box-shadow: 0 0 0 4px rgba(251,191,36,0.25), 0 4px 20px rgba(251,191,36,0.3); }
+}
+.amber-cta {
+  animation: amberGlow 2.2s ease-in-out infinite;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.amber-cta:hover  { transform: translateY(-1px) scale(1.01); }
+.amber-cta:active { transform: scale(0.98); animation: none; }
+
 @keyframes googleGlow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(14,165,233,0), 0 2px 8px rgba(0,0,0,0.06); }
   50%       { box-shadow: 0 0 0 4px rgba(14,165,233,0.18), 0 4px 16px rgba(14,165,233,0.18); }
