@@ -2,8 +2,11 @@
 
 import io
 import logging
+import time
 import urllib.request
 from datetime import date
+
+import cloudinary.utils
 
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
@@ -312,9 +315,20 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
         MAX_H = 2.8 * inch
         img_cells = []
 
+        pdf_expires_at = int(time.time()) + 300  # signed URL valid for 5 min (PDF generation only)
         for img_obj in images:
             try:
-                with urllib.request.urlopen(img_obj.cloudinary_url, timeout=10) as resp:
+                if img_obj.cloudinary_public_id:
+                    fetch_url, _ = cloudinary.utils.cloudinary_url(
+                        img_obj.cloudinary_public_id,
+                        type='authenticated',
+                        sign_url=True,
+                        expires_at=pdf_expires_at,
+                        secure=True,
+                    )
+                else:
+                    fetch_url = img_obj.cloudinary_url  # legacy public image
+                with urllib.request.urlopen(fetch_url, timeout=10) as resp:
                     img_bytes = io.BytesIO(resp.read())
                 rl_img = RLImage(img_bytes, width=MAX_W, height=MAX_H, kind='proportional')
                 caption = Paragraph(
