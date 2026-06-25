@@ -136,12 +136,12 @@ body {
 
     --radius: 0.5rem;
 
-    /* Sidebar: blanco puro — contrasta con el fondo azul-gris, se ve como panel */
-    --sidebar-background: 0 0% 100%;
+    /* Sidebar: ligeramente más oscura que el fondo para dar profundidad */
+    --sidebar-background: 210 28% 92%;
     --sidebar-foreground: 215 25% 20%;
     --sidebar-primary: 198 90% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 25% 94%;
+    --sidebar-accent: 210 25% 88%;
     --sidebar-accent-foreground: 215 25% 20%;
     --sidebar-border: 210 20% 90%;
     --sidebar-ring: 198 90% 35%;
