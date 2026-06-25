@@ -24,7 +24,7 @@ from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.decorators import throttle_classes, api_view, permission_classes
-from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle, ColleagueSearchThrottle
+from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle, ColleagueSearchThrottle, RefreshTokenThrottle
 
 from ..serializers import (
     UserSerializer,
@@ -234,6 +234,7 @@ class LogoutView(APIView):
 
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [RefreshTokenThrottle]
 
     def post(self, request):
         try:
@@ -310,13 +311,16 @@ class ChangePasswordView(APIView):
             data=request.data,
             context={'request': request}
         )
-        
         if serializer.is_valid():
             serializer.save()
-            return Response({
-                'message': 'Contraseña cambiada exitosamente'
-            }, status=status.HTTP_200_OK)
-        
+            # Invalidate all existing sessions so stolen tokens can't be reused
+            try:
+                from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+                for token in OutstandingToken.objects.filter(user=request.user):
+                    BlacklistedToken.objects.get_or_create(token=token)
+            except Exception:
+                pass
+            return Response({'message': 'Contraseña cambiada exitosamente'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1304,6 +1308,13 @@ class ResetPasswordView(APIView):
         user.set_password(new_password)
         user.save(update_fields=['password'])
         user.clear_password_reset_token()
+        # Invalidate all existing sessions after password reset
+        try:
+            from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+            for token in OutstandingToken.objects.filter(user=user):
+                BlacklistedToken.objects.get_or_create(token=token)
+        except Exception:
+            pass
 
         return Response(
             {'message': 'Contraseña restablecida exitosamente. Ya podés iniciar sesión.'},

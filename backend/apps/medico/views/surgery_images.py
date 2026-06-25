@@ -2,7 +2,10 @@
 
 import logging
 
+import time
+import cloudinary
 import cloudinary.uploader
+import cloudinary.utils
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes, parser_classes
@@ -74,10 +77,29 @@ def list_surgery_images(request, case_id):
     if not (is_owner or is_assistant):
         return Response({'error': 'Sin acceso a este caso'}, status=status.HTTP_403_FORBIDDEN)
 
-    images = case.images.all().values(
-        'id', 'cloudinary_url', 'original_filename', 'file_size', 'uploaded_at', 'uploaded_by_id'
-    )
-    return Response(list(images))
+    expires_at = int(time.time()) + 7200  # signed URLs valid for 2 hours
+    result = []
+    for img in case.images.all().order_by('uploaded_at'):
+        public_id = img.cloudinary_public_id
+        if public_id:
+            signed_url, _ = cloudinary.utils.cloudinary_url(
+                public_id,
+                type='authenticated',
+                sign_url=True,
+                expires_at=expires_at,
+                secure=True,
+            )
+        else:
+            signed_url = img.cloudinary_url  # fallback for legacy images
+        result.append({
+            'id': img.id,
+            'cloudinary_url': signed_url,
+            'original_filename': img.original_filename,
+            'file_size': img.file_size,
+            'uploaded_at': img.uploaded_at,
+            'uploaded_by_id': img.uploaded_by_id,
+        })
+    return Response(result)
 
 
 # ── Upload image ──────────────────────────────────────────────────────────────
@@ -138,6 +160,7 @@ def upload_surgery_image(request, case_id):
             file,
             folder=f'surgery_images/case_{case_id}',
             resource_type='image',
+            type='authenticated',
             transformation=[{'quality': 'auto', 'fetch_format': 'auto'}],
         )
     except Exception as e:

@@ -19,3 +19,7 @@ class PasswordResetThrottle(AnonRateThrottle):
 
 class ColleagueSearchThrottle(UserRateThrottle):
     scope = 'colleague_search'
+
+
+class RefreshTokenThrottle(AnonRateThrottle):
+    scope = 'token_refresh'

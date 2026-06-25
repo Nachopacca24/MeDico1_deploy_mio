@@ -77,7 +77,6 @@ MIDDLEWARE = [
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'core.middleware.DisableCSRFForAPIMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -212,6 +211,7 @@ REST_FRAMEWORK = {
         'ad_tracking': '600/hour',
         'password_reset': '3/hour',
         'colleague_search': '30/hour',
+        'token_refresh': '20/min',
         'webhook': '300/min',
     },
 }

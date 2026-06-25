@@ -115,13 +115,10 @@ class AuthService {
   private saveUser(user: User): void {
     const previousUserId = localStorage.getItem(TOKEN_STORAGE_KEYS.lastUserId);
     const currentUserId = user.id.toString();
-
-    // Si el usuario cambió, limpiar tokens de Google Calendar
     if (previousUserId && previousUserId !== currentUserId) {
-        googleCalendarService.invalidateCache();
+      googleCalendarService.invalidateCache();
     }
-
-    localStorage.setItem(TOKEN_STORAGE_KEYS.user, JSON.stringify(user));
+    // User PII is NOT persisted to localStorage — only lastUserId for cache invalidation
     localStorage.setItem(TOKEN_STORAGE_KEYS.lastUserId, currentUserId);
   }
 
@@ -137,8 +134,7 @@ class AuthService {
    * Obtener usuario almacenado en localStorage
    */
   getCurrentUser(): User | null {
-    const userStr = localStorage.getItem(TOKEN_STORAGE_KEYS.user);
-    return userStr ? JSON.parse(userStr) : null;
+    return null; // User data is never persisted locally — always fetched from server
   }
 
   /**
@@ -147,8 +143,8 @@ class AuthService {
   clearAuth(): void {
     this._accessToken = null;
     localStorage.removeItem(TOKEN_STORAGE_KEYS.refresh);
-    localStorage.removeItem(TOKEN_STORAGE_KEYS.user);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.lastUserId);
+    localStorage.removeItem('medico_user'); // purge legacy key if present
 
     // 🔒 CRÍTICO: Limpiar tokens de Google Calendar
     googleCalendarService.invalidateCache();
