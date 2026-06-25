@@ -452,16 +452,23 @@ const NewCase = () => {
         toast.success('¡Caso creado!', `Subiendo ${pendingImages.length} imagen${pendingImages.length > 1 ? 'es' : ''} en segundo plano...`);
         navigate('/cases');
         uploadStore.add(newCase.id);
-        Promise.all(pendingImages.map(async file => {
-          try {
-            const formData = new FormData();
-            formData.append('image', file);
-            await authService.authenticatedFetch(
-              `${API_URL}/api/v1/medico/cases/${newCase.id}/images/upload/`,
-              { method: 'POST', body: formData }
-            );
-          } catch { /* silent */ }
-        })).finally(() => uploadStore.remove(newCase.id));
+        const caseIdForUpload = newCase.id;
+        Promise.all(pendingImages.map(async (file) => {
+          const formData = new FormData();
+          formData.append('image', file);
+          const resp = await authService.authenticatedFetch(
+            `${API_URL}/api/v1/medico/cases/${caseIdForUpload}/images/upload/`,
+            { method: 'POST', body: formData }
+          );
+          if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || `Error ${resp.status}`);
+          }
+        })).then(() => {
+          // all good, spinner will disappear
+        }).catch((err) => {
+          toast.error('Algunas imágenes no se subieron', err.message || 'Revisá el caso y volvé a intentarlo.');
+        }).finally(() => uploadStore.remove(caseIdForUpload));
       } else {
         toast.success('¡Caso creado exitosamente!', `El caso de ${patientName} ha sido registrado correctamente`);
         navigate('/cases');

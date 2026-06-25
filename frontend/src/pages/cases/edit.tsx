@@ -185,9 +185,9 @@ const EditCase = () => {
           setManualAssistantName(caseData.assistant_doctor_name);
         }
 
-        // Restaurar multiplicador
+        // Restaurar multiplicador — hospital_factor viene como string de DRF (DecimalField)
         if (caseData.procedures && caseData.procedures.length > 0) {
-          const factor = caseData.procedures[0].hospital_factor;
+          const factor = parseFloat(String(caseData.procedures[0].hospital_factor ?? '1'));
           if (factor && factor !== 1) setRateMultiplier(factor.toString());
         }
 
@@ -597,11 +597,16 @@ const EditCase = () => {
         }))
       };
 
-      // Solo agregar campos de ayudante si hay uno seleccionado
+      // Siempre enviar los campos del ayudante para que el backend los actualice/limpie
       if (assistantType === 'colleague' && selectedColleagueId) {
         caseData.assistant_doctor = selectedColleagueId;
+        caseData.assistant_doctor_name = null;
       } else if (assistantType === 'manual' && manualAssistantName) {
+        caseData.assistant_doctor = null;
         caseData.assistant_doctor_name = manualAssistantName;
+      } else {
+        caseData.assistant_doctor = null;
+        caseData.assistant_doctor_name = null;
       }
 
       // ✅ CRÍTICO: Llamar a updateCase (NO createCase)
@@ -609,16 +614,23 @@ const EditCase = () => {
 
       // Upload new images in parallel
       if (isPremium && pendingImages.length > 0) {
-        await Promise.all(pendingImages.map(async file => {
-          try {
-            const formData = new FormData();
-            formData.append('image', file);
-            await authService.authenticatedFetch(
-              `${API_URL}/api/v1/medico/cases/${id}/images/upload/`,
-              { method: 'POST', body: formData }
-            );
-          } catch { /* silent */ }
+        const results = await Promise.allSettled(pendingImages.map(async file => {
+          const formData = new FormData();
+          formData.append('image', file);
+          const resp = await authService.authenticatedFetch(
+            `${API_URL}/api/v1/medico/cases/${id}/images/upload/`,
+            { method: 'POST', body: formData }
+          );
+          if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || `Error ${resp.status}`);
+          }
         }));
+        const failed = results.filter(r => r.status === 'rejected');
+        if (failed.length > 0) {
+          const reason = (failed[0] as PromiseRejectedResult).reason?.message || '';
+          toast.error(`${failed.length} imagen(es) no se pudieron subir`, reason);
+        }
       }
 
       toast.success(
