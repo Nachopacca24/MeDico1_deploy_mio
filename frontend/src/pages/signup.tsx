@@ -206,9 +206,15 @@ export default function SignupForm() {
   const handleGoogleSuccess = async (tokenResponse: any) => {
     setIsLoading(true);
     try {
-      await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
+      const result = await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
       const colleagueNameGoogle = await processPendingInvite();
-      toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+      const isNew = result.message.includes('Registro');
+      toast({
+        title: isNew ? "¡Bienvenido/a! Tienes 30 días Premium gratis" : "¡Bienvenido/a de nuevo!",
+        description: isNew
+          ? "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba."
+          : "Iniciaste sesión con Google correctamente.",
+      });
       if (colleagueNameGoogle) {
         setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${colleagueNameGoogle} automáticamente.` }), 800);
       }
@@ -234,9 +240,15 @@ export default function SignupForm() {
       await GoogleAuth.initialize();
       const googleUser = await GoogleAuth.signIn();
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
-      await loginWithGoogle(token);
+      const resultNative = await loginWithGoogle(token);
       const colleagueNameNative = await processPendingInvite();
-      toast({ title: "¡Bienvenido/a! Tienes 30 días Premium gratis", description: "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba." });
+      const isNewNative = resultNative.message.includes('Registro');
+      toast({
+        title: isNewNative ? "¡Bienvenido/a! Tienes 30 días Premium gratis" : "¡Bienvenido/a de nuevo!",
+        description: isNewNative
+          ? "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba."
+          : "Iniciaste sesión con Google correctamente.",
+      });
       if (colleagueNameNative) {
         setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${colleagueNameNative} automáticamente.` }), 800);
       }
