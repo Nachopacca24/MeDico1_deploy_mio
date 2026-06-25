@@ -172,6 +172,9 @@ MEDIA_URL = '/media/'
 # ============================================
 # Generar con: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', '')
+if not ENCRYPTION_KEY and not DEBUG:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('ENCRYPTION_KEY must be set in production.')
 
 # ============================================
 # GOOGLE CALENDAR CONFIGURATION

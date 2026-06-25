@@ -822,7 +822,7 @@ class CaseProcedureViewSet(viewsets.ModelViewSet):
     ViewSet para gestionar procedimientos individuales
     """
     serializer_class = CaseProcedureSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsEmailVerified]
 
     def get_queryset(self):
         """Retornar solo procedimientos de casos del usuario"""

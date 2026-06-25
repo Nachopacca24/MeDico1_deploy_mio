@@ -1365,6 +1365,16 @@ def accept_invite(request):
     if other == request.user:
         return Response({'error': 'No podés agregarte a vos mismo'}, status=400)
     from apps.medio_auth.models import Friendship
+    # Enforce free plan colleague limit
+    if request.user.plan == 'free':
+        colleague_count = Friendship.objects.filter(
+            Q(user=request.user) | Q(friend=request.user)
+        ).count()
+        if colleague_count >= 3:
+            return Response(
+                {'error': 'Plan gratuito: máximo 3 colegas. Actualizá a Premium para colegas ilimitados.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
     _, created = Friendship.objects.get_or_create(
         user=min(other, request.user, key=lambda u: u.id),
         friend=max(other, request.user, key=lambda u: u.id),
