@@ -332,6 +332,9 @@ class AuthService {
 
         const result = await response.json();
         this._accessToken = result.access;
+        if (result.refresh) {
+          localStorage.setItem(TOKEN_STORAGE_KEYS.refresh, result.refresh);
+        }
 
         return result.access;
       } catch (error) {

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { favoritesService } from '@/services/favoritesService';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 interface FavoritesContextType {
   favorites: Set<string>;
@@ -11,6 +12,7 @@ interface FavoritesContextType {
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,8 +51,14 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      setFavorites(new Set());
+      setIsLoading(false);
+      return;
+    }
     loadFavorites();
-  }, []);
+  }, [isAuthenticated, authLoading]);
 
   return (
     <FavoritesContext.Provider value={{ favorites, isLoading, refreshFavorites, toggleFavorite }}>
