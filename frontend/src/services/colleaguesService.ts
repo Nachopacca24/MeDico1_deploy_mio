@@ -1,5 +1,6 @@
 // services/colleaguesService.ts
 import axios from 'axios';
+import { authService } from '@/shared/services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -44,12 +45,7 @@ export interface SearchColleagueResponse extends Colleague {
 
 class ColleaguesService {
   private getAuthHeaders() {
-    const token = localStorage.getItem('medico_access_token');
-    
-    if (!token) {
-      console.warn('⚠️ No se encontró el token de autenticación');
-    }
-    
+    const token = authService.getAccessToken();
     return {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',

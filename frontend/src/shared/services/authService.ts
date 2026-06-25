@@ -87,22 +87,25 @@ export interface ChangePasswordData {
   new_password2: string;
 }
 
-// Manejo de tokens en localStorage
+// Refresh token persists in localStorage; access token lives in memory only.
+// This eliminates XSS access-token theft: memory is not reachable from injected scripts.
 const TOKEN_STORAGE_KEYS = {
-  access: 'medico_access_token',
   refresh: 'medico_refresh_token',
   user: 'medico_user',
   lastUserId: 'medico_last_user_id',
 };
 
+// Purge any legacy access token left in localStorage from older versions
+if (typeof window !== 'undefined') {
+  localStorage.removeItem('medico_access_token');
+}
+
 class AuthService {
   private refreshPromise: Promise<string> | null = null;
+  private _accessToken: string | null = null; // lives in memory only
 
-  /**
-   * Guardar tokens en localStorage
-   */
   private saveTokens(tokens: AuthTokens): void {
-    localStorage.setItem(TOKEN_STORAGE_KEYS.access, tokens.access);
+    this._accessToken = tokens.access;
     localStorage.setItem(TOKEN_STORAGE_KEYS.refresh, tokens.refresh);
   }
 
@@ -122,16 +125,10 @@ class AuthService {
     localStorage.setItem(TOKEN_STORAGE_KEYS.lastUserId, currentUserId);
   }
 
-  /**
-   * Obtener access token de localStorage
-   */
   getAccessToken(): string | null {
-    return localStorage.getItem(TOKEN_STORAGE_KEYS.access);
+    return this._accessToken;
   }
 
-  /**
-   * Obtener refresh token de localStorage
-   */
   getRefreshToken(): string | null {
     return localStorage.getItem(TOKEN_STORAGE_KEYS.refresh);
   }
@@ -148,8 +145,7 @@ class AuthService {
    * 🔒 Limpiar todos los datos de autenticación
    */
   clearAuth(): void {
-    // Limpiar tokens de autenticación
-    localStorage.removeItem(TOKEN_STORAGE_KEYS.access);
+    this._accessToken = null;
     localStorage.removeItem(TOKEN_STORAGE_KEYS.refresh);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.user);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.lastUserId);
@@ -158,11 +154,9 @@ class AuthService {
     googleCalendarService.invalidateCache();
   }
 
-  /**
-   * Verificar si el usuario está autenticado
-   */
+  // A session exists if there's a refresh token — access token restores itself on first request
   isAuthenticated(): boolean {
-    return !!this.getAccessToken();
+    return !!this.getRefreshToken();
   }
 
   /**
@@ -341,7 +335,7 @@ class AuthService {
         }
 
         const result = await response.json();
-        localStorage.setItem(TOKEN_STORAGE_KEYS.access, result.access);
+        this._accessToken = result.access;
 
         return result.access;
       } catch (error) {
@@ -433,10 +427,16 @@ class AuthService {
    * Realizar fetch con autenticación automática
    */
   async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const accessToken = this.getAccessToken();
-
+    // If no access token in memory (e.g. page reload), restore it via refresh token
+    let accessToken = this.getAccessToken();
     if (!accessToken) {
-      throw new Error('No access token available');
+      try {
+        accessToken = await this.refreshAccessToken();
+      } catch {
+        this.clearAuth();
+        window.location.href = '/login';
+        throw new Error('Session expired');
+      }
     }
 
     const headers: Record<string, string> = {
