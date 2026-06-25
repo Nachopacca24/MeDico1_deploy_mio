@@ -90,61 +90,61 @@ body {
 
 @layer base {
   :root {
-    /* Clean Modern Theme - Light Mode */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    /* Blue-gray wash — light but not glaring white */
+    --background: 210 25% 96%;        /* #f2f5f9 — fondo general azul-gris muy suave */
+    --foreground: 215 25% 12%;        /* casi negro con tinte azul, más suave que puro negro */
+    --card: 0 0% 100%;                /* blanco puro — las cards flotan sobre el fondo */
+    --card-foreground: 215 25% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
-    
+    --popover-foreground: 215 25% 12%;
+
     /* Primary: Deep Teal / Medical Blue */
     --primary: 198 90% 35%;
     --primary-foreground: 0 0% 100%;
-    
-    /* Secondary: Soft Slate Blue */
-    --secondary: 210 40% 90%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    
-    /* Destructive: Soft Red */
+
+    /* Secondary */
+    --secondary: 210 30% 90%;
+    --secondary-foreground: 215 25% 20%;
+
+    --muted: 210 25% 91%;             /* levemente más oscuro que el fondo */
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 25% 91%;
+    --accent-foreground: 215 25% 20%;
+
+    /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    
-    /* Success: Natural Green */
+
+    /* Success */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    
-    /* Warning: Warm Amber */
+
+    /* Warning */
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    
-    --border: 198 45% 82%;
-    --input: 198 45% 82%;
+
+    --border: 210 20% 87%;            /* borde sutil, no tan azulado como antes */
+    --input: 210 20% 87%;
     --ring: 198 90% 35%;
-    
-    /* Chart colors */
+
+    /* Chart */
     --chart-1: 221 83% 53%;
     --chart-2: 142 71% 45%;
     --chart-3: 262 52% 47%;
     --chart-4: 38 92% 50%;
     --chart-5: 340 82% 52%;
-    
+
     --radius: 0.5rem;
-    
-    /* ✅ Sidebar: Clean White */
+
+    /* Sidebar: blanco puro — contrasta con el fondo azul-gris, se ve como panel */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-foreground: 215 25% 20%;
+    --sidebar-primary: 198 90% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 20%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-accent: 210 25% 94%;
+    --sidebar-accent-foreground: 215 25% 20%;
+    --sidebar-border: 210 20% 90%;
+    --sidebar-ring: 198 90% 35%;
   }
 
   .dark {
