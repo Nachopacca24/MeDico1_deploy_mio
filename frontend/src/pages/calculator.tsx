@@ -210,9 +210,9 @@ export default function CalculatorPage() {
 
   const removeProc = (uid: string) => setSelected(prev => prev.filter(p => p.uid !== uid));
 
-  const MULTI_MULTIPLIERS = [1.0, 0.5, 0.25, 0.10];
+  const MULTI_MULTIPLIERS = [1.0, 0.5, 0.10];
   const getMultiplier = (rank: number) => MULTI_MULTIPLIERS[Math.min(rank, MULTI_MULTIPLIERS.length - 1)];
-  const PCT_LABELS = ['100%', '50%', '25%', '10%'];
+  const PCT_LABELS = ['100%', '50%', '10%'];
 
   // Sort selected by RVU desc to assign ranks
   const rankedSelected = useMemo(() => (

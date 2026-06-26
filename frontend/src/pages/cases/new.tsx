@@ -308,7 +308,7 @@ const NewCase = () => {
 
   const [multipleRule, setMultipleRule] = useState(true);
 
-  const MULTI_MULTIPLIERS = [1.0, 0.5, 0.25, 0.10];
+  const MULTI_MULTIPLIERS = [1.0, 0.5, 0.10];
   const getMultiplier = (rank: number) => MULTI_MULTIPLIERS[Math.min(rank, MULTI_MULTIPLIERS.length - 1)];
 
   // Sorted indices by RVU desc (for the multiple rule rank)
@@ -432,7 +432,7 @@ const NewCase = () => {
           grupo: proc.grupo,
           rvu: proc.rvu,
           hospital_factor: hospitalFactor,
-          calculated_value: proc.rvu * hospitalFactor,
+          calculated_value: proc.rvu * hospitalFactor * (multipleRule ? getMultiplier(rankMap[index] ?? index) : 1),
           notes: proc.notes || undefined,
           order: index + 1
         }))
@@ -905,7 +905,7 @@ const NewCase = () => {
                 <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Regla de procedimientos múltiples</span>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">(1°×100% · 2°×50% · 3°×25% · 4°+×10%)</span>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">(1°×100% · 2°×50% · 3°+×10%)</span>
                   </div>
                   <button
                     type="button"
@@ -935,7 +935,7 @@ const NewCase = () => {
                     const mult = multipleRule ? getMultiplier(rank) : 1;
                     const factor = rateMultiplier ? parseFloat(rateMultiplier) || 1 : 1;
                     const adjValue = proc.rvu * mult * factor;
-                    const pctLabels = ['100%', '50%', '25%', '10%'];
+                    const pctLabels = ['100%', '50%', '10%'];
                     const pctLabel = pctLabels[Math.min(rank, pctLabels.length - 1)];
                     return (
                     <div key={index} className="border rounded-lg p-4 space-y-3">
