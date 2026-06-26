@@ -126,6 +126,7 @@ const NewCase = () => {
   const [loadingColleagues, setLoadingColleagues] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   // Estados para favoritos
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
   const [favoriteProcedures, setFavoriteProcedures] = useState<ProcedureData[]>([]);
   const [showFavorites, setShowFavorites] = useState(true);
   const [loadingFavoriteRvu, setLoadingFavoriteRvu] = useState<string | null>(null);
@@ -157,6 +158,7 @@ const NewCase = () => {
           rvu: 0,
         }));
         setFavoriteProcedures(favProcs);
+        setLoadingFavorites(false);
 
         // Pre-load RVUs in background
         const updated = [...favProcs];
@@ -179,7 +181,7 @@ const NewCase = () => {
           } catch {}
         }
       })
-      .catch(() => {});
+      .catch(() => { setLoadingFavorites(false); });
   }, []);
 
   // Filtrado de procedimientos basado en búsqueda
@@ -794,8 +796,13 @@ const NewCase = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* 🔥 NUEVA SECCIÓN: Acceso Rápido a Favoritos */}
-              {favoriteProcedures.length > 0 && (
+              {/* Acceso Rápido a Favoritos — siempre reserva espacio para evitar layout shift */}
+              {loadingFavorites ? (
+                <div className="h-10 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando procedimientos frecuentes...
+                </div>
+              ) : favoriteProcedures.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-semibold flex items-center gap-2">
