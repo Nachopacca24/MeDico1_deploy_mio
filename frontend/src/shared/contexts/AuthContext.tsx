@@ -15,7 +15,7 @@ interface AuthContextType {
   isAdmin: boolean;
   accessToken: string | null;
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
-  loginWithGoogle: (token: string) => Promise<AuthResponse>;
+  loginWithGoogle: (token: string, referralCode?: string) => Promise<AuthResponse>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
@@ -110,9 +110,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Login con Google
    */
-  const loginWithGoogle = async (token: string): Promise<AuthResponse> => {
+  const loginWithGoogle = async (token: string, referralCode?: string): Promise<AuthResponse> => {
     try {
-      const response = await authService.loginWithGoogle(token);
+      const response = await authService.loginWithGoogle(token, referralCode);
       setUser(response.user);
 
       if (response.user.role === 0) {

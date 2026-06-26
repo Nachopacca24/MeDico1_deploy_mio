@@ -229,14 +229,14 @@ class AuthService {
   /**
    * 🔒 Login con Google
    */
-  async loginWithGoogle(token: string): Promise<AuthResponse> {
+  async loginWithGoogle(token: string, referralCode?: string): Promise<AuthResponse> {
     try {
       const response = await fetch(AUTH_ENDPOINTS.google, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, ...(referralCode ? { referral_code: referralCode } : {}) }),
       });
 
       if (!response.ok) {

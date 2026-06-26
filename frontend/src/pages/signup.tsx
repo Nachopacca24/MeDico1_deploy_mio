@@ -206,7 +206,7 @@ export default function SignupForm() {
   const handleGoogleSuccess = async (tokenResponse: any) => {
     setIsLoading(true);
     try {
-      const result = await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
+      const result = await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token, referralCode || undefined);
       const colleagueNameGoogle = await processPendingInvite();
       const isNew = result.message.includes('Registro');
       toast({
@@ -240,7 +240,7 @@ export default function SignupForm() {
       await GoogleAuth.initialize();
       const googleUser = await GoogleAuth.signIn();
       const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
-      const resultNative = await loginWithGoogle(token);
+      const resultNative = await loginWithGoogle(token, referralCode || undefined);
       const colleagueNameNative = await processPendingInvite();
       const isNewNative = resultNative.message.includes('Registro');
       toast({

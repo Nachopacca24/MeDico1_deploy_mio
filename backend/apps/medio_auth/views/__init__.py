@@ -1027,6 +1027,22 @@ class GoogleLoginView(APIView):
             user.last_login = timezone.now()
             user.save(update_fields=['last_login'])
 
+            # Referral solo para usuarios nuevos
+            if created:
+                referral_code = request.data.get('referral_code', '').strip()
+                if referral_code:
+                    try:
+                        referrer = User.objects.get(friend_code=referral_code)
+                        if referrer.id != user.id:
+                            from apps.medio_auth.models import Friendship
+                            Friendship.objects.get_or_create(
+                                user=min(referrer, user, key=lambda u: u.id),
+                                friend=max(referrer, user, key=lambda u: u.id),
+                            )
+                            _apply_referral(user, referrer)
+                    except Exception:
+                        pass
+
             # Generar tokens nativos
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
@@ -1390,11 +1406,6 @@ def accept_invite(request):
         user=min(other, request.user, key=lambda u: u.id),
         friend=max(other, request.user, key=lambda u: u.id),
     )
-    # Si el que abrió el link no tiene referidor, lo marca (other es el invitador)
-    try:
-        _apply_referral(request.user, other)
-    except Exception:
-        pass
     return Response({
         'ok': True,
         'created': created,
