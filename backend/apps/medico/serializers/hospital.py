@@ -72,7 +72,7 @@ class HospitalViewSet(viewsets.ReadOnlyModelViewSet):
         """Agregar hospital a favoritos"""
         hospital = self.get_object()
 
-        if request.user.plan == 'free':
+        if not request.user.has_premium_access:
             current_count = FavoriteHospital.objects.filter(user=request.user).count()
             if current_count >= 2:
                 return Response(

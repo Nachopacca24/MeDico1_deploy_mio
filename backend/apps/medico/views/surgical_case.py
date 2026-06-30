@@ -158,7 +158,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Crear un nuevo caso quirúrgico"""
-        if request.user.plan == 'free':
+        if not request.user.has_premium_access:
             active_count = SurgicalCase.objects.filter(
                 created_by=request.user,
                 archived_at__isnull=True,
@@ -345,7 +345,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             )
 
         # Verificar límite de casos para plan gratuito
-        if request.user.plan == 'free':
+        if not request.user.has_premium_access:
             own_cases = SurgicalCase.objects.filter(
                 created_by=request.user,
                 archived_at__isnull=True,

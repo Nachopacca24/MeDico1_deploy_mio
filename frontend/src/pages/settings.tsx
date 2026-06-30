@@ -57,7 +57,8 @@ const TAB_OPTIONS = [
 ];
 
 const Settings = () => {
-  const { PREMIUM_PRICE, ANNUAL_PRICE } = useSiteSettings();
+  const { PREMIUM_PRICE, ANNUAL_PRICE, FREE_FOR_ALL_PREMIUM } = useSiteSettings();
+  const isFreeForAllPromo = FREE_FOR_ALL_PREMIUM === '1';
   const monthlyPrice = Number(PREMIUM_PRICE);
   const annualPrice = Number(ANNUAL_PRICE);
   const price = monthlyPrice.toFixed(0);
@@ -600,6 +601,16 @@ const Settings = () => {
                 </CardHeader>
               </Card>
 
+              {/* Free-for-all promo banner — shown when admin activates the site-wide free Premium mode */}
+              {isFreeForAllPromo && (
+                <Alert className="border-emerald-400/50 bg-emerald-50 dark:bg-emerald-950/20">
+                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                  <AlertDescription className="text-emerald-800 dark:text-emerald-300 text-sm">
+                    <strong>🎉 Por tiempo limitado, MeDico App es 100% gratis para todos.</strong> Ya tenés acceso a todas las funciones Premium sin costo.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Bonus credit banner — shown when paying subscriber has extra days from referral/admin */}
               {user?.plan === 'premium' && !!user?.ls_renews_at && !!user?.trial_ends_at && (
                 <Alert className="border-amber-400/50 bg-amber-50 dark:bg-amber-950/20">
@@ -757,6 +768,10 @@ const Settings = () => {
                       {user?.plan === 'premium' ? (
                         <Button disabled className="w-full rounded-xl bg-amber-400/10 text-amber-400 font-bold border border-amber-400/30 cursor-not-allowed">
                           <Star className="h-4 w-4 mr-2 fill-amber-400" /> Plan Activo
+                        </Button>
+                      ) : isFreeForAllPromo ? (
+                        <Button disabled className="w-full rounded-xl bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-400/30 cursor-not-allowed">
+                          <Sparkles className="h-4 w-4 mr-2" /> Ya tenés Premium gratis 🎉
                         </Button>
                       ) : (
                         <Button

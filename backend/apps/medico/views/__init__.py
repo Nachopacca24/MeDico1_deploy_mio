@@ -48,7 +48,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Crear un nuevo favorito"""
-        if request.user.plan == 'free':
+        if not request.user.has_premium_access:
             current_count = self.get_queryset().count()
             if current_count >= 5:
                 return Response(
@@ -123,7 +123,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
             )
         else:
             # Verificar límite antes de agregar
-            if request.user.plan == 'free':
+            if not request.user.has_premium_access:
                 current_count = self.get_queryset().count()
                 if current_count >= 5:
                     return Response(

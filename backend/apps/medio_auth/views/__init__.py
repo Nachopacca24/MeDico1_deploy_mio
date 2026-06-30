@@ -640,7 +640,7 @@ class SendFriendRequestView(APIView):
             )
 
         # Límite de plan gratuito
-        if request.user.plan == 'free':
+        if not request.user.has_premium_access:
             colleague_count = Friendship.objects.filter(
                 Q(user=request.user) | Q(friend=request.user)
             ).count()
@@ -796,7 +796,7 @@ class AcceptFriendRequestView(APIView):
             )
         
         # Verificar límite de plan gratuito del usuario que acepta
-        if request.user.plan == 'free':
+        if not request.user.has_premium_access:
             colleague_count = Friendship.objects.filter(
                 Q(user=request.user) | Q(friend=request.user)
             ).count()
@@ -1355,16 +1355,8 @@ def _apply_referral(new_user, referrer):
     new_user.save(update_fields=['referred_by'])
     referral_count = User.objects.filter(referred_by=referrer).count()
     if referral_count > 0 and referral_count % 5 == 0:
-        # For paying subscribers, bonus must start after their subscription ends (ls_renews_at),
-        # otherwise it expires while the sub is still active and is lost on deactivation.
-        reference = referrer.ls_renews_at or timezone.now()
-        base = max(referrer.trial_ends_at or reference, reference)
-        referrer.trial_ends_at = base + timedelta(days=10)
-        update_fields = ['trial_ends_at']
-        if referrer.plan == 'free' and not referrer.ls_cancelled:
-            referrer.plan = 'premium'
-            update_fields.append('plan')
-        referrer.save(update_fields=update_fields)
+        referrer.grant_bonus_days(10)
+        referrer.save(update_fields=['trial_ends_at', 'plan'])
 
 
 @api_view(['GET'])
@@ -1398,7 +1390,7 @@ def accept_invite(request):
         return Response({'error': 'No podés agregarte a vos mismo'}, status=400)
     from apps.medio_auth.models import Friendship
     # Enforce free plan colleague limit
-    if request.user.plan == 'free':
+    if not request.user.has_premium_access:
         colleague_count = Friendship.objects.filter(
             Q(user=request.user) | Q(friend=request.user)
         ).count()

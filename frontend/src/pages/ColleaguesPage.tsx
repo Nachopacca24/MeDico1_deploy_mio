@@ -30,7 +30,7 @@ const FREE_COLLEAGUE_LIMIT = 3;
 export default function ColleaguesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const isFreePlan = user?.plan === 'free';
+  const isFreePlan = !user?.has_premium_access;
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);

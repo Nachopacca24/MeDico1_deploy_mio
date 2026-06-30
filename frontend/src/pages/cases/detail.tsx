@@ -63,7 +63,7 @@ const CaseDetailPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const isPremium = user?.plan === 'premium' || user?.is_permanent_premium;
+  const isPremium = user?.has_premium_access;
 
   const fetchImages = async (caseId: number) => {
     setImagesLoading(true);

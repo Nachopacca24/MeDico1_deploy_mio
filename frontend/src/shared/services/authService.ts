@@ -32,6 +32,7 @@ export interface User {
   is_permanent_premium: boolean;
   ls_renews_at: string | null;
   ls_cancelled: boolean;
+  has_premium_access: boolean;
   friend_code: string;
   name: string;
   phone?: string;

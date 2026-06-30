@@ -63,7 +63,7 @@ export default function StatsPage() {
   const [procedureSort, setProcedureSort] = useState<"count" | "rvu">("count");
   const [pipelinePeriod, setPipelinePeriod] = useState<"all" | "month" | "week">("all");
   const { user } = useAuth();
-  const isPremium = user?.plan === 'premium';
+  const isPremium = user?.has_premium_access;
 
   useEffect(() => {
     if (!isPremium) return; // don't fetch for free users

@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='get_full_name', read_only=True)
     is_profile_complete = serializers.BooleanField(read_only=True)
     is_admin = serializers.BooleanField(read_only=True)
+    has_premium_access = serializers.BooleanField(read_only=True)
     has_usable_password = serializers.SerializerMethodField()
 
     def get_has_usable_password(self, obj):
@@ -24,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'name',
             'role', 'is_admin', 'plan', 'trial_ends_at', 'is_permanent_premium',
-            'ls_renews_at', 'ls_cancelled', 'friend_code',
+            'ls_renews_at', 'ls_cancelled', 'has_premium_access', 'friend_code',
             'phone', 'specialty', 'license_number', 'hospital_default',
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
@@ -35,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'is_verified', 'is_email_verified', 'friend_code',
             'created_at', 'updated_at', 'name', 'full_name', 'is_admin',
             'trial_ends_at', 'is_permanent_premium', 'ls_renews_at', 'ls_cancelled',
-            'has_usable_password'
+            'has_premium_access', 'has_usable_password'
         ]
 
 

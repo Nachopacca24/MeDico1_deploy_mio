@@ -24,7 +24,7 @@ interface AdSystemSettings {
  */
 export function useAdSystem(isMobile: boolean = false): AdSystemSettings {
   const { user } = useAuth();
-  const isPremium = user?.plan === 'premium';
+  const isPremium = !!user?.has_premium_access;
   const userSpecialty = user?.specialty || '';
 
   return {

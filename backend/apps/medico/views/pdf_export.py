@@ -409,7 +409,7 @@ def _generate_pdf(cases, include_hospital_factor: bool, doctor_name: str) -> byt
 # ── Views ──────────────────────────────────────────────────────────────────────
 
 def _check_premium(user):
-    return user.plan == 'premium' or user.is_permanent_premium
+    return user.has_premium_access
 
 
 @api_view(['GET'])

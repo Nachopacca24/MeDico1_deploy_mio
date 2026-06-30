@@ -249,7 +249,7 @@ const CasesPage = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const adSettings = useAdSystem(isMobile);
-  const isFreePlan = user?.plan === 'free';
+  const isFreePlan = !user?.has_premium_access;
 
   const [cases, setCases] = useState<SurgicalCase[]>([]);
   // Casos propios + asistidos aceptados cuentan para el límite del plan
@@ -264,7 +264,7 @@ const CasesPage = () => {
   const [loadingArchived, setLoadingArchived] = useState(false);
 
   // Multi-select PDF export (premium only)
-  const isPremium = user?.plan === 'premium' || user?.is_permanent_premium;
+  const isPremium = user?.has_premium_access;
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [exportingPdf, setExportingPdf] = useState(false);

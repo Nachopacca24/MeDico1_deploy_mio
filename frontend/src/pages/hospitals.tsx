@@ -14,7 +14,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
 const HospitalsPage = () => {
   const { user } = useAuth();
-  const isFreePlan = user?.plan === 'free';
+  const isFreePlan = !user?.has_premium_access;
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -86,7 +86,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           }}
         >
           <EmailVerificationBanner />
-          {isMobile && user?.plan !== 'premium' && (
+          {isMobile && !user?.has_premium_access && (
             <MobileForYouSection specialty={user?.specialty} />
           )}
           {children}

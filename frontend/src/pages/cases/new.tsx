@@ -70,7 +70,7 @@ const NewCase = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const isPremium = user?.plan === 'premium' || user?.is_permanent_premium;
+  const isPremium = user?.has_premium_access;
 
   // Pending images (uploaded after case creation)
   const [pendingImages, setPendingImages] = useState<File[]>([]);

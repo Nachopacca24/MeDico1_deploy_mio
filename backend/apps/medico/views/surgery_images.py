@@ -46,7 +46,7 @@ def _has_valid_image_magic(file_obj) -> bool:
 
 
 def _check_premium(user):
-    return user.plan == 'premium' or user.is_permanent_premium
+    return user.has_premium_access
 
 
 def _get_owned_case(case_id, user):
