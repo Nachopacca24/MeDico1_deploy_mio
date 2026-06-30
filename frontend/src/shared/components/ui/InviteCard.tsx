@@ -14,9 +14,10 @@ export interface ReferralStats {
 interface InviteCardProps {
   friendCode: string;
   stats?: ReferralStats | null;
+  isFreeForAllPromo?: boolean;
 }
 
-export function InviteCard({ friendCode, stats }: InviteCardProps) {
+export function InviteCard({ friendCode, stats, isFreeForAllPromo }: InviteCardProps) {
   const [copied, setCopied] = useState(false);
   const inviteUrl = `https://medicoapp.app/invite?ref=${friendCode}`;
 
@@ -54,6 +55,11 @@ export function InviteCard({ friendCode, stats }: InviteCardProps) {
               />
             </div>
           </div>
+          {isFreeForAllPromo && (
+            <p className="text-xs text-amber-900/80 mt-2 border-t border-amber-900/20 pt-2">
+              Los días que ganés ahora se acumulan. Cuando la promo gratuita termine, tu crédito se aplica automáticamente y seguís con Premium sin interrupciones.
+            </p>
+          )}
         </div>
       )}
 

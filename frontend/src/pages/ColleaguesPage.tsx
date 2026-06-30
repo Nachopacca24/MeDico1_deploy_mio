@@ -24,12 +24,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { useToast } from '@/shared/hooks/useToast';
+import { useSiteSettings } from '@/shared/hooks/useSiteSettings';
 
 const FREE_COLLEAGUE_LIMIT = 3;
 
 export default function ColleaguesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const settings = useSiteSettings();
+  const isFreeForAllPromo = settings.FREE_FOR_ALL_PREMIUM === '1';
   const isFreePlan = !user?.has_premium_access;
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([]);
@@ -210,7 +213,7 @@ export default function ColleaguesPage() {
 
         {/* Invitar por link / QR */}
         {user?.friend_code && (
-          <InviteCard friendCode={user.friend_code} stats={referralStats} />
+          <InviteCard friendCode={user.friend_code} stats={referralStats} isFreeForAllPromo={isFreeForAllPromo} />
         )}
 
         {/* Buscar colega */}
