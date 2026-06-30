@@ -3,15 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
+import { Switch } from '@/shared/components/ui/switch';
 import { useToast } from '@/shared/hooks/use-toast';
 import { siteSettingsService, type SiteSettings } from '@/services/siteSettingsService';
-import { Loader2, DollarSign, Clock, Save, CalendarDays, Smartphone, RefreshCw } from 'lucide-react';
+import { Loader2, DollarSign, Clock, Save, CalendarDays, Smartphone, RefreshCw, Gift } from 'lucide-react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0' });
+  const [togglingFree, setTogglingFree] = useState(false);
+  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0', FREE_FOR_ALL_PREMIUM: '0' });
 
   useEffect(() => {
     siteSettingsService.getAdmin()
@@ -19,6 +21,27 @@ export default function SettingsPage() {
       .catch(() => toast({ variant: 'destructive', title: 'Error al cargar configuración' }))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleToggleFreeForAll = async (checked: boolean) => {
+    setTogglingFree(true);
+    const value = checked ? '1' : '0';
+    try {
+      const result = await siteSettingsService.update({ FREE_FOR_ALL_PREMIUM: value });
+      setForm(f => ({ ...f, FREE_FOR_ALL_PREMIUM: value }));
+      toast({
+        title: checked ? 'Modo gratis total activado' : 'Modo gratis total desactivado',
+        description: checked
+          ? result.granted_users !== undefined
+            ? `${result.granted_users} usuarios recibieron ${result.granted_days ?? 30} días de bono acumulables. Al desactivarlo, cada uno conserva su crédito real.`
+            : 'Todos los usuarios tienen acceso Premium sin costo. El sistema de pagos y créditos sigue funcionando por detrás.'
+          : 'Los usuarios vuelven a su plan real (free, trial, premium o crédito acumulado).',
+      });
+    } catch (e: unknown) {
+      toast({ variant: 'destructive', title: 'Error al cambiar el modo', description: (e as Error).message });
+    } finally {
+      setTogglingFree(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -48,6 +71,29 @@ export default function SettingsPage() {
           Estos valores se muestran en la landing, configuración de usuario, términos y privacidad.
         </p>
       </div>
+
+      <Card className={`max-w-lg border-2 ${form.FREE_FOR_ALL_PREMIUM === '1' ? 'border-emerald-400' : 'border-border'}`}>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Gift className="h-5 w-5 text-emerald-500" />
+                Modo gratis total
+              </CardTitle>
+              <CardDescription className="mt-1">
+                Da acceso Premium a todos los usuarios sin costo. La suscripción de Lemon Squeezy, los créditos por
+                referidos y las extensiones de trial siguen funcionando exactamente igual por detrás — al desactivarlo,
+                cada usuario vuelve a su plan/crédito real.
+              </CardDescription>
+            </div>
+            <Switch
+              checked={form.FREE_FOR_ALL_PREMIUM === '1'}
+              onCheckedChange={handleToggleFreeForAll}
+              disabled={togglingFree}
+            />
+          </div>
+        </CardHeader>
+      </Card>
 
       <Card className="max-w-lg">
         <CardHeader>

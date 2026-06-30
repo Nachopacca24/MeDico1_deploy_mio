@@ -8,12 +8,13 @@ export interface SiteSettings {
   TRIAL_DAYS: string;
   ANDROID_TESTERS_COUNT: string;
   ANDROID_MIN_VERSION: string;
+  FREE_FOR_ALL_PREMIUM: string;
 }
 
 export const siteSettingsService = {
   async getPublic(): Promise<SiteSettings> {
     const res = await fetch(`${API_URL}/api/v1/settings/`);
-    if (!res.ok) return { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0' };
+    if (!res.ok) return { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0', FREE_FOR_ALL_PREMIUM: '0' };
     return res.json();
   },
 
@@ -23,7 +24,7 @@ export const siteSettingsService = {
     return res.json();
   },
 
-  async update(data: Partial<SiteSettings>): Promise<void> {
+  async update(data: Partial<SiteSettings>): Promise<{ granted_users?: number; granted_days?: number }> {
     const res = await authService.authenticatedFetch(`${API_URL}/api/admin/settings/`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -32,5 +33,6 @@ export const siteSettingsService = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al guardar');
     }
+    return res.json().catch(() => ({}));
   },
 };

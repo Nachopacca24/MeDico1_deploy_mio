@@ -317,9 +317,23 @@ def set_permanent_premium(request, user_id):
     try:
         target = User.objects.get(id=user_id)
         target.is_permanent_premium = bool(is_permanent)
+        update_fields = ['is_permanent_premium', 'plan', 'updated_at']
         if bool(is_permanent):
             target.plan = 'premium'
-        target.save(update_fields=['is_permanent_premium', 'plan'])
+        else:
+            # On revoke: keep premium only if something else still covers the user.
+            # Without this, the user would be stuck on plan='premium' indefinitely
+            # because check_trial_expiry only fires when trial_ends_at is set.
+            has_active_sub = target.ls_subscription_id and not target.ls_cancelled
+            has_grace = (
+                target.ls_cancelled
+                and target.ls_renews_at
+                and target.ls_renews_at > timezone.now()
+            )
+            has_bonus = target.trial_ends_at and target.trial_ends_at > timezone.now()
+            if not has_active_sub and not has_grace and not has_bonus:
+                target.plan = 'free'
+        target.save(update_fields=update_fields)
         return Response({
             'success': True,
             'is_permanent_premium': target.is_permanent_premium,
@@ -372,16 +386,15 @@ def update_user_plan(request, user_id):
 @permission_classes([IsAuthenticated, IsAdminUser])
 def extend_trial(request, user_id):
     """Extiende el trial de un usuario X días."""
-    days = int(request.data.get('days', 15))
+    try:
+        days = int(request.data.get('days', 15))
+        if days < 1:
+            return Response({'message': 'Los días deben ser al menos 1'}, status=400)
+    except (ValueError, TypeError):
+        return Response({'message': 'Días inválidos'}, status=400)
     try:
         target = User.objects.get(pk=user_id)
-        # For paying subscribers, anchor the bonus after their subscription ends so
-        # the days activate after the paid period, not before it.
-        reference = target.ls_renews_at or timezone.now()
-        base = max(target.trial_ends_at or reference, reference)
-        target.trial_ends_at = base + timedelta(days=days)
-        if target.plan == 'free':
-            target.plan = 'premium'
+        target.grant_bonus_days(days)
         target.save(update_fields=['trial_ends_at', 'plan'])
         return Response({'success': True, 'trial_ends_at': target.trial_ends_at.isoformat()})
     except User.DoesNotExist:

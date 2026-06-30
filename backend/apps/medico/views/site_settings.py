@@ -1,12 +1,14 @@
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from apps.medico.models.site_setting import SiteSetting
 
 
-ALLOWED_KEYS = {'PREMIUM_PRICE', 'ANNUAL_PRICE', 'TRIAL_DAYS', 'ANDROID_TESTERS_COUNT', 'ANDROID_MIN_VERSION'}
+ALLOWED_KEYS = {'PREMIUM_PRICE', 'ANNUAL_PRICE', 'TRIAL_DAYS', 'ANDROID_TESTERS_COUNT', 'ANDROID_MIN_VERSION', 'FREE_FOR_ALL_PREMIUM'}
+FREE_FOR_ALL_BONUS_DAYS = 30
 
 
 def _build_settings(raw):
@@ -18,6 +20,7 @@ def _build_settings(raw):
         'TRIAL_DAYS': raw.get('TRIAL_DAYS', '30'),
         'ANDROID_TESTERS_COUNT': raw.get('ANDROID_TESTERS_COUNT', '12'),
         'ANDROID_MIN_VERSION': raw.get('ANDROID_MIN_VERSION', '1.0'),
+        'FREE_FOR_ALL_PREMIUM': raw.get('FREE_FOR_ALL_PREMIUM', '0'),
     }
 
 
@@ -85,4 +88,26 @@ def site_settings_admin(request):
         SiteSetting.set('ANDROID_MIN_VERSION', v)
         updated['ANDROID_MIN_VERSION'] = v
 
-    return Response({'updated': updated})
+    granted_users = None
+    if 'FREE_FOR_ALL_PREMIUM' in data:
+        value = '1' if str(data['FREE_FOR_ALL_PREMIUM']) in ('1', 'true', 'True') else '0'
+        was_active = SiteSetting.get('FREE_FOR_ALL_PREMIUM', '0') == '1'
+
+        # Activating (off → on): grant bonus days atomically with the setting flip so
+        # a DB error can't leave the switch on without the days being applied.
+        try:
+            with transaction.atomic():
+                SiteSetting.set('FREE_FOR_ALL_PREMIUM', value)
+                if value == '1' and not was_active:
+                    from django.contrib.auth import get_user_model
+                    User = get_user_model()
+                    granted_users = User.grant_bonus_to_all(FREE_FOR_ALL_BONUS_DAYS)
+            updated['FREE_FOR_ALL_PREMIUM'] = value
+        except Exception:
+            return Response({'error': 'Error al aplicar el modo gratis total. No se realizaron cambios.'}, status=500)
+
+    response = {'updated': updated}
+    if granted_users is not None:
+        response['granted_users'] = granted_users
+        response['granted_days'] = FREE_FOR_ALL_BONUS_DAYS
+    return Response(response)

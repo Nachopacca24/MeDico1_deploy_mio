@@ -2,6 +2,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
 import secrets
 import string
 import random
@@ -262,6 +263,35 @@ class CustomUser(AbstractUser):
         null=True,
         verbose_name="Fecha de Envío del Token de Reset",
     )
+
+    @property
+    def has_premium_access(self):
+        """Effective premium access: real premium/permanent, or the site-wide free promo is on."""
+        if self.plan == 'premium' or self.is_permanent_premium:
+            return True
+        from apps.medico.models.site_setting import SiteSetting
+        return SiteSetting.get('FREE_FOR_ALL_PREMIUM', '0') == '1'
+
+    def grant_bonus_days(self, days):
+        """
+        Stack `days` of bonus onto trial_ends_at. For paying subscribers, anchor the
+        bonus after their subscription ends (ls_renews_at) so it isn't lost while the
+        sub is still active. Promotes free (non-cancelled) users to premium.
+        """
+        reference = self.ls_renews_at or timezone.now()
+        base = max(self.trial_ends_at or reference, reference)
+        self.trial_ends_at = base + timedelta(days=days)
+        if self.plan == 'free' and not self.ls_cancelled:
+            self.plan = 'premium'
+
+    @classmethod
+    def grant_bonus_to_all(cls, days):
+        """Stack `days` of bonus onto every active non-permanent-premium user. Returns the count updated."""
+        users = list(cls.objects.filter(is_active=True).exclude(is_permanent_premium=True))
+        for user in users:
+            user.grant_bonus_days(days)
+        cls.objects.bulk_update(users, ['trial_ends_at', 'plan'])
+        return len(users)
 
     def check_trial_expiry(self):
         """If trial has expired and plan is still premium (from trial), revert to free."""
