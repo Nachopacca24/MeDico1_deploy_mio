@@ -375,7 +375,10 @@ def extend_trial(request, user_id):
     days = int(request.data.get('days', 15))
     try:
         target = User.objects.get(pk=user_id)
-        base = max(target.trial_ends_at or timezone.now(), timezone.now())
+        # For paying subscribers, anchor the bonus after their subscription ends so
+        # the days activate after the paid period, not before it.
+        reference = target.ls_renews_at or timezone.now()
+        base = max(target.trial_ends_at or reference, reference)
         target.trial_ends_at = base + timedelta(days=days)
         if target.plan == 'free':
             target.plan = 'premium'
