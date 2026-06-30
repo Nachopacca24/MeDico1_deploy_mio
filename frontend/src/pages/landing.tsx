@@ -32,12 +32,13 @@ import {
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
-  const { PREMIUM_PRICE, ANNUAL_PRICE, TRIAL_DAYS } = useSiteSettings();
+  const { PREMIUM_PRICE, ANNUAL_PRICE, TRIAL_DAYS, FREE_FOR_ALL_PREMIUM } = useSiteSettings();
   const monthlyPrice = Number(PREMIUM_PRICE);
   const annualPrice = Number(ANNUAL_PRICE);
   const price = monthlyPrice.toFixed(0);
   const trialDays = Number(TRIAL_DAYS);
   const annualSavingPct = Math.round((1 - annualPrice / (monthlyPrice * 12)) * 100);
+  const isFreeForAllPromo = FREE_FOR_ALL_PREMIUM === '1';
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   if (loading) return null;
@@ -130,9 +131,9 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 to="/signup"
-                className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                className={`inline-flex items-center justify-center gap-2 font-bold text-lg px-8 py-4 rounded-xl active:scale-95 transition-all shadow-lg ${isFreeForAllPromo ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20'}`}
               >
-                {trialDays} días de Premium gratis al registrarte.
+                {isFreeForAllPromo ? 'Premium gratis — registrate ahora.' : `${trialDays} días de Premium gratis al registrarte.`}
                 <ChevronRight className="h-5 w-5" />
               </Link>
               <Link
@@ -444,26 +445,28 @@ export default function LandingPage() {
             <div className="rounded-2xl flex flex-col overflow-hidden ring-2 ring-amber-400/60 bg-gray-900">
               <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500" />
 
-              {/* Billing toggle */}
-              <div className="flex items-center gap-1 mx-6 mt-5 p-1 rounded-xl bg-gray-800 w-fit">
-                <button
-                  onClick={() => setBillingCycle('monthly')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'monthly' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
-                >
-                  Mensual
-                </button>
-                <button
-                  onClick={() => setBillingCycle('annual')}
-                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'annual' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
-                >
-                  Anual
-                  {annualSavingPct > 0 && (
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
-                      -{annualSavingPct}%
-                    </span>
-                  )}
-                </button>
-              </div>
+              {/* Billing toggle — hidden during free-for-all promo */}
+              {!isFreeForAllPromo && (
+                <div className="flex items-center gap-1 mx-6 mt-5 p-1 rounded-xl bg-gray-800 w-fit">
+                  <button
+                    onClick={() => setBillingCycle('monthly')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'monthly' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    Mensual
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle('annual')}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${billingCycle === 'annual' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    Anual
+                    {annualSavingPct > 0 && (
+                      <span className="text-xs font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">
+                        -{annualSavingPct}%
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
 
               <div className="p-6 pb-4 pt-4">
                 <div className="flex items-center justify-between mb-3">
@@ -471,13 +474,29 @@ export default function LandingPage() {
                     <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
                     <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Premium</span>
                   </div>
-                  <span className="text-xs font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2.5 py-0.5 rounded-full">
-                    {trialDays} días gratis
-                  </span>
+                  {isFreeForAllPromo ? (
+                    <span className="text-xs font-semibold bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 px-2.5 py-0.5 rounded-full">
+                      ¡Gratis ahora!
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20 px-2.5 py-0.5 rounded-full">
+                      {trialDays} días gratis
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-2xl font-bold text-white">MeDico App Premium</h3>
                 <p className="text-sm text-gray-400 mt-1">Experiencia completa, sin límites</p>
-                {billingCycle === 'monthly' ? (
+                {isFreeForAllPromo ? (
+                  <div className="mt-4 mb-2">
+                    <div className="flex items-end gap-2">
+                      <span className="text-5xl font-extrabold tracking-tight text-emerald-400">$0</span>
+                      <span className="text-gray-400 text-sm mb-2">/ahora</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Precio regular: <span className="line-through">${price}</span> USD/mes
+                    </p>
+                  </div>
+                ) : billingCycle === 'monthly' ? (
                   <div className="flex items-end gap-1 mt-4 mb-2">
                     <span className="text-5xl font-extrabold tracking-tight text-amber-400">${price}</span>
                     <span className="text-gray-400 text-sm mb-2">/mes</span>
@@ -524,11 +543,11 @@ export default function LandingPage() {
                 </div>
                 <Link
                   to="/signup"
-                  className="block text-center bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-400/20 mt-6"
+                  className={`block text-center font-bold py-3 rounded-xl transition-colors shadow-lg mt-6 ${isFreeForAllPromo ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-amber-400 hover:bg-amber-500 text-gray-900 shadow-amber-400/20'}`}
                 >
-                  Empezar — {trialDays} días gratis
+                  {isFreeForAllPromo ? 'Registrarme gratis' : `Empezar — ${trialDays} días gratis`}
                 </Link>
-                {billingCycle === 'annual' && (
+                {!isFreeForAllPromo && billingCycle === 'annual' && (
                   <p className="text-center text-xs text-gray-500 mt-2">Facturado como ${annualPrice.toFixed(0)}/año</p>
                 )}
               </div>
@@ -608,7 +627,9 @@ export default function LandingPage() {
             Registrarme gratis
             <ChevronRight className="h-5 w-5" />
           </Link>
-          <p className="mt-4 text-sm text-gray-600">{trialDays} días Premium sin tarjeta de crédito.</p>
+          <p className="mt-4 text-sm text-gray-600">
+            {isFreeForAllPromo ? 'Premium completamente gratis ahora. Sin tarjeta de crédito.' : `${trialDays} días Premium sin tarjeta de crédito.`}
+          </p>
         </div>
       </section>
 
