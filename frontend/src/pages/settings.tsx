@@ -538,13 +538,15 @@ const Settings = () => {
                       <CardDescription>
                         {(() => {
                         const fmt = (d: string) => new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+                        // ls_renews_at present = has a paid subscription (active or cancelled)
+                        const hasPaidSub = !!user?.ls_renews_at;
                         if (user?.is_permanent_premium) return 'Tienes acceso Premium permanente';
-                        if (user?.plan === 'premium' && user?.trial_ends_at)
-                          return `Período de prueba — vence el ${fmt(user.trial_ends_at)}`;
                         if (user?.plan === 'premium' && user?.ls_cancelled && user?.ls_renews_at)
                           return `Cancelado — acceso hasta el ${fmt(user.ls_renews_at)}`;
                         if (user?.plan === 'premium' && user?.ls_renews_at)
                           return `Suscripción activa · Se renueva el ${fmt(user.ls_renews_at)}`;
+                        if (user?.plan === 'premium' && user?.trial_ends_at && !hasPaidSub)
+                          return `Período de prueba — vence el ${fmt(user.trial_ends_at)}`;
                         if (user?.plan === 'premium') return 'Suscripción Premium activa';
                         return 'Estás en el plan gratuito de MeDico App';
                       })()}
@@ -559,8 +561,8 @@ const Settings = () => {
                         {user?.plan === 'premium' ? <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" /> : null}
                         {user?.plan === 'premium' ? 'Premium' : 'Free'}
                       </div>
-                      {/* Cancel button — only for paying premium users (not permanent/trial) */}
-                      {user?.plan === 'premium' && !user?.is_permanent_premium && !user?.trial_ends_at && !user?.ls_cancelled && (
+                      {/* Cancel button — only for paying subscribers (ls_renews_at = paid sub), not trial/permanent */}
+                      {user?.plan === 'premium' && !user?.is_permanent_premium && !!user?.ls_renews_at && !user?.ls_cancelled && (
                         !showCancelConfirm ? (
                           <Button
                             variant="ghost"
@@ -597,6 +599,17 @@ const Settings = () => {
                   </div>
                 </CardHeader>
               </Card>
+
+              {/* Bonus credit banner — shown when paying subscriber has extra days from referral/admin */}
+              {user?.plan === 'premium' && !!user?.ls_renews_at && !!user?.trial_ends_at && (
+                <Alert className="border-amber-400/50 bg-amber-50 dark:bg-amber-950/20">
+                  <Sparkles className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-800 dark:text-amber-300 text-sm">
+                    <strong>Tenés días de crédito Premium</strong> — se activan automáticamente si no renovás tu suscripción, y te dan acceso hasta el{' '}
+                    <strong>{new Date(user.trial_ends_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Over-limit warning: shown when free user tries to create and backend returns 403 */}
               {user?.plan === 'free' && (
