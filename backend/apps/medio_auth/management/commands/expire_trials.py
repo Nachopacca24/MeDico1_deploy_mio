@@ -28,7 +28,7 @@ class Command(BaseCommand):
         )
         trial_count = expired_trials.count()
         if trial_count:
-            expired_trials.update(plan='free')
+            expired_trials.update(plan='free', trial_ends_at=None)
             logger.info('[EXPIRE_TRIALS] reverted %d trial users to free', trial_count)
             self.stdout.write(self.style.SUCCESS(f'Trials expirados → free: {trial_count}'))
         else:

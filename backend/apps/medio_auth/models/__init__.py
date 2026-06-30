@@ -273,7 +273,8 @@ class CustomUser(AbstractUser):
             and not self.ls_subscription_id  # never downgrade a paying subscriber
         ):
             self.plan = 'free'
-            self.__class__.objects.filter(pk=self.pk).update(plan='free')
+            self.trial_ends_at = None
+            self.__class__.objects.filter(pk=self.pk).update(plan='free', trial_ends_at=None)
 
     def generate_verification_token(self):
         """
