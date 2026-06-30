@@ -328,19 +328,24 @@ def _parse_ls_date(value):
 def _activate_premium(user, attrs: dict, ls_sub_id: str = None):
     user.plan = 'premium'
     user.is_permanent_premium = False
-    user.trial_ends_at = None
     user.ls_cancelled = False
     renews_at = _parse_ls_date(attrs.get('renews_at'))
     if renews_at:
         user.ls_renews_at = renews_at
-    update_fields = ['plan', 'is_permanent_premium', 'trial_ends_at', 'ls_cancelled', 'updated_at']
+    update_fields = ['plan', 'is_permanent_premium', 'ls_cancelled', 'updated_at']
+    # Preserve trial_ends_at if it's a future referral bonus — don't wipe it on paid renewal.
+    # It will be used if the subscription later expires without renewal.
+    has_pending_bonus = user.trial_ends_at and user.trial_ends_at > timezone.now()
+    if not has_pending_bonus:
+        user.trial_ends_at = None
+        update_fields.append('trial_ends_at')
     if renews_at:
         update_fields.append('ls_renews_at')
     if ls_sub_id:
         user.ls_subscription_id = str(ls_sub_id)
         update_fields.append('ls_subscription_id')
     user.save(update_fields=update_fields)
-    logger.info('[LS] activated premium for user=%s renews_at=%s', user.id, renews_at)
+    logger.info('[LS] activated premium for user=%s renews_at=%s pending_bonus=%s', user.id, renews_at, bool(has_pending_bonus))
 
 
 def _mark_cancelled(user, attrs: dict):
@@ -362,12 +367,17 @@ def _deactivate_premium(user):
     if user.is_permanent_premium:
         logger.info('[LS] user=%s has permanent premium — skipping deactivation', user.id)
         return
-    user.plan = 'free'
+    # If a referral bonus is pending (future trial_ends_at), activate trial instead of free.
+    has_pending_bonus = user.trial_ends_at and user.trial_ends_at > timezone.now()
+    user.plan = 'premium' if has_pending_bonus else 'free'
+    if not has_pending_bonus:
+        user.trial_ends_at = None
     user.ls_cancelled = False
     user.ls_renews_at = None
     user.ls_subscription_id = None
-    user.save(update_fields=['plan', 'ls_cancelled', 'ls_renews_at', 'ls_subscription_id', 'updated_at'])
-    logger.info('[LS] deactivated premium for user=%s', user.id)
+    update_fields = ['plan', 'trial_ends_at', 'ls_cancelled', 'ls_renews_at', 'ls_subscription_id', 'updated_at']
+    user.save(update_fields=update_fields)
+    logger.info('[LS] deactivated subscription for user=%s — plan=%s (pending_bonus=%s)', user.id, user.plan, bool(has_pending_bonus))
 
 
 def _log_over_limit_warning(user):
