@@ -47,6 +47,7 @@ class Command(BaseCommand):
         if sub_count:
             expired_subs.update(
                 plan='free',
+                ls_cancelled=False,
                 ls_subscription_id=None,
                 ls_renews_at=None,
             )

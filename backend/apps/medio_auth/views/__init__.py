@@ -1357,9 +1357,11 @@ def _apply_referral(new_user, referrer):
     if referral_count > 0 and referral_count % 5 == 0:
         base = max(referrer.trial_ends_at or timezone.now(), timezone.now())
         referrer.trial_ends_at = base + timedelta(days=10)
-        if referrer.plan == 'free':
+        update_fields = ['trial_ends_at']
+        if referrer.plan == 'free' and not referrer.ls_cancelled:
             referrer.plan = 'premium'
-        referrer.save(update_fields=['trial_ends_at', 'plan'])
+            update_fields.append('plan')
+        referrer.save(update_fields=update_fields)
 
 
 @api_view(['GET'])

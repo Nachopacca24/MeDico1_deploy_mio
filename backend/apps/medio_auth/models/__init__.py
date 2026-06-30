@@ -270,6 +270,7 @@ class CustomUser(AbstractUser):
             and self.trial_ends_at
             and timezone.now() > self.trial_ends_at
             and self.plan == 'premium'
+            and not self.ls_subscription_id  # never downgrade a paying subscriber
         ):
             self.plan = 'free'
             self.__class__.objects.filter(pk=self.pk).update(plan='free')

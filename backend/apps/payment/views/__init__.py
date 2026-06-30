@@ -263,8 +263,22 @@ def lemonsqueezy_webhook(request):
 
         logger.info('[LS webhook] processing event=%s for user=%s (plan=%s)', event_name, user.id, user.plan)
 
-        if event_name in ('subscription_created', 'subscription_payment_success', 'subscription_resumed'):
+        if event_name in ('subscription_created', 'subscription_resumed'):
+            # Fresh activation or explicit resume — full activation, clear cancelled flag
             _activate_premium(user, attrs, ls_sub_id)
+
+        elif event_name == 'subscription_payment_success':
+            # Payment received — but if user already cancelled, DO NOT override that status.
+            # LS can deliver payment_success after subscription_cancelled (out-of-order webhooks).
+            if user.ls_cancelled:
+                # Keep cancelled; just refresh renews_at in case it changed
+                renews_at = _parse_ls_date(attrs.get('renews_at'))
+                if renews_at:
+                    user.ls_renews_at = renews_at
+                    user.save(update_fields=['ls_renews_at', 'updated_at'])
+                logger.info('[LS webhook] payment_success ignored for already-cancelled user=%s', user.id)
+            else:
+                _activate_premium(user, attrs, ls_sub_id)
 
         elif event_name == 'subscription_expired':
             # Subscription fully expired — downgrade now
@@ -283,7 +297,11 @@ def lemonsqueezy_webhook(request):
             logger.info('[LS webhook] subscription_updated sub_status=%s renews_at=%s ends_at=%s',
                         sub_status, attrs.get('renews_at'), attrs.get('ends_at'))
             if sub_status == 'active':
-                _activate_premium(user, attrs, ls_sub_id)
+                # Only activate if not already cancelled; an update can fire alongside cancellation
+                if not user.ls_cancelled:
+                    _activate_premium(user, attrs, ls_sub_id)
+                else:
+                    logger.info('[LS webhook] subscription_updated(active) ignored for cancelled user=%s', user.id)
             elif sub_status == 'cancelled':
                 _mark_cancelled(user, attrs)
             elif sub_status == 'expired':
