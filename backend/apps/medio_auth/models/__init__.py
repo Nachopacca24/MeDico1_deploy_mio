@@ -264,6 +264,12 @@ class CustomUser(AbstractUser):
         verbose_name="Fecha de Envío del Token de Reset",
     )
 
+    credit_days = models.IntegerField(
+        default=0,
+        verbose_name="Días de crédito acumulados",
+        help_text="Días Premium ganados por referidos; se aplican al terminar la promo FREE_FOR_ALL"
+    )
+
     @property
     def has_premium_access(self):
         """Effective premium access: real premium/permanent, or the site-wide free promo is on."""
@@ -290,6 +296,21 @@ class CustomUser(AbstractUser):
         users = list(cls.objects.filter(is_active=True).exclude(is_permanent_premium=True))
         for user in users:
             user.grant_bonus_days(days)
+        cls.objects.bulk_update(users, ['trial_ends_at', 'plan'])
+        return len(users)
+
+    @classmethod
+    def apply_credits_on_promo_end(cls, default_days=30):
+        """When FREE_FOR_ALL deactivates: apply default_days + each user's credit_days as trial. Returns count updated."""
+        now = timezone.now()
+        users = list(cls.objects.filter(is_active=True).exclude(is_permanent_premium=True))
+        for user in users:
+            total_days = default_days + (user.credit_days or 0)
+            reference = user.ls_renews_at or now
+            base = max(user.trial_ends_at or reference, reference)
+            user.trial_ends_at = base + timedelta(days=total_days)
+            if user.plan == 'free' and not user.ls_cancelled:
+                user.plan = 'premium'
         cls.objects.bulk_update(users, ['trial_ends_at', 'plan'])
         return len(users)
 

@@ -1355,8 +1355,8 @@ def _apply_referral(new_user, referrer):
     new_user.save(update_fields=['referred_by'])
     referral_count = User.objects.filter(referred_by=referrer).count()
     if referral_count > 0 and referral_count % 5 == 0:
-        referrer.grant_bonus_days(10)
-        referrer.save(update_fields=['trial_ends_at', 'plan'])
+        referrer.credit_days = (referrer.credit_days or 0) + 10
+        referrer.save(update_fields=['credit_days'])
 
 
 @api_view(['GET'])

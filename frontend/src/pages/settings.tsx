@@ -109,13 +109,8 @@ const Settings = () => {
   const { restartTutorial, tutorialState } = useTutorial();
   const { setTheme } = useTheme();
 
-  // Stacked credit days for non-subscribers (referrals + promo grant)
-  const bonusDaysLeft = user?.trial_ends_at && !user?.ls_renews_at
-    ? Math.max(0, Math.ceil((new Date(user.trial_ends_at).getTime() - Date.now()) / 86_400_000))
-    : 0;
-  const bonusExpiryDate = bonusDaysLeft > 0 && user?.trial_ends_at
-    ? new Date(user.trial_ends_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
-    : null;
+  // Credit days accumulated from referrals (shown during FREE_FOR_ALL promo)
+  const creditDays = user?.credit_days ?? 0;
 
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
@@ -615,9 +610,9 @@ const Settings = () => {
                   <Sparkles className="h-4 w-4 text-emerald-600" />
                   <AlertDescription className="text-emerald-800 dark:text-emerald-300 text-sm">
                     <strong>🎉 Por tiempo limitado, MeDico App es 100% gratis para todos.</strong> Ya tenés acceso a todas las funciones Premium sin costo.
-                    {bonusDaysLeft > 0 && (
+                    {creditDays > 0 && (
                       <span className="block mt-1">
-                        Además, tenés <strong>{bonusDaysLeft} días de crédito acumulado</strong> (referidos + promo) — si la promo termina, seguís con Premium hasta el <strong>{bonusExpiryDate}</strong>.
+                        Además, tenés <strong>{creditDays} días de crédito acumulado</strong> por referidos — cuando la promo termine, se te sumarán a 30 días extra de regalo.
                       </span>
                     )}
                   </AlertDescription>

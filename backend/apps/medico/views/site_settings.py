@@ -92,19 +92,17 @@ def site_settings_admin(request):
     if 'FREE_FOR_ALL_PREMIUM' in data:
         value = '1' if str(data['FREE_FOR_ALL_PREMIUM']) in ('1', 'true', 'True') else '0'
         was_active = SiteSetting.get('FREE_FOR_ALL_PREMIUM', '0') == '1'
-
-        # Activating (off → on): grant bonus days atomically with the setting flip so
-        # a DB error can't leave the switch on without the days being applied.
         try:
             with transaction.atomic():
                 SiteSetting.set('FREE_FOR_ALL_PREMIUM', value)
-                if value == '1' and not was_active:
+                # Deactivating (on → off): apply accumulated credit_days + default bonus to all users
+                if value == '0' and was_active:
                     from django.contrib.auth import get_user_model
                     User = get_user_model()
-                    granted_users = User.grant_bonus_to_all(FREE_FOR_ALL_BONUS_DAYS)
+                    granted_users = User.apply_credits_on_promo_end(FREE_FOR_ALL_BONUS_DAYS)
             updated['FREE_FOR_ALL_PREMIUM'] = value
         except Exception:
-            return Response({'error': 'Error al aplicar el modo gratis total. No se realizaron cambios.'}, status=500)
+            return Response({'error': 'Error al cambiar el modo gratis total. No se realizaron cambios.'}, status=500)
 
     response = {'updated': updated}
     if granted_users is not None:

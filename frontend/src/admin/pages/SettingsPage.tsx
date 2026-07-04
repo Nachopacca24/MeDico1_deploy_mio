@@ -31,10 +31,10 @@ export default function SettingsPage() {
       toast({
         title: checked ? 'Modo gratis total activado' : 'Modo gratis total desactivado',
         description: checked
-          ? result.granted_users !== undefined
-            ? `${result.granted_users} usuarios recibieron ${result.granted_days ?? 30} días de bono acumulables. Al desactivarlo, cada uno conserva su crédito real.`
-            : 'Todos los usuarios tienen acceso Premium sin costo. El sistema de pagos y créditos sigue funcionando por detrás.'
-          : 'Los usuarios vuelven a su plan real (free, trial, premium o crédito acumulado).',
+          ? 'Todos los usuarios tienen acceso Premium sin costo. Los créditos por referidos se siguen acumulando y se aplicarán al desactivar la promo.'
+          : result.granted_users !== undefined
+            ? `Promo finalizada. ${result.granted_users} usuarios recibieron ${result.granted_days ?? 30} días base + sus días de crédito acumulado.`
+            : 'Los usuarios vuelven a su plan real con los créditos acumulados aplicados.',
       });
     } catch (e: unknown) {
       toast({ variant: 'destructive', title: 'Error al cambiar el modo', description: (e as Error).message });
