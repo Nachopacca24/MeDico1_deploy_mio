@@ -131,9 +131,9 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 to="/signup"
-                className={`inline-flex items-center justify-center gap-2 font-bold text-lg px-8 py-4 rounded-xl active:scale-95 transition-all shadow-lg ${isFreeForAllPromo ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20'}`}
+                className="inline-flex items-center justify-center gap-2 font-bold text-lg px-8 py-4 rounded-xl active:scale-95 transition-all shadow-lg bg-amber-400 hover:bg-amber-500 text-gray-900 shadow-amber-400/20"
               >
-                {isFreeForAllPromo ? 'Premium gratis — registrate ahora.' : `${trialDays} días de Premium gratis al registrarte.`}
+                {isFreeForAllPromo ? 'Registrate gratis — Premium sin costo.' : 'Registrate gratis.'}
                 <ChevronRight className="h-5 w-5" />
               </Link>
               <Link

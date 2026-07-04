@@ -354,7 +354,7 @@ export default function Login() {
                 to='/signup'
                 className='amber-cta w-full flex items-center justify-center gap-2 h-12 rounded-xl border-2 border-sky-400 text-sky-700 font-semibold text-sm hover:bg-sky-50 hover:border-sky-500'
               >
-                Crear cuenta — 30 días Premium gratis
+                Crear cuenta gratis
               </Link>
             </div>
 
