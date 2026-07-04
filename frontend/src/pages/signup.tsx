@@ -28,6 +28,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { useToast } from "@/shared/hooks/use-toast";
+import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
 import { Loader2, Activity, HeartPulse, Crown } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
@@ -54,6 +55,8 @@ const SPECIALTIES = [
 ];
 
 export default function SignupForm() {
+  const { FREE_FOR_ALL_PREMIUM } = useSiteSettings();
+  const isFreeForAllPromo = FREE_FOR_ALL_PREMIUM === '1';
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -333,7 +336,7 @@ export default function SignupForm() {
             {/* Badge Premium */}
             <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-400 rounded-lg">
               <Crown className="h-4 w-4 text-amber-900 shrink-0" />
-              <span className="text-sm font-bold text-amber-900">30 días de acceso Premium gratis al registrarte</span>
+              <span className="text-sm font-bold text-amber-900">{isFreeForAllPromo ? 'Gratis durante el período de desarrollo — Premium sin costo' : '30 días de acceso Premium gratis al registrarte'}</span>
             </div>
 
             {/* ——— GOOGLE (botón principal, arriba) ——— */}
