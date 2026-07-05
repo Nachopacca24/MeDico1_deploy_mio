@@ -1358,10 +1358,10 @@ def _apply_referral(new_user, referrer):
         return  # ya tiene referidor, no pisar
     new_user.referred_by = referrer
     new_user.save(update_fields=['referred_by'])
-    referral_count = User.objects.filter(referred_by=referrer).count()
+    referral_count = User.objects.filter(referred_by=referrer, is_active=True).count()
     if referral_count > 0 and referral_count % 5 == 0:
-        referrer.credit_days = (referrer.credit_days or 0) + 10
-        referrer.save(update_fields=['credit_days'])
+        from django.db.models import F
+        User.objects.filter(pk=referrer.pk).update(credit_days=F('credit_days') + 10)
 
 
 @api_view(['GET'])
