@@ -60,6 +60,18 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <a
+              href="https://play.google.com/store/apps/details?id=app.medicoapp.medico"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:block"
+            >
+              <img
+                src="https://play.google.com/intl/en_us/badges/static/images/badges/es-419_badge_web_generic.png"
+                alt="Google Play"
+                className="h-9"
+              />
+            </a>
             <Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">
               Iniciar sesión
             </Link>
@@ -149,7 +161,7 @@ export default function LandingPage() {
                 🧪 Beta Testers oficiales
               </Link>
             </div>
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
               <a
                 href="https://play.google.com/store/apps/details?id=app.medicoapp.medico"
                 target="_blank"
@@ -161,6 +173,14 @@ export default function LandingPage() {
                   className="h-14"
                 />
               </a>
+              <div className="relative opacity-50 cursor-not-allowed select-none">
+                <img
+                  src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg"
+                  alt="App Store"
+                  className="h-10"
+                />
+                <span className="absolute -top-2 -right-2 bg-amber-400 text-gray-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">Pronto</span>
+              </div>
             </div>
             <p className="mt-4 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
           </div>
