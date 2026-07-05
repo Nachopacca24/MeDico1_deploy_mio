@@ -338,10 +338,18 @@ class CustomUser(AbstractUser):
         return self.email_verification_token
     
     def save(self, *args, **kwargs):
-        # Generar friend_code si no existe
         if not self.friend_code:
             self.friend_code = self._generate_unique_friend_code()
-        super().save(*args, **kwargs)
+        while True:
+            try:
+                super().save(*args, **kwargs)
+                return
+            except Exception as e:
+                from django.db import IntegrityError
+                if isinstance(e, IntegrityError) and self.__class__.objects.filter(friend_code=self.friend_code).exists():
+                    self.friend_code = self._generate_unique_friend_code()
+                else:
+                    raise
     
     @staticmethod
     def _generate_unique_friend_code():
