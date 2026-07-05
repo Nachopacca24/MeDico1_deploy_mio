@@ -92,8 +92,12 @@ class RegisterView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            trial_days = int(SiteSetting.get('TRIAL_DAYS', '30'))
-            user.trial_ends_at = timezone.now() + timedelta(days=trial_days)
+            free_for_all = SiteSetting.get('FREE_FOR_ALL_PREMIUM', '0') == '1'
+            if free_for_all:
+                user.trial_ends_at = None
+            else:
+                trial_days = int(SiteSetting.get('TRIAL_DAYS', '30'))
+                user.trial_ends_at = timezone.now() + timedelta(days=trial_days)
             user.plan = 'premium'
             user.had_trial = True
             user.save(update_fields=['trial_ends_at', 'plan', 'had_trial'])
@@ -975,6 +979,7 @@ class GoogleLoginView(APIView):
                 base_username = email.split('@')[0]
                 unique_username = f"{base_username}_{uuid.uuid4().hex[:6]}"
 
+                free_for_all = SiteSetting.get('FREE_FOR_ALL_PREMIUM', '0') == '1'
                 user = User.objects.create(
                     email=email,
                     username=unique_username,
@@ -982,7 +987,7 @@ class GoogleLoginView(APIView):
                     last_name=last_name,
                     is_email_verified=True,
                     role=1,
-                    trial_ends_at=timezone.now() + timedelta(days=int(SiteSetting.get('TRIAL_DAYS', '30'))),
+                    trial_ends_at=None if free_for_all else timezone.now() + timedelta(days=int(SiteSetting.get('TRIAL_DAYS', '30'))),
                     plan='premium',
                     had_trial=True,
                 )
