@@ -149,7 +149,20 @@ export default function LandingPage() {
                 🧪 Beta Testers oficiales
               </Link>
             </div>
-            <p className="mt-5 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
+            <div className="mt-6 flex justify-center">
+              <a
+                href="https://play.google.com/store/apps/details?id=app.medicoapp.medico"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src="https://play.google.com/intl/en_us/badges/static/images/badges/es-419_badge_web_generic.png"
+                  alt="Disponible en Google Play"
+                  className="h-14"
+                />
+              </a>
+            </div>
+            <p className="mt-4 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
           </div>
         </div>
       </section>
