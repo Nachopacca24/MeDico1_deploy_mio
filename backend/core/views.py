@@ -110,7 +110,12 @@ class IndexView(View):
                     </html>
                 """, content_type='text/html')
         else:
-            return render(request, 'index.html')
+            try:
+                return render(request, 'index.html')
+            except Exception:
+                from django.http import HttpResponseRedirect
+                frontend_url = os.environ.get('FRONTEND_URL', 'https://medicoapp.app')
+                return HttpResponseRedirect(frontend_url)
 
 
 # ============================================

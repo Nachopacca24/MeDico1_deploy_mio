@@ -33,6 +33,12 @@ urlpatterns = [
     # Health check — no auth required
     path('api/health/', health_check, name='health_check'),
 
+    # robots.txt — evita que el catch-all tire 500
+    path('robots.txt', lambda r: __import__('django.http', fromlist=['HttpResponse']).HttpResponse(
+        'User-agent: *\nDisallow: /api/\nDisallow: /django-admin/\nAllow: /\n',
+        content_type='text/plain'
+    )),
+
     # Sentry Verify
     path('sentry-debug/', trigger_error),
 
