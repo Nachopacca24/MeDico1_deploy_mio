@@ -105,7 +105,7 @@ const Settings = () => {
   };
 
   const { toast } = useToast();
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, updateUser } = useAuth();
   const { restartTutorial, tutorialState } = useTutorial();
   const { setTheme } = useTheme();
 
@@ -238,7 +238,7 @@ const Settings = () => {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      await authService.updateProfile({
+      await updateUser({
         first_name: settings.first_name,
         last_name: settings.last_name,
       });
