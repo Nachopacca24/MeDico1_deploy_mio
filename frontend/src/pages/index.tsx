@@ -204,10 +204,10 @@ const Index = () => {
         <div className="relative mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-4xl font-black mb-2 tracking-tight text-slate-900 dark:text-white">
-              Panel de Control
+              Inicio
             </h1>
             <p className="text-lg text-slate-500 dark:text-slate-400 font-medium">
-              Hola, {user?.name || user?.first_name || "Doctor"}. Aquí tienes tu agenda para hoy.
+              Hola, {user?.first_name || user?.name || "Doctor"}. Aquí tienes tu agenda para hoy.
             </p>
           </div>
           <div className="flex items-center gap-3">
