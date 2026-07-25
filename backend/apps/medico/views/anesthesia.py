@@ -52,6 +52,10 @@ def anesthesia_case(request, case_id):
         serializer = AnesthesiaCaseWriteSerializer(data=request.data)
         if serializer.is_valid():
             anesthesia = serializer.save(case=case)
+            # Si solo hay nombre libre (sin FK) no hay nadie que acepte → auto-aceptar
+            if not anesthesia.anesthesiologist:
+                anesthesia.anesthesiologist_accepted = True
+                anesthesia.save(update_fields=['anesthesiologist_accepted'])
             return Response(AnesthesiaCaseSerializer(anesthesia).data,
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
