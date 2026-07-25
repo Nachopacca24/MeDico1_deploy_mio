@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator } from "lucide-react";
+import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator, CheckCircle, XCircle } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { colleaguesService, type Colleague } from "@/services/colleaguesService";
 import { loadCSV } from "@/shared/utils/csvLoader";
@@ -66,6 +66,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   const [timeMinutes, setTimeMinutes] = useState("");
   const [savingTime, setSavingTime] = useState(false);
   const [timeCodes, setTimeCodes] = useState<CsvRow[]>([]);
+  const [responding, setResponding] = useState(false);
 
   useEffect(() => {
     anesthesiaService.get(caseId).then(data => {
@@ -78,6 +79,9 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   }, [caseId]);
 
   const isAnesthesiologist = !!(session && session.anesthesiologist === currentUserId);
+  const invitePending = isAnesthesiologist && session?.anesthesiologist_accepted === null;
+  const inviteRejected = isAnesthesiologist && session?.anesthesiologist_accepted === false;
+  const inviteAccepted = isAnesthesiologist && session?.anesthesiologist_accepted === true;
 
   useEffect(() => {
     if (isOwner && session === null) {
@@ -88,12 +92,12 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   }, [isOwner, session]);
 
   useEffect(() => {
-    if (!isAnesthesiologist) return;
+    if (!inviteAccepted) return;
     Promise.all(ANESTHESIA_CSVS.map(k => loadCSV(k).catch(() => [] as CsvRow[]))).then(results => {
       setAllCodes(results.flat() as CsvRow[]);
     });
     loadCSV("Anestesia/uni_tiempo.csv").then(rows => setTimeCodes(rows as CsvRow[])).catch(() => {});
-  }, [isAnesthesiologist]);
+  }, [inviteAccepted]);
 
   useEffect(() => {
     const q = codeSearch.trim().toLowerCase();
@@ -119,6 +123,23 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
       toast.error(e.message || "Error al crear la sesión");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleRespond = async (accepted: boolean) => {
+    setResponding(true);
+    try {
+      const updated = await anesthesiaService.respond(caseId, accepted);
+      setSession(updated);
+      if (accepted) {
+        toast.success("Invitación aceptada — ya puedes agregar tus códigos");
+      } else {
+        toast.success("Invitación rechazada");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Error al responder la invitación");
+    } finally {
+      setResponding(false);
     }
   };
 
@@ -276,14 +297,71 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
     );
   }
 
-  // Anesthesiologist — full edit
-  if (isAnesthesiologist) {
+  // Anesthesiologist — invitation pending
+  if (invitePending) {
+    return (
+      <Card className="border-teal-400 dark:border-teal-600">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
+            <Stethoscope className="w-5 h-5" />
+            Invitación de Anestesia
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Has sido invitado a participar como anestesiólogo en este caso quirúrgico.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => handleRespond(true)}
+              disabled={responding}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {responding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+              Aceptar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleRespond(false)}
+              disabled={responding}
+              className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
+            >
+              {responding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
+              Rechazar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Anesthesiologist — invitation rejected
+  if (inviteRejected) {
+    return (
+      <Card className="border-red-200 dark:border-red-800">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+            <Stethoscope className="w-5 h-5" />
+            Anestesia
+            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 ml-1">Rechazada</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Rechazaste la invitación a este caso.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Anesthesiologist — accepted, full editor
+  if (inviteAccepted) {
     return (
       <Card className="border-teal-400 dark:border-teal-600">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
             <Stethoscope className="w-5 h-5" />
             Mi Sección de Anestesia
+            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400 ml-1">Aceptada</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -476,6 +554,15 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
               <span className="text-sm font-normal text-muted-foreground ml-1">
                 — {session.anesthesiologist_display}
               </span>
+            )}
+            {session.anesthesiologist && session.anesthesiologist_accepted === true && (
+              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400 ml-1">Aceptada</Badge>
+            )}
+            {session.anesthesiologist && session.anesthesiologist_accepted === null && (
+              <Badge variant="secondary" className="ml-1">Pendiente</Badge>
+            )}
+            {session.anesthesiologist && session.anesthesiologist_accepted === false && (
+              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 ml-1">Rechazada</Badge>
             )}
           </CardTitle>
         </CardHeader>

@@ -20,6 +20,7 @@ export interface AnesthesiaCase {
   anesthesiologist_name: string | null;
   anesthesiologist: number | null;
   anesthesiologist_display: string | null;
+  anesthesiologist_accepted: boolean | null;
   notes: string | null;
   items: AnesthesiaItem[];
   total_base_units: number;
@@ -98,6 +99,18 @@ class AnesthesiaService {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al eliminar código');
+    }
+    return res.json();
+  }
+
+  async respond(caseId: number, accepted: boolean): Promise<AnesthesiaCase> {
+    const res = await authService.authenticatedFetch(`${this.url(caseId)}respond/`, {
+      method: 'POST',
+      body: JSON.stringify({ accepted }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al responder la invitación');
     }
     return res.json();
   }

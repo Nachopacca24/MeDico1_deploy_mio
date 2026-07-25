@@ -27,6 +27,7 @@ class AnesthesiaCaseSerializer(serializers.ModelSerializer):
             'id', 'case', 'unit_value',
             'time_units', 'time_minutes',
             'anesthesiologist_name', 'anesthesiologist', 'anesthesiologist_display',
+            'anesthesiologist_accepted',
             'notes', 'items',
             'total_base_units', 'total_units', 'total_fee',
             'created_at', 'updated_at',

@@ -53,6 +53,13 @@ class AnesthesiaCase(models.Model):
         verbose_name="Anestesiólogo (Colega)",
         help_text="Colega registrado en el sistema"
     )
+    anesthesiologist_accepted = models.BooleanField(
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name="Anestesiólogo Aceptó",
+        help_text="null=pendiente, true=aceptó, false=rechazó"
+    )
     notes = models.TextField(
         null=True,
         blank=True,

@@ -71,9 +71,27 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
     assistant_display_name = serializers.CharField(read_only=True)
     assistant_accepted = serializers.BooleanField(read_only=True, allow_null=True)
 
+    anesthesiologist_display = serializers.SerializerMethodField()
+    anesthesiologist_accepted = serializers.SerializerMethodField()
+
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
     insurance_company_name = serializers.CharField(source='insurance_company.name', read_only=True, allow_null=True)
+
+    def get_anesthesiologist_display(self, obj):
+        try:
+            a = obj.anesthesia
+            if a.anesthesiologist:
+                return a.anesthesiologist.get_full_name() or a.anesthesiologist.username
+            return a.anesthesiologist_name or None
+        except Exception:
+            return None
+
+    def get_anesthesiologist_accepted(self, obj):
+        try:
+            return obj.anesthesia.anesthesiologist_accepted
+        except Exception:
+            return None
 
     class Meta:
         model = SurgicalCase
@@ -98,6 +116,8 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'assistant_doctor_name',
             'assistant_display_name',
             'assistant_accepted',
+            'anesthesiologist_display',
+            'anesthesiologist_accepted',
             'total_rvu',
             'total_value',
             'procedure_count',

@@ -953,6 +953,22 @@ const CasesPage = () => {
                             </div>
                           </div>
                         )}
+                        {isOwner && surgicalCase.anesthesiologist_display && (
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <div className="p-1 bg-cyan-500/10 rounded">
+                              <Users className="w-3.5 h-3.5 text-cyan-500" />
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <span className="truncate min-w-0">Anest: {surgicalCase.anesthesiologist_display}</span>
+                              {surgicalCase.anesthesiologist_accepted === true && (
+                                <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">✓</Badge>
+                              )}
+                              {surgicalCase.anesthesiologist_accepted === false && (
+                                <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">✗</Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-3 pt-0 space-y-2">

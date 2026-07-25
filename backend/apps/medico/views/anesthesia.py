@@ -109,6 +109,36 @@ def add_anesthesia_item(request, case_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def respond_anesthesia_invitation(request, case_id):
+    """El anestesiólogo acepta o rechaza la invitación al caso."""
+    case = _get_case(case_id, request.user)
+    if case is None:
+        return Response({'error': 'Caso no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        anesthesia = AnesthesiaCase.objects.prefetch_related('items').get(case=case)
+    except AnesthesiaCase.DoesNotExist:
+        return Response({'error': 'No existe sesión de anestesia para este caso.'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    if anesthesia.anesthesiologist != request.user:
+        return Response({'error': 'Solo el anestesiólogo invitado puede responder.'},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    accepted = request.data.get('accepted')
+    if accepted is None:
+        return Response({'error': 'Se requiere el campo accepted (true/false).'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    anesthesia.anesthesiologist_accepted = bool(accepted)
+    anesthesia.save()
+    return Response(AnesthesiaCaseSerializer(
+        AnesthesiaCase.objects.prefetch_related('items').get(pk=anesthesia.pk)
+    ).data)
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def remove_anesthesia_item(request, case_id, item_id):
