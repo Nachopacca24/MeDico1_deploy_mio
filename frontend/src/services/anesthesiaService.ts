@@ -21,6 +21,8 @@ export interface AnesthesiaCase {
   anesthesiologist: number | null;
   anesthesiologist_display: string | null;
   anesthesiologist_accepted: boolean | null;
+  equipment_name: string | null;
+  equipment_cost: number | null;
   notes: string | null;
   items: AnesthesiaItem[];
   total_base_units: number;
@@ -63,6 +65,8 @@ class AnesthesiaService {
     unit_value?: number;
     time_minutes?: number | null;
     time_units?: number | null;
+    equipment_name?: string | null;
+    equipment_cost?: number | null;
     notes?: string;
   }): Promise<AnesthesiaCase> {
     const res = await authService.authenticatedFetch(this.url(caseId), {

@@ -175,6 +175,23 @@ class SurgicalCase(models.Model):
         verbose_name="N° de Factura"
     )
 
+    # Equipo personal (informativo, no suma al honorario)
+    equipment_name = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name="Equipo utilizado",
+        help_text="Descripción del equipo personal utilizado en la cirugía"
+    )
+    equipment_cost = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name="Costo del equipo (Q)",
+        help_text="Solo informativo — no se suma al honorario"
+    )
+
     # Archivado (soft-delete: se purga definitivamente a los 6 meses)
     archived_at = models.DateTimeField(
         blank=True,

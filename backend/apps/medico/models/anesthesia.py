@@ -60,6 +60,21 @@ class AnesthesiaCase(models.Model):
         verbose_name="Anestesiólogo Aceptó",
         help_text="null=pendiente, true=aceptó, false=rechazó"
     )
+    equipment_name = models.CharField(
+        max_length=500,
+        null=True,
+        blank=True,
+        verbose_name="Equipo utilizado",
+        help_text="Descripción del equipo de anestesia utilizado"
+    )
+    equipment_cost = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Costo del equipo (Q)",
+        help_text="Se suma al honorario total de anestesia"
+    )
     notes = models.TextField(
         null=True,
         blank=True,
@@ -85,7 +100,8 @@ class AnesthesiaCase(models.Model):
 
     @property
     def total_fee(self):
-        return self.total_units * float(self.unit_value)
+        base = self.total_units * float(self.unit_value)
+        return base + float(self.equipment_cost or 0)
 
     def set_time_from_minutes(self, minutes: int):
         """Calcula unidades de tiempo a partir de los minutos: 1 unidad c/15 min."""

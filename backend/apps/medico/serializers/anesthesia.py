@@ -28,6 +28,7 @@ class AnesthesiaCaseSerializer(serializers.ModelSerializer):
             'time_units', 'time_minutes',
             'anesthesiologist_name', 'anesthesiologist', 'anesthesiologist_display',
             'anesthesiologist_accepted',
+            'equipment_name', 'equipment_cost',
             'notes', 'items',
             'total_base_units', 'total_units', 'total_fee',
             'created_at', 'updated_at',
@@ -43,7 +44,9 @@ class AnesthesiaCaseWriteSerializer(serializers.ModelSerializer):
         model = AnesthesiaCase
         fields = [
             'unit_value', 'time_units', 'time_minutes',
-            'anesthesiologist_name', 'anesthesiologist', 'notes',
+            'anesthesiologist_name', 'anesthesiologist',
+            'equipment_name', 'equipment_cost',
+            'notes',
         ]
 
     def validate(self, attrs):

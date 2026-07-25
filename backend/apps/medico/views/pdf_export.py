@@ -349,6 +349,27 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
     except Exception:
         pass  # no anesthesia session exists
 
+    # ── Surgeon equipment (informational only) ────────────────────────────────
+    if case.equipment_name or case.equipment_cost:
+        story.append(Paragraph('USO DE EQUIPO PERSONAL', S['section']))
+        eq_rows = [
+            [Paragraph('Equipo', S['label']), Paragraph('Costo (informativo)', S['label'])],
+            [Paragraph(case.equipment_name or '—', S['body']),
+             Paragraph(f'Q {float(case.equipment_cost or 0):,.2f}' if case.equipment_cost else '—', S['body'])],
+        ]
+        eq_table = Table(eq_rows, colWidths=[4.5 * inch, 2 * inch])
+        eq_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+            ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+            ('PADDING', (0, 0), (-1, -1), 6),
+        ]))
+        story.append(eq_table)
+        story.append(Paragraph(
+            'Nota: el costo del equipo es informativo y no se incluye en el honorario.',
+            ParagraphStyle('eq_note', fontSize=7.5, textColor=C_MUTED, fontName='Helvetica', spaceAfter=4),
+        ))
+        story.append(Spacer(1, 4))
+
     # ── Surgery images ────────────────────────────────────────────────────────
     images = list(case.images.all())
     if images:
@@ -532,32 +553,60 @@ def _build_anesthesia_story(case, anesthesia, styles: dict) -> list:
         story.append(Paragraph('Tiempo de anestesia no registrado.', S['body']))
     story.append(Spacer(1, 8))
 
+    # ── Equipment (anesthesiologist) ──────────────────────────────────────────
+    if anesthesia.equipment_name or anesthesia.equipment_cost:
+        story.append(Paragraph('EQUIPO DE ANESTESIA', S['section']))
+        eq_rows = [
+            [Paragraph('Equipo', S['label']), Paragraph('Costo (Q)', S['label'])],
+            [Paragraph(anesthesia.equipment_name or '—', S['body']),
+             Paragraph(f'Q {float(anesthesia.equipment_cost or 0):,.2f}', S['body'])],
+        ]
+        eq_table = Table(eq_rows, colWidths=[4.5 * inch, 2 * inch])
+        eq_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+            ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+            ('PADDING', (0, 0), (-1, -1), 6),
+        ]))
+        story.append(eq_table)
+        story.append(Spacer(1, 8))
+
     # ── Financial summary (private — anesthesiologist only) ───────────────────
     story.append(Paragraph('RESUMEN DE HONORARIOS', S['section']))
-    total_base_u = float(anesthesia.total_base_units)
-    time_u       = float(anesthesia.time_units or 0)
-    total_u      = total_base_u + time_u
-    unit_val     = float(anesthesia.unit_value)
-    total_fee    = total_u * unit_val
+    total_base_u  = float(anesthesia.total_base_units)
+    time_u        = float(anesthesia.time_units or 0)
+    total_u       = total_base_u + time_u
+    unit_val      = float(anesthesia.unit_value)
+    base_fee      = total_u * unit_val
+    equipment_fee = float(anesthesia.equipment_cost or 0)
+    total_fee     = base_fee + equipment_fee
 
-    fin_data = [
+    fin_rows = [
         [Paragraph('Unidades base', S['label']), Paragraph('Unidades tiempo', S['label']),
          Paragraph('Total unidades', S['label']), Paragraph('Valor por unidad (Q)', S['label']),
-         Paragraph('Honorario total (Q)', S['label'])],
+         Paragraph('Honorario base (Q)', S['label'])],
         [Paragraph(f'{total_base_u:.2f}', S['body']), Paragraph(f'{time_u:.0f}', S['body']),
          Paragraph(f'<b>{total_u:.2f}</b>', S['body']), Paragraph(f'Q {unit_val:,.2f}', S['body']),
-         Paragraph(f'<b>Q {total_fee:,.2f}</b>',
-                   ParagraphStyle('fee', fontSize=10, fontName='Helvetica-Bold', textColor=C_AMBER))],
+         Paragraph(f'<b>Q {base_fee:,.2f}</b>', S['body'])],
     ]
-    fin_table = Table(fin_data, colWidths=[1.1*inch, 1.1*inch, 1.1*inch, 1.3*inch, 1.8*inch])
+    fin_table = Table(fin_rows, colWidths=[1.1*inch, 1.1*inch, 1.1*inch, 1.3*inch, 1.8*inch])
     fin_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
         ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
         ('PADDING', (0, 0), (-1, -1), 6),
-        ('BACKGROUND', (4, 1), (4, 1), colors.HexColor('#fef3c7')),
         ('ALIGN', (0, 1), (-1, -1), 'RIGHT'),
     ]))
     story.append(fin_table)
+    story.append(Spacer(1, 4))
+
+    if equipment_fee > 0:
+        story.append(Paragraph(
+            f'Equipo de anestesia: <b>Q {equipment_fee:,.2f}</b>',
+            ParagraphStyle('eq_line', fontSize=9, textColor=C_DARK, fontName='Helvetica', alignment=TA_RIGHT),
+        ))
+
+    total_style = ParagraphStyle('total_fee', fontSize=11, fontName='Helvetica-Bold',
+                                 textColor=C_AMBER, alignment=TA_RIGHT, spaceBefore=4)
+    story.append(Paragraph(f'HONORARIO TOTAL: Q {total_fee:,.2f}', total_style))
 
     return story
 

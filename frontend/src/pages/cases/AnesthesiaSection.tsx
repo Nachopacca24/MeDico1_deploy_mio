@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator, FileDown } from "lucide-react";
+import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator, FileDown, Wrench } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { colleaguesService, type Colleague } from "@/services/colleaguesService";
 import { loadCSV } from "@/shared/utils/csvLoader";
@@ -70,6 +70,9 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   const [savingTime, setSavingTime] = useState(false);
   const [timeCodes, setTimeCodes] = useState<CsvRow[]>([]);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [equipmentName, setEquipmentName] = useState("");
+  const [equipmentCost, setEquipmentCost] = useState("");
+  const [savingEquipment, setSavingEquipment] = useState(false);
 
   useEffect(() => {
     anesthesiaService.get(caseId).then(data => {
@@ -77,6 +80,8 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
       if (data) {
         setEditUnitValue(String(data.unit_value));
         setTimeMinutes(data.time_minutes != null ? String(data.time_minutes) : "");
+        setEquipmentName(data.equipment_name ?? "");
+        setEquipmentCost(data.equipment_cost != null ? String(data.equipment_cost) : "");
       }
     }).catch(() => setSession(null));
   }, [caseId]);
@@ -210,6 +215,22 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
       toast.error(e.message || "Error al guardar tiempo");
     } finally {
       setSavingTime(false);
+    }
+  };
+
+  const handleSaveEquipment = async () => {
+    setSavingEquipment(true);
+    try {
+      const updated = await anesthesiaService.update(caseId, {
+        equipment_name: equipmentName.trim() || null,
+        equipment_cost: equipmentCost ? parseFloat(equipmentCost) : null,
+      });
+      setSession(updated);
+      toast.success("Equipo guardado");
+    } catch (e: any) {
+      toast.error(e.message || "Error al guardar equipo");
+    } finally {
+      setSavingEquipment(false);
     }
   };
 
@@ -500,6 +521,46 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
             </div>
           )}
 
+          {/* Equipment */}
+          <div className="pt-3 border-t border-teal-100 dark:border-teal-900">
+            <div className="flex items-center gap-2 mb-3">
+              <Wrench className="w-4 h-4 text-teal-600" />
+              <span className="text-sm font-medium">Uso de equipo personal</span>
+              <span className="text-xs text-muted-foreground">(se suma al honorario)</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Descripción del equipo</label>
+                <input
+                  type="text"
+                  value={equipmentName}
+                  onChange={e => setEquipmentName(e.target.value)}
+                  placeholder="ej. Laparoscopio Karl Storz"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Costo (Q)</label>
+                <input
+                  type="number" min="0" step="0.01"
+                  value={equipmentCost}
+                  onChange={e => setEquipmentCost(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                />
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveEquipment}
+              disabled={savingEquipment}
+              className="mt-2 bg-teal-600 hover:bg-teal-700 text-white"
+            >
+              {savingEquipment ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Guardar equipo
+            </Button>
+          </div>
+
           {/* Summary */}
           <div className="pt-3 border-t border-teal-200 dark:border-teal-800 space-y-1">
             <div className="flex items-center gap-2 mb-2">
@@ -524,6 +585,15 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
               <span className="text-muted-foreground">Valor por unidad</span>
               <span>Q {Number(session!.unit_value).toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
             </div>
+            {session!.equipment_cost != null && session!.equipment_cost > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Wrench className="w-3 h-3" />
+                  Equipo{session!.equipment_name ? ` (${session!.equipment_name})` : ''}
+                </span>
+                <span>Q {Number(session!.equipment_cost).toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm font-bold pt-2 border-t border-teal-200 dark:border-teal-800">
               <span>Honorario total</span>
               <span className="text-teal-700 dark:text-teal-400 text-base">
@@ -609,6 +679,19 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
             <div className="pt-3 border-t border-teal-100 dark:border-teal-900 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
               <Clock className="w-4 h-4 shrink-0" />
               Tiempo de anestesia pendiente
+            </div>
+          )}
+          {session.equipment_name && (
+            <div className="pt-3 border-t border-teal-100 dark:border-teal-900 flex items-start gap-3">
+              <Wrench className="w-4 h-4 text-teal-500 shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <span className="font-medium">{session.equipment_name}</span>
+                {session.equipment_cost != null && (
+                  <span className="text-muted-foreground ml-2">
+                    — Q {Number(session.equipment_cost).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
