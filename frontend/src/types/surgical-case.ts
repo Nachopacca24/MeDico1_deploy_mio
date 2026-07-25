@@ -93,6 +93,7 @@ export interface SurgicalCase {
   assistant_notified_at?: string | null;
   anesthesiologist_display?: string | null;
   anesthesiologist_accepted?: boolean | null;
+  is_anesthesiologist?: boolean;
   
   // Permisos
   can_edit?: boolean;

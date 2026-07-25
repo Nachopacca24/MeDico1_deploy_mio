@@ -54,7 +54,8 @@ import {
   ExternalLink,
   Loader2 as LoaderIcon,
   Users,
-  Bell
+  Bell,
+  Stethoscope
 } from "lucide-react";
 
 // Componente CaseStatusToggles inline
@@ -1086,6 +1087,14 @@ const CasesPage = () => {
                               Ver
                             </Link>
                           </Button>
+                          {surgicalCase.is_anesthesiologist && (
+                            <Button asChild variant="ghost" size="sm" className="flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950">
+                              <Link to={`/cases/${surgicalCase.id}#anesthesia`}>
+                                <Stethoscope className="w-3.5 h-3.5 mr-1" />
+                                Anestesia
+                              </Link>
+                            </Button>
+                          )}
                           {canEdit && !(surgicalCase.is_paid) && (
                             <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
                               <Link to={`/cases/${surgicalCase.id}/edit`}>

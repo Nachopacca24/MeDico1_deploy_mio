@@ -73,6 +73,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
 
     anesthesiologist_display = serializers.SerializerMethodField()
     anesthesiologist_accepted = serializers.SerializerMethodField()
+    is_anesthesiologist = serializers.SerializerMethodField()
 
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
@@ -92,6 +93,15 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             return obj.anesthesia.anesthesiologist_accepted
         except Exception:
             return None
+
+    def get_is_anesthesiologist(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user:
+            return False
+        try:
+            return obj.anesthesia.anesthesiologist == request.user and obj.anesthesia.anesthesiologist_accepted is True
+        except Exception:
+            return False
 
     class Meta:
         model = SurgicalCase
@@ -118,6 +128,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'assistant_accepted',
             'anesthesiologist_display',
             'anesthesiologist_accepted',
+            'is_anesthesiologist',
             'total_rvu',
             'total_value',
             'procedure_count',

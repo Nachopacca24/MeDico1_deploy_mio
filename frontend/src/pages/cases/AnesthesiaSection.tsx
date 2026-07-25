@@ -282,7 +282,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   // Anesthesiologist — invitation pending (respond from cases list)
   if (invitePending) {
     return (
-      <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
+      <Card id="anesthesia" className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
             <Stethoscope className="w-5 h-5" />
@@ -302,7 +302,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   // Anesthesiologist — invitation rejected
   if (inviteRejected) {
     return (
-      <Card className="border-red-200 dark:border-red-800">
+      <Card id="anesthesia" className="border-red-200 dark:border-red-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
             <Stethoscope className="w-5 h-5" />
@@ -320,7 +320,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   // Anesthesiologist — accepted, full editor
   if (inviteAccepted) {
     return (
-      <Card className="border-teal-400 dark:border-teal-600">
+      <Card id="anesthesia" className="border-teal-400 dark:border-teal-600">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
             <Stethoscope className="w-5 h-5" />
@@ -509,7 +509,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   // Read-only view (owner with session, assistant, or other viewer with session)
   if (session) {
     return (
-      <Card className="border-teal-200 dark:border-teal-800">
+      <Card id="anesthesia" className="border-teal-200 dark:border-teal-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
             <Stethoscope className="w-5 h-5" />
