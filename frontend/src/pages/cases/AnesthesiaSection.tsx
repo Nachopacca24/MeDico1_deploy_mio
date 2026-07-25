@@ -468,39 +468,14 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
           {session.items.length > 0 ? (
             <div className="space-y-2">
               {session.items.map(item => (
-                <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg border-teal-100 dark:border-teal-900">
-                  <div>
-                    <div className="text-sm font-medium">{item.surgery_name}</div>
-                    <div className="text-xs text-muted-foreground">Código: {item.surgery_code}</div>
-                  </div>
-                  <Badge variant="secondary" className="text-teal-700 bg-teal-100 dark:bg-teal-900 dark:text-teal-300">
-                    {item.base_units} uds
-                  </Badge>
+                <div key={item.id} className="p-3 border rounded-lg border-teal-100 dark:border-teal-900">
+                  <div className="text-sm font-medium">{item.surgery_name}</div>
+                  <div className="text-xs text-muted-foreground">Código: {item.surgery_code}</div>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">Sin procedimientos de anestesia aún</p>
-          )}
-          {(session.total_units > 0 || session.time_units != null) && (
-            <div className="pt-3 border-t border-teal-100 dark:border-teal-900 space-y-1">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Unidades base</span>
-                <span>{session.total_base_units}</span>
-              </div>
-              {session.time_units != null && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Unidades tiempo</span>
-                  <span>{session.time_units}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm font-semibold pt-1 border-t border-teal-100 dark:border-teal-900">
-                <span>Honorario estimado</span>
-                <span className="text-teal-700 dark:text-teal-400">
-                  Q {Number(session.total_fee).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-              </div>
-            </div>
           )}
         </CardContent>
       </Card>
