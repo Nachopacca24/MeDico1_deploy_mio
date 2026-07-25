@@ -209,6 +209,7 @@ const CaseDetailPage = () => {
   // Verificar si el usuario es el ayudante (usando assistant_doctor directamente del caso)
   const isAssistant = surgicalCase?.can_edit === false && surgicalCase?.assistant_doctor;
 
+
   const handleAddToCalendar = async () => {
     if (!surgicalCase) return;
     if (!await googleCalendarService.getValidToken()) {
@@ -616,7 +617,7 @@ const CaseDetailPage = () => {
           {/* Right Column - Summary */}
           <div className="space-y-6">
             {/* Financial Summary - Solo para el dueño */}
-            {!isAssistant && (
+            {isOwner && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
