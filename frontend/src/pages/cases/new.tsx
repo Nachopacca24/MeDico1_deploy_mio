@@ -13,6 +13,7 @@ import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { colleaguesService } from '@/services/colleaguesService';
+import { anesthesiaService } from '@/services/anesthesiaService';
 import { loadCSV } from '@/shared/utils/csvLoader';
 import { favoritesService } from '@/services/favoritesService';
 import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users, ImagePlus, Images } from 'lucide-react';
@@ -112,6 +113,11 @@ const NewCase = () => {
   const [assistantType, setAssistantType] = useState<'colleague' | 'manual' | 'none'>('none');
   const [selectedColleagueId, setSelectedColleagueId] = useState<number | null>(null);
   const [manualAssistantName, setManualAssistantName] = useState('');
+
+  // Anesthesiologist state
+  const [anesthesiologistId, setAnesthesiologistId] = useState<number | null>(null);
+  const [manualAnesthesiologistName, setManualAnesthesiologistName] = useState('');
+  const [anesthesiaType, setAnesthesiaType] = useState<'colleague' | 'manual' | 'none'>('none');
 
   // Procedure selection state
   const [searchQuery, setSearchQuery] = useState('');
@@ -449,6 +455,15 @@ const NewCase = () => {
 
       const newCase = await surgicalCaseService.createCase(caseData);
 
+      // Create anesthesia session in background if anesthesiologist selected
+      if (anesthesiaType !== 'none' && (anesthesiologistId || manualAnesthesiologistName)) {
+        anesthesiaService.create(newCase.id, {
+          unit_value: 0,
+          anesthesiologist: anesthesiologistId || null,
+          anesthesiologist_name: !anesthesiologistId && manualAnesthesiologistName ? manualAnesthesiologistName : null,
+        }).catch(() => {/* silent — anesthesiologist can be set later from the case detail */});
+      }
+
       // Navigate immediately — images upload in the background
       if (isPremium && pendingImages.length > 0) {
         toast.success('¡Caso creado!', `Subiendo ${pendingImages.length} imagen${pendingImages.length > 1 ? 'es' : ''} en segundo plano...`);
@@ -749,7 +764,7 @@ const NewCase = () => {
                         <SelectValue placeholder="Selecciona un colega" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {colleagues.map((colleague) => (
+                        {colleagues.filter(c => c.specialty !== 'Anestesiología').map((colleague) => (
                           <SelectItem key={colleague.id} value={colleague.id.toString()}>
                             <div className="flex flex-col">
                               <span>{colleague.full_name}</span>
@@ -772,6 +787,80 @@ const NewCase = () => {
                     id="manualAssistant"
                     value={manualAssistantName}
                     onChange={(e) => setManualAssistantName(e.target.value)}
+                    placeholder="Ej: Dr. Juan Pérez"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Anesthesiologist */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Stethoscope className="h-5 w-5 text-teal-600" />
+                Anestesiólogo
+              </CardTitle>
+              <CardDescription>Selecciona un colega anestesiólogo o ingresa el nombre manualmente (opcional)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Tipo</Label>
+                <Select value={anesthesiaType} onValueChange={(value: any) => {
+                  setAnesthesiaType(value);
+                  if (value === 'none') {
+                    setAnesthesiologistId(null);
+                    setManualAnesthesiologistName('');
+                  }
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin anestesiólogo</SelectItem>
+                    <SelectItem value="colleague">Seleccionar colega anestesiólogo</SelectItem>
+                    <SelectItem value="manual">Ingresar nombre manualmente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {anesthesiaType === 'colleague' && (
+                <div className="space-y-2">
+                  <Label>Anestesiólogo Colega</Label>
+                  {loadingColleagues ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground p-3 border rounded-lg">
+                      <Loader2 className="h-4 w-4 animate-spin" />Cargando colegas...
+                    </div>
+                  ) : colleagues.filter(c => c.specialty === 'Anestesiología').length === 0 ? (
+                    <div className="text-sm text-muted-foreground p-4 border rounded-lg bg-muted/50">
+                      No tienes colegas con especialidad Anestesiología.
+                    </div>
+                  ) : (
+                    <Select
+                      value={anesthesiologistId?.toString() || ''}
+                      onValueChange={(value) => setAnesthesiologistId(parseInt(value))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un anestesiólogo" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {colleagues.filter(c => c.specialty === 'Anestesiología').map((c) => (
+                          <SelectItem key={c.id} value={c.id.toString()}>
+                            <span>{c.full_name}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+
+              {anesthesiaType === 'manual' && (
+                <div className="space-y-2">
+                  <Label>Nombre del Anestesiólogo</Label>
+                  <Input
+                    value={manualAnesthesiologistName}
+                    onChange={(e) => setManualAnesthesiologistName(e.target.value)}
                     placeholder="Ej: Dr. Juan Pérez"
                   />
                 </div>
