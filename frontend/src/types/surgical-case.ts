@@ -94,6 +94,7 @@ export interface SurgicalCase {
   anesthesiologist_display?: string | null;
   anesthesiologist_accepted?: boolean | null;
   is_anesthesiologist?: boolean;
+  anesthesia_total_fee?: number | null;
   
   // Permisos
   can_edit?: boolean;
