@@ -13,6 +13,7 @@ const ANESTHESIA_CSVS = [
   "Anestesia/Cabeza.csv",
   "Anestesia/Cuello.csv",
   "Anestesia/Thorax.csv",
+  "Anestesia/Intrathoracic.csv",
   "Anestesia/Brazo_y_codo.csv",
   "Anestesia/Antebrazo_muñeca_y_mano.csv",
   "Anestesia/Radiological.csv",

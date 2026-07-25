@@ -73,6 +73,7 @@ export const csvMap: Record<string, string> = {
   "Anestesia/Cabeza.csv": "surgeries/Anestesia/Cabeza.csv",
   "Anestesia/Cuello.csv": "surgeries/Anestesia/Cuello.csv",
   "Anestesia/Thorax.csv": "surgeries/Anestesia/Thorax.csv",
+  "Anestesia/Intrathoracic.csv": "surgeries/Anestesia/Intrathoracic.csv",
   "Anestesia/Brazo_y_codo.csv": "surgeries/Anestesia/Brazo_y_codo.csv",
   "Anestesia/Antebrazo_muñeca_y_mano.csv": "surgeries/Anestesia/Antebrazo_muñeca_y_mano.csv",
   "Anestesia/Radiological.csv": "surgeries/Anestesia/Radiological.csv",

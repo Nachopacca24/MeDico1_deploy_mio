@@ -1,0 +1,12 @@
+codigo,cirugia,rvu,especialidad,grupo
+00530,"Anesthesia for transvenous pacemaker insertion",4,Anestesia,Intrathoracic
+00532,"Anesthesia for access to central venous circulation",4,Anestesia,Intrathoracic
+00534,"Anesthesia for transvenous insertion or replacement of cardioverter/defibrillator",7,Anestesia,Intrathoracic
+00540,"Anesthesia for thoracotomy procedures involving lungs, pleura, diaphragm, and mediastinum; not otherwise specified",13,Anestesia,Intrathoracic
+00542,"decortication",15,Anestesia,Intrathoracic
+00544,"pleurectomy",15,Anestesia,Intrathoracic
+00546,"pulmonary resection with thoracoplasty",15,Anestesia,Intrathoracic
+00548,"intrathoracic repair of trauma to trachea and bronchi",15,Anestesia,Intrathoracic
+00560,"Anesthesia for procedures on heart, pericardium, and great vessels of chest; without pump oxygenator",15,Anestesia,Intrathoracic
+00562,"with pump oxygenator",20,Anestesia,Intrathoracic
+00580,"Anesthesia for heart transplant or heart/lung transplant",20,Anestesia,Intrathoracic
