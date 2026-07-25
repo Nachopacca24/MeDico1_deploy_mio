@@ -103,6 +103,12 @@ class AnesthesiaService {
     return res.json();
   }
 
+  async getPendingInvitations(): Promise<{ pending_invitations: import('@/types/surgical-case').SurgicalCase[]; total_pending: number }> {
+    const res = await authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/anesthesia-invitations/`);
+    if (!res.ok) return { pending_invitations: [], total_pending: 0 };
+    return res.json();
+  }
+
   async respond(caseId: number, accepted: boolean): Promise<AnesthesiaCase> {
     const res = await authService.authenticatedFetch(`${this.url(caseId)}respond/`, {
       method: 'POST',

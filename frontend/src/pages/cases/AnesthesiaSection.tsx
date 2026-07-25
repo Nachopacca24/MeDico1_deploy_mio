@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator, CheckCircle, XCircle } from "lucide-react";
+import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { colleaguesService, type Colleague } from "@/services/colleaguesService";
 import { loadCSV } from "@/shared/utils/csvLoader";
@@ -66,7 +66,6 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   const [timeMinutes, setTimeMinutes] = useState("");
   const [savingTime, setSavingTime] = useState(false);
   const [timeCodes, setTimeCodes] = useState<CsvRow[]>([]);
-  const [responding, setResponding] = useState(false);
 
   useEffect(() => {
     anesthesiaService.get(caseId).then(data => {
@@ -123,23 +122,6 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
       toast.error(e.message || "Error al crear la sesión");
     } finally {
       setCreating(false);
-    }
-  };
-
-  const handleRespond = async (accepted: boolean) => {
-    setResponding(true);
-    try {
-      const updated = await anesthesiaService.respond(caseId, accepted);
-      setSession(updated);
-      if (accepted) {
-        toast.success("Invitación aceptada — ya puedes agregar tus códigos");
-      } else {
-        toast.success("Invitación rechazada");
-      }
-    } catch (e: any) {
-      toast.error(e.message || "Error al responder la invitación");
-    } finally {
-      setResponding(false);
     }
   };
 
@@ -297,39 +279,21 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
     );
   }
 
-  // Anesthesiologist — invitation pending
+  // Anesthesiologist — invitation pending (respond from cases list)
   if (invitePending) {
     return (
-      <Card className="border-teal-400 dark:border-teal-600">
+      <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
+          <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
             <Stethoscope className="w-5 h-5" />
             Invitación de Anestesia
+            <Badge variant="secondary" className="ml-1">Pendiente</Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <p className="text-sm text-muted-foreground">
-            Has sido invitado a participar como anestesiólogo en este caso quirúrgico.
+            Tienes una invitación pendiente para este caso. Responde desde la lista de casos para poder editar tu sección.
           </p>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => handleRespond(true)}
-              disabled={responding}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {responding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-              Aceptar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleRespond(false)}
-              disabled={responding}
-              className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950"
-            >
-              {responding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
-              Rechazar
-            </Button>
-          </div>
         </CardContent>
       </Card>
     );

@@ -12,6 +12,9 @@ from apps.medico.serializers.anesthesia import (
 )
 
 
+from apps.medico.serializers.surgical_case import SurgicalCaseListSerializer
+
+
 def _get_case(case_id, user):
     """Devuelve el caso si el usuario puede verlo, o None."""
     try:
@@ -21,6 +24,24 @@ def _get_case(case_id, user):
     if not case.can_be_viewed_by(user):
         return None
     return case
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def anesthesia_pending_invitations(request):
+    """Casos donde el usuario es anestesiólogo invitado y aún no ha respondido."""
+    from apps.medico.models.surgical_case import SurgicalCase
+    cases = SurgicalCase.objects.filter(
+        anesthesia__anesthesiologist=request.user,
+        anesthesia__anesthesiologist_accepted__isnull=True,
+        archived_at__isnull=True,
+    ).select_related('hospital', 'created_by').prefetch_related('anesthesia')
+
+    serializer = SurgicalCaseListSerializer(cases, many=True, context={'request': request})
+    return Response({
+        'pending_invitations': serializer.data,
+        'total_pending': cases.count(),
+    })
 
 
 @api_view(['GET', 'POST', 'PATCH'])

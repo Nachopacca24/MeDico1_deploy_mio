@@ -19,7 +19,7 @@ from apps.medico.views.google_calendar_auth import (
     disconnect_google_calendar,
 )
 from apps.medico.views.push_token import manage_push_token
-from apps.medico.views.anesthesia import anesthesia_case, add_anesthesia_item, remove_anesthesia_item, respond_anesthesia_invitation
+from apps.medico.views.anesthesia import anesthesia_case, add_anesthesia_item, remove_anesthesia_item, respond_anesthesia_invitation, anesthesia_pending_invitations
 
 app_name = 'medico'
 
@@ -44,6 +44,7 @@ urlpatterns = [
     # Custom paths BEFORE router so they aren't swallowed by cases/{pk}/
     path('cases/<int:case_id>/pdf/', export_case_pdf, name='case-pdf'),
     path('cases/export-pdf/', export_cases_bulk_pdf, name='cases-bulk-pdf'),
+    path('cases/anesthesia-invitations/', anesthesia_pending_invitations, name='anesthesia-invitations'),
     path('cases/<int:case_id>/anesthesia/', anesthesia_case, name='case-anesthesia'),
     path('cases/<int:case_id>/anesthesia/respond/', respond_anesthesia_invitation, name='case-anesthesia-respond'),
     path('cases/<int:case_id>/anesthesia/items/', add_anesthesia_item, name='case-anesthesia-items'),

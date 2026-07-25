@@ -18,6 +18,8 @@ import { advertisementService, type ActiveAd } from "@/admin/services/advertisem
 import { useToast } from "@/shared/hooks/useToast";
 import { ReadOnlyBadge } from "@/pages/cases/ReadOnlyBadge";
 import { InvitationCard } from "@/pages/cases/InvitationCard";
+import { AnesthesiaInvitationCard } from "@/pages/cases/AnesthesiaInvitationCard";
+import { anesthesiaService } from "@/services/anesthesiaService";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
@@ -324,7 +326,7 @@ const CasesPage = () => {
     }
   };
 
-  // Estado para invitaciones
+  // Estado para invitaciones de ayudante
   const [invitations, setInvitations] = useState<AssistedCasesResponse>({
     pending_invitations: [],
     accepted_cases: [],
@@ -332,6 +334,10 @@ const CasesPage = () => {
     total_accepted: 0,
   });
   const [loadingInvitations, setLoadingInvitations] = useState(true);
+
+  // Estado para invitaciones de anestesia
+  const [anesthesiaInvitations, setAnesthesiaInvitations] = useState<SurgicalCase[]>([]);
+  const [loadingAnesthesiaInv, setLoadingAnesthesiaInv] = useState(true);
 
   const [sidebarAds, setSidebarAds] = useState<ActiveAd[]>([]);
   const [betweenContentAds, setBetweenContentAds] = useState<ActiveAd[]>([]);
@@ -342,6 +348,7 @@ const CasesPage = () => {
     const onRefresh = () => {
       fetchCases();
       fetchInvitations();
+      fetchAnesthesiaInvitations();
       window.dispatchEvent(new CustomEvent(CASE_INVITATIONS_EVENT));
     };
     window.addEventListener(APP_REFRESH_EVENT, onRefresh);
@@ -353,6 +360,7 @@ const CasesPage = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     fetchCases();
     fetchInvitations();
+    fetchAnesthesiaInvitations();
     loadAds();
     window.dispatchEvent(new CustomEvent(CASE_INVITATIONS_EVENT));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -384,6 +392,30 @@ const CasesPage = () => {
     } finally {
       setLoadingInvitations(false);
     }
+  };
+
+  const fetchAnesthesiaInvitations = async () => {
+    try {
+      setLoadingAnesthesiaInv(true);
+      const data = await anesthesiaService.getPendingInvitations();
+      setAnesthesiaInvitations(data.pending_invitations.map(c => ({
+        ...c,
+        patient_name: c.patient_name_for_assistant || c.patient_name,
+      })));
+    } catch {
+      // silencioso
+    } finally {
+      setLoadingAnesthesiaInv(false);
+    }
+  };
+
+  const handleAnesthesiaAccepted = (caseId: number) => {
+    setAnesthesiaInvitations(prev => prev.filter(c => c.id !== caseId));
+    fetchCases();
+  };
+
+  const handleAnesthesiaRejected = (caseId: number) => {
+    setAnesthesiaInvitations(prev => prev.filter(c => c.id !== caseId));
   };
 
   const handleInvitationAccepted = (caseId: number) => {
@@ -785,7 +817,7 @@ const CasesPage = () => {
 
             <TabsContent value="activos" className="space-y-6 mt-0">
 
-          {/* SECCIÓN DE INVITACIONES PENDIENTES */}
+          {/* SECCIÓN DE INVITACIONES PENDIENTES — AYUDANTE */}
           {!loadingInvitations && invitations.total_pending > 0 && (
             <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
               <CardHeader>
@@ -812,6 +844,34 @@ const CasesPage = () => {
                       case={invitation}
                       onAccept={handleInvitationAccepted}
                       onReject={handleInvitationRejected}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* SECCIÓN DE INVITACIONES PENDIENTES — ANESTESIA */}
+          {!loadingAnesthesiaInv && anesthesiaInvitations.length > 0 && (
+            <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-orange-600" />
+                  <CardTitle className="text-lg">Invitaciones de Anestesia</CardTitle>
+                  <Badge variant="destructive">{anesthesiaInvitations.length}</Badge>
+                </div>
+                <CardDescription>
+                  Tienes {anesthesiaInvitations.length} invitación{anesthesiaInvitations.length !== 1 ? 'es' : ''} para colaborar como anestesiólogo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {anesthesiaInvitations.map((inv) => (
+                    <AnesthesiaInvitationCard
+                      key={inv.id}
+                      case={inv}
+                      onAccept={handleAnesthesiaAccepted}
+                      onReject={handleAnesthesiaRejected}
                     />
                   ))}
                 </div>
