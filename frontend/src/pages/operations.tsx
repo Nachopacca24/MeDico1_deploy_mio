@@ -54,6 +54,7 @@ const folderStructure = {
     "Radiológico": "Anestesia/Radiological.csv",
     "Rodilla y Politeal": "Anestesia/Rodilla_y_Politeal.csv",
     "Tórax": "Anestesia/Thorax.csv",
+    "Unidades de Tiempo": "Anestesia/uni_tiempo.csv",
   },
   Cardiovascular: {
     "Corazón": "Cardiovascular/Corazón.csv",
