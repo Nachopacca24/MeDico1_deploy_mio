@@ -40,6 +40,21 @@ interface CSVOperation {
 
 // ✅ Estructura completa sincronizada con csvLoader.ts
 const folderStructure = {
+  Anestesiología: {
+    "Abdomen Inferior": "Anestesia/Abdomen_inferior.csv",
+    "Abdomen Superior": "Anestesia/Abdomen_superior.csv",
+    "Antebrazo, Muñeca y Mano": "Anestesia/Antebrazo_muñeca_y_mano.csv",
+    "Brazo y Codo": "Anestesia/Brazo_y_codo.csv",
+    "Cabeza": "Anestesia/Cabeza.csv",
+    "Cuello": "Anestesia/Cuello.csv",
+    "Espina y Espalda": "Anestesia/Espina_y_espalda.csv",
+    "Hombro y Axila": "Anestesia/Hombro_y_axila.csv",
+    "Pierna Inferior": "Anestesia/Pierna_inferior.csv",
+    "Pierna Superior": "Anestesia/Pierna_superior.csv",
+    "Radiológico": "Anestesia/Radiological.csv",
+    "Rodilla y Politeal": "Anestesia/Rodilla_y_Politeal.csv",
+    "Tórax": "Anestesia/Thorax.csv",
+  },
   Cardiovascular: {
     "Corazón": "Cardiovascular/Corazón.csv",
     "Vasos Periféricos": "Cardiovascular/Vasos_periféricos.csv",
@@ -195,7 +210,7 @@ const Operations = () => {
 
   const userSpecialty = user?.specialty || '';
   const userFolder = SPECIALTY_TO_FOLDER[userSpecialty] || null;
-  const isAnesthesiology = userSpecialty === 'Anestesiología';
+
 
   // Sorted specialty entries: user's folder first, then the rest alphabetically
   const sortedSpecialtyEntries = Object.entries(folderStructure).sort(([a], [b]) => {
@@ -407,19 +422,6 @@ const Operations = () => {
 
         {/* Folder Structure Navigation - Grid View */}
         <div>
-          {/* Anestesiología banner (no folder yet) */}
-          {isAnesthesiology && specialtyFilter === "all" && (
-            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-4 flex items-start gap-3">
-              <span className="text-2xl">🩺</span>
-              <div>
-                <p className="font-semibold text-amber-800 dark:text-amber-300">Anestesiología · En proceso</p>
-                <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
-                  Estamos organizando los códigos de anestesia. Por ahora podés buscarlos directamente en el buscador de arriba — todos los códigos están disponibles.
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* "Según tu especialidad" label */}
           {userFolder && specialtyFilter === "all" && !globalSearch && (
             <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-3">
