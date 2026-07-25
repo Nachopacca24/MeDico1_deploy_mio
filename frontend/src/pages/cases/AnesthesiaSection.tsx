@@ -28,9 +28,9 @@ const ANESTHESIA_CSVS = [
 interface CsvRow {
   codigo: string;
   cirugia: string;
-  nombre?: string; // fallback for uni_tiempo which uses nombre
+  nombre?: string;
   rvu?: string;
-  tipo?: string;
+  minutos?: string;
   especialidad: string;
   grupo: string;
 }
@@ -65,6 +65,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   const [savingUnitValue, setSavingUnitValue] = useState(false);
   const [timeMinutes, setTimeMinutes] = useState("");
   const [savingTime, setSavingTime] = useState(false);
+  const [timeCodes, setTimeCodes] = useState<CsvRow[]>([]);
 
   useEffect(() => {
     anesthesiaService.get(caseId).then(data => {
@@ -91,6 +92,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
     Promise.all(ANESTHESIA_CSVS.map(k => loadCSV(k).catch(() => [] as CsvRow[]))).then(results => {
       setAllCodes(results.flat() as CsvRow[]);
     });
+    loadCSV("Anestesia/uni_tiempo.csv").then(rows => setTimeCodes(rows as CsvRow[])).catch(() => {});
   }, [isAnesthesiologist]);
 
   useEffect(() => {
@@ -381,30 +383,47 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
                 <Clock className="w-4 h-4 text-teal-600" />
                 <span className="text-sm font-medium">Tiempo de anestesia</span>
               </div>
-              <div className="flex items-end gap-2">
-                <div className="flex-1">
-                  <label className="text-xs text-muted-foreground mb-1 block">Minutos de cirugía</label>
-                  <input
-                    type="number" min="0"
+              {!session!.time_minutes && (
+                <div className="mb-3 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2 text-sm text-amber-800 dark:text-amber-300">
+                  La cirugía fue marcada como operada — registrá el tiempo de anestesia para completar el cálculo.
+                </div>
+              )}
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Seleccionar duración</label>
+                  <select
                     value={timeMinutes}
                     onChange={e => setTimeMinutes(e.target.value)}
-                    placeholder="ej. 120"
                     className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
-                  />
+                  >
+                    <option value="">— Seleccionar tiempo —</option>
+                    {timeCodes.filter(r => r.minutos).map(r => (
+                      <option key={r.codigo} value={r.minutos!}>
+                        {r.cirugia}{r.rvu ? ` (${r.rvu} uds)` : ''}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                {timeMinutes && (
-                  <div className="text-sm text-muted-foreground pb-2 whitespace-nowrap">
-                    = {(parseFloat(timeMinutes) / 15).toFixed(2)} uds tiempo
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <label className="text-xs text-muted-foreground mb-1 block">O ingresar minutos manualmente</label>
+                    <input
+                      type="number" min="0"
+                      value={timeMinutes}
+                      onChange={e => setTimeMinutes(e.target.value)}
+                      placeholder="ej. 120"
+                      className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                    />
                   </div>
-                )}
-                <Button
-                  size="sm"
-                  onClick={handleSaveTime}
-                  disabled={savingTime}
-                  className="bg-teal-600 hover:bg-teal-700 text-white"
-                >
-                  {savingTime ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
-                </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveTime}
+                    disabled={savingTime}
+                    className="bg-teal-600 hover:bg-teal-700 text-white mt-5"
+                  >
+                    {savingTime ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -476,6 +495,25 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">Sin procedimientos de anestesia aún</p>
+          )}
+
+          {/* Tiempo registrado — visible para todos pero sin datos financieros */}
+          {session.time_minutes != null && (
+            <div className="pt-3 border-t border-teal-100 dark:border-teal-900 flex items-center gap-3">
+              <Clock className="w-4 h-4 text-teal-500 shrink-0" />
+              <div className="text-sm">
+                <span className="font-medium">{session.time_minutes} min</span>
+                <span className="text-muted-foreground ml-2">
+                  ({session.time_units} unidades de tiempo)
+                </span>
+              </div>
+            </div>
+          )}
+          {isOperated && session.time_minutes == null && (
+            <div className="pt-3 border-t border-teal-100 dark:border-teal-900 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+              <Clock className="w-4 h-4 shrink-0" />
+              Tiempo de anestesia pendiente
+            </div>
           )}
         </CardContent>
       </Card>
