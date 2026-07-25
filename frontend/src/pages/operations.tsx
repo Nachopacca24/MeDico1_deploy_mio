@@ -137,7 +137,7 @@ export function SimpleOperationCard({
   onToggleFavorite: () => void;
 }) {
   const codigo = String(operation?.codigo || 'N/A').trim();
-  const cirugia = operation?.cirugia || 'Sin nombre';
+  const cirugia = operation?.cirugia || operation?.nombre || 'Sin nombre';
   const rvu = operation?.rvu || '0';
   const especialidad = operation?.especialidad || 'N/A';
   const grupo = operation?.grupo || 'N/A';

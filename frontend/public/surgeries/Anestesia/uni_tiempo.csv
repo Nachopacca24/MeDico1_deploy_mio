@@ -1,31 +1,31 @@
-﻿codigo,nombre,tipo,especialidad,grupo
-00012,"3 hours",tiempo,Anestesia,uni tiempo
-00013,"3 hours, 15 minutes",tiempo,Anestesia,uni tiempo
-00014,"3 hours, 30 minutes",tiempo,Anestesia,uni tiempo
-00015,"3 hours, 45 minutes",tiempo,Anestesia,uni tiempo
-00016,"4 hours",tiempo,Anestesia,uni tiempo
-00017,"4 hours, 10 minutes",tiempo,Anestesia,uni tiempo
-00018,"4 hours, 20 minutes",tiempo,Anestesia,uni tiempo
-00019,"4 hours, 30 minutes",tiempo,Anestesia,uni tiempo
-00020,"4 hours, 40 minutes",tiempo,Anestesia,uni tiempo
-00021,"4 hours, 50 minutes",tiempo,Anestesia,uni tiempo
-00022,"5 hours",tiempo,Anestesia,uni tiempo
-00023,"5 hours, 10 minutes",tiempo,Anestesia,uni tiempo
-00024,"5 hours, 20 minutes",tiempo,Anestesia,uni tiempo
-00025,"5 hours, 30 minutes",tiempo,Anestesia,uni tiempo
-00026,"5 hours, 40 minutes",tiempo,Anestesia,uni tiempo
-00027,"5 hours, 50 minutes",tiempo,Anestesia,uni tiempo
-00028,"6 hours",tiempo,Anestesia,uni tiempo
-00029,"6 hours, 10 minutes",tiempo,Anestesia,uni tiempo
-00030,"6 hours, 20 minutes",tiempo,Anestesia,uni tiempo
-00031,"6 hours, 30 minutes",tiempo,Anestesia,uni tiempo
-00032,"6 hours, 40 minutes",tiempo,Anestesia,uni tiempo
-00033,"6 hours, 50 minutes",tiempo,Anestesia,uni tiempo
-00034,"7 hours",tiempo,Anestesia,uni tiempo
-00035,"7 hours, 10 minutes",tiempo,Anestesia,uni tiempo
-00036,"7 hours, 20 minutes",tiempo,Anestesia,uni tiempo
-00037,"7 hours, 30 minutes",tiempo,Anestesia,uni tiempo
-00038,"7 hours, 40 minutes",tiempo,Anestesia,uni tiempo
-00039,"7 hours, 50 minutes",tiempo,Anestesia,uni tiempo
-00040,"8 hours",tiempo,Anestesia,uni tiempo
-00099,"over 8 hours",tiempo,Anestesia,uni tiempo
+codigo,cirugia,rvu,especialidad,grupo
+00012,"3 horas",12,Anestesia,unidades de tiempo
+00013,"3 horas 15 minutos",13,Anestesia,unidades de tiempo
+00014,"3 horas 30 minutos",14,Anestesia,unidades de tiempo
+00015,"3 horas 45 minutos",15,Anestesia,unidades de tiempo
+00016,"4 horas",16,Anestesia,unidades de tiempo
+00017,"4 horas 10 minutos",16.67,Anestesia,unidades de tiempo
+00018,"4 horas 20 minutos",17.33,Anestesia,unidades de tiempo
+00019,"4 horas 30 minutos",18,Anestesia,unidades de tiempo
+00020,"4 horas 40 minutos",18.67,Anestesia,unidades de tiempo
+00021,"4 horas 50 minutos",19.33,Anestesia,unidades de tiempo
+00022,"5 horas",20,Anestesia,unidades de tiempo
+00023,"5 horas 10 minutos",20.67,Anestesia,unidades de tiempo
+00024,"5 horas 20 minutos",21.33,Anestesia,unidades de tiempo
+00025,"5 horas 30 minutos",22,Anestesia,unidades de tiempo
+00026,"5 horas 40 minutos",22.67,Anestesia,unidades de tiempo
+00027,"5 horas 50 minutos",23.33,Anestesia,unidades de tiempo
+00028,"6 horas",24,Anestesia,unidades de tiempo
+00029,"6 horas 10 minutos",24.67,Anestesia,unidades de tiempo
+00030,"6 horas 20 minutos",25.33,Anestesia,unidades de tiempo
+00031,"6 horas 30 minutos",26,Anestesia,unidades de tiempo
+00032,"6 horas 40 minutos",26.67,Anestesia,unidades de tiempo
+00033,"6 horas 50 minutos",27.33,Anestesia,unidades de tiempo
+00034,"7 horas",28,Anestesia,unidades de tiempo
+00035,"7 horas 10 minutos",28.67,Anestesia,unidades de tiempo
+00036,"7 horas 20 minutos",29.33,Anestesia,unidades de tiempo
+00037,"7 horas 30 minutos",30,Anestesia,unidades de tiempo
+00038,"7 horas 40 minutos",30.67,Anestesia,unidades de tiempo
+00039,"7 horas 50 minutos",31.33,Anestesia,unidades de tiempo
+00040,"8 horas",32,Anestesia,unidades de tiempo
+00099,"Más de 8 horas",33,Anestesia,unidades de tiempo
