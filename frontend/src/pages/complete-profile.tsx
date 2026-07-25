@@ -11,6 +11,7 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { Loader2, Activity, UserCheck } from "lucide-react";
 
 const SPECIALTIES = [
+  "Anestesiología",
   "Cardiovascular",
   "Dermatología",
   "Digestivo",
