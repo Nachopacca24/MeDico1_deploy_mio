@@ -60,6 +60,7 @@ const CaseDetailPage = () => {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
   const imagesSectionRef = useRef<HTMLDivElement>(null);
+  const anesthesiaSectionRef = useRef<HTMLDivElement>(null);
   const [syncingCalendar, setSyncingCalendar] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -157,6 +158,15 @@ const CaseDetailPage = () => {
       setTimeout(() => {
         imagesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         if (isPremium && isOwner) imageFileInputRef.current?.click();
+      }, 600);
+    }
+  }, [surgicalCase]);
+
+  // Scroll to anesthesia section if #anesthesia hash is present
+  useEffect(() => {
+    if (window.location.hash === '#anesthesia' && anesthesiaSectionRef.current) {
+      setTimeout(() => {
+        anesthesiaSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 600);
     }
   }, [surgicalCase]);
@@ -592,13 +602,15 @@ const CaseDetailPage = () => {
             </Card>
 
             {/* Anesthesia Section */}
-            <AnesthesiaSection
-              caseId={surgicalCase.id}
-              isOwner={isOwner}
-              isAssistant={!!isAssistant}
-              isOperated={surgicalCase.is_operated}
-              currentUserId={user?.id}
-            />
+            <div ref={anesthesiaSectionRef}>
+              <AnesthesiaSection
+                caseId={surgicalCase.id}
+                isOwner={isOwner}
+                isAssistant={!!isAssistant}
+                isOperated={surgicalCase.is_operated}
+                currentUserId={user?.id}
+              />
+            </div>
           </div>
 
           {/* Right Column - Summary */}
