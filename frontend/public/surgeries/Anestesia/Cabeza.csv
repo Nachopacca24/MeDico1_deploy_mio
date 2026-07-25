@@ -1,0 +1,29 @@
+﻿codigo,cirugia,rvu,especialidad,grupo
+00100,"Anesthesia for procedures on integumentary system of head and/or salivary glands, including biopsy; not otherwise specified",5,Anestesia,Cabeza
+00102,"plastic repair of cleft lip",6,Anestesia,Cabeza
+00104,"Anesthesia for electroconvulsive therapy",4,Anestesia,Cabeza
+00120,"Anesthesia for procedures on external, middle, and inner ear including biopsy; not otherwise specified",5,Anestesia,Cabeza
+00124,"otoscopy",4,Anestesia,Cabeza
+00126,"tympanotomy",4,Anestesia,Cabeza
+00140,"Anesthesia for procedures on eye; not otherwise specified",5,Anestesia,Cabeza
+00142,"lens surgery",6,Anestesia,Cabeza
+00144,"corneal transplant",6,Anestesia,Cabeza
+00145,"vitrectomy",6,Anestesia,Cabeza
+00147,"iridectomy",6,Anestesia,Cabeza
+00148,"ophthalmoscopy",4,Anestesia,Cabeza
+00160,"Anesthesia for procedures on nose and accessory sinuses; not otherwise specified",5,Anestesia,Cabeza
+00162,"radical surgery",6,Anestesia,Cabeza
+00164,"biopsy, soft tissue",4,Anestesia,Cabeza
+00170,"Anesthesia for intraoral procedures, including biopsy; not otherwise specified",5,Anestesia,Cabeza
+00172,"repair of cleft palate",6,Anestesia,Cabeza
+00174,"excision of retropharyngeal tumor",6,Anestesia,Cabeza
+00176,"radical surgery",7,Anestesia,Cabeza
+00190,"Anesthesia for procedures on facial bones; not otherwise specified",5,Anestesia,Cabeza
+00192,"radical surgery (including prognathism)",7,Anestesia,Cabeza
+00210,"Anesthesia for intracranial procedures; not otherwise specified",11,Anestesia,Cabeza
+00212,"subdural taps",5,Anestesia,Cabeza
+00214,"burr holes",9,Anestesia,Cabeza
+00216,"vascular procedures",15,Anestesia,Cabeza
+00218,"procedure; in sitting position",13,Anestesia,Cabeza
+00220,"spinal fluid shunting procedures",10,Anestesia,Cabeza
+00222,"electrocoagulation of intracranial nerve",6,Anestesia,Cabeza

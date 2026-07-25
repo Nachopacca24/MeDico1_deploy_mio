@@ -1,0 +1,106 @@
+import { authService } from '@/shared/services/authService';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+
+export interface AnesthesiaItem {
+  id: number;
+  surgery_code: string;
+  surgery_name: string;
+  base_units: number;
+  order: number;
+  created_at: string;
+}
+
+export interface AnesthesiaCase {
+  id: number;
+  case: number;
+  unit_value: number;
+  time_units: number | null;
+  time_minutes: number | null;
+  anesthesiologist_name: string | null;
+  anesthesiologist: number | null;
+  anesthesiologist_display: string | null;
+  notes: string | null;
+  items: AnesthesiaItem[];
+  total_base_units: number;
+  total_units: number;
+  total_fee: number;
+  created_at: string;
+  updated_at: string;
+}
+
+class AnesthesiaService {
+  private url(caseId: number) {
+    return `${API_URL}/api/v1/medico/cases/${caseId}/anesthesia/`;
+  }
+
+  async get(caseId: number): Promise<AnesthesiaCase | null> {
+    const res = await authService.authenticatedFetch(this.url(caseId));
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data ?? null;
+  }
+
+  async create(caseId: number, data: {
+    unit_value: number;
+    anesthesiologist?: number | null;
+    anesthesiologist_name?: string | null;
+    notes?: string;
+  }): Promise<AnesthesiaCase> {
+    const res = await authService.authenticatedFetch(this.url(caseId), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al crear la sesión de anestesia');
+    }
+    return res.json();
+  }
+
+  async update(caseId: number, data: {
+    unit_value?: number;
+    time_minutes?: number | null;
+    time_units?: number | null;
+    notes?: string;
+  }): Promise<AnesthesiaCase> {
+    const res = await authService.authenticatedFetch(this.url(caseId), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al actualizar la sesión de anestesia');
+    }
+    return res.json();
+  }
+
+  async addItem(caseId: number, item: {
+    surgery_code: string;
+    surgery_name: string;
+    base_units: number;
+  }): Promise<AnesthesiaCase> {
+    const res = await authService.authenticatedFetch(`${this.url(caseId)}items/`, {
+      method: 'POST',
+      body: JSON.stringify(item),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al agregar código');
+    }
+    return res.json();
+  }
+
+  async removeItem(caseId: number, itemId: number): Promise<AnesthesiaCase> {
+    const res = await authService.authenticatedFetch(`${this.url(caseId)}items/${itemId}/`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al eliminar código');
+    }
+    return res.json();
+  }
+}
+
+export const anesthesiaService = new AnesthesiaService();

@@ -67,6 +67,21 @@ export const csvMap: Record<string, string> = {
 
   // Plástica
   "Plastica/Plastica.csv": "surgeries/Plastica/Plastica.csv",
+
+  // Anestesia
+  "Anestesia/Espina_y_espalda.csv": "surgeries/Anestesia/Espina_y_espalda.csv",
+  "Anestesia/Cabeza.csv": "surgeries/Anestesia/Cabeza.csv",
+  "Anestesia/Cuello.csv": "surgeries/Anestesia/Cuello.csv",
+  "Anestesia/Thorax.csv": "surgeries/Anestesia/Thorax.csv",
+  "Anestesia/Brazo_y_codo.csv": "surgeries/Anestesia/Brazo_y_codo.csv",
+  "Anestesia/Antebrazo_muñeca_y_mano.csv": "surgeries/Anestesia/Antebrazo_muñeca_y_mano.csv",
+  "Anestesia/Radiological.csv": "surgeries/Anestesia/Radiological.csv",
+  "Anestesia/Rodilla_y_Politeal.csv": "surgeries/Anestesia/Rodilla_y_Politeal.csv",
+  "Anestesia/Pierna_superior.csv": "surgeries/Anestesia/Pierna_superior.csv",
+  "Anestesia/Pierna_inferior.csv": "surgeries/Anestesia/Pierna_inferior.csv",
+  "Anestesia/Hombro_y_axila.csv": "surgeries/Anestesia/Hombro_y_axila.csv",
+  "Anestesia/Abdomen_inferior.csv": "surgeries/Anestesia/Abdomen_inferior.csv",
+  "Anestesia/Abdomen_superior.csv": "surgeries/Anestesia/Abdomen_superior.csv",
 };
 
 // In-memory cache: survives navigation, cleared on full page reload

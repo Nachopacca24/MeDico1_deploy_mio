@@ -1,0 +1,27 @@
+﻿codigo,cirugia,rvu,especialidad,grupo
+00800,"Anesthesia for procedures on lower anterior abdominal wall; not otherwise specified",3,Anestesia,Abdomen inferior
+00802,"panniculectomy",5,Anestesia,Abdomen inferior
+00806,"Anesthesia for laparoscopic procedures",BR,Anestesia,Abdomen inferior
+00810,"Anesthesia for intestinal endoscopic procedures",6,Anestesia,Abdomen inferior
+00820,"Anesthesia for procedures on lower posterior abdominal wall",5,Anestesia,Abdomen inferior
+00830,"Anesthesia for hernia repairs in lower abdomen; not otherwise specified",4,Anestesia,Abdomen inferior
+00832,"ventral and incisional hernias",6,Anestesia,Abdomen inferior
+00840,"Anesthesia for intraperitoneal procedures in lower abdomen; not otherwise specified",6
+00842,"amniocentesis",4,Anestesia,Abdomen inferior
+00844,"abdominoperineal resection",7,Anestesia,Abdomen inferior
+00846,"radical hysterectomy",8,Anestesia,Abdomen inferior
+00848,"pelvic exenteration",8,Anestesia,Abdomen inferior
+00850,"cesarean section",7,Anestesia,Abdomen inferior
+00855,"cesarean hysterectomy",8,Anestesia,Abdomen inferior
+00857,"Continuous epidural analgesia, for labor and cesarean section",7,Anestesia,Abdomen inferior
+00860,"Anesthesia for extraperitoneal procedures in lower abdomen, including urinary tract; not otherwise specified",6,Anestesia,Abdomen inferior
+00862,"renal procedures, including upper 1/3 of ureter, or donor nephrectomy",7,Anestesia,Abdomen inferior
+00864,"total cystectomy",8,Anestesia,Abdomen inferior
+00866,"adrenalectomy",10,Anestesia,Abdomen inferior
+00868,"renal transplant (recipient)",10,Anestesia,Abdomen inferior
+00870,"cystolithotomy",5,Anestesia,Abdomen inferior
+00872,"Anesthesia for lithotripsy, extracorporeal shock wave; with water bath",7,Anestesia,Abdomen inferior
+00873,"without water bath",5,Anestesia,Abdomen inferior
+00880,"Anesthesia for procedures on major lower abdominal vessels; not otherwise specified",15
+00882,"inferior vena cava ligation",10,Anestesia,Abdomen inferior
+00884,"transvenous umbrella insertion",5,Anestesia,Abdomen inferior

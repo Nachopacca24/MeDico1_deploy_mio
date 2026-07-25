@@ -1,0 +1,14 @@
+﻿codigo,cirugia,rvu,especialidad,grupo
+00700,"Anesthesia for procedures on upper anterior abdominal wall; not otherwise specified",3,Anestesia,Abdomen superior
+00702,"percutaneous liver biopsy",4,Anestesia,Abdomen superior
+00730,"Anesthesia for procedures on upper posterior abdominal wall",5,Anestesia,Abdomen superior
+00740,"Anesthesia for upper gastrointestinal endoscopic procedures",5,Anestesia,Abdomen superior
+00750,"Anesthesia for hernia repairs in upper abdomen; not otherwise specified",4,Anestesia,Abdomen superior
+00752,"lumbar and ventral (incisional) hernias and/or wound dehiscence",6,Anestesia,Abdomen superior
+00754,"omphalocele",7,Anestesia,Abdomen superior
+00756,"transabdominal repair of diaphragmatic hernia",7,Anestesia,Abdomen superior
+00770,"Anesthesia for all procedures on major abdominal blood vessels",15,Anestesia,Abdomen superior
+00790,"Anesthesia for intraperitoneal procedures in upper abdomen, including bowel shunts; not otherwise specified",7,Anestesia,Abdomen superior
+00792,"partial hepatectomy (excluding liver biopsy)",13,Anestesia,Abdomen superior
+00794,"pancreatectomy, partial or total (eg, Whipple procedure)",8,Anestesia,Abdomen superior
+00796,"liver transplant (recipient)",30,Anestesia,Abdomen superior

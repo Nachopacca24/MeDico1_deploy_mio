@@ -34,6 +34,7 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 import { authService } from "@/shared/services/authService";
 import { calendarSyncService } from "@/services/calendarSyncService";
 import { googleCalendarService } from "@/services/googleCalendarService";
+import { AnesthesiaSection } from "./AnesthesiaSection";
 
 interface SurgeryImage {
   id: number;
@@ -589,6 +590,15 @@ const CaseDetailPage = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Anesthesia Section */}
+            <AnesthesiaSection
+              caseId={surgicalCase.id}
+              isOwner={isOwner}
+              isAssistant={!!isAssistant}
+              isOperated={surgicalCase.is_operated}
+              currentUserId={user?.id}
+            />
           </div>
 
           {/* Right Column - Summary */}

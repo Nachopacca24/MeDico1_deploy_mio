@@ -1,0 +1,13 @@
+﻿codigo,cirugia,rvu,especialidad,grupo
+00400,"Anesthesia for procedures on anterior integumentary system of chest, including subcutaneous tissue; not otherwise specified",3,Anestesia,Thorax
+00402,"reconstructive procedures on breast (eg, reduction or augmentation mammoplasty, muscle flaps)",5,Anestesia,Thorax
+00404,"radical or modified radical procedures on breast",5,Anestesia,Thorax
+00406,"radical or modified radical procedures on breast with internal mammary node dissection",13,Anestesia,Thorax
+00410,"electrical conversion of arrhythmias",4,Anestesia,Thorax
+00420,"Anesthesia for procedures on posterior integumentary system of chest, including subcutaneous tissue",5,Anestesia,Thorax
+00450,"Anesthesia for procedures on clavicle and scapula; not otherwise specified",5,Anestesia,Thorax
+00452,"radical surgery",6,Anestesia,Thorax
+00454,"biopsy of clavicle",3,Anestesia,Thorax
+00470,"Anesthesia for partial rib resection; not otherwise specified",6,Anestesia,Thorax
+00472,"thoracoplasty (any type)",10,Anestesia,Thorax
+00474,"radical procedures (eg, pectus excavatum)",13,Anestesia,Thorax

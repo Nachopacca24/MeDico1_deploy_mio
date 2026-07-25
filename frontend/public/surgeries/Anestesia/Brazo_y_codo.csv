@@ -1,0 +1,19 @@
+﻿codigo,cirugia,rvu,especialidad,grupo
+01700,"Anesthesia for all procedures on integumentary system of upper arm and elbow",3,Anestesia,Brazo y codo
+01710,"Anesthesia for procedures on nerves, muscles, tendons, fascia, and bursae of upper arm and elbow; not otherwise specified",3,Anestesia,Brazo y codo
+01712,"tenotomy, elbow to shoulder, open",5,Anestesia,Brazo y codo
+01714,"tenoplasty, elbow to shoulder",5,Anestesia,Brazo y codo
+01716,"tenodesis, rupture of long tendon of biceps",5,Anestesia,Brazo y codo
+01730,"Anesthesia for all closed procedures on humerus and elbow",3,Anestesia,Brazo y codo
+01732,"Anesthesia for arthroscopic procedures of elbow joint",3,Anestesia,Brazo y codo
+01740,"Anesthesia for open procedures on humerus and elbow; not otherwise specified",4,Anestesia,Brazo y codo
+01742,"osteotomy of humerus",5,Anestesia,Brazo y codo
+01744,"repair of nonunion or malunion of humerus",5,Anestesia,Brazo y codo
+01756,"radical procedures",6,Anestesia,Brazo y codo
+01758,"excision of cyst or tumor of humerus",5,Anestesia,Brazo y codo
+01760,"total elbow replacement",7,Anestesia,Brazo y codo
+01770,"Anesthesia for procedures on arteries of upper arm and elbow; not otherwise specified",6,Anestesia,Brazo y codo
+01772,"embolectomy",6,Anestesia,Brazo y codo
+01780,"Anesthesia for procedures on veins of upper arm and elbow; not otherwise specified",3,Anestesia,Brazo y codo
+01782,"phleborrhaphy",4,Anestesia,Brazo y codo
+01784,"Anesthesia for repair of arterio-venous (A-V) fistula, congenital or acquired",6,Anestesia,Brazo y codo

@@ -42,10 +42,6 @@ def anesthesia_case(request, case_id):
             return Response(None, status=status.HTTP_200_OK)
         return Response(AnesthesiaCaseSerializer(anesthesia).data)
 
-    # Solo el creador puede crear/editar la anestesia
-    if case.created_by != request.user:
-        return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
-
     if request.method == 'POST':
         # Solo el creador puede crear la sesión de anestesia e invitar al anestesiólogo
         if case.created_by != request.user:
@@ -60,26 +56,18 @@ def anesthesia_case(request, case_id):
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # PATCH — el creador o el anestesiólogo asignado pueden actualizar
+    # PATCH — solo el anestesiólogo puede editar su sección
     try:
         anesthesia = AnesthesiaCase.objects.prefetch_related('items').get(case=case)
     except AnesthesiaCase.DoesNotExist:
         return Response({'error': 'No existe sesión de anestesia para este caso.'},
                         status=status.HTTP_404_NOT_FOUND)
 
-    is_anesthesiologist = anesthesia.anesthesiologist == request.user
-    if case.created_by != request.user and not is_anesthesiologist:
-        return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
+    if anesthesia.anesthesiologist != request.user:
+        return Response({'error': 'Solo el anestesiólogo puede editar esta sección.'},
+                        status=status.HTTP_403_FORBIDDEN)
 
-    # El anestesiólogo solo puede modificar su sección (unit_value, time, items)
-    # El creador puede cambiar también quién es el anestesiólogo
-    allowed_fields = {'unit_value', 'time_units', 'time_minutes', 'notes'}
-    if is_anesthesiologist and not case.created_by == request.user:
-        data = {k: v for k, v in request.data.items() if k in allowed_fields}
-    else:
-        data = request.data
-
-    serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=data, partial=True)
+    serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         anesthesia.refresh_from_db()
@@ -103,9 +91,10 @@ def add_anesthesia_item(request, case_id):
         return Response({'error': 'Primero crea la sesión de anestesia.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    # Creador o anestesiólogo asignado pueden agregar códigos
-    if case.created_by != request.user and anesthesia.anesthesiologist != request.user:
-        return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
+    # Solo el anestesiólogo puede agregar códigos — el cirujano no toca esta sección
+    if anesthesia.anesthesiologist != request.user:
+        return Response({'error': 'Solo el anestesiólogo puede agregar códigos.'},
+                        status=status.HTTP_403_FORBIDDEN)
 
     serializer = AnesthesiaItemSerializer(data=request.data)
     if serializer.is_valid():
@@ -133,8 +122,9 @@ def remove_anesthesia_item(request, case_id, item_id):
     except AnesthesiaCase.DoesNotExist:
         return Response({'error': 'No existe sesión de anestesia.'}, status=status.HTTP_404_NOT_FOUND)
 
-    if case.created_by != request.user and anesthesia.anesthesiologist != request.user:
-        return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
+    if anesthesia.anesthesiologist != request.user:
+        return Response({'error': 'Solo el anestesiólogo puede eliminar códigos.'},
+                        status=status.HTTP_403_FORBIDDEN)
 
     try:
         item = AnesthesiaItem.objects.get(pk=item_id, anesthesia_case__case=case)

@@ -1,0 +1,11 @@
+﻿codigo,cirugia,rvu,especialidad,grupo
+01220,"Anesthesia for all closed procedures involving upper 2/3 of femur",4,Anestesia,Pierna superior
+01230,"Anesthesia for open procedures involving upper 2/3 of femur; not otherwise specified",6,Anestesia,Pierna superior
+01232,"amputation",5,Anestesia,Pierna superior
+01234,"radical resection",8,Anestesia,Pierna superior
+01240,"Anesthesia for all procedures on integumentary system of upper leg",3,Anestesia,Pierna superior
+01250,"Anesthesia for all procedures on nerves, muscles, tendons, fascia, and bursae of upper leg",4,Anestesia,Pierna superior
+01260,"Anesthesia for all procedures involving veins of upper leg, including exploration",3,Anestesia,Pierna superior
+01270,"Anesthesia for procedures involving arteries of upper leg, including bypass graft; not otherwise specified",8,Anestesia,Pierna superior
+01272,"femoral artery ligation",4,Anestesia,Pierna superior
+01274,"femoral artery embolectomy",6,Anestesia,Pierna superior
