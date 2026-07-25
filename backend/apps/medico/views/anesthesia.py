@@ -47,6 +47,9 @@ def anesthesia_case(request, case_id):
         return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'POST':
+        # Solo el creador puede crear la sesión de anestesia e invitar al anestesiólogo
+        if case.created_by != request.user:
+            return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
         if AnesthesiaCase.objects.filter(case=case).exists():
             return Response({'error': 'Ya existe una sesión de anestesia para este caso.'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -57,14 +60,26 @@ def anesthesia_case(request, case_id):
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # PATCH
+    # PATCH — el creador o el anestesiólogo asignado pueden actualizar
     try:
         anesthesia = AnesthesiaCase.objects.prefetch_related('items').get(case=case)
     except AnesthesiaCase.DoesNotExist:
         return Response({'error': 'No existe sesión de anestesia para este caso.'},
                         status=status.HTTP_404_NOT_FOUND)
 
-    serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=request.data, partial=True)
+    is_anesthesiologist = anesthesia.anesthesiologist == request.user
+    if case.created_by != request.user and not is_anesthesiologist:
+        return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # El anestesiólogo solo puede modificar su sección (unit_value, time, items)
+    # El creador puede cambiar también quién es el anestesiólogo
+    allowed_fields = {'unit_value', 'time_units', 'time_minutes', 'notes'}
+    if is_anesthesiologist and not case.created_by == request.user:
+        data = {k: v for k, v in request.data.items() if k in allowed_fields}
+    else:
+        data = request.data
+
+    serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=data, partial=True)
     if serializer.is_valid():
         serializer.save()
         anesthesia.refresh_from_db()
@@ -81,8 +96,6 @@ def add_anesthesia_item(request, case_id):
     case = _get_case(case_id, request.user)
     if case is None:
         return Response({'error': 'Caso no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
-    if case.created_by != request.user:
-        return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         anesthesia = AnesthesiaCase.objects.get(case=case)
@@ -90,12 +103,14 @@ def add_anesthesia_item(request, case_id):
         return Response({'error': 'Primero crea la sesión de anestesia.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
+    # Creador o anestesiólogo asignado pueden agregar códigos
+    if case.created_by != request.user and anesthesia.anesthesiologist != request.user:
+        return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = AnesthesiaItemSerializer(data=request.data)
     if serializer.is_valid():
-        # Asignar orden = último + 1
         last_order = anesthesia.items.count()
-        item = serializer.save(anesthesia_case=anesthesia, order=last_order)
-        # Devolver la sesión completa actualizada
+        serializer.save(anesthesia_case=anesthesia, order=last_order)
         return Response(
             AnesthesiaCaseSerializer(
                 AnesthesiaCase.objects.prefetch_related('items').get(pk=anesthesia.pk)
@@ -112,7 +127,13 @@ def remove_anesthesia_item(request, case_id, item_id):
     case = _get_case(case_id, request.user)
     if case is None:
         return Response({'error': 'Caso no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
-    if case.created_by != request.user:
+
+    try:
+        anesthesia = AnesthesiaCase.objects.get(case=case)
+    except AnesthesiaCase.DoesNotExist:
+        return Response({'error': 'No existe sesión de anestesia.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if case.created_by != request.user and anesthesia.anesthesiologist != request.user:
         return Response({'error': 'Sin permiso.'}, status=status.HTTP_403_FORBIDDEN)
 
     try:

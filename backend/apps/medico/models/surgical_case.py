@@ -337,14 +337,16 @@ class SurgicalCase(models.Model):
     
     def can_be_viewed_by(self, user):
         """Verificar si un usuario puede ver este caso"""
-        # El creador siempre puede ver
         if self.created_by == user:
             return True
-        
-        # El ayudante asignado puede ver
         if self.assistant_doctor == user:
             return True
-        
+        # El anestesiólogo asignado puede ver
+        try:
+            if self.anesthesia.anesthesiologist == user:
+                return True
+        except Exception:
+            pass
         return False
     
     def can_be_edited_by(self, user):

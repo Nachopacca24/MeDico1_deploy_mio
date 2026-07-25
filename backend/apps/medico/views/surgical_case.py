@@ -52,7 +52,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         # accept/reject necesitan ver invitaciones pendientes para poder procesarlas
         if self.action in ('accept_invitation', 'reject_invitation', 'retrieve'):
             return SurgicalCase.objects.filter(
-                Q(created_by=user) | Q(assistant_doctor=user)
+                Q(created_by=user) | Q(assistant_doctor=user) |
+                Q(anesthesia__anesthesiologist=user)
             ).select_related(
                 'hospital', 'created_by', 'assistant_doctor', 'insurance_company'
             ).prefetch_related('procedures', 'images').distinct()
@@ -69,11 +70,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 assistant_doctor=user, assistant_accepted=True
             )
         else:
-            # Casos propios O donde fui aceptado como ayudante
-            # Las invitaciones pendientes NO aparecen aquí — solo en /assisted/
+            # Casos propios, donde fui aceptado como ayudante, o donde soy anestesiólogo
             queryset = SurgicalCase.objects.filter(
                 Q(created_by=user) |
-                Q(assistant_doctor=user, assistant_accepted=True)
+                Q(assistant_doctor=user, assistant_accepted=True) |
+                Q(anesthesia__anesthesiologist=user)
             )
 
         # El filtro de archivado solo aplica en el listado, no en detalle/edición
