@@ -10,7 +10,7 @@ from apps.medico.views import (
 )
 from apps.medico.serializers.hospital import HospitalViewSet
 from apps.medico.serializers.insurance import InsuranceCompanyViewSet
-from apps.medico.views.pdf_export import export_case_pdf, export_cases_bulk_pdf
+from apps.medico.views.pdf_export import export_case_pdf, export_cases_bulk_pdf, export_anesthesia_pdf
 from apps.medico.views.surgery_images import list_surgery_images, upload_surgery_image, delete_surgery_image
 from apps.medico.views.google_calendar_auth import (
     connect_google_calendar,
@@ -43,6 +43,7 @@ urlpatterns = [
 
     # Custom paths BEFORE router so they aren't swallowed by cases/{pk}/
     path('cases/<int:case_id>/pdf/', export_case_pdf, name='case-pdf'),
+    path('cases/<int:case_id>/anesthesia/pdf/', export_anesthesia_pdf, name='case-anesthesia-pdf'),
     path('cases/export-pdf/', export_cases_bulk_pdf, name='cases-bulk-pdf'),
     path('cases/anesthesia-invitations/', anesthesia_pending_invitations, name='anesthesia-invitations'),
     path('cases/<int:case_id>/anesthesia/', anesthesia_case, name='case-anesthesia'),

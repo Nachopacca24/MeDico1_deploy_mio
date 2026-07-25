@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator } from "lucide-react";
+import { Stethoscope, Lock, Plus, Trash2, Search, Loader2, Clock, Calculator, FileDown } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { colleaguesService, type Colleague } from "@/services/colleaguesService";
 import { loadCSV } from "@/shared/utils/csvLoader";
 import { useToast } from "@/shared/hooks/useToast";
+import { authService } from "@/shared/services/authService";
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const ANESTHESIA_CSVS = [
   "Anestesia/Espina_y_espalda.csv",
@@ -66,6 +69,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   const [timeMinutes, setTimeMinutes] = useState("");
   const [savingTime, setSavingTime] = useState(false);
   const [timeCodes, setTimeCodes] = useState<CsvRow[]>([]);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   useEffect(() => {
     anesthesiaService.get(caseId).then(data => {
@@ -122,6 +126,32 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
       toast.error(e.message || "Error al crear la sesión");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      const res = await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/${caseId}/anesthesia/pdf/`
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Error al generar el PDF');
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cd = res.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename="(.+)"/);
+      a.download = match ? match[1] : `anestesia_${caseId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      toast.error(e.message || 'Error al generar el PDF');
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -500,6 +530,21 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
                 Q {Number(session!.total_fee).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
+          </div>
+
+          {/* PDF export */}
+          <div className="pt-3 border-t border-teal-200 dark:border-teal-800">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPdf}
+              disabled={exportingPdf}
+              className="w-full border-teal-300 text-teal-700 hover:bg-teal-50 dark:border-teal-700 dark:text-teal-400 dark:hover:bg-teal-950"
+            >
+              {exportingPdf
+                ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Generando PDF...</>
+                : <><FileDown className="w-4 h-4 mr-2" />Exportar PDF de anestesia</>}
+            </Button>
           </div>
         </CardContent>
       </Card>

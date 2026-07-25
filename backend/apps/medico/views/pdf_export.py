@@ -305,6 +305,50 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
                                fontName='Helvetica-Bold', alignment=TA_RIGHT)
             ))
 
+    # ── Anesthesia section (for surgeon's PDF — no fee) ───────────────────────
+    try:
+        anesthesia = case.anesthesia
+        items = list(anesthesia.items.all())
+        if anesthesia.anesthesiologist or items or anesthesia.time_minutes:
+            story.append(Paragraph('ANESTESIA', S['section']))
+            anest_name = '—'
+            if anesthesia.anesthesiologist:
+                anest_name = anesthesia.anesthesiologist.get_full_name() or anesthesia.anesthesiologist.email
+            elif anesthesia.anesthesiologist_name:
+                anest_name = anesthesia.anesthesiologist_name
+            story.append(Paragraph(f'Anestesiólogo: <b>{anest_name}</b>', S['body']))
+            story.append(Spacer(1, 4))
+
+            if items:
+                anest_data = [[Paragraph(h, S['label']) for h in ['Código', 'Procedimiento', 'Unidades base']]]
+                for item in items:
+                    anest_data.append([
+                        Paragraph(item.surgery_code or '—', S['body']),
+                        Paragraph(item.surgery_name or '—', S['body']),
+                        Paragraph(f'{float(item.base_units):.2f}', S['body']),
+                    ])
+                anest_table = Table(anest_data, colWidths=[0.9*inch, 4.5*inch, 1.1*inch])
+                anest_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), C_MID),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), C_LIGHT),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('GRID', (0, 0), (-1, -1), 0.4, C_BORDER),
+                    ('PADDING', (0, 0), (-1, -1), 4),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [C_WHITE, C_LIGHT]),
+                ]))
+                story.append(anest_table)
+                story.append(Spacer(1, 4))
+
+            if anesthesia.time_minutes:
+                story.append(Paragraph(
+                    f'Tiempo de anestesia: <b>{anesthesia.time_minutes} min</b> '
+                    f'({float(anesthesia.time_units or 0):.0f} unidades)',
+                    S['body'],
+                ))
+                story.append(Spacer(1, 4))
+    except Exception:
+        pass  # no anesthesia session exists
+
     # ── Surgery images ────────────────────────────────────────────────────────
     images = list(case.images.all())
     if images:
@@ -360,6 +404,160 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
             ]))
             story.append(img_table)
             story.append(Spacer(1, 6))
+
+    return story
+
+
+def _build_anesthesia_story(case, anesthesia, styles: dict) -> list:
+    """Story para el PDF privado del anestesiólogo."""
+    story = []
+    S = styles
+
+    # ── Header ────────────────────────────────────────────────────────────────
+    title_cell = Paragraph(
+        '<b>Reporte de Anestesia</b><br/>'
+        '<font size="8" color="#64748b">MeDico App · Registro de honorarios de anestesia</font>',
+        ParagraphStyle('hdr_title', fontSize=20, textColor=C_DARK,
+                       fontName='Helvetica-Bold', leading=26, spaceAfter=0),
+    )
+    status_cell = Paragraph(
+        f'Estado: <b>{_status_label(case.status)}</b>',
+        ParagraphStyle('hdr_status', fontSize=9, textColor=C_MUTED,
+                       fontName='Helvetica', alignment=TA_RIGHT),
+    )
+    header_table = Table([[title_cell, status_cell]], colWidths=[4 * inch, 3 * inch])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.append(header_table)
+    story.append(HRFlowable(width='100%', thickness=1.5, color=C_AMBER, spaceAfter=10))
+
+    # ── Patient info ──────────────────────────────────────────────────────────
+    story.append(Paragraph('INFORMACIÓN DEL PACIENTE', S['section']))
+    patient_name = decrypt_field(case.patient_name) or '—'
+    patient_id   = decrypt_field(case.patient_id)   or '—'
+    age_str      = str(case.patient_age) + ' años' if case.patient_age else '—'
+    gender_str   = _gender_label(case.patient_gender)
+    pat_data = [
+        [Paragraph('Paciente', S['label']), Paragraph('ID / Expediente', S['label']),
+         Paragraph('Edad', S['label']), Paragraph('Género', S['label'])],
+        [Paragraph(f'<b>{patient_name}</b>', S['body']), Paragraph(patient_id, S['body']),
+         Paragraph(age_str, S['body']), Paragraph(gender_str, S['body'])],
+    ]
+    pat_table = Table(pat_data, colWidths=[2.5*inch, 1.8*inch, 1*inch, 1.2*inch])
+    pat_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+        ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+        ('PADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(pat_table)
+    story.append(Spacer(1, 8))
+
+    # ── Surgery info ──────────────────────────────────────────────────────────
+    story.append(Paragraph('INFORMACIÓN DE LA CIRUGÍA', S['section']))
+    hospital_name = case.hospital.name if case.hospital else '—'
+    surgeon_name  = case.created_by.get_full_name() or case.created_by.email
+    date_str  = _fmt_date(case.surgery_date)
+    time_str  = _fmt_time(case.surgery_time)
+    etime_str = _fmt_time(case.surgery_end_time)
+    time_range = f'{time_str} – {etime_str}' if time_str and etime_str else time_str or '—'
+    surg_data = [
+        [Paragraph('Hospital', S['label']), Paragraph('Fecha', S['label']), Paragraph('Hora', S['label'])],
+        [Paragraph(f'<b>{hospital_name}</b>', S['body']), Paragraph(date_str, S['body']), Paragraph(time_range, S['body'])],
+        [Paragraph('Cirujano principal', S['label']), Paragraph('Anestesiólogo', S['label']), Paragraph('', S['label'])],
+        [Paragraph(surgeon_name, S['body']),
+         Paragraph(anesthesia.anesthesiologist.get_full_name() or anesthesia.anesthesiologist.email, S['body']),
+         Paragraph('', S['body'])],
+    ]
+    surg_table = Table(surg_data, colWidths=[2.5*inch, 2.5*inch, 1.5*inch])
+    surg_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+        ('BACKGROUND', (0, 2), (-1, 2), C_LIGHT),
+        ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+        ('PADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(surg_table)
+    story.append(Spacer(1, 8))
+
+    # ── Anesthesia codes ──────────────────────────────────────────────────────
+    items = list(anesthesia.items.all())
+    story.append(Paragraph('PROCEDIMIENTOS DE ANESTESIA', S['section']))
+    if items:
+        anest_data = [[Paragraph(h, S['label']) for h in ['Código', 'Procedimiento', 'Unidades base']]]
+        total_base = 0
+        for item in items:
+            base = float(item.base_units)
+            total_base += base
+            anest_data.append([
+                Paragraph(item.surgery_code or '—', S['body']),
+                Paragraph(item.surgery_name or '—', S['body']),
+                Paragraph(f'{base:.2f}', S['body']),
+            ])
+        tb = ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)
+        anest_data.append([Paragraph('', S['body']), Paragraph('TOTAL BASE', tb), Paragraph(f'{total_base:.2f}', tb)])
+        anest_table = Table(anest_data, colWidths=[0.9*inch, 4.5*inch, 1.1*inch])
+        anest_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), C_MID),
+            ('TEXTCOLOR', (0, 0), (-1, 0), C_LIGHT),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 0.4, C_BORDER),
+            ('PADDING', (0, 0), (-1, -1), 4),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [C_WHITE, C_LIGHT]),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#fef3c7')),
+            ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
+        ]))
+        story.append(anest_table)
+    else:
+        story.append(Paragraph('Sin procedimientos de anestesia registrados.', S['body']))
+    story.append(Spacer(1, 8))
+
+    # ── Time section ──────────────────────────────────────────────────────────
+    story.append(Paragraph('TIEMPO DE ANESTESIA', S['section']))
+    if anesthesia.time_minutes:
+        time_data = [
+            [Paragraph('Minutos', S['label']), Paragraph('Unidades de tiempo', S['label'])],
+            [Paragraph(f'<b>{anesthesia.time_minutes} min</b>', S['body']),
+             Paragraph(f'<b>{float(anesthesia.time_units or 0):.0f} uds</b>', S['body'])],
+        ]
+        time_table = Table(time_data, colWidths=[2*inch, 4.5*inch])
+        time_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+            ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+            ('PADDING', (0, 0), (-1, -1), 6),
+        ]))
+        story.append(time_table)
+    else:
+        story.append(Paragraph('Tiempo de anestesia no registrado.', S['body']))
+    story.append(Spacer(1, 8))
+
+    # ── Financial summary (private — anesthesiologist only) ───────────────────
+    story.append(Paragraph('RESUMEN DE HONORARIOS', S['section']))
+    total_base_u = float(anesthesia.total_base_units)
+    time_u       = float(anesthesia.time_units or 0)
+    total_u      = total_base_u + time_u
+    unit_val     = float(anesthesia.unit_value)
+    total_fee    = total_u * unit_val
+
+    fin_data = [
+        [Paragraph('Unidades base', S['label']), Paragraph('Unidades tiempo', S['label']),
+         Paragraph('Total unidades', S['label']), Paragraph('Valor por unidad (Q)', S['label']),
+         Paragraph('Honorario total (Q)', S['label'])],
+        [Paragraph(f'{total_base_u:.2f}', S['body']), Paragraph(f'{time_u:.0f}', S['body']),
+         Paragraph(f'<b>{total_u:.2f}</b>', S['body']), Paragraph(f'Q {unit_val:,.2f}', S['body']),
+         Paragraph(f'<b>Q {total_fee:,.2f}</b>',
+                   ParagraphStyle('fee', fontSize=10, fontName='Helvetica-Bold', textColor=C_AMBER))],
+    ]
+    fin_table = Table(fin_data, colWidths=[1.1*inch, 1.1*inch, 1.1*inch, 1.3*inch, 1.8*inch])
+    fin_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+        ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+        ('PADDING', (0, 0), (-1, -1), 6),
+        ('BACKGROUND', (4, 1), (4, 1), colors.HexColor('#fef3c7')),
+        ('ALIGN', (0, 1), (-1, -1), 'RIGHT'),
+    ]))
+    story.append(fin_table)
 
     return story
 
@@ -448,6 +646,67 @@ def export_case_pdf(request, case_id):
 
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def export_anesthesia_pdf(request, case_id):
+    """Export anesthesia PDF for the anesthesiologist of a case."""
+    if not _check_premium(request.user):
+        return Response(
+            {'error': 'Reactiva Premium para exportar PDF.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    from ..models.anesthesia import AnesthesiaCase
+    try:
+        anesthesia = (
+            AnesthesiaCase.objects
+            .select_related('case__hospital', 'case__created_by', 'anesthesiologist')
+            .prefetch_related('items')
+            .get(
+                case__pk=case_id,
+                anesthesiologist=request.user,
+                anesthesiologist_accepted=True,
+            )
+        )
+    except AnesthesiaCase.DoesNotExist:
+        return Response({'error': 'Caso de anestesia no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    case = anesthesia.case
+    doctor_name = request.user.get_full_name() or request.user.email
+    S = _styles()
+    story = _build_anesthesia_story(case, anesthesia, S)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=letter,
+        rightMargin=0.75*inch, leftMargin=0.75*inch,
+        topMargin=0.75*inch, bottomMargin=0.75*inch,
+    )
+    today = date.today().strftime('%d/%m/%Y')
+
+    def on_page(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 7)
+        canvas.setFillColor(C_MUTED)
+        canvas.drawCentredString(
+            letter[0] / 2, 0.4*inch,
+            f'Generado el {today} · MeDico App · Documento confidencial — {doctor_name}'
+        )
+        canvas.setStrokeColor(C_BORDER)
+        canvas.setLineWidth(0.5)
+        canvas.line(0.75*inch, 0.55*inch, letter[0] - 0.75*inch, 0.55*inch)
+        canvas.restoreState()
+
+    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+    pdf_bytes = buffer.getvalue()
+
+    filename = f'anestesia_{case.id}_{case.surgery_date or "sin_fecha"}.pdf'
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    logger.info('[PDF] anesthesia user=%s case=%s', request.user.id, case_id)
     return response
 
 
