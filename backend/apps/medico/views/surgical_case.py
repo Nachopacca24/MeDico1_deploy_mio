@@ -70,11 +70,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 assistant_doctor=user, assistant_accepted=True
             )
         else:
-            # Casos propios, donde fui aceptado como ayudante, o donde soy anestesiólogo
+            # Casos propios, donde fui aceptado como ayudante, o donde acepté como anestesiólogo
             queryset = SurgicalCase.objects.filter(
                 Q(created_by=user) |
                 Q(assistant_doctor=user, assistant_accepted=True) |
-                Q(anesthesia__anesthesiologist=user)
+                Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True)
             )
 
         # El filtro de archivado solo aplica en el listado, no en detalle/edición
