@@ -372,7 +372,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
         <CardContent className="space-y-5 min-w-0">
           {/* Unit value */}
           <div className="flex items-end gap-2">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <label className="text-sm font-medium mb-1 block">Valor por unidad (Q)</label>
               <input
                 type="number" min="0" step="0.01"
@@ -488,7 +488,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
                   </select>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <label className="text-xs text-muted-foreground mb-1 block">O ingresar minutos manualmente</label>
                     <input
                       type="number" min="0"
@@ -518,25 +518,25 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
               <span className="text-sm font-medium">Uso de equipo personal</span>
               <span className="text-xs text-muted-foreground">(se suma al honorario)</span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
+            <div className="grid grid-cols-2 gap-2 min-w-0">
+              <div className="min-w-0">
                 <label className="text-xs text-muted-foreground mb-1 block">Descripción del equipo</label>
                 <input
                   type="text"
                   value={equipmentName}
                   onChange={e => setEquipmentName(e.target.value)}
                   placeholder="ej. Laparoscopio Karl Storz"
-                  className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                  className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
                 />
               </div>
-              <div>
+              <div className="min-w-0">
                 <label className="text-xs text-muted-foreground mb-1 block">Costo (Q)</label>
                 <input
                   type="number" min="0" step="0.01"
                   value={equipmentCost}
                   onChange={e => setEquipmentCost(e.target.value)}
                   placeholder="0.00"
-                  className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                  className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
                 />
               </div>
             </div>
