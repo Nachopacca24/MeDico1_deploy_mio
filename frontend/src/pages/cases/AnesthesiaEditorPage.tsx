@@ -4,6 +4,7 @@ import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
+import { Switch } from "@/shared/components/ui/switch";
 import {
   ArrowLeft, Stethoscope, Trash2, Search, Loader2,
   Clock, Calculator, FileDown, Wrench,
@@ -55,20 +56,32 @@ const AnesthesiaEditorPage = () => {
 
   const [surgicalCase, setSurgicalCase] = useState<SurgicalCase | null>(null);
   const [session, setSession] = useState<AnesthesiaCase | null | undefined>(undefined);
+
+  // Code search
   const [allCodes, setAllCodes] = useState<CsvRow[]>([]);
   const [codeSearch, setCodeSearch] = useState("");
   const [codeResults, setCodeResults] = useState<CsvRow[]>([]);
   const [addingCode, setAddingCode] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
+
+  // Unit value
   const [editUnitValue, setEditUnitValue] = useState("0");
-  const [savingUnitValue, setSavingUnitValue] = useState(false);
+
+  // Time
   const [timeMinutes, setTimeMinutes] = useState("");
   const [savingTime, setSavingTime] = useState(false);
   const [timeCodes, setTimeCodes] = useState<CsvRow[]>([]);
-  const [exportingPdf, setExportingPdf] = useState(false);
+
+  // Equipment
+  const [equipmentEnabled, setEquipmentEnabled] = useState(false);
   const [equipmentName, setEquipmentName] = useState("");
   const [equipmentCost, setEquipmentCost] = useState("");
-  const [savingEquipment, setSavingEquipment] = useState(false);
+
+  // Combined save (unit value + equipment)
+  const [saving, setSaving] = useState(false);
+
+  // PDF
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -82,10 +95,9 @@ const AnesthesiaEditorPage = () => {
         setTimeMinutes(an.time_minutes != null ? String(an.time_minutes) : "");
         setEquipmentName(an.equipment_name ?? "");
         setEquipmentCost(an.equipment_cost != null ? String(an.equipment_cost) : "");
+        setEquipmentEnabled(!!an.equipment_name);
       }
-    }).catch(() => {
-      setSession(null);
-    });
+    }).catch(() => setSession(null));
   }, [caseId]);
 
   useEffect(() => {
@@ -105,29 +117,35 @@ const AnesthesiaEditorPage = () => {
     );
   }, [codeSearch, allCodes]);
 
-  const handleExportPdf = async () => {
-    setExportingPdf(true);
+  const handleSaveAll = async () => {
+    setSaving(true);
     try {
-      const res = await authService.authenticatedFetch(
-        `${API_URL}/api/v1/medico/cases/${caseId}/anesthesia/pdf/`
-      );
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Error al generar el PDF');
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const cd = res.headers.get('Content-Disposition') || '';
-      const match = cd.match(/filename="(.+)"/);
-      a.download = match ? match[1] : `anestesia_${caseId}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const updated = await anesthesiaService.update(caseId, {
+        unit_value: parseFloat(editUnitValue) || 0,
+        equipment_name: equipmentEnabled ? equipmentName.trim() || null : null,
+        equipment_cost: equipmentEnabled && equipmentCost ? parseFloat(equipmentCost) : null,
+      });
+      setSession(updated);
+      toast.success("Cambios guardados");
     } catch (e: any) {
-      toast.error(e.message || 'Error al generar el PDF');
+      toast.error(e.message || "Error al guardar");
     } finally {
-      setExportingPdf(false);
+      setSaving(false);
+    }
+  };
+
+  const handleSaveTime = async () => {
+    setSavingTime(true);
+    try {
+      const updated = await anesthesiaService.update(caseId, {
+        time_minutes: timeMinutes ? parseFloat(timeMinutes) : null,
+      });
+      setSession(updated);
+      toast.success("Tiempo guardado");
+    } catch (e: any) {
+      toast.error(e.message || "Error al guardar tiempo");
+    } finally {
+      setSavingTime(false);
     }
   };
 
@@ -162,47 +180,29 @@ const AnesthesiaEditorPage = () => {
     }
   };
 
-  const handleSaveUnitValue = async () => {
-    setSavingUnitValue(true);
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
     try {
-      const updated = await anesthesiaService.update(caseId, { unit_value: parseFloat(editUnitValue) || 0 });
-      setSession(updated);
-      toast.success("Valor por unidad actualizado");
+      const res = await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/${caseId}/anesthesia/pdf/`
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Error al generar el PDF');
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cd = res.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename="(.+)"/);
+      a.download = match ? match[1] : `anestesia_${caseId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (e: any) {
-      toast.error(e.message || "Error al guardar");
+      toast.error(e.message || 'Error al generar el PDF');
     } finally {
-      setSavingUnitValue(false);
-    }
-  };
-
-  const handleSaveTime = async () => {
-    setSavingTime(true);
-    try {
-      const updated = await anesthesiaService.update(caseId, {
-        time_minutes: timeMinutes ? parseFloat(timeMinutes) : null,
-      });
-      setSession(updated);
-      toast.success("Tiempo guardado");
-    } catch (e: any) {
-      toast.error(e.message || "Error al guardar tiempo");
-    } finally {
-      setSavingTime(false);
-    }
-  };
-
-  const handleSaveEquipment = async () => {
-    setSavingEquipment(true);
-    try {
-      const updated = await anesthesiaService.update(caseId, {
-        equipment_name: equipmentName.trim() || null,
-        equipment_cost: equipmentCost ? parseFloat(equipmentCost) : null,
-      });
-      setSession(updated);
-      toast.success("Equipo guardado");
-    } catch (e: any) {
-      toast.error(e.message || "Error al guardar equipo");
-    } finally {
-      setSavingEquipment(false);
+      setExportingPdf(false);
     }
   };
 
@@ -231,7 +231,7 @@ const AnesthesiaEditorPage = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto space-y-6 pb-12">
+      <div className="max-w-2xl mx-auto space-y-4 pb-12">
         {/* Header */}
         <div className="pb-4 border-b">
           <div className="flex items-center gap-3">
@@ -263,24 +263,14 @@ const AnesthesiaEditorPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-2">
-              <div className="flex-1 min-w-0">
-                <label className="text-sm font-medium mb-1 block">Valor (Q)</label>
-                <input
-                  type="number" min="0" step="0.01"
-                  value={editUnitValue}
-                  onChange={e => setEditUnitValue(e.target.value)}
-                  className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
-                />
-              </div>
-              <Button
-                size="sm"
-                onClick={handleSaveUnitValue}
-                disabled={savingUnitValue}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
-              >
-                {savingUnitValue ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
-              </Button>
+            <div className="flex-1 min-w-0">
+              <label className="text-sm font-medium mb-1 block">Valor (Q)</label>
+              <input
+                type="number" min="0" step="0.01"
+                value={editUnitValue}
+                onChange={e => setEditUnitValue(e.target.value)}
+                className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+              />
             </div>
           </CardContent>
         </Card>
@@ -411,49 +401,60 @@ const AnesthesiaEditorPage = () => {
           </Card>
         )}
 
-        {/* Equipment */}
+        {/* Equipment — toggle */}
         <Card className="border-teal-200 dark:border-teal-800">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400 text-base">
-              <Wrench className="w-4 h-4" />
-              Uso de equipo personal
+            <CardTitle className="flex items-center justify-between text-teal-700 dark:text-teal-400 text-base">
+              <div className="flex items-center gap-2">
+                <Wrench className="w-4 h-4 shrink-0" />
+                <span>Uso de equipo personal</span>
+              </div>
+              <Switch
+                checked={equipmentEnabled}
+                onCheckedChange={setEquipmentEnabled}
+                className="data-[state=checked]:bg-teal-600"
+              />
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-xs text-muted-foreground">Opcional — se suma al honorario total</p>
-            <div className="grid grid-cols-2 gap-2 min-w-0">
-              <div className="min-w-0">
-                <label className="text-xs text-muted-foreground mb-1 block">Descripción</label>
-                <input
-                  type="text"
-                  value={equipmentName}
-                  onChange={e => setEquipmentName(e.target.value)}
-                  placeholder="ej. Laparoscopio Karl Storz"
-                  className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
-                />
+          {equipmentEnabled && (
+            <CardContent className="space-y-3 pt-0">
+              <p className="text-xs text-muted-foreground">Se suma al honorario total</p>
+              <div className="grid grid-cols-2 gap-2 min-w-0">
+                <div className="min-w-0">
+                  <label className="text-xs text-muted-foreground mb-1 block">Descripción</label>
+                  <input
+                    type="text"
+                    value={equipmentName}
+                    onChange={e => setEquipmentName(e.target.value)}
+                    placeholder="ej. Laparoscopio"
+                    className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label className="text-xs text-muted-foreground mb-1 block">Costo (Q)</label>
+                  <input
+                    type="number" min="0" step="0.01"
+                    value={equipmentCost}
+                    onChange={e => setEquipmentCost(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                  />
+                </div>
               </div>
-              <div className="min-w-0">
-                <label className="text-xs text-muted-foreground mb-1 block">Costo (Q)</label>
-                <input
-                  type="number" min="0" step="0.01"
-                  value={equipmentCost}
-                  onChange={e => setEquipmentCost(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
-                />
-              </div>
-            </div>
-            <Button
-              size="sm"
-              onClick={handleSaveEquipment}
-              disabled={savingEquipment}
-              className="bg-teal-600 hover:bg-teal-700 text-white"
-            >
-              {savingEquipment ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Guardar equipo
-            </Button>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
+
+        {/* Single save button for unit value + equipment */}
+        <Button
+          onClick={handleSaveAll}
+          disabled={saving}
+          className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+        >
+          {saving
+            ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Guardando...</>
+            : "Guardar"}
+        </Button>
 
         {/* Summary */}
         <Card className="border-teal-200 dark:border-teal-800">
