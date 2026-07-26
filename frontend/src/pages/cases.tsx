@@ -1050,7 +1050,22 @@ const CasesPage = () => {
                           />
                         )}
 
-                        {isOwner ? (
+                        {surgicalCase.is_anesthesiologist ? (
+                          <div className="grid grid-cols-2 gap-1 text-center pt-1.5 border-t">
+                            <div>
+                              <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
+                              <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground mb-0.5">Honorario</div>
+                              <div className="text-sm font-bold text-teal-600 dark:text-teal-400">
+                                {surgicalCase.anesthesia_total_fee != null
+                                  ? `Q ${surgicalCase.anesthesia_total_fee.toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                                  : '—'}
+                              </div>
+                            </div>
+                          </div>
+                        ) : isOwner ? (
                           <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
                             <div>
                               <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
@@ -1064,21 +1079,6 @@ const CasesPage = () => {
                               <div className="text-xs text-muted-foreground mb-0.5">Valor</div>
                               <div className="text-sm font-bold">
                                 Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                              </div>
-                            </div>
-                          </div>
-                        ) : surgicalCase.is_anesthesiologist ? (
-                          <div className="grid grid-cols-2 gap-1 text-center pt-1.5 border-t">
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
-                              <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-0.5">Honorario</div>
-                              <div className="text-sm font-bold text-teal-600 dark:text-teal-400">
-                                {surgicalCase.anesthesia_total_fee != null
-                                  ? `Q ${surgicalCase.anesthesia_total_fee.toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-                                  : '—'}
                               </div>
                             </div>
                           </div>
