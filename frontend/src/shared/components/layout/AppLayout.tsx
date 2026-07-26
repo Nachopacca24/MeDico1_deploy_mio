@@ -79,7 +79,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
 
         <main
-          className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-x-hidden"
+          className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-x-hidden [&>*]:w-full"
           style={{
             paddingTop: isMobile ? 'calc(3.5rem + var(--sat, 0px) + 1rem)' : undefined,
             paddingBottom: isMobile ? 'calc(4rem + var(--sab, 0px))' : '2rem',
