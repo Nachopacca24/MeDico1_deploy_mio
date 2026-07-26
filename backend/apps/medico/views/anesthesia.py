@@ -81,14 +81,37 @@ def anesthesia_case(request, case_id):
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # PATCH — solo el anestesiólogo puede editar su sección
+    # PATCH — dueño puede cambiar quién es el anestesiólogo; el anestesiólogo edita los datos de su sesión
     try:
         anesthesia = AnesthesiaCase.objects.prefetch_related('items').get(case=case)
     except AnesthesiaCase.DoesNotExist:
         return Response({'error': 'No existe sesión de anestesia para este caso.'},
                         status=status.HTTP_404_NOT_FOUND)
 
-    if anesthesia.anesthesiologist != request.user:
+    user = request.user
+
+    # El dueño del caso puede reasignar al anestesiólogo (misma lógica que el médico ayudante)
+    if case.created_by == user:
+        allowed = {'anesthesiologist', 'anesthesiologist_name'}
+        data = {k: v for k, v in request.data.items() if k in allowed}
+        old_anesthesiologist_id = anesthesia.anesthesiologist_id
+        serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        instance = serializer.save()
+        # Resetear aceptación si cambió el anestesiólogo
+        if instance.anesthesiologist_id != old_anesthesiologist_id:
+            if instance.anesthesiologist:
+                instance.anesthesiologist_accepted = None  # nuevo colega → pendiente
+            else:
+                instance.anesthesiologist_accepted = True  # nombre libre → auto-aceptar
+            instance.save(update_fields=['anesthesiologist_accepted'])
+        return Response(AnesthesiaCaseSerializer(
+            AnesthesiaCase.objects.prefetch_related('items').get(pk=instance.pk)
+        ).data)
+
+    # El anestesiólogo puede editar los datos de su propia sesión
+    if anesthesia.anesthesiologist != user:
         return Response({'error': 'Solo el anestesiólogo puede editar esta sección.'},
                         status=status.HTTP_403_FORBIDDEN)
 

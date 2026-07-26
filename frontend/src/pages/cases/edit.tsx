@@ -110,6 +110,12 @@ const EditCase = () => {
   const [selectedColleagueId, setSelectedColleagueId] = useState<number | null>(null);
   const [manualAssistantName, setManualAssistantName] = useState('');
 
+  // Anesthesiologist state
+  const [anesthesiaSession, setAnesthesiaSession] = useState<any>(null);
+  const [anesthesiologistType, setAnesthesiologistType] = useState<'none' | 'colleague' | 'manual'>('none');
+  const [selectedAnesthesiologistId, setSelectedAnesthesiologistId] = useState<number | null>(null);
+  const [manualAnesthesiologistName, setManualAnesthesiologistName] = useState('');
+
   // Procedure selection state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProcedures, setSelectedProcedures] = useState<SelectedProcedure[]>([]);
@@ -138,19 +144,34 @@ const EditCase = () => {
         setLoading(true);
 
         // Cargar hospitales, colegas, favoritos, seguros, caso e imágenes en paralelo
-        const [hospitalsData, colleaguesData, favoritesData, insurancesData, caseData, imagesResp] = await Promise.all([
+        const [hospitalsData, colleaguesData, favoritesData, insurancesData, caseData, imagesResp, anesthesiaResp] = await Promise.all([
           hospitalService.getHospitals(),
           colleaguesService.getColleagues(),
           favoritesService.getFavorites(),
           insuranceService.getInsurances(),
           surgicalCaseService.getCase(parseInt(id)),
           authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/images/`),
+          authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/anesthesia/`),
         ]);
 
         setHospitals(hospitalsData);
         setColleagues(colleaguesData.colleagues);
         setInsurances(insurancesData);
         if (imagesResp.ok) setExistingImages(await imagesResp.json());
+
+        if (anesthesiaResp.ok) {
+          const anestData = await anesthesiaResp.json();
+          if (anestData) {
+            setAnesthesiaSession(anestData);
+            if (anestData.anesthesiologist) {
+              setAnesthesiologistType('colleague');
+              setSelectedAnesthesiologistId(anestData.anesthesiologist);
+            } else if (anestData.anesthesiologist_name) {
+              setAnesthesiologistType('manual');
+              setManualAnesthesiologistName(anestData.anesthesiologist_name);
+            }
+          }
+        }
 
         // Convertir favoritos a formato de procedimientos
         const favProcs: ProcedureData[] = favoritesData.map(fav => ({
@@ -612,6 +633,33 @@ const EditCase = () => {
       // ✅ CRÍTICO: Llamar a updateCase (NO createCase)
       await surgicalCaseService.updateCase(parseInt(id!), caseData);
 
+      // Actualizar o crear sesión de anestesia
+      const anestPayload: any = {};
+      if (anesthesiologistType === 'colleague' && selectedAnesthesiologistId) {
+        anestPayload.anesthesiologist = selectedAnesthesiologistId;
+        anestPayload.anesthesiologist_name = null;
+      } else if (anesthesiologistType === 'manual' && manualAnesthesiologistName.trim()) {
+        anestPayload.anesthesiologist = null;
+        anestPayload.anesthesiologist_name = manualAnesthesiologistName.trim();
+      } else {
+        anestPayload.anesthesiologist = null;
+        anestPayload.anesthesiologist_name = null;
+      }
+
+      if (anesthesiaSession) {
+        await authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/anesthesia/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(anestPayload),
+        });
+      } else if (anesthesiologistType !== 'none') {
+        await authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/anesthesia/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ unit_value: 0, ...anestPayload }),
+        });
+      }
+
       // Upload new images in parallel
       if (isPremium && pendingImages.length > 0) {
         const results = await Promise.allSettled(pendingImages.map(async file => {
@@ -958,6 +1006,79 @@ const EditCase = () => {
                     id="manualAssistant"
                     value={manualAssistantName}
                     onChange={(e) => setManualAssistantName(e.target.value)}
+                    placeholder="Ej: Dr. Juan Pérez"
+                  />
+                </div>
+              )}
+              </CardContent>
+              </Card>
+
+              {/* Anesthesiologist */}
+              <Card>
+              <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Stethoscope className="h-5 w-5" />
+                Anestesiólogo
+              </CardTitle>
+              <CardDescription>Selecciona un colega o ingresa el nombre manualmente (opcional)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Tipo</Label>
+                <Select value={anesthesiologistType} onValueChange={(v: any) => {
+                  setAnesthesiologistType(v);
+                  if (v === 'none') {
+                    setSelectedAnesthesiologistId(null);
+                    setManualAnesthesiologistName('');
+                  }
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin anestesiólogo</SelectItem>
+                    <SelectItem value="colleague">Seleccionar colega</SelectItem>
+                    <SelectItem value="manual">Ingresar nombre manualmente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {anesthesiologistType === 'colleague' && (
+                <div className="space-y-2">
+                  <Label>Seleccionar Colega</Label>
+                  {colleagues.length === 0 ? (
+                    <div className="text-sm text-muted-foreground p-4 border rounded-lg bg-muted/50">
+                      No tienes colegas agregados.
+                    </div>
+                  ) : (
+                    <Select
+                      value={selectedAnesthesiologistId?.toString() || ''}
+                      onValueChange={(v) => setSelectedAnesthesiologistId(parseInt(v))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un colega" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {colleagues.map((c) => (
+                          <SelectItem key={c.id} value={c.id.toString()}>
+                            <div className="flex flex-col">
+                              <span>{c.full_name}</span>
+                              {c.specialty && <span className="text-xs text-muted-foreground">{c.specialty}</span>}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+
+              {anesthesiologistType === 'manual' && (
+                <div className="space-y-2">
+                  <Label>Nombre del Anestesiólogo</Label>
+                  <Input
+                    value={manualAnesthesiologistName}
+                    onChange={(e) => setManualAnesthesiologistName(e.target.value)}
                     placeholder="Ej: Dr. Juan Pérez"
                   />
                 </div>
