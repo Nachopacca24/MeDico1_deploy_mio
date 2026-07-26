@@ -701,12 +701,10 @@ def export_case_pdf(request, case_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def export_anesthesia_pdf(request, case_id):
-    """Export anesthesia PDF for the anesthesiologist of a case."""
-    if not _check_premium(request.user):
-        return Response(
-            {'error': 'Reactiva Premium para exportar PDF.'},
-            status=status.HTTP_403_FORBIDDEN,
-        )
+    """Export anesthesia PDF for the anesthesiologist of a case.
+    No premium required — the anesthesiologist is generating their own private report
+    for a case they were invited to; the case owner's premium gate doesn't apply here.
+    """
 
     from ..models.anesthesia import AnesthesiaCase
     try:

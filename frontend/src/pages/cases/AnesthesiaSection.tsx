@@ -52,7 +52,6 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
 
   // Create form
   const [showCreate, setShowCreate] = useState(false);
-  const [unitValue, setUnitValue] = useState("0");
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [selectedColleagueId, setSelectedColleagueId] = useState("");
   const [manualName, setManualName] = useState("");
@@ -119,14 +118,14 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
     setCreating(true);
     try {
       const data = await anesthesiaService.create(caseId, {
-        unit_value: parseFloat(unitValue) || 0,
+        unit_value: 0,
         anesthesiologist: selectedColleagueId ? parseInt(selectedColleagueId) : null,
         anesthesiologist_name: !selectedColleagueId && manualName ? manualName : null,
       });
       setSession(data);
       setEditUnitValue(String(data.unit_value));
       setShowCreate(false);
-      toast.success("Sesión de anestesia creada");
+      toast.success("Invitación enviada");
     } catch (e: any) {
       toast.error(e.message || "Error al crear la sesión");
     } finally {
@@ -258,7 +257,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
           {!showCreate ? (
             <div className="text-center py-4 space-y-3">
               <p className="text-sm text-muted-foreground">
-                Configura la sesión de anestesia para invitar a un anestesiólogo a este caso.
+                Invita a un anestesiólogo a este caso. Ellos configurarán sus propios honorarios.
               </p>
               <Button
                 variant="outline"
@@ -266,20 +265,11 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
                 onClick={() => setShowCreate(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Configurar Anestesia
+                Invitar Anestesiólogo
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Valor por unidad (Q)</label>
-                <input
-                  type="number" min="0" step="0.01"
-                  value={unitValue}
-                  onChange={e => setUnitValue(e.target.value)}
-                  className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
-                />
-              </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Anestesiólogo colega</label>
                 <select
@@ -319,7 +309,7 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
                   className="bg-teal-600 hover:bg-teal-700 text-white"
                 >
                   {creating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                  Crear sesión
+                  Enviar invitación
                 </Button>
                 <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancelar</Button>
               </div>
