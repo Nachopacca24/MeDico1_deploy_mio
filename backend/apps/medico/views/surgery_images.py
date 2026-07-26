@@ -73,8 +73,16 @@ def list_surgery_images(request, case_id):
         case.assistant_doctor_id == request.user.id and
         case.assistant_accepted is True
     )
+    is_anesthesiologist = False
+    try:
+        is_anesthesiologist = (
+            case.anesthesia.anesthesiologist_id == request.user.id and
+            case.anesthesia.anesthesiologist_accepted is True
+        )
+    except Exception:
+        pass
 
-    if not (is_owner or is_assistant):
+    if not (is_owner or is_assistant or is_anesthesiologist):
         return Response({'error': 'Sin acceso a este caso'}, status=status.HTTP_403_FORBIDDEN)
 
     expires_at = int(time.time()) + 7200  # signed URLs valid for 2 hours
