@@ -550,9 +550,9 @@ const CaseDetailPage = () => {
                         className="p-4 border rounded-lg hover:border-primary transition-colors"
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <div className="font-semibold mb-1">{procedure.surgery_name}</div>
-                            <div className="text-sm text-muted-foreground">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold mb-1 break-words">{procedure.surgery_name}</div>
+                            <div className="text-sm text-muted-foreground break-words">
                               Código: {procedure.surgery_code} • {procedure.specialty}
                               {procedure.grupo && ` • ${procedure.grupo}`}
                             </div>
