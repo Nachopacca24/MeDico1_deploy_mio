@@ -2,12 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronRight, X, BookOpen, ArrowUp } from 'lucide-react';
-import { useTutorial, TUTORIAL_STEPS } from '@/core/contexts/TutorialContext';
+import { useTutorial } from '@/core/contexts/TutorialContext';
 import { useHighlightTarget } from './SpotlightOverlay';
 import { useToast } from '@/shared/hooks/use-toast';
 
 export function TutorialCard() {
-  const { tutorialState, currentStepData, nextStep, skipTutorial } = useTutorial();
+  const { tutorialState, steps, currentStepData, nextStep, skipTutorial } = useTutorial();
   const { toast } = useToast();
 
   const [collapsed, setCollapsed] = useState(false);
@@ -46,7 +46,7 @@ export function TutorialCard() {
 
   if (!tutorialState.active || !currentStepData) return null;
 
-  const total      = TUTORIAL_STEPS.length;
+  const total      = steps.length;
   const current    = tutorialState.step;
   const isLastStep = current === total;
   const progress   = (current / total) * 100;

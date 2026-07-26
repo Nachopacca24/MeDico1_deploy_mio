@@ -1,8 +1,9 @@
 // src/core/contexts/TutorialContext.tsx
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '@/shared/services/authService';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -116,6 +117,108 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+// Tutorial para anestesiólogos — igual hasta "Mis Cirugías" (pasos 1-6),
+// después el flujo cambia: crean su propio caso de anestesia en vez de una cirugía,
+// con su propio formulario de códigos y honorarios.
+export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    step: 1, route: '/operations', emoji: '🩺', target: 'procedures-search',
+    title: 'Buscá tus procedimientos',
+    description: 'Acá están los +4,000 procedimientos de la Tabla de California con su código y valor en RVU. Antes de crear tu primera cirugía, guardá los que más usás.',
+    hint: 'Escribí el nombre de un procedimiento → tocá ⭐ para guardarlo como favorito. Se cargarán automáticamente en cada cirugía.',
+  },
+  {
+    step: 2, route: '/hospitals', emoji: '🏥', target: 'hospitals-list',
+    title: 'Configurá tu hospital',
+    description: 'Registrá los hospitales donde operás. Cada hospital tiene su propio multiplicador RVU — ese número convierte el valor RVU en el honorario real que cobrás.',
+    hint: 'Encontrá tu hospital → tocá ⭐ → abrilo y configurá el multiplicador RVU. Sin esto el cálculo no funciona.',
+  },
+  {
+    step: 3, route: '/insurances', emoji: '🛡️', target: 'insurances-list',
+    title: 'Seguros médicos',
+    description: 'Guardá los seguros que manejás frecuentemente. Al crear una cirugía se cargan solos, sin necesidad de escribirlos cada vez.',
+    hint: 'Tocá ⭐ en los seguros que más usás para guardarlos.',
+  },
+  {
+    step: 4, route: '/favorites', emoji: '⭐', target: 'favorites-list',
+    title: 'Tus favoritos',
+    description: 'Todo lo que marcaste con ⭐ aparece acá: procedimientos, hospitales y seguros. Cuando creés una cirugía nueva, estos se pre-cargan para que sea más rápido.',
+    hint: 'Si no ves algo, volvé a la sección correspondiente y marcalo con ⭐.',
+  },
+  {
+    step: 5, route: '/colleagues', emoji: '👥', target: 'colleague-code',
+    title: 'Colegas y ayudantes',
+    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".',
+    hint: 'Copiá tu código (aparece arriba de la pantalla) y enviáselo a un colega por WhatsApp o mensaje.',
+  },
+  {
+    step: 6, route: '/calendar', emoji: '📅', target: 'calendar-connect',
+    title: 'Google Calendar',
+    description: 'Conectá tu cuenta de Google y cada cirugía que registrés aparece automáticamente en tu agenda con fecha, hora, hospital y procedimientos.',
+    hint: 'Tocá "Conectar Google Calendar" y autorizá el acceso. Solo se necesita hacer una vez.',
+  },
+  {
+    step: 7, route: '/cases', emoji: '📋', target: 'new-anesthesia-btn',
+    title: 'Crear un caso de anestesia',
+    description: 'Acá vas a ver todas tus cirugías, incluidas las que te inviten a atender como anestesiólogo. Como anestesiólogo también podés registrar vos mismo tus propios casos — vamos a crear uno de práctica juntos. Cuando termines el tutorial podés eliminarlo desde el detalle del caso.',
+    hint: 'Tocá el botón "Nueva Anestesia" para empezar — no "Nueva Cirugía", ese botón es para cirujanos.',
+  },
+  {
+    step: 8, route: '/cases/new/anesthesia', emoji: '👤', target: 'patient-data',
+    title: '① Datos del paciente',
+    description: 'Completá el nombre, ID de expediente, edad, género y diagnóstico del paciente. Para practicar usá: Nombre → Juan Pérez · ID → 123 · Edad → 45.',
+    hint: 'Los datos del paciente están cifrados — solo vos podés verlos.',
+  },
+  {
+    step: 9, route: '/cases/new/anesthesia', emoji: '🏥', target: 'hospital-selector',
+    title: '② Hospital, seguro y equipo médico',
+    description: 'Seleccioná el hospital (tus favoritos aparecen primero) y el seguro — si no tiene, dejalo en "Sin seguro". Si conocés al médico principal y al ayudante, escribí sus nombres: no hace falta que tengan cuenta en MeDico App.',
+    hint: 'Médico Principal y Médico Ayudante son campos de texto libre, solo para referencia.',
+  },
+  {
+    step: 10, route: '/cases/new/anesthesia', emoji: '🩺', target: 'anesthesia-codes-picker',
+    title: '③ Códigos de anestesia',
+    description: 'Buscá y agregá los códigos de anestesia que usaste. Tocá la ⭐ junto a un resultado para guardarlo como favorito — la próxima vez aparece arriba en "Procedimientos Frecuentes" para agregarlo con un solo toque.',
+    hint: 'Acá también configurás el valor por unidad y, si usaste equipo propio, activás el interruptor de "Uso de Equipo Personal".',
+  },
+  {
+    step: 11, route: '/cases/new/anesthesia', emoji: '💾', target: 'save-case-btn',
+    title: '④ Guardar el caso',
+    description: 'Revisá los datos: paciente, hospital, códigos y honorario calculado. Guardalo para que aparezca en "Mis Cirugías".',
+    hint: 'Tocá "Crear Caso de Anestesia" para guardar.',
+  },
+  {
+    step: 12, route: '/cases', emoji: '👁️', target: 'case-status',
+    title: 'Ver y editar tu caso',
+    description: 'Tocá "Ver" en cualquier caso para abrir el detalle completo. Desde ahí podés seguir agregando códigos, exportar el PDF de anestesia y subir fotos.',
+    hint: 'El botón "Anestesia" en la tarjeta te lleva directo al formulario de anestesia de ese caso.',
+  },
+  {
+    step: 13, route: '/cases', emoji: '🔄', target: 'case-status',
+    title: 'Marcá la cirugía como Operada',
+    description: 'Cuando la cirugía ya se realizó, tocá el estado "Operado". Esto habilita el campo de Unidades de Tiempo dentro del formulario de anestesia — ahí ingresás los minutos reales de anestesia para completar el cálculo (1 unidad cada 15 minutos). Sin marcarlo, ese campo no aparece y el honorario queda incompleto.',
+    hint: 'El campo de tiempo solo aparece después de marcar la cirugía como Operada.',
+  },
+  {
+    step: 14, route: '/stats', emoji: '📊', target: 'stats-chart',
+    title: 'Estadísticas',
+    description: 'Acá contás tus propios casos de anestesia y también los que aceptaste como anestesiólogo invitado — si operaste, cuenta para tu actividad. Incluye RVU, procedimientos y hospitales más frecuentes, y cuántas cirugías operás sin seguro.',
+    hint: 'Usá los filtros de fecha para ver por semana, mes o rango personalizado.',
+  },
+  {
+    step: 15, route: '/calculator', emoji: '🧮', target: 'calculator-form',
+    title: 'Calculadora rápida',
+    description: 'Calculá el honorario de cualquier procedimiento sin crear una cirugía. Ideal para dar una cotización rápida al paciente o al seguro.',
+    hint: 'Seleccioná un procedimiento y tu hospital — el valor en Q aparece de inmediato.',
+  },
+  {
+    step: 16, route: '/settings', emoji: '⚙️', target: 'settings-plan-tab',
+    title: '¡Listo! Configuración final',
+    description: 'Último paso: revisá Configuración. En "Perfil" guardás tu especialidad. En "Preferencias" elegís modo oscuro o claro y configurás el recordatorio de notificaciones para tus cirugías.',
+    hint: 'El recordatorio de cirugía te avisa con anticipación — podés elegir cuántas horas antes querés recibirlo.',
+  },
+];
+
 const STORAGE_KEY = 'medico_tutorial';
 
 interface TutorialState {
@@ -147,6 +250,7 @@ function saveState(state: TutorialState) {
 
 interface TutorialContextValue {
   tutorialState: TutorialState;
+  steps: TutorialStep[];
   currentStepData: TutorialStep | null;
   startTutorial: () => void;
   nextStep: () => void;
@@ -160,6 +264,12 @@ const TutorialContext = createContext<TutorialContextValue | null>(null);
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const [tutorialState, setTutorialState] = useState<TutorialState>(loadState);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const steps = useMemo(
+    () => (user?.specialty === 'Anestesiología' ? ANESTHESIA_TUTORIAL_STEPS : TUTORIAL_STEPS),
+    [user?.specialty]
+  );
 
   const update = useCallback((patch: Partial<TutorialState>) => {
     setTutorialState(prev => {
@@ -171,20 +281,20 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
 
   const startTutorial = useCallback(() => {
     update({ seen: true, active: true, step: 1, completed: false });
-    navigate(TUTORIAL_STEPS[0].route);
-  }, [update, navigate]);
+    navigate(steps[0].route);
+  }, [update, navigate, steps]);
 
   const nextStep = useCallback(() => {
     const nextStepNum = tutorialState.step + 1;
-    if (nextStepNum > TUTORIAL_STEPS.length) {
+    if (nextStepNum > steps.length) {
       update({ active: false, completed: true });
       // Notify backend — fire and forget
       authService.authenticatedFetch(`${API_URL}/api/auth/tutorial-complete/`, { method: 'POST' }).catch(() => {});
     } else {
       update({ step: nextStepNum });
-      navigate(TUTORIAL_STEPS[nextStepNum - 1].route);
+      navigate(steps[nextStepNum - 1].route);
     }
-  }, [tutorialState.step, update, navigate]);
+  }, [tutorialState.step, update, navigate, steps]);
 
   const skipTutorial = useCallback(() => {
     update({ active: false, seen: true });
@@ -196,16 +306,17 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
 
   const restartTutorial = useCallback(() => {
     update({ seen: true, active: true, step: 1, completed: false });
-    navigate(TUTORIAL_STEPS[0].route);
-  }, [update, navigate]);
+    navigate(steps[0].route);
+  }, [update, navigate, steps]);
 
   const currentStepData = tutorialState.active
-    ? (TUTORIAL_STEPS[tutorialState.step - 1] ?? null)
+    ? (steps[tutorialState.step - 1] ?? null)
     : null;
 
   return (
     <TutorialContext.Provider value={{
       tutorialState,
+      steps,
       currentStepData,
       startTutorial,
       nextStep,

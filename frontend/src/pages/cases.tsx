@@ -788,7 +788,7 @@ const CasesPage = () => {
                 )
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button asChild variant="outline">
+                  <Button asChild variant="outline" data-tutorial="new-anesthesia-btn">
                     <Link to="/cases/new/anesthesia">
                       <Stethoscope className="w-4 h-4 mr-2" />
                       Nueva Anestesia

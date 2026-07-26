@@ -154,7 +154,7 @@ const NewAnesthesiaCase = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Patient Information */}
-          <Card className="shadow-sm border-slate-200">
+          <Card className="shadow-sm border-slate-200" data-tutorial="patient-data">
             <CardHeader className="bg-slate-50/50 border-b">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -223,7 +223,7 @@ const NewAnesthesiaCase = () => {
           </Card>
 
           {/* Surgery Information */}
-          <Card className="shadow-sm border-slate-200">
+          <Card className="shadow-sm border-slate-200" data-tutorial="hospital-selector">
             <CardHeader className="bg-slate-50/50 border-b">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -400,7 +400,9 @@ const NewAnesthesiaCase = () => {
             </CardContent>
           </Card>
 
-          <AnesthesiaCodesPicker items={codeItems} onAdd={handleAddCode} onRemove={handleRemoveCode} />
+          <div data-tutorial="anesthesia-codes-picker">
+            <AnesthesiaCodesPicker items={codeItems} onAdd={handleAddCode} onRemove={handleRemoveCode} />
+          </div>
 
           {/* Equipment — toggle */}
           <Card className="shadow-sm border-slate-200">
@@ -457,7 +459,7 @@ const NewAnesthesiaCase = () => {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={submitting} className="flex-1 md:flex-none md:min-w-[200px]">
+            <Button type="submit" disabled={submitting} data-tutorial="save-case-btn" className="flex-1 md:flex-none md:min-w-[200px]">
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
