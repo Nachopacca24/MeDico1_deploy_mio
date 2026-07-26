@@ -36,6 +36,7 @@ import CasesPage from "@/pages/cases";
 import NewCase from "@/pages/cases/new";
 import NewAnesthesiaCase from "@/pages/cases/new-anesthesia";
 import EditAnesthesiaCase from "@/pages/cases/edit-anesthesia";
+import AnesthesiaEditorPage from "@/pages/cases/AnesthesiaEditorPage";
 import CaseDetail from "@/pages/cases/detail";
 import EditCase from "@/pages/cases/edit";
 import Operations from "@/pages/operations";
@@ -96,6 +97,7 @@ export const AppRouter = () => {
         <Route path='/cases/:id' element={<CaseDetail />} />
         <Route path='/cases/:id/edit' element={<EditCase />} />
         <Route path='/cases/:id/edit/anesthesia' element={<EditAnesthesiaCase />} />
+        <Route path='/cases/:id/anesthesia' element={<AnesthesiaEditorPage />} />
         <Route path='/operations' element={<Operations />} />
         <Route path='/hospitals' element={<HospitalsPage />} />
         <Route path='/insurances' element={<InsurancesPage />} />
