@@ -13,7 +13,7 @@ import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { anesthesiaService } from '@/services/anesthesiaService';
-import { Loader2, User, Building2, Stethoscope, Wrench, Users } from 'lucide-react';
+import { Loader2, User, Building2, Stethoscope, Wrench, Users, Star } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import type { PatientGender } from '@/types/surgical-case';
 import { AnesthesiaCodesPicker, type AnesthesiaPickedItem, type CsvRow } from './AnesthesiaCodesPicker';
@@ -249,7 +249,12 @@ const NewAnesthesiaCase = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {hospitals.map((h) => (
-                        <SelectItem key={h.id} value={String(h.id)}>{h.name}</SelectItem>
+                        <SelectItem key={h.id} value={String(h.id)}>
+                          <div className="flex items-center gap-2">
+                            {h.is_favorite && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
+                            <span>{h.name}</span>
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -316,7 +321,12 @@ const NewAnesthesiaCase = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {insurances.map((ins) => (
-                        <SelectItem key={ins.id} value={String(ins.id)}>{ins.name}</SelectItem>
+                        <SelectItem key={ins.id} value={String(ins.id)}>
+                          <div className="flex items-center gap-2">
+                            {ins.is_favorite && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
+                            <span>{ins.name}</span>
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
