@@ -106,7 +106,7 @@ const Settings = () => {
 
   const { toast } = useToast();
   const { user, refreshUser, updateUser } = useAuth();
-  const { restartTutorial, tutorialState } = useTutorial();
+  const { restartTutorial, tutorialState, steps } = useTutorial();
   const { setTheme } = useTheme();
 
   // Credit days accumulated from referrals (shown during FREE_FOR_ALL promo)
@@ -1027,7 +1027,9 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  El tutorial te muestra paso a paso cómo registrar una cirugía, calcular honorarios, gestionar hospitales y seguros, conectar colegas, ver estadísticas y usar la calculadora rápida. Son 16 pasos breves.
+                  {user?.specialty === 'Anestesiología'
+                    ? `El tutorial te muestra paso a paso cómo funcionan las invitaciones de anestesia, cómo registrar tus propios casos, calcular honorarios, gestionar hospitales y seguros, conectar colegas, ver estadísticas y usar la calculadora rápida. Son ${steps.length} pasos breves.`
+                    : `El tutorial te muestra paso a paso cómo registrar una cirugía, calcular honorarios, gestionar hospitales y seguros, conectar colegas, ver estadísticas y usar la calculadora rápida. Son ${steps.length} pasos breves.`}
                 </p>
                 <Button onClick={restartTutorial} className="gap-2">
                   <BookOpen className="h-4 w-4" />
