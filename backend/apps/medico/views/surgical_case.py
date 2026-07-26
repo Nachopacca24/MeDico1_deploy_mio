@@ -425,11 +425,14 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='stats')
     def get_stats(self, request):
         """
-        Obtener estadísticas de casos del usuario (solo casos propios, no asistidos)
+        Obtener estadísticas de casos del usuario: propios, más los casos donde
+        colabora como médico ayudante o anestesiólogo aceptado (también operó).
         """
         queryset = SurgicalCase.objects.filter(
-            created_by=request.user
-        ).select_related('hospital').prefetch_related('procedures')
+            Q(created_by=request.user) |
+            Q(assistant_doctor=request.user, assistant_accepted=True) |
+            Q(anesthesia__anesthesiologist=request.user, anesthesia__anesthesiologist_accepted=True)
+        ).distinct().select_related('hospital').prefetch_related('procedures')
 
         # Total de casos
         total_cases = queryset.count()
@@ -594,8 +597,10 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             for item in specialty_stats_rvu
         }
 
-        # Collaborators this month (distinct assistant doctors)
+        # Collaborators this month (distinct assistant doctors on cases I own —
+        # not cases where I'm the one collaborating)
         collaborators_this_month = queryset.filter(
+            created_by=request.user,
             surgery_date__gte=this_month_start,
             assistant_doctor__isnull=False
         ).values('assistant_doctor').distinct().count()
