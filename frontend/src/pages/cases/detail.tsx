@@ -63,9 +63,6 @@ const CaseDetailPage = () => {
   const imagesSectionRef = useRef<HTMLDivElement>(null);
   const anesthesiaSectionRef = useRef<HTMLDivElement>(null);
   const [syncingCalendar, setSyncingCalendar] = useState(false);
-  const [equipmentName, setEquipmentName] = useState("");
-  const [equipmentCost, setEquipmentCost] = useState("");
-  const [savingEquipment, setSavingEquipment] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -180,8 +177,6 @@ const CaseDetailPage = () => {
       setLoading(true);
       const data = await surgicalCaseService.getCase(parseInt(id!));
       setSurgicalCase(data);
-      setEquipmentName(data.equipment_name ?? "");
-      setEquipmentCost(data.equipment_cost != null ? String(data.equipment_cost) : "");
       fetchImages(data.id);
     } catch (err: any) {
       setError(err.message || 'Error al cargar el caso');
@@ -206,23 +201,6 @@ const CaseDetailPage = () => {
     } catch (err: any) {
       toast.error(err.message || 'Error al eliminar el caso');
       setDeleting(false);
-    }
-  };
-
-  const handleSaveEquipment = async () => {
-    if (!surgicalCase) return;
-    setSavingEquipment(true);
-    try {
-      const updated = await surgicalCaseService.updateCase(surgicalCase.id, {
-        equipment_name: equipmentName.trim() || null,
-        equipment_cost: equipmentCost ? parseFloat(equipmentCost) : null,
-      } as any);
-      setSurgicalCase(updated);
-      toast.success("Equipo guardado");
-    } catch (e: any) {
-      toast.error(e.message || "Error al guardar equipo");
-    } finally {
-      setSavingEquipment(false);
     }
   };
 
@@ -625,8 +603,8 @@ const CaseDetailPage = () => {
               </CardContent>
             </Card>
 
-            {/* Surgeon Equipment — owner only, informational */}
-            {isOwner && (
+            {/* Surgeon Equipment — read-only display; edited via the case edit form */}
+            {isOwner && surgicalCase.equipment_name && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -635,38 +613,21 @@ const CaseDetailPage = () => {
                     <span className="text-xs font-normal text-muted-foreground ml-1">(no suma al honorario)</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Descripción del equipo</label>
-                      <input
-                        type="text"
-                        value={equipmentName}
-                        onChange={e => setEquipmentName(e.target.value)}
-                        placeholder="ej. Torre laparoscópica"
-                        className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-primary/40 outline-none"
-                      />
+                      <div className="text-muted-foreground mb-1">Equipo</div>
+                      <div className="font-medium">{surgicalCase.equipment_name}</div>
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Costo (Q) — informativo</label>
-                      <input
-                        type="number" min="0" step="0.01"
-                        value={equipmentCost}
-                        onChange={e => setEquipmentCost(e.target.value)}
-                        placeholder="0.00"
-                        className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-primary/40 outline-none"
-                      />
-                    </div>
+                    {surgicalCase.equipment_cost != null && (
+                      <div>
+                        <div className="text-muted-foreground mb-1">Costo (informativo)</div>
+                        <div className="font-medium">
+                          Q {Number(surgicalCase.equipment_cost).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleSaveEquipment}
-                    disabled={savingEquipment}
-                  >
-                    {savingEquipment && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                    Guardar equipo
-                  </Button>
                 </CardContent>
               </Card>
             )}

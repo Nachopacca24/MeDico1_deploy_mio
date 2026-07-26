@@ -116,6 +116,10 @@ const EditCase = () => {
   const [selectedAnesthesiologistId, setSelectedAnesthesiologistId] = useState<number | null>(null);
   const [manualAnesthesiologistName, setManualAnesthesiologistName] = useState('');
 
+  // Equipment state (surgeon — informational only)
+  const [equipmentName, setEquipmentName] = useState('');
+  const [equipmentCost, setEquipmentCost] = useState('');
+
   // Procedure selection state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProcedures, setSelectedProcedures] = useState<SelectedProcedure[]>([]);
@@ -172,6 +176,9 @@ const EditCase = () => {
             }
           }
         }
+
+        setEquipmentName(caseData.equipment_name ?? '');
+        setEquipmentCost(caseData.equipment_cost != null ? String(caseData.equipment_cost) : '');
 
         // Convertir favoritos a formato de procedimientos
         const favProcs: ProcedureData[] = favoritesData.map(fav => ({
@@ -605,6 +612,8 @@ const EditCase = () => {
         notes: notes || undefined,
         insurance_company: insuranceId ? parseInt(insuranceId) : null,
         status: status,
+        equipment_name: equipmentName.trim() || null,
+        equipment_cost: equipmentCost ? parseFloat(equipmentCost) : null,
         procedures: selectedProcedures.map((proc, index) => ({
           surgery_code: proc.surgery_code,
           surgery_name: proc.surgery_name,
@@ -1083,6 +1092,39 @@ const EditCase = () => {
                   />
                 </div>
               )}
+              </CardContent>
+              </Card>
+
+              {/* Personal Equipment */}
+              <Card>
+              <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Stethoscope className="h-5 w-5" />
+                Uso de Equipo Personal
+              </CardTitle>
+              <CardDescription>Equipo personal utilizado en la cirugía — solo informativo, no suma al honorario</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nombre del equipo</Label>
+                  <Input
+                    value={equipmentName}
+                    onChange={(e) => setEquipmentName(e.target.value)}
+                    placeholder="Ej: Torre laparoscópica Karl Storz"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Costo (Q) — solo informativo</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={equipmentCost}
+                    onChange={(e) => setEquipmentCost(e.target.value.replace(/[^0-9.]/g, ''))}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
               </CardContent>
               </Card>
 
