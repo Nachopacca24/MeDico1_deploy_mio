@@ -113,6 +113,16 @@ class SurgicalCase(models.Model):
         help_text="Indica si la cirugía ya fue cobrada"
     )
     
+    # Médico principal (solo para casos creados directamente por el anestesiólogo,
+    # donde created_by es el anestesiólogo y no hay un cirujano registrado en el sistema)
+    surgeon_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Médico Principal",
+        help_text="Nombre manual del médico cirujano principal"
+    )
+
     # Médico ayudante
     assistant_doctor = models.ForeignKey(
         settings.AUTH_USER_MODEL,

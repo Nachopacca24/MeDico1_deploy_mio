@@ -85,6 +85,9 @@ export interface SurgicalCase {
   is_paid?: boolean;
   invoice_number?: string | null;
 
+  // Médico principal (solo para casos creados directamente por el anestesiólogo)
+  surgeon_name?: string | null;
+
   // Campos de médico ayudante
   assistant_doctor?: number | null;
   assistant_doctor_name?: string | null;
@@ -136,7 +139,10 @@ export interface CreateCaseData {
   is_operated?: boolean;
   is_billed?: boolean;
   is_paid?: boolean;
-  
+
+  // Médico principal (solo para casos creados directamente por el anestesiólogo)
+  surgeon_name?: string | null;
+
   // Campos de médico ayudante
   assistant_doctor?: number | null;
   assistant_doctor_name?: string | null;

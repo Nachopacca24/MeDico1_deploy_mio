@@ -135,6 +135,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'is_billed',
             'is_paid',
             'invoice_number',
+            'surgeon_name',
             'assistant_doctor',
             'assistant_doctor_name',
             'assistant_display_name',
@@ -223,6 +224,7 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
             'is_billed',
             'is_paid',
             'invoice_number',
+            'surgeon_name',
             'assistant_doctor',
             'assistant_doctor_name',
             'assistant_display_name',
@@ -286,6 +288,12 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         allow_blank=True
     )
 
+    surgeon_name = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
     assistant_doctor = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         required=False,
@@ -326,6 +334,7 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
             'is_billed',
             'is_paid',
             'invoice_number',
+            'surgeon_name',
             'assistant_doctor',
             'assistant_doctor_name',
             'assistant_accepted',
@@ -354,6 +363,10 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         if 'assistant_doctor_name' in cleaned_data:
             if cleaned_data['assistant_doctor_name'] == '':
                 cleaned_data['assistant_doctor_name'] = None
+
+        if 'surgeon_name' in cleaned_data:
+            if cleaned_data['surgeon_name'] == '':
+                cleaned_data['surgeon_name'] = None
 
         if 'calendar_event_id' in cleaned_data:
             if cleaned_data['calendar_event_id'] == '':

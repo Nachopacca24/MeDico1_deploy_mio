@@ -12,7 +12,7 @@ import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { anesthesiaService } from '@/services/anesthesiaService';
-import { Loader2, User, Building2, Stethoscope, Wrench } from 'lucide-react';
+import { Loader2, User, Building2, Stethoscope, Wrench, Users } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import type { PatientGender } from '@/types/surgical-case';
 
@@ -35,6 +35,8 @@ const NewAnesthesiaCase = () => {
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
   const [insuranceId, setInsuranceId] = useState('');
+  const [surgeonName, setSurgeonName] = useState('');
+  const [assistantName, setAssistantName] = useState('');
 
   // Anesthesia basics
   const [unitValue, setUnitValue] = useState('');
@@ -93,6 +95,8 @@ const NewAnesthesiaCase = () => {
         diagnosis: diagnosis || undefined,
         notes: notes || undefined,
         insurance_company: insuranceId ? parseInt(insuranceId) : undefined,
+        surgeon_name: surgeonName.trim() || undefined,
+        assistant_doctor_name: assistantName.trim() || undefined,
         procedures: [],
       });
 
@@ -290,6 +294,43 @@ const NewAnesthesiaCase = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Surgical Team — manual names, since this case is created directly by the anesthesiologist */}
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <Users className="h-5 w-5" />
+                </div>
+                Equipo Médico
+              </CardTitle>
+              <CardDescription className="pl-12">Nombres del médico principal y ayudante (opcional)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="surgeonName" className="text-sm font-semibold">Médico Principal</Label>
+                  <Input
+                    id="surgeonName"
+                    value={surgeonName}
+                    onChange={(e) => setSurgeonName(e.target.value)}
+                    placeholder="Ej: Dr. Juan Pérez"
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="assistantName" className="text-sm font-semibold">Médico Ayudante</Label>
+                  <Input
+                    id="assistantName"
+                    value={assistantName}
+                    onChange={(e) => setAssistantName(e.target.value)}
+                    placeholder="Ej: Dra. María López"
+                    className="h-11"
+                  />
                 </div>
               </div>
             </CardContent>

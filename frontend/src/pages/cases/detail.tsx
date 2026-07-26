@@ -499,6 +499,17 @@ const CaseDetailPage = () => {
                     </div>
                   )}
 
+                  {/* Médico Principal — solo presente en casos creados directamente por el anestesiólogo */}
+                  {surgicalCase.surgeon_name && (
+                    <div className="col-span-2">
+                      <div className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                        <User className="w-4 h-4" />
+                        Médico Principal
+                      </div>
+                      <div className="font-medium">{surgicalCase.surgeon_name}</div>
+                    </div>
+                  )}
+
                   {/* Médico Ayudante */}
                   {surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== "Sin ayudante" && (
                     <div className="col-span-2">
