@@ -621,31 +621,47 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         else:
             avg_per_week = 0.0
 
-        # Top 5 insurers by case count
-        top_insurers_by_count = list(
+        # Insurers by case count — "Sin seguro" is a synthetic bucket for cases
+        # with no insurance_company set, so doctors can see how many surgeries
+        # they operate without insurance (default until they pick one).
+        insured_by_count = (
             queryset.exclude(insurance_company__isnull=True)
             .values('insurance_company__name')
             .annotate(count=Count('id'))
-            .order_by('-count')[:5]
         )
         top_insurers_by_count_list = [
             {'name': i['insurance_company__name'], 'count': i['count']}
-            for i in top_insurers_by_count
+            for i in insured_by_count
         ]
+        no_insurance_count = queryset.filter(insurance_company__isnull=True).count()
+        if no_insurance_count > 0:
+            top_insurers_by_count_list.append({'name': 'Sin seguro', 'count': no_insurance_count})
+        top_insurers_by_count_list.sort(key=lambda x: -x['count'])
+        top_insurers_by_count_list = top_insurers_by_count_list[:5]
 
-        # Top 5 insurers by RVU
-        top_insurers_by_rvu = list(
+        # Insurers by RVU — same "Sin seguro" bucket
+        insured_by_rvu = (
             CaseProcedure.objects.filter(
                 case__in=queryset.exclude(insurance_company__isnull=True)
             )
             .values('case__insurance_company__name')
             .annotate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
-            .order_by('-total_rvu')[:5]
         )
         top_insurers_by_rvu_list = [
             {'name': i['case__insurance_company__name'], 'total_rvu': round(float(i['total_rvu'] or 0), 1), 'count': i['count']}
-            for i in top_insurers_by_rvu
+            for i in insured_by_rvu
         ]
+        no_insurance_rvu = CaseProcedure.objects.filter(
+            case__in=queryset.filter(insurance_company__isnull=True)
+        ).aggregate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
+        if no_insurance_rvu['count']:
+            top_insurers_by_rvu_list.append({
+                'name': 'Sin seguro',
+                'total_rvu': round(float(no_insurance_rvu['total_rvu'] or 0), 1),
+                'count': no_insurance_rvu['count'],
+            })
+        top_insurers_by_rvu_list.sort(key=lambda x: -x['total_rvu'])
+        top_insurers_by_rvu_list = top_insurers_by_rvu_list[:5]
 
         stats_data = {
             'total_cases': total_cases,
