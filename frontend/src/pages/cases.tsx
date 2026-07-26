@@ -866,7 +866,7 @@ const CasesPage = () => {
 
           {/* SECCIÓN DE INVITACIONES PENDIENTES — ANESTESIA */}
           {!loadingAnesthesiaInv && anesthesiaInvitations.length > 0 && (
-            <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
+            <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20" data-tutorial="anesthesia-invitations">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Bell className="w-5 h-5 text-orange-600" />
