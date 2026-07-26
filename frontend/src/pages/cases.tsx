@@ -86,7 +86,6 @@ function CaseStatusToggles({
 
   // Verificar si puede editar
   const canEdit = surgicalCase.can_edit ?? true;
-  const isAnesthesiaCase = !!surgicalCase.is_owner && !!surgicalCase.is_anesthesiologist;
 
   const handleSaveInvoice = async () => {
     if (invoiceNumber === (surgicalCase.invoice_number ?? '')) return;
@@ -228,8 +227,8 @@ function CaseStatusToggles({
         </div>
       )}
 
-      {/* Row 3: Imágenes button — only when operated and not an anesthesia-only case */}
-      {isOperated && !isAnesthesiaCase && (
+      {/* Row 3: Imágenes button — hidden when user is the anesthesiologist */}
+      {isOperated && !surgicalCase.is_anesthesiologist && (
         <Link to={`/cases/${surgicalCase.id}#images`} className="w-full">
           <Button
             variant="outline"
@@ -1004,6 +1003,12 @@ const CasesPage = () => {
                             <span>
                               De: <span className="font-semibold text-blue-600 dark:text-blue-400">{surgicalCase.created_by_name}</span>
                             </span>
+                          </div>
+                        )}
+                        {surgicalCase.is_anesthesiologist && surgicalCase.is_operated && (
+                          <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+                            <Check className="w-3.5 h-3.5 shrink-0" />
+                            Cirugía operada — registrá el tiempo de anestesia
                           </div>
                         )}
 
