@@ -361,15 +361,15 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   // Anesthesiologist — accepted, full editor
   if (inviteAccepted) {
     return (
-      <Card id="anesthesia" className="border-teal-400 dark:border-teal-600">
+      <Card id="anesthesia" className="border-teal-400 dark:border-teal-600 overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
-            <Stethoscope className="w-5 h-5" />
-            Mi Sección de Anestesia
-            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400 ml-1">Aceptada</Badge>
+          <CardTitle className="flex items-center gap-2 flex-wrap text-teal-700 dark:text-teal-400">
+            <Stethoscope className="w-5 h-5 shrink-0" />
+            <span>Mi Sección de Anestesia</span>
+            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400">Aceptada</Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-5 min-w-0">
           {/* Unit value */}
           <div className="flex items-end gap-2">
             <div className="flex-1">
@@ -513,8 +513,8 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
 
           {/* Equipment */}
           <div className="pt-3 border-t border-teal-100 dark:border-teal-900">
-            <div className="flex items-center gap-2 mb-3">
-              <Wrench className="w-4 h-4 text-teal-600" />
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <Wrench className="w-4 h-4 text-teal-600 shrink-0" />
               <span className="text-sm font-medium">Uso de equipo personal</span>
               <span className="text-xs text-muted-foreground">(se suma al honorario)</span>
             </div>
@@ -614,28 +614,28 @@ export function AnesthesiaSection({ caseId, isOwner, isAssistant, isOperated, cu
   // Read-only view (owner with session, assistant, or other viewer with session)
   if (session) {
     return (
-      <Card id="anesthesia" className="border-teal-200 dark:border-teal-800">
+      <Card id="anesthesia" className="border-teal-200 dark:border-teal-800 overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
-            <Stethoscope className="w-5 h-5" />
-            Anestesia
+          <CardTitle className="flex items-center gap-2 flex-wrap text-teal-700 dark:text-teal-400">
+            <Stethoscope className="w-5 h-5 shrink-0" />
+            <span>Anestesia</span>
             {session.anesthesiologist_display && (
-              <span className="text-sm font-normal text-muted-foreground ml-1">
+              <span className="text-sm font-normal text-muted-foreground truncate max-w-[180px]">
                 — {session.anesthesiologist_display}
               </span>
             )}
             {session.anesthesiologist && session.anesthesiologist_accepted === true && (
-              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400 ml-1">Aceptada</Badge>
+              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400">Aceptada</Badge>
             )}
             {session.anesthesiologist && session.anesthesiologist_accepted === null && (
-              <Badge variant="secondary" className="ml-1">Pendiente</Badge>
+              <Badge variant="secondary">Pendiente</Badge>
             )}
             {session.anesthesiologist && session.anesthesiologist_accepted === false && (
-              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 ml-1">Rechazada</Badge>
+              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400">Rechazada</Badge>
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 min-w-0">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Lock className="w-4 h-4" />
             Solo el anestesiólogo puede editar esta sección
