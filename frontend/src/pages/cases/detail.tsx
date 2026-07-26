@@ -206,6 +206,7 @@ const CaseDetailPage = () => {
 
   // Verificar si el usuario actual es el dueño del caso
   const isOwner = surgicalCase?.is_owner || false;
+  const isAnesthesiaCase = isOwner && !!surgicalCase?.is_anesthesiologist;
 
   // Verificar si el usuario es el ayudante (usando assistant_doctor directamente del caso)
   const isAssistant = surgicalCase?.can_edit === false && surgicalCase?.assistant_doctor;
@@ -331,7 +332,9 @@ const CaseDetailPage = () => {
 
             {isOwner && !isPaid && (
               <Button variant="outline" size="sm" asChild>
-                <Link to={`/cases/${surgicalCase.id}/edit`}>
+                <Link to={isAnesthesiaCase
+                  ? `/cases/${surgicalCase.id}/edit/anesthesia`
+                  : `/cases/${surgicalCase.id}/edit`}>
                   <Edit className="w-4 h-4 mr-2" />
                   Editar
                 </Link>
@@ -748,7 +751,8 @@ const CaseDetailPage = () => {
           </div>
         </div>
 
-        {/* ── Images section ─────────────────────────────────────────── */}
+        {/* ── Images section — hidden for anesthesia-only cases ─────── */}
+        {!isAnesthesiaCase && <>
         {/* Hidden file input triggered by the status toggle button */}
         <input
           ref={imageFileInputRef}
@@ -834,6 +838,7 @@ const CaseDetailPage = () => {
             </div>
           )}
         </div>
+        </>}
 
         {/* Lightbox */}
         {lightboxUrl && (

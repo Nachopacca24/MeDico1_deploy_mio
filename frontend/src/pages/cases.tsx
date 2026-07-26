@@ -86,6 +86,7 @@ function CaseStatusToggles({
 
   // Verificar si puede editar
   const canEdit = surgicalCase.can_edit ?? true;
+  const isAnesthesiaCase = !!surgicalCase.is_owner && !!surgicalCase.is_anesthesiologist;
 
   const handleSaveInvoice = async () => {
     if (invoiceNumber === (surgicalCase.invoice_number ?? '')) return;
@@ -227,8 +228,8 @@ function CaseStatusToggles({
         </div>
       )}
 
-      {/* Row 3: Imágenes button — only when operated */}
-      {isOperated && (
+      {/* Row 3: Imágenes button — only when operated and not an anesthesia-only case */}
+      {isOperated && !isAnesthesiaCase && (
         <Link to={`/cases/${surgicalCase.id}#images`} className="w-full">
           <Button
             variant="outline"
@@ -1120,7 +1121,9 @@ const CasesPage = () => {
                           )}
                           {canEdit && !(surgicalCase.is_paid) && (
                             <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
-                              <Link to={`/cases/${surgicalCase.id}/edit`}>
+                              <Link to={isOwner && surgicalCase.is_anesthesiologist
+                                ? `/cases/${surgicalCase.id}/edit/anesthesia`
+                                : `/cases/${surgicalCase.id}/edit`}>
                                 <Edit className="w-3.5 h-3.5 mr-1" />
                                 Editar
                               </Link>
