@@ -785,12 +785,20 @@ const CasesPage = () => {
                   <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
                 </div>
               ) : (
-                <Button asChild data-tutorial="new-case-btn">
-                  <Link to="/cases/new">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nueva Cirugía
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button asChild variant="outline">
+                    <Link to="/cases/new/anesthesia">
+                      <Stethoscope className="w-4 h-4 mr-2" />
+                      Nueva Anestesia
+                    </Link>
+                  </Button>
+                  <Button asChild data-tutorial="new-case-btn">
+                    <Link to="/cases/new">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Nueva Cirugía
+                    </Link>
+                  </Button>
+                </div>
               )}
             </div>
           </div>

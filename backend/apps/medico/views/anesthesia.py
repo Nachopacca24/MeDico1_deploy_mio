@@ -73,8 +73,8 @@ def anesthesia_case(request, case_id):
         serializer = AnesthesiaCaseWriteSerializer(data=request.data)
         if serializer.is_valid():
             anesthesia = serializer.save(case=case)
-            # Si solo hay nombre libre (sin FK) no hay nadie que acepte → auto-aceptar
-            if not anesthesia.anesthesiologist:
+            # Auto-aceptar si: no hay FK (nombre libre) o el propio creador se asigna
+            if not anesthesia.anesthesiologist or anesthesia.anesthesiologist == case.created_by:
                 anesthesia.anesthesiologist_accepted = True
                 anesthesia.save(update_fields=['anesthesiologist_accepted'])
             return Response(AnesthesiaCaseSerializer(anesthesia).data,

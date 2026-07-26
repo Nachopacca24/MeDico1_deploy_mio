@@ -34,6 +34,7 @@ import NotFoundPage from "@/pages/not-found";
 import Index from "@/pages/index";
 import CasesPage from "@/pages/cases";
 import NewCase from "@/pages/cases/new";
+import NewAnesthesiaCase from "@/pages/cases/new-anesthesia";
 import CaseDetail from "@/pages/cases/detail";
 import EditCase from "@/pages/cases/edit";
 import Operations from "@/pages/operations";
@@ -90,6 +91,7 @@ export const AppRouter = () => {
         <Route path='/dashboard' element={<Index />} />
         <Route path='/cases' element={<CasesPage />} />
         <Route path='/cases/new' element={<NewCase />} />
+        <Route path='/cases/new/anesthesia' element={<NewAnesthesiaCase />} />
         <Route path='/cases/:id' element={<CaseDetail />} />
         <Route path='/cases/:id/edit' element={<EditCase />} />
         <Route path='/operations' element={<Operations />} />

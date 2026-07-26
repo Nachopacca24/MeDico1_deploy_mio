@@ -385,10 +385,6 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         """Validar que procedures sea una lista válida"""
         if not isinstance(value, list):
             raise serializers.ValidationError("Debe ser una lista de procedimientos")
-
-        if len(value) == 0:
-            raise serializers.ValidationError("Debe haber al menos un procedimiento")
-
         return value
 
     def validate(self, data):

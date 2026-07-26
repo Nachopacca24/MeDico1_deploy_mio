@@ -48,6 +48,8 @@ class AnesthesiaService {
     unit_value: number;
     anesthesiologist?: number | null;
     anesthesiologist_name?: string | null;
+    equipment_name?: string | null;
+    equipment_cost?: number | null;
     notes?: string;
   }): Promise<AnesthesiaCase> {
     const res = await authService.authenticatedFetch(this.url(caseId), {
