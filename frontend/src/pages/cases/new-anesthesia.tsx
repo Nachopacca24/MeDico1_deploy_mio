@@ -15,6 +15,7 @@ import { anesthesiaService } from '@/services/anesthesiaService';
 import { Loader2, User, Building2, Stethoscope, Wrench, Users } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import type { PatientGender } from '@/types/surgical-case';
+import { AnesthesiaCodesPicker, type AnesthesiaPickedItem, type CsvRow } from './AnesthesiaCodesPicker';
 
 const NewAnesthesiaCase = () => {
   const navigate = useNavigate();
@@ -42,6 +43,20 @@ const NewAnesthesiaCase = () => {
   const [unitValue, setUnitValue] = useState('');
   const [equipmentName, setEquipmentName] = useState('');
   const [equipmentCost, setEquipmentCost] = useState('');
+  const [codeItems, setCodeItems] = useState<AnesthesiaPickedItem[]>([]);
+
+  const handleAddCode = (row: CsvRow) => {
+    setCodeItems(prev => [...prev, {
+      key: row.codigo,
+      surgery_code: row.codigo,
+      surgery_name: row.cirugia || row.nombre || '',
+      base_units: parseFloat(row.rvu || '0') || 0,
+    }]);
+  };
+
+  const handleRemoveCode = (key: string) => {
+    setCodeItems(prev => prev.filter(i => i.key !== key));
+  };
 
   // Data
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -108,7 +123,16 @@ const NewAnesthesiaCase = () => {
         equipment_cost: equipmentCost ? parseFloat(equipmentCost) : null,
       });
 
-      toast.success('¡Caso creado!', `El caso de ${patientName} fue registrado. Podés agregar códigos ahora.`);
+      // Add the anesthesia codes picked during creation, one by one (sequential to preserve order)
+      for (const item of codeItems) {
+        await anesthesiaService.addItem(newCase.id, {
+          surgery_code: item.surgery_code,
+          surgery_name: item.surgery_name,
+          base_units: item.base_units,
+        });
+      }
+
+      toast.success('¡Caso creado!', `El caso de ${patientName} fue registrado.`);
       navigate(`/cases/${newCase.id}`);
     } catch (error: any) {
       const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';
@@ -345,7 +369,7 @@ const NewAnesthesiaCase = () => {
                 </div>
                 Anestesia
               </CardTitle>
-              <CardDescription className="pl-12">Valor de unidad. Los códigos se agregan desde el detalle del caso.</CardDescription>
+              <CardDescription className="pl-12">Valor de unidad y códigos de procedimiento</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               <div className="space-y-2 max-w-xs">
@@ -363,6 +387,8 @@ const NewAnesthesiaCase = () => {
               </div>
             </CardContent>
           </Card>
+
+          <AnesthesiaCodesPicker items={codeItems} onAdd={handleAddCode} onRemove={handleRemoveCode} />
 
           {/* Equipment */}
           <Card className="shadow-sm border-slate-200">

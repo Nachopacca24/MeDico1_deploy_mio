@@ -11,9 +11,10 @@ import { useToast } from '@/shared/hooks/useToast';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
-import { anesthesiaService } from '@/services/anesthesiaService';
+import { anesthesiaService, type AnesthesiaItem } from '@/services/anesthesiaService';
 import { Loader2, User, Building2, Stethoscope, Wrench } from 'lucide-react';
 import type { PatientGender } from '@/types/surgical-case';
+import { AnesthesiaCodesPicker, type AnesthesiaPickedItem, type CsvRow } from './AnesthesiaCodesPicker';
 
 const EditAnesthesiaCase = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,28 @@ const EditAnesthesiaCase = () => {
   const [unitValue, setUnitValue] = useState('');
   const [equipmentName, setEquipmentName] = useState('');
   const [equipmentCost, setEquipmentCost] = useState('');
+  const [codeItems, setCodeItems] = useState<AnesthesiaItem[]>([]);
+
+  const pickedItems: AnesthesiaPickedItem[] = codeItems.map(i => ({
+    key: String(i.id),
+    surgery_code: i.surgery_code,
+    surgery_name: i.surgery_name,
+    base_units: i.base_units,
+  }));
+
+  const handleAddCode = async (row: CsvRow) => {
+    const updated = await anesthesiaService.addItem(caseId, {
+      surgery_code: row.codigo,
+      surgery_name: row.cirugia || row.nombre || '',
+      base_units: parseFloat(row.rvu || '0') || 0,
+    });
+    setCodeItems(updated.items);
+  };
+
+  const handleRemoveCode = async (key: string) => {
+    const updated = await anesthesiaService.removeItem(caseId, parseInt(key));
+    setCodeItems(updated.items);
+  };
 
   // Data
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -74,6 +97,7 @@ const EditAnesthesiaCase = () => {
           setUnitValue(anesthesiaData.unit_value != null ? String(anesthesiaData.unit_value) : '');
           setEquipmentName(anesthesiaData.equipment_name || '');
           setEquipmentCost(anesthesiaData.equipment_cost != null ? String(anesthesiaData.equipment_cost) : '');
+          setCodeItems(anesthesiaData.items);
         }
 
         setHospitals(hospitalsData);
@@ -341,7 +365,7 @@ const EditAnesthesiaCase = () => {
                 </div>
                 Anestesia
               </CardTitle>
-              <CardDescription className="pl-12">Valor de unidad. Los códigos y tiempo se editan desde el detalle.</CardDescription>
+              <CardDescription className="pl-12">Valor de unidad. El tiempo se edita desde el detalle una vez operada.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               <div className="space-y-2 max-w-xs">
@@ -359,6 +383,8 @@ const EditAnesthesiaCase = () => {
               </div>
             </CardContent>
           </Card>
+
+          <AnesthesiaCodesPicker items={pickedItems} onAdd={handleAddCode} onRemove={handleRemoveCode} />
 
           {/* Equipment */}
           <Card className="shadow-sm border-slate-200">
