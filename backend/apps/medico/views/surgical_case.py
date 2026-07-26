@@ -782,6 +782,35 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         SurgicalCase.objects.filter(pk=case.pk).update(assistant_calendar_event_id=calendar_event_id)
         return Response({'assistant_calendar_event_id': calendar_event_id}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['post'], url_path='sync-anesthesiologist-calendar')
+    def sync_anesthesiologist_calendar(self, request, pk=None):
+        """
+        Persist the invited anesthesiologist's Google Calendar event ID for a case.
+        Only the accepted anesthesiologist on the case can call this.
+        """
+        case = self.get_object()
+
+        try:
+            anesthesia = case.anesthesia
+        except Exception:
+            anesthesia = None
+
+        if not anesthesia or anesthesia.anesthesiologist != request.user or anesthesia.anesthesiologist_accepted is not True:
+            return Response(
+                {'error': 'Solo el anestesiólogo aceptado del caso puede sincronizar su calendario'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        calendar_event_id = request.data.get('calendar_event_id')
+        if not calendar_event_id or not isinstance(calendar_event_id, str):
+            return Response(
+                {'error': 'calendar_event_id es requerido'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        SurgicalCase.objects.filter(pk=case.pk).update(anesthesiologist_calendar_event_id=calendar_event_id)
+        return Response({'anesthesiologist_calendar_event_id': calendar_event_id}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['patch'], url_path='update-status')
     def update_status(self, request, pk=None):
         """

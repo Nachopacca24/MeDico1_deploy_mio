@@ -211,6 +211,8 @@ const CaseDetailPage = () => {
   // Verificar si el usuario es el ayudante (usando assistant_doctor directamente del caso)
   const isAssistant = surgicalCase?.can_edit === false && surgicalCase?.assistant_doctor;
 
+  // Anestesiólogo invitado y aceptado (no el dueño — un caso de anestesia propio ya sincroniza arriba)
+  const isInvitedAnesthesiologist = !isOwner && !!surgicalCase?.is_anesthesiologist;
 
   const handleAddToCalendar = async () => {
     if (!surgicalCase) return;
@@ -219,13 +221,19 @@ const CaseDetailPage = () => {
       return;
     }
 
-    // Evitar duplicados: DB first, localStorage as fallback
     const isOwner = surgicalCase.is_owner;
-    if (isOwner && surgicalCase.calendar_event_id) {
+    const role: 'owner' | 'anesthesiologist' | 'assistant' = isOwner
+      ? 'owner'
+      : isInvitedAnesthesiologist
+        ? 'anesthesiologist'
+        : 'assistant';
+
+    // Evitar duplicados: DB first, localStorage as fallback (solo ayudante)
+    if (role === 'owner' && surgicalCase.calendar_event_id) {
       toast.success('Ya en calendario', 'Esta cirugía ya está en tu Google Calendar.');
       return;
     }
-    if (!isOwner && surgicalCase.id) {
+    if (role === 'assistant' && surgicalCase.id) {
       const existing = surgicalCase.assistant_calendar_event_id
         || calendarSyncService.getAssistedEventId(surgicalCase.id);
       if (existing) {
@@ -233,17 +241,26 @@ const CaseDetailPage = () => {
         return;
       }
     }
+    if (role === 'anesthesiologist' && surgicalCase.anesthesiologist_calendar_event_id) {
+      toast.success('Ya en calendario', 'Esta cirugía ya está en tu Google Calendar.');
+      return;
+    }
 
     setSyncingCalendar(true);
     try {
-      // Assisted cases use a stable ID so re-adding never creates a duplicate
-      const stableId = (!isOwner && surgicalCase.id) ? `medicocase${surgicalCase.id}` : undefined;
+      // Non-owner roles use a stable ID so re-adding never creates a duplicate
+      const stableId = role === 'assistant' ? `medicocase${surgicalCase.id}`
+        : role === 'anesthesiologist' ? `medicoanest${surgicalCase.id}`
+        : undefined;
       const eventId = await calendarSyncService.createEventForCase(surgicalCase, stableId);
       if (eventId) {
-        if (!isOwner && surgicalCase.id) {
+        if (role === 'assistant' && surgicalCase.id) {
           calendarSyncService.markAssistedSynced(surgicalCase.id, eventId);
           await calendarSyncService.saveAssistedEventIdToDb(surgicalCase.id, eventId);
           setSurgicalCase(prev => prev ? { ...prev, assistant_calendar_event_id: eventId } : prev);
+        } else if (role === 'anesthesiologist' && surgicalCase.id) {
+          await calendarSyncService.saveAnesthesiologistEventIdToDb(surgicalCase.id, eventId);
+          setSurgicalCase(prev => prev ? { ...prev, anesthesiologist_calendar_event_id: eventId } : prev);
         }
         toast.success('Agregado al calendario', 'La cirugía fue agregada a tu Google Calendar.');
       } else {
@@ -341,7 +358,7 @@ const CaseDetailPage = () => {
               </Button>
             )}
 
-            {isAssistant && (
+            {(isAssistant || isInvitedAnesthesiologist) && (
               <Button
                 variant="outline"
                 size="sm"

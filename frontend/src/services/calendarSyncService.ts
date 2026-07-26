@@ -198,6 +198,22 @@ class CalendarSyncService {
     }
   }
 
+  // Persist the invited anesthesiologist's calendar event ID to the DB.
+  async saveAnesthesiologistEventIdToDb(caseId: number, eventId: string): Promise<void> {
+    try {
+      const response = await authService.authenticatedFetch(
+        `${API_URL}/api/v1/medico/cases/${caseId}/sync-anesthesiologist-calendar/`,
+        { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
+      );
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        console.error(`❌ sync-anesthesiologist-calendar falló para caso ${caseId}: HTTP ${response.status}`, body);
+      }
+    } catch (err) {
+      console.error(`❌ sync-anesthesiologist-calendar error para caso ${caseId}:`, err);
+    }
+  }
+
   /**
    * Sync active cases with Google Calendar.
    * Uses a module-level lock so concurrent calls (auto-sync + manual button) are no-ops.
@@ -232,6 +248,12 @@ class CalendarSyncService {
       const assistedActive = uniqueCases.filter(
         c => !c.is_owner && c.assistant_accepted === true && c.surgery_date &&
              !CLOSED_STATUSES.includes(c.status)
+      );
+      // Invited anesthesiologist (accepted, not the case owner — a self-created
+      // anesthesia case already syncs via ownedToSync above).
+      const anesthesiologistActive = uniqueCases.filter(
+        c => !c.is_owner && c.is_anesthesiologist === true && c.surgery_date &&
+             !CLOSED_STATUSES.includes(c.status) && !c.anesthesiologist_calendar_event_id
       );
 
       let synced = 0;
@@ -304,6 +326,21 @@ class CalendarSyncService {
             await this.saveAssistedEventIdToDb(surgicalCase.id!, eventId);
             synced++;
           }
+        } catch { failed++; }
+      }
+
+      for (const surgicalCase of anesthesiologistActive) {
+        if (!await googleCalendarService.getValidToken()) {
+          return { synced, failed, paused: true, message: 'Sincronización pausada: reconecta Google Calendar para continuar' };
+        }
+        try {
+          const stableId = `medicoanest${surgicalCase.id}`;
+          const eventId = await this.createEventForCase(surgicalCase, stableId);
+          if (!eventId) { failed++; continue; }
+          const caseWithEventId = { ...surgicalCase, calendar_event_id: eventId };
+          await this.updateEventForCase(caseWithEventId);
+          await this.saveAnesthesiologistEventIdToDb(surgicalCase.id!, eventId);
+          synced++;
         } catch { failed++; }
       }
 
@@ -386,11 +423,14 @@ class CalendarSyncService {
     const caseKey = new Map<string, string>();
 
     for (const c of cases) {
-      // Protect both the owner's event and the assistant's event from deletion
+      // Protect the owner's, assistant's, and anesthesiologist's events from deletion
       if (c.calendar_event_id) canonicalIds.add(c.calendar_event_id);
       if (c.assistant_calendar_event_id) canonicalIds.add(c.assistant_calendar_event_id);
+      if (c.anesthesiologist_calendar_event_id) canonicalIds.add(c.anesthesiologist_calendar_event_id);
 
-      const id = c.is_owner ? c.calendar_event_id : c.assistant_calendar_event_id;
+      const id = c.is_owner
+        ? c.calendar_event_id
+        : (c.is_anesthesiologist ? c.anesthesiologist_calendar_event_id : c.assistant_calendar_event_id);
       if (!id || !c.patient_name || !c.surgery_date) continue;
       caseKey.set(`${c.patient_name}|${c.surgery_date}`, id);
     }

@@ -127,6 +127,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'surgery_end_time',
             'calendar_event_id',
             'assistant_calendar_event_id',
+            'anesthesiologist_calendar_event_id',
             'hospital',
             'hospital_name',
             'status',
@@ -198,9 +199,20 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
     assistant_accepted = serializers.BooleanField(read_only=True, allow_null=True)
     assistant_notified_at = serializers.DateTimeField(read_only=True)
 
+    is_anesthesiologist = serializers.SerializerMethodField()
+
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
     insurance_company_name = serializers.CharField(source='insurance_company.name', read_only=True, allow_null=True)
+
+    def get_is_anesthesiologist(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user:
+            return False
+        try:
+            return obj.anesthesia.anesthesiologist == request.user and obj.anesthesia.anesthesiologist_accepted is True
+        except Exception:
+            return False
 
     class Meta:
         model = SurgicalCase
@@ -218,6 +230,7 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
             'surgery_end_time',
             'calendar_event_id',
             'assistant_calendar_event_id',
+            'anesthesiologist_calendar_event_id',
             'status',
             'status_display',
             'is_operated',
@@ -230,6 +243,7 @@ class SurgicalCaseDetailSerializer(serializers.ModelSerializer):
             'assistant_display_name',
             'assistant_accepted',
             'assistant_notified_at',
+            'is_anesthesiologist',
             'notes',
             'diagnosis',
             'insurance_company',
