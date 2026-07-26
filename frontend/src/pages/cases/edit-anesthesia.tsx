@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Switch } from '@/shared/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useToast } from '@/shared/hooks/useToast';
@@ -41,6 +42,7 @@ const EditAnesthesiaCase = () => {
 
   // Anesthesia
   const [unitValue, setUnitValue] = useState('');
+  const [equipmentEnabled, setEquipmentEnabled] = useState(false);
   const [equipmentName, setEquipmentName] = useState('');
   const [equipmentCost, setEquipmentCost] = useState('');
   const [codeItems, setCodeItems] = useState<AnesthesiaItem[]>([]);
@@ -95,6 +97,7 @@ const EditAnesthesiaCase = () => {
 
         if (anesthesiaData) {
           setUnitValue(anesthesiaData.unit_value != null ? String(anesthesiaData.unit_value) : '');
+          setEquipmentEnabled(!!anesthesiaData.equipment_name);
           setEquipmentName(anesthesiaData.equipment_name || '');
           setEquipmentCost(anesthesiaData.equipment_cost != null ? String(anesthesiaData.equipment_cost) : '');
           setCodeItems(anesthesiaData.items);
@@ -154,8 +157,8 @@ const EditAnesthesiaCase = () => {
         }),
         anesthesiaService.update(caseId, {
           unit_value: unitValue ? parseFloat(unitValue) : 0,
-          equipment_name: equipmentName.trim() || null,
-          equipment_cost: equipmentCost ? parseFloat(equipmentCost) : null,
+          equipment_name: equipmentEnabled ? equipmentName.trim() || null : null,
+          equipment_cost: equipmentEnabled && equipmentCost ? parseFloat(equipmentCost) : null,
         }),
       ]);
 
@@ -389,41 +392,46 @@ const EditAnesthesiaCase = () => {
           {/* Equipment */}
           <Card className="shadow-sm border-slate-200">
             <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                  <Wrench className="h-5 w-5" />
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                    <Wrench className="h-5 w-5" />
+                  </div>
+                  Uso de Equipo Personal
                 </div>
-                Uso de Equipo Personal
+                <Switch checked={equipmentEnabled} onCheckedChange={setEquipmentEnabled} />
               </CardTitle>
               <CardDescription className="pl-12">Opcional — se suma al total de honorarios de anestesia</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6 pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="equipmentName" className="text-sm font-semibold">Nombre del Equipo</Label>
-                  <Input
-                    id="equipmentName"
-                    value={equipmentName}
-                    onChange={(e) => setEquipmentName(e.target.value)}
-                    placeholder="Ej: Electrobisturí"
-                    className="h-11"
-                  />
+            {equipmentEnabled && (
+              <CardContent className="space-y-6 pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="equipmentName" className="text-sm font-semibold">Nombre del Equipo</Label>
+                    <Input
+                      id="equipmentName"
+                      value={equipmentName}
+                      onChange={(e) => setEquipmentName(e.target.value)}
+                      placeholder="Ej: Electrobisturí"
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="equipmentCost" className="text-sm font-semibold">Monto</Label>
+                    <Input
+                      id="equipmentCost"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={equipmentCost}
+                      onChange={(e) => setEquipmentCost(e.target.value)}
+                      placeholder="Ej: 5000.00"
+                      className="h-11"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="equipmentCost" className="text-sm font-semibold">Monto</Label>
-                  <Input
-                    id="equipmentCost"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={equipmentCost}
-                    onChange={(e) => setEquipmentCost(e.target.value)}
-                    placeholder="Ej: 5000.00"
-                    className="h-11"
-                  />
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            )}
           </Card>
 
           <div className="flex gap-4 pt-2">
