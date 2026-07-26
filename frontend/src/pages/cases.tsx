@@ -777,13 +777,15 @@ const CasesPage = () => {
               )}
 
               {isFreePlan && countForLimit >= FREE_CASE_LIMIT ? (
-                <div className="flex flex-col items-end gap-1">
-                  <Button disabled className="opacity-60 cursor-not-allowed">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nueva Cirugía
-                  </Button>
-                  <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
-                </div>
+                user?.specialty === 'Anestesiología' ? null : (
+                  <div className="flex flex-col items-end gap-1">
+                    <Button disabled className="opacity-60 cursor-not-allowed">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Nueva Cirugía
+                    </Button>
+                    <span className="text-xs text-destructive">Durante tu prueba operaste sin límites · Reactiva Premium</span>
+                  </div>
+                )
               ) : (
                 <div className="flex items-center gap-2">
                   <Button asChild variant="outline">
@@ -792,12 +794,14 @@ const CasesPage = () => {
                       Nueva Anestesia
                     </Link>
                   </Button>
-                  <Button asChild data-tutorial="new-case-btn">
-                    <Link to="/cases/new">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Nueva Cirugía
-                    </Link>
-                  </Button>
+                  {user?.specialty !== 'Anestesiología' && (
+                    <Button asChild data-tutorial="new-case-btn">
+                      <Link to="/cases/new">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Nueva Cirugía
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
