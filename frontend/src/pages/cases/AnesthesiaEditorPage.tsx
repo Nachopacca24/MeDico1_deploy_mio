@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/shared/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -7,10 +7,11 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Switch } from "@/shared/components/ui/switch";
 import {
   ArrowLeft, Stethoscope, Trash2, Search, Loader2,
-  Clock, Calculator, FileDown, Wrench,
+  Clock, Calculator, FileDown, Wrench, Star,
 } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
+import { favoritesService, type Favorite } from "@/services/favoritesService";
 import { loadCSV } from "@/shared/utils/csvLoader";
 import { useToast } from "@/shared/hooks/useToast";
 import { useAuth } from "@/shared/contexts/AuthContext";
@@ -64,6 +65,12 @@ const AnesthesiaEditorPage = () => {
   const [addingCode, setAddingCode] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
 
+  // Favorites
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
+  const [showFavorites, setShowFavorites] = useState(true);
+  const [togglingFavorite, setTogglingFavorite] = useState<string | null>(null);
+
   // Unit value
   const [editUnitValue, setEditUnitValue] = useState("0");
 
@@ -108,6 +115,13 @@ const AnesthesiaEditorPage = () => {
   }, []);
 
   useEffect(() => {
+    favoritesService.getFavorites()
+      .then(setFavorites)
+      .catch(() => {})
+      .finally(() => setLoadingFavorites(false));
+  }, []);
+
+  useEffect(() => {
     const q = codeSearch.trim().toLowerCase();
     if (!q) { setCodeResults([]); return; }
     setCodeResults(
@@ -116,6 +130,36 @@ const AnesthesiaEditorPage = () => {
         .slice(0, 20)
     );
   }, [codeSearch, allCodes]);
+
+  // Favorite codes intersected with the anesthesia code list (excludes surgical-only favorites)
+  const favoriteCodesSet = useMemo(() => new Set(favorites.map(f => f.surgery_code)), [favorites]);
+  const favoriteRows = useMemo(
+    () => allCodes.filter(r => r.codigo && favoriteCodesSet.has(r.codigo)),
+    [allCodes, favoriteCodesSet]
+  );
+
+  const handleToggleFavorite = async (e: React.MouseEvent, row: CsvRow) => {
+    e.stopPropagation();
+    if (!row.codigo) return;
+    setTogglingFavorite(row.codigo);
+    try {
+      if (favoriteCodesSet.has(row.codigo)) {
+        await favoritesService.removeFavoriteByCode(row.codigo);
+        setFavorites(prev => prev.filter(f => f.surgery_code !== row.codigo));
+      } else {
+        const fav = await favoritesService.addFavorite({
+          surgery_code: row.codigo,
+          surgery_name: row.cirugia || row.nombre,
+          specialty: row.especialidad,
+        });
+        setFavorites(prev => [...prev, fav]);
+      }
+    } catch {
+      toast.error("No se pudo actualizar el favorito");
+    } finally {
+      setTogglingFavorite(null);
+    }
+  };
 
   const handleSaveAll = async () => {
     setSaving(true);
@@ -284,6 +328,47 @@ const AnesthesiaEditorPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Favorites — reserva espacio mientras carga para evitar layout shift */}
+            {loadingFavorites ? (
+              <div className="h-8 flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Cargando procedimientos frecuentes...
+              </div>
+            ) : favoriteRows.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold flex items-center gap-2">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    Procedimientos Frecuentes ({favoriteRows.length})
+                  </span>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setShowFavorites(v => !v)}>
+                    {showFavorites ? 'Ocultar' : 'Mostrar'}
+                  </Button>
+                </div>
+                {showFavorites && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    {favoriteRows.map(r => (
+                      <button
+                        key={r.codigo}
+                        type="button"
+                        onClick={() => handleAddCode(r)}
+                        disabled={addingCode}
+                        className="text-left p-2.5 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors border border-transparent hover:border-yellow-300 disabled:opacity-50 min-w-0"
+                      >
+                        <div className="flex items-start justify-between gap-2 min-w-0">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{r.cirugia || r.nombre}</div>
+                            <div className="text-xs text-muted-foreground truncate">Código: {r.codigo}</div>
+                          </div>
+                          <span className="shrink-0 text-xs font-bold text-teal-700 dark:text-teal-400">{r.rvu} uds</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div>
               <label className="text-sm font-medium mb-1 block">Agregar código</label>
               <div className="relative">
@@ -299,20 +384,33 @@ const AnesthesiaEditorPage = () => {
               {codeResults.length > 0 && (
                 <div className="mt-1 border rounded-md overflow-hidden max-h-52 overflow-y-auto">
                   {codeResults.map(r => (
-                    <button
-                      key={r.codigo}
-                      className="w-full text-left px-3 py-2 hover:bg-teal-50 dark:hover:bg-teal-950 border-b last:border-0 flex items-center justify-between gap-2"
-                      onClick={() => handleAddCode(r)}
-                      disabled={addingCode}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <span className="text-xs font-mono text-muted-foreground">{r.codigo}</span>
-                        <span className="ml-2 text-sm">{r.cirugia || r.nombre}</span>
-                      </div>
-                      <Badge variant="secondary" className="shrink-0 text-teal-700 bg-teal-100 dark:bg-teal-900 dark:text-teal-300">
-                        {r.rvu} uds
-                      </Badge>
-                    </button>
+                    <div key={r.codigo} className="flex items-center gap-1 border-b last:border-0 min-w-0">
+                      <button
+                        className="flex-1 min-w-0 text-left px-3 py-2 hover:bg-teal-50 dark:hover:bg-teal-950 flex items-center justify-between gap-2"
+                        onClick={() => handleAddCode(r)}
+                        disabled={addingCode}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-mono text-muted-foreground">{r.codigo}</span>
+                          <span className="ml-2 text-sm">{r.cirugia || r.nombre}</span>
+                        </div>
+                        <Badge variant="secondary" className="shrink-0 text-teal-700 bg-teal-100 dark:bg-teal-900 dark:text-teal-300">
+                          {r.rvu} uds
+                        </Badge>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleToggleFavorite(e, r)}
+                        disabled={togglingFavorite === r.codigo}
+                        className="p-2 mr-1 shrink-0 hover:text-yellow-500 transition-colors disabled:opacity-50"
+                        title={r.codigo && favoriteCodesSet.has(r.codigo) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                      >
+                        {togglingFavorite === r.codigo
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <Star className={`h-4 w-4 ${r.codigo && favoriteCodesSet.has(r.codigo) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                        }
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
