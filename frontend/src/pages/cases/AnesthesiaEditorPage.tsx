@@ -643,20 +643,32 @@ const AnesthesiaEditorPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Unidades base</span>
-              <span>{session.total_base_units}</span>
-            </div>
-            {appliedModifiers.map(mod => (
-              <div key={mod.id} className="flex justify-between text-sm pl-3 border-l-2 border-teal-200 dark:border-teal-700">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <Tag className="w-3 h-3" />
-                  {mod.surgery_name.length > 32 ? mod.surgery_name.slice(0, 32) + '…' : mod.surgery_name}
-                  <span className="font-mono text-xs">({mod.surgery_code})</span>
-                </span>
-                <span>+{mod.base_units} uds</span>
+            {appliedModifiers.length > 0 ? (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Procedimientos</span>
+                  <span>{(session.total_base_units - appliedModifiers.reduce((s, m) => s + Number(m.base_units), 0)).toFixed(2).replace(/\.00$/, '')} uds</span>
+                </div>
+                {appliedModifiers.map(mod => (
+                  <div key={mod.id} className="flex justify-between text-sm pl-3 border-l-2 border-teal-200 dark:border-teal-700">
+                    <span className="text-muted-foreground flex items-center gap-1 min-w-0">
+                      <Tag className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{mod.surgery_name.length > 28 ? mod.surgery_name.slice(0, 28) + '…' : mod.surgery_name}</span>
+                    </span>
+                    <span className="shrink-0 ml-2">+{mod.base_units} uds</span>
+                  </div>
+                ))}
+                <div className="flex justify-between text-sm font-medium">
+                  <span className="text-muted-foreground">Unidades base</span>
+                  <span>{session.total_base_units}</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Unidades base</span>
+                <span>{session.total_base_units}</span>
               </div>
-            ))}
+            )}
             {session.time_units != null && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Unidades tiempo</span>
