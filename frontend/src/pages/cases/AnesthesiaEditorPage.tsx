@@ -36,6 +36,7 @@ const ANESTHESIA_CSVS = [
   "Anestesia/Hombro_y_axila.csv",
   "Anestesia/Abdomen_inferior.csv",
   "Anestesia/Abdomen_superior.csv",
+  "Anestesia/Modificadores.csv",
 ];
 
 interface CsvRow {
