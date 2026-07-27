@@ -23,7 +23,7 @@ import { anesthesiaService } from "@/services/anesthesiaService";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
-import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus } from 'lucide-react';
+import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus, Clock } from 'lucide-react';
 import { authService } from "@/shared/services/authService";
 import { useIsUploading } from "@/shared/hooks/useUploadingCases";
 import { APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
@@ -1010,9 +1010,19 @@ const CasesPage = () => {
                           </div>
                         )}
                         {surgicalCase.is_anesthesiologist && surgicalCase.is_operated && (
-                          <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
-                            <Check className="w-3.5 h-3.5 shrink-0" />
-                            Cirugía operada — registrá el tiempo de anestesia
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+                              <Check className="w-3.5 h-3.5 shrink-0" />
+                              Cirugía operada — registrá el tiempo de anestesia
+                            </div>
+                            <Link
+                              to={`/cases/${surgicalCase.id}/anesthesia`}
+                              onClick={e => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-700 rounded-full px-2.5 py-1 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors"
+                            >
+                              <Clock className="w-3 h-3" />
+                              Agregar tiempos
+                            </Link>
                           </div>
                         )}
 
