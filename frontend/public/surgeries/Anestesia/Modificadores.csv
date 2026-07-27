@@ -1,0 +1,5 @@
+codigo,nombre,especialidad,grupo,rvu
+99100,"Anesthesia for patient of extreme age, under one year and over seventy",Anestesiología,modificador,1
+99116,"Anesthesia complicated by utilization of total body hypothermia",Anestesiología,modificador,5
+99135,"Anesthesia complicated by utilization of controlled hypotension",Anestesiología,modificador,5
+99140,"Anesthesia complicated by emergency conditions (specify)",Anestesiología,modificador,2

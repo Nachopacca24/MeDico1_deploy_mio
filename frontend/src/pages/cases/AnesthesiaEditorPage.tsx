@@ -7,7 +7,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Switch } from "@/shared/components/ui/switch";
 import {
   ArrowLeft, Stethoscope, Trash2, Search, Loader2,
-  Clock, Calculator, FileDown, Wrench, Star,
+  Clock, Calculator, FileDown, Wrench, Star, Tag,
 } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
@@ -84,6 +84,10 @@ const AnesthesiaEditorPage = () => {
   const [equipmentName, setEquipmentName] = useState("");
   const [equipmentCost, setEquipmentCost] = useState("");
 
+  // Modifiers
+  const [modifiersEnabled, setModifiersEnabled] = useState(false);
+  const [modifierRows, setModifierRows] = useState<CsvRow[]>([]);
+
   // Combined save (unit value + equipment)
   const [saving, setSaving] = useState(false);
 
@@ -112,6 +116,7 @@ const AnesthesiaEditorPage = () => {
       setAllCodes(results.flat() as CsvRow[]);
     });
     loadCSV("Anestesia/uni_tiempo.csv").then(rows => setTimeCodes(rows as CsvRow[])).catch(() => {});
+    loadCSV("Anestesia/Modificadores.csv").then(rows => setModifierRows(rows as CsvRow[])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -130,6 +135,13 @@ const AnesthesiaEditorPage = () => {
         .slice(0, 20)
     );
   }, [codeSearch, allCodes]);
+
+  useEffect(() => {
+    if (!session || modifierRows.length === 0) return;
+    if (session.items.some(i => modifierRows.some(m => m.codigo === i.surgery_code))) {
+      setModifiersEnabled(true);
+    }
+  }, [session, modifierRows]);
 
   // Favorite codes intersected with the anesthesia code list (excludes surgical-only favorites)
   const favoriteCodesSet = useMemo(() => new Set(favorites.map(f => f.surgery_code)), [favorites]);
@@ -542,6 +554,65 @@ const AnesthesiaEditorPage = () => {
             </CardContent>
           )}
         </Card>
+
+        {/* Modifiers — only when operated, same as time */}
+        {isOperated && <Card className="border-teal-200 dark:border-teal-800">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between text-teal-700 dark:text-teal-400 text-base">
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 shrink-0" />
+                <span>Modificadores</span>
+              </div>
+              <Switch
+                checked={modifiersEnabled}
+                onCheckedChange={setModifiersEnabled}
+                className="data-[state=checked]:bg-teal-600"
+              />
+            </CardTitle>
+          </CardHeader>
+          {modifiersEnabled && (
+            <CardContent className="space-y-2 pt-0">
+              <p className="text-xs text-muted-foreground">Su RVU se suma al total de unidades base</p>
+              {modifierRows.map(r => {
+                const existingItem = session.items.find(i => i.surgery_code === r.codigo);
+                return (
+                  <div key={r.codigo} className="flex items-center justify-between p-3 border rounded-lg border-teal-100 dark:border-teal-900">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{r.nombre || r.cirugia}</div>
+                      <div className="text-xs text-muted-foreground">Código: {r.codigo}</div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2 shrink-0">
+                      <Badge variant="secondary" className="text-teal-700 bg-teal-100 dark:bg-teal-900 dark:text-teal-300">
+                        {r.rvu} uds
+                      </Badge>
+                      {existingItem ? (
+                        <button
+                          onClick={() => handleRemoveCode(existingItem.id)}
+                          disabled={removingId === existingItem.id}
+                          className="text-muted-foreground hover:text-destructive transition-colors"
+                          title="Quitar modificador"
+                        >
+                          {removingId === existingItem.id
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <Trash2 className="w-4 h-4" />}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleAddCode(r)}
+                          disabled={addingCode}
+                          className="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200 text-xl font-bold leading-none transition-colors disabled:opacity-50"
+                          title="Agregar modificador"
+                        >
+                          {addingCode ? <Loader2 className="w-4 h-4 animate-spin" /> : '+'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          )}
+        </Card>}
 
         {/* Single save button for unit value + equipment */}
         <Button
