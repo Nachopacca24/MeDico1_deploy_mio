@@ -1010,19 +1010,9 @@ const CasesPage = () => {
                           </div>
                         )}
                         {surgicalCase.is_anesthesiologist && surgicalCase.is_operated && (
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
-                              <Check className="w-3.5 h-3.5 shrink-0" />
-                              Cirugía operada — registrá el tiempo de anestesia
-                            </div>
-                            <Link
-                              to={`/cases/${surgicalCase.id}/anesthesia`}
-                              onClick={e => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-700 rounded-full px-2.5 py-1 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors"
-                            >
-                              <Clock className="w-3 h-3" />
-                              Agregar tiempos
-                            </Link>
+                          <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+                            <Check className="w-3.5 h-3.5 shrink-0" />
+                            Cirugía operada — registrá el tiempo de anestesia
                           </div>
                         )}
 
@@ -1068,6 +1058,20 @@ const CasesPage = () => {
                             onError={handleCaseError}
                             compact={true}
                           />
+                        )}
+
+                        {surgicalCase.is_anesthesiologist && surgicalCase.is_operated && (
+                          <Link to={`/cases/${surgicalCase.id}/anesthesia`} onClick={e => e.stopPropagation()} className="w-full">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              className="w-full border-teal-400/60 text-teal-600 hover:bg-teal-400/10 hover:border-teal-400 dark:text-teal-400"
+                            >
+                              <Clock className="w-3 h-3 mr-1.5" />
+                              Agregar tiempos
+                            </Button>
+                          </Link>
                         )}
 
                         {surgicalCase.is_anesthesiologist ? (
