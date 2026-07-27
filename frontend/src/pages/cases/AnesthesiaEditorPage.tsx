@@ -144,6 +144,14 @@ const AnesthesiaEditorPage = () => {
     }
   }, [session, modifierRows]);
 
+  const appliedModifiers = useMemo(
+    () => {
+      const modCodes = new Set(modifierRows.map(r => r.codigo));
+      return session ? session.items.filter(i => modCodes.has(i.surgery_code)) : [];
+    },
+    [session, modifierRows]
+  );
+
   // Favorite codes intersected with the anesthesia code list (excludes surgical-only favorites)
   const favoriteCodesSet = useMemo(() => new Set(favorites.map(f => f.surgery_code)), [favorites]);
   const favoriteRows = useMemo(
@@ -639,6 +647,16 @@ const AnesthesiaEditorPage = () => {
               <span className="text-muted-foreground">Unidades base</span>
               <span>{session.total_base_units}</span>
             </div>
+            {appliedModifiers.map(mod => (
+              <div key={mod.id} className="flex justify-between text-sm pl-3 border-l-2 border-teal-200 dark:border-teal-700">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Tag className="w-3 h-3" />
+                  {mod.surgery_name.length > 32 ? mod.surgery_name.slice(0, 32) + '…' : mod.surgery_name}
+                  <span className="font-mono text-xs">({mod.surgery_code})</span>
+                </span>
+                <span>+{mod.base_units} uds</span>
+              </div>
+            ))}
             {session.time_units != null && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Unidades tiempo</span>
