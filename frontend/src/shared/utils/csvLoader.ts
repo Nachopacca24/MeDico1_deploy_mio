@@ -84,6 +84,7 @@ export const csvMap: Record<string, string> = {
   "Anestesia/Abdomen_inferior.csv": "surgeries/Anestesia/Abdomen_inferior.csv",
   "Anestesia/Abdomen_superior.csv": "surgeries/Anestesia/Abdomen_superior.csv",
   "Anestesia/uni_tiempo.csv": "surgeries/Anestesia/uni_tiempo.csv",
+  "Anestesia/Modificadores.csv": "surgeries/Anestesia/Modificadores.csv",
 };
 
 // In-memory cache: survives navigation, cleared on full page reload
