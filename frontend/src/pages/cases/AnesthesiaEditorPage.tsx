@@ -77,7 +77,6 @@ const AnesthesiaEditorPage = () => {
 
   // Time
   const [timeMinutes, setTimeMinutes] = useState("");
-  const [savingTime, setSavingTime] = useState(false);
   const [timeCodes, setTimeCodes] = useState<CsvRow[]>([]);
 
   // Equipment
@@ -111,6 +110,12 @@ const AnesthesiaEditorPage = () => {
       }
     }).catch(() => setSession(null));
   }, [caseId]);
+
+  useEffect(() => {
+    if (window.location.hash === '#time') {
+      setTimeout(() => document.getElementById('time')?.scrollIntoView({ behavior: 'smooth' }), 300);
+    }
+  }, []);
 
   useEffect(() => {
     Promise.all(ANESTHESIA_CSVS.map(k => loadCSV(k).catch(() => [] as CsvRow[]))).then(results => {
@@ -187,30 +192,18 @@ const AnesthesiaEditorPage = () => {
     try {
       const updated = await anesthesiaService.update(caseId, {
         unit_value: parseFloat(editUnitValue) || 0,
+        time_minutes: timeMinutes ? parseFloat(timeMinutes) : null,
         equipment_name: equipmentEnabled ? equipmentName.trim() || null : null,
         equipment_cost: equipmentEnabled && equipmentCost ? parseFloat(equipmentCost) : null,
       });
       setSession(updated);
+      // Sync time state from response so re-entry shows correct value
+      setTimeMinutes(updated.time_minutes != null ? String(updated.time_minutes) : "");
       toast.success("Cambios guardados");
     } catch (e: any) {
       toast.error(e.message || "Error al guardar");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleSaveTime = async () => {
-    setSavingTime(true);
-    try {
-      const updated = await anesthesiaService.update(caseId, {
-        time_minutes: timeMinutes ? parseFloat(timeMinutes) : null,
-      });
-      setSession(updated);
-      toast.success("Tiempo guardado");
-    } catch (e: any) {
-      toast.error(e.message || "Error al guardar tiempo");
-    } finally {
-      setSavingTime(false);
     }
   };
 
@@ -473,7 +466,7 @@ const AnesthesiaEditorPage = () => {
 
         {/* Time — only when operated */}
         {isOperated && (
-          <Card className="border-teal-200 dark:border-teal-800">
+          <Card id="time" className="border-teal-200 dark:border-teal-800">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400 text-base">
                 <Clock className="w-4 h-4" />
@@ -496,25 +489,15 @@ const AnesthesiaEditorPage = () => {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
-                  <label className="text-xs text-muted-foreground mb-1 block">O ingresar minutos manualmente</label>
-                  <input
-                    type="number" min="0"
-                    value={timeMinutes}
-                    onChange={e => setTimeMinutes(e.target.value)}
-                    placeholder="ej. 120"
-                    className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
-                  />
-                </div>
-                <Button
-                  size="sm"
-                  onClick={handleSaveTime}
-                  disabled={savingTime}
-                  className="bg-teal-600 hover:bg-teal-700 text-white mt-5"
-                >
-                  {savingTime ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
-                </Button>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">O ingresar minutos manualmente</label>
+                <input
+                  type="number" min="0"
+                  value={timeMinutes}
+                  onChange={e => setTimeMinutes(e.target.value)}
+                  placeholder="ej. 120"
+                  className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
+                />
               </div>
             </CardContent>
           </Card>
