@@ -1304,12 +1304,6 @@ const CasesPage = () => {
                             </span>
                           </div>
                         )}
-                        {isAnesthesiologist && !surgicalCase.anesthesia_is_operated && surgicalCase.is_operated && (
-                          <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                            <Check className="w-3.5 h-3.5 shrink-0" />
-                            Cirugía operada — registrá tiempos
-                          </div>
-                        )}
 
                         {isOwner && surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== "Sin ayudante" && (
                           <div className="flex items-center gap-1.5 text-xs">
