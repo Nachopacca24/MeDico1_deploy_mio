@@ -9,6 +9,7 @@ import { useAdSystem, useIsMobile } from "@/shared/hooks/useAdSystem";
 import { CASE_INVITATIONS_EVENT } from "@/shared/hooks/useInvitationBadges";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/shared/components/ui/alert-dialog";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { useAuth } from "@/shared/contexts/AuthContext";
@@ -484,6 +485,7 @@ const CasesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [leaveConfirm, setLeaveConfirm] = useState<{ caseId: number; role: 'assistant' | 'anesthesiologist' } | null>(null);
   const [activeTab, setActiveTab] = useState<'activos' | 'facturados'>('activos');
   const [archivedCases, setArchivedCases] = useState<SurgicalCase[]>([]);
   const [loadingArchived, setLoadingArchived] = useState(false);
@@ -1536,7 +1538,7 @@ const CasesPage = () => {
                               variant="ghost"
                               size="sm"
                               className="flex-1 h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={e => { e.stopPropagation(); handleLeaveCase(surgicalCase.id, isAnesthesiologist ? 'anesthesiologist' : 'assistant'); }}
+                              onClick={e => { e.stopPropagation(); setLeaveConfirm({ caseId: surgicalCase.id, role: isAnesthesiologist ? 'anesthesiologist' : 'assistant' }); }}
                             >
                               <LogOut className="w-3.5 h-3.5 mr-1" />
                               Salir
@@ -1728,6 +1730,34 @@ const CasesPage = () => {
       </div>
 
     </AppLayout>
+
+    <AlertDialog open={!!leaveConfirm} onOpenChange={open => { if (!open) setLeaveConfirm(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Salir de esta cirugía?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {leaveConfirm?.role === 'anesthesiologist'
+              ? 'Saldrás como anestesiólogo de esta cirugía. El médico principal recibirá una notificación y podrá asignar otro anestesiólogo.'
+              : 'Saldrás como médico ayudante de esta cirugía. El médico principal recibirá una notificación y podrá asignar otro ayudante.'}
+            {' '}Esta acción no afecta tus estadísticas.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={() => {
+              if (leaveConfirm) {
+                handleLeaveCase(leaveConfirm.caseId, leaveConfirm.role);
+                setLeaveConfirm(null);
+              }
+            }}
+          >
+            Sí, salir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
