@@ -1004,6 +1004,7 @@ const CasesPage = () => {
   }
 
   return (
+    <>
     <AppLayout>
       <div className="pb-4">
         <div className="flex flex-col xl:flex-row gap-6">
@@ -1758,6 +1759,7 @@ const CasesPage = () => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </>
   );
 };
 
