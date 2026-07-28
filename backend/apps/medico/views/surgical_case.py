@@ -84,19 +84,21 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             if show_archived:
                 queryset = queryset.filter(
-                    # Cirujano o ayudante: casos que el cirujano ya marcó como cobrado/archivado
-                    (Q(created_by=user) | Q(assistant_doctor=user, assistant_accepted=True)) &
-                    (Q(archived_at__isnull=False) | Q(is_paid=True)) |
-                    # Anestesiólogo (no dueño): casos donde ÉL marcó su anestesia como cobrada
+                    # Cirujano: cobrado/archivado por él
+                    Q(created_by=user) & (Q(archived_at__isnull=False) | Q(is_paid=True)) |
+                    # Ayudante (no dueño): cobrado por él mismo
+                    Q(assistant_doctor=user, assistant_accepted=True, assistant_is_paid=True) & ~Q(created_by=user) |
+                    # Anestesiólogo (no dueño): cobrado por él mismo
                     Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True,
                       anesthesia__is_paid=True) & ~Q(created_by=user)
                 )
             else:
                 queryset = queryset.filter(
-                    # Cirujano o ayudante: casos activos desde la perspectiva del cirujano
-                    (Q(created_by=user) | Q(assistant_doctor=user, assistant_accepted=True)) &
-                    Q(archived_at__isnull=True, is_paid=False) |
-                    # Anestesiólogo (no dueño): visible hasta que ÉL marque su anestesia como cobrada
+                    # Cirujano: casos activos
+                    Q(created_by=user, archived_at__isnull=True, is_paid=False) |
+                    # Ayudante (no dueño): visible hasta que ÉL marque como cobrado
+                    Q(assistant_doctor=user, assistant_accepted=True, assistant_is_paid=False) & ~Q(created_by=user) |
+                    # Anestesiólogo (no dueño): visible hasta que ÉL marque como cobrado
                     Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True,
                       anesthesia__is_paid=False) & ~Q(created_by=user)
                 )
@@ -304,6 +306,29 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             {'message': 'Caso archivado. Se eliminará permanentemente en 6 meses.'},
             status=status.HTTP_200_OK
         )
+
+    @action(detail=True, methods=['patch'], url_path='assistant-status')
+    def assistant_status(self, request, pk=None):
+        """El médico ayudante actualiza sus propios estados de cobro (independientes del cirujano)."""
+        instance = self.get_object()
+
+        if instance.assistant_doctor != request.user or instance.assistant_accepted is not True:
+            return Response(
+                {'error': 'Solo el médico ayudante aceptado puede actualizar su estado.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        allowed = {'assistant_is_operated', 'assistant_is_billed', 'assistant_is_paid', 'assistant_invoice_number'}
+        data = {k: v for k, v in request.data.items() if k in allowed}
+
+        if not data:
+            return Response({'error': 'Sin campos válidos para actualizar.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        for field, value in data.items():
+            setattr(instance, field, value)
+        instance.save(update_fields=list(data.keys()) + ['updated_at'])
+
+        return Response(SurgicalCaseListSerializer(instance, context={'request': request}).data)
 
     @action(detail=False, methods=['get'], url_path='assisted')
     def get_assisted_cases(self, request):

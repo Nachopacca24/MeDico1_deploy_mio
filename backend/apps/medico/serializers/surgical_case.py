@@ -80,6 +80,12 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
     anesthesia_is_paid = serializers.SerializerMethodField()
     anesthesia_invoice_number = serializers.SerializerMethodField()
 
+    # Estados del ayudante (solo visibles cuando el usuario ES el ayudante)
+    assistant_is_operated_own = serializers.SerializerMethodField()
+    assistant_is_billed_own = serializers.SerializerMethodField()
+    assistant_is_paid_own = serializers.SerializerMethodField()
+    assistant_invoice_number_own = serializers.SerializerMethodField()
+
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
     insurance_company_name = serializers.CharField(source='insurance_company.name', read_only=True, allow_null=True)
@@ -148,6 +154,24 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
         a = self._get_anesthesia_for_user(obj)
         return a.invoice_number if a else None
 
+    def _is_assistant_for_user(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user:
+            return False
+        return obj.assistant_doctor == request.user and obj.assistant_accepted is True
+
+    def get_assistant_is_operated_own(self, obj):
+        return obj.assistant_is_operated if self._is_assistant_for_user(obj) else None
+
+    def get_assistant_is_billed_own(self, obj):
+        return obj.assistant_is_billed if self._is_assistant_for_user(obj) else None
+
+    def get_assistant_is_paid_own(self, obj):
+        return obj.assistant_is_paid if self._is_assistant_for_user(obj) else None
+
+    def get_assistant_invoice_number_own(self, obj):
+        return obj.assistant_invoice_number if self._is_assistant_for_user(obj) else None
+
     class Meta:
         model = SurgicalCase
         fields = [
@@ -181,6 +205,10 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'anesthesia_is_billed',
             'anesthesia_is_paid',
             'anesthesia_invoice_number',
+            'assistant_is_operated_own',
+            'assistant_is_billed_own',
+            'assistant_is_paid_own',
+            'assistant_invoice_number_own',
             'total_rvu',
             'total_value',
             'procedure_count',

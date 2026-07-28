@@ -360,6 +360,112 @@ function AnesthesiaStatusToggles({ surgicalCase, onUpdate, onError }: Anesthesia
   );
 }
 
+// ── Toggles de estado para el médico ayudante (independientes del cirujano) ──
+interface AssistantStatusTogglesProps {
+  surgicalCase: SurgicalCase;
+  onUpdate: (patch: { assistant_is_operated_own?: boolean; assistant_is_billed_own?: boolean; assistant_is_paid_own?: boolean; assistant_invoice_number_own?: string | null }) => void;
+  onError: (msg: string) => void;
+}
+
+function AssistantStatusToggles({ surgicalCase, onUpdate, onError }: AssistantStatusTogglesProps) {
+  const [updating, setUpdating] = useState<'operated' | 'billed' | 'paid' | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState(surgicalCase.assistant_invoice_number_own ?? '');
+  const [savingInvoice, setSavingInvoice] = useState(false);
+
+  useEffect(() => {
+    setInvoiceNumber(surgicalCase.assistant_invoice_number_own ?? '');
+  }, [surgicalCase.assistant_invoice_number_own]);
+
+  const isOperated = surgicalCase.assistant_is_operated_own ?? false;
+  const isBilled   = surgicalCase.assistant_is_billed_own   ?? false;
+  const isPaid     = surgicalCase.assistant_is_paid_own     ?? false;
+
+  const handleToggle = async (type: 'operated' | 'billed' | 'paid', current: boolean) => {
+    if (type === 'billed' && !isOperated && !current) { onError('Primero marca como operado'); return; }
+    if (type === 'paid'   && !isBilled   && !current) { onError('Primero marca como facturado'); return; }
+    setUpdating(type);
+    try {
+      const payload = {
+        assistant_is_operated: type === 'operated' ? !current : isOperated,
+        assistant_is_billed:   type === 'billed'   ? !current : isBilled,
+        assistant_is_paid:     type === 'paid'     ? !current : isPaid,
+      };
+      await surgicalCaseService.updateAssistantStatus(surgicalCase.id, payload);
+      onUpdate({
+        assistant_is_operated_own: payload.assistant_is_operated,
+        assistant_is_billed_own:   payload.assistant_is_billed,
+        assistant_is_paid_own:     payload.assistant_is_paid,
+      });
+    } catch (e: any) {
+      onError(e.message || 'Error al actualizar estado');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleSaveInvoice = async () => {
+    if (invoiceNumber === (surgicalCase.assistant_invoice_number_own ?? '')) return;
+    setSavingInvoice(true);
+    try {
+      await surgicalCaseService.updateAssistantStatus(surgicalCase.id, { assistant_invoice_number: invoiceNumber || null });
+      onUpdate({ assistant_invoice_number_own: invoiceNumber || null });
+    } catch (e: any) {
+      onError(e.message || 'Error al guardar factura');
+    } finally {
+      setSavingInvoice(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-1 flex-wrap">
+        <Button variant={isOperated ? 'default' : 'outline'} size="sm"
+          onClick={() => handleToggle('operated', isOperated)} disabled={updating !== null}
+          className={isOperated
+            ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+            : 'border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-950'}>
+          {updating === 'operated' ? <Loader2 className="w-3 h-3 animate-spin" /> : isOperated ? <Check className="w-3 h-3" /> : null}
+          <span className={isOperated || updating === 'operated' ? 'ml-1' : ''}>Operado</span>
+        </Button>
+        <Button variant={isBilled ? 'default' : 'outline'} size="sm"
+          onClick={() => handleToggle('billed', isBilled)} disabled={updating !== null || (!isOperated && !isBilled)}
+          className={isBilled
+            ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600'
+            : 'border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-950'}>
+          {updating === 'billed' ? <Loader2 className="w-3 h-3 animate-spin" /> : isBilled ? <Check className="w-3 h-3" /> : null}
+          <span className={isBilled || updating === 'billed' ? 'ml-1' : ''}>Facturado</span>
+        </Button>
+        <Button variant={isPaid ? 'default' : 'outline'} size="sm"
+          onClick={() => handleToggle('paid', isPaid)} disabled={updating !== null || (!isBilled && !isPaid)}
+          className={isPaid
+            ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
+            : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-950'}>
+          {updating === 'paid' ? <Loader2 className="w-3 h-3 animate-spin" /> : isPaid ? <Check className="w-3 h-3" /> : null}
+          <span className={isPaid || updating === 'paid' ? 'ml-1' : ''}>Cobrado</span>
+        </Button>
+      </div>
+      {isBilled && (
+        <div className="flex items-center gap-1.5">
+          <input
+            type="text" inputMode="numeric" pattern="[0-9]*"
+            placeholder="N° de factura"
+            value={invoiceNumber}
+            onChange={(e) => setInvoiceNumber(e.target.value.replace(/\D/g, ''))}
+            onKeyDown={(e) => e.key === 'Enter' && handleSaveInvoice()}
+            disabled={savingInvoice}
+            className="flex-1 h-8 text-xs px-2 rounded border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+          />
+          <button onClick={handleSaveInvoice}
+            disabled={savingInvoice || invoiceNumber === (surgicalCase.assistant_invoice_number_own ?? '')}
+            className="h-8 w-8 flex items-center justify-center rounded border border-input bg-background hover:bg-accent disabled:opacity-40 transition-colors shrink-0">
+            {savingInvoice ? <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" /> : <Check className="w-3.5 h-3.5 text-green-600" />}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const FREE_CASE_LIMIT = 5;
 
 const CasesPage = () => {
@@ -702,6 +808,25 @@ const CasesPage = () => {
       setCases(prev => prev.filter(c => c.id !== caseId));
       setArchivedCases([]); // forzar recarga del tab cobrados
       toast.success('Anestesia cobrada', 'Tu honorario de anestesia pasó a Cobrados');
+    } else {
+      setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
+      toast.success('Actualizado', 'Estado actualizado correctamente');
+    }
+  };
+
+  const handleAssistantStatusUpdate = (
+    caseId: number,
+    patch: { assistant_is_operated_own?: boolean; assistant_is_billed_own?: boolean; assistant_is_paid_own?: boolean; assistant_invoice_number_own?: string | null }
+  ) => {
+    if ('assistant_invoice_number_own' in patch) {
+      setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
+      return;
+    }
+    const justBecamePaid = patch.assistant_is_paid_own === true;
+    if (justBecamePaid) {
+      setCases(prev => prev.filter(c => c.id !== caseId));
+      setArchivedCases([]);
+      toast.success('Ayudantía cobrada', 'Tu honorario de ayudante pasó a Cobrados');
     } else {
       setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
       toast.success('Actualizado', 'Estado actualizado correctamente');
@@ -1221,11 +1346,17 @@ const CasesPage = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-3 pt-0 space-y-2">
-                        {/* Si el usuario actúa como anestesiólogo: solo estados de anestesia */}
+                        {/* Estados según rol */}
                         {isAnesthesiologist ? (
                           <AnesthesiaStatusToggles
                             surgicalCase={surgicalCase}
                             onUpdate={(patch) => handleAnesthesiaStatusUpdate(surgicalCase.id, patch)}
+                            onError={handleCaseError}
+                          />
+                        ) : isAssistant ? (
+                          <AssistantStatusToggles
+                            surgicalCase={surgicalCase}
+                            onUpdate={(patch) => handleAssistantStatusUpdate(surgicalCase.id, patch)}
                             onError={handleCaseError}
                           />
                         ) : isOwner ? (

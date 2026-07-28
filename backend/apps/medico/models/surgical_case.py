@@ -161,7 +161,15 @@ class SurgicalCase(models.Model):
         verbose_name="Fecha de Notificación al Ayudante",
         help_text="Cuándo se notificó al ayudante sobre este caso"
     )
-    
+
+    # Estados independientes del médico ayudante
+    assistant_is_operated = models.BooleanField(default=False, verbose_name="Operado (ayudante)")
+    assistant_is_billed = models.BooleanField(default=False, verbose_name="Facturado (ayudante)")
+    assistant_is_paid = models.BooleanField(default=False, verbose_name="Cobrado (ayudante)")
+    assistant_invoice_number = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="N° de Factura (ayudante)"
+    )
+
     # Información clínica
     diagnosis = models.TextField(
         blank=True,

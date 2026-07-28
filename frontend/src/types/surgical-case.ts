@@ -104,6 +104,11 @@ export interface SurgicalCase {
   anesthesia_is_billed?: boolean | null;
   anesthesia_is_paid?: boolean | null;
   anesthesia_invoice_number?: string | null;
+  // Estados independientes del médico ayudante
+  assistant_is_operated_own?: boolean | null;
+  assistant_is_billed_own?: boolean | null;
+  assistant_is_paid_own?: boolean | null;
+  assistant_invoice_number_own?: string | null;
 
   // Equipo personal del cirujano (informativo)
   equipment_name?: string | null;

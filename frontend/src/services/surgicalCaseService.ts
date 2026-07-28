@@ -558,6 +558,23 @@ class SurgicalCaseService {
     return this.updateCase(id, { is_paid: isPaid });
   }
 
+  async updateAssistantStatus(id: number, data: {
+    assistant_is_operated?: boolean;
+    assistant_is_billed?: boolean;
+    assistant_is_paid?: boolean;
+    assistant_invoice_number?: string | null;
+  }): Promise<SurgicalCase> {
+    const res = await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/cases/${id}/assistant-status/`,
+      { method: 'PATCH', body: JSON.stringify(data) }
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al actualizar estado del ayudante');
+    }
+    return res.json();
+  }
+
   // ==================== UTILIDADES ====================
 
   canDelete(surgicalCase: SurgicalCase): { allowed: boolean; reason?: string } {
