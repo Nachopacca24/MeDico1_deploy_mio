@@ -1051,9 +1051,35 @@ const CasesPage = () => {
                 return (
                   <React.Fragment key={`case-${surgicalCase.id}`}>
                     <Card
-                    className={`hover:border-primary transition-colors border-border/70 border-l-4 ${roleBorderClass} ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400' : ''}`}
+                    className={`hover:border-primary transition-colors border-border/70 border-l-4 ${roleBorderClass} overflow-hidden ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400' : ''}`}
                     onClick={selectMode && isOwner ? () => toggleSelect(surgicalCase.id) : undefined}
                   >
+                      {/* Franja de rol */}
+                      {isAnesthesiologist && !isOwner && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border-b border-teal-200 dark:border-teal-800/50">
+                          <Stethoscope className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                          <span className="text-xs font-semibold text-teal-700 dark:text-teal-300">Colaborando como Anestesiólogo</span>
+                        </div>
+                      )}
+                      {isAnesthesiologist && isOwner && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border-b border-teal-200 dark:border-teal-800/50">
+                          <Stethoscope className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                          <span className="text-xs font-semibold text-teal-700 dark:text-teal-300">Tu Cirugía · Anestesiólogo</span>
+                        </div>
+                      )}
+                      {isOwner && !isAnesthesiologist && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 border-b border-sky-200 dark:border-sky-800/50">
+                          <Briefcase className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0" />
+                          <span className="text-xs font-semibold text-sky-700 dark:text-sky-300">Tu Cirugía</span>
+                        </div>
+                      )}
+                      {isAssistant && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border-b border-orange-200 dark:border-orange-800/50">
+                          <Users className="w-3 h-3 text-orange-600 dark:text-orange-400 shrink-0" />
+                          <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">Colaborando como Ayudante</span>
+                        </div>
+                      )}
+
                       <CardHeader className="p-3">
                         <div className="flex items-center justify-between mb-1">
                           <div className="min-w-0 flex-1">
@@ -1065,19 +1091,6 @@ const CasesPage = () => {
                               selectedIds.has(surgicalCase.id)
                                 ? <CheckSquare className="w-4 h-4 text-amber-400 flex-shrink-0" />
                                 : <Square className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            )}
-                            {/* Badge de rol — solo cuando el usuario NO es dueño */}
-                            {isAnesthesiologist && (
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300 shrink-0">
-                                <Stethoscope className="w-3 h-3" />
-                                Anestesia
-                              </span>
-                            )}
-                            {isAssistant && (
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 shrink-0">
-                                <Users className="w-3 h-3" />
-                                Ayudante
-                              </span>
                             )}
                             {isOwner && surgicalCase.assistant_doctor && surgicalCase.assistant_accepted !== true && surgicalCase.assistant_accepted !== false && (
                               <Badge className="bg-yellow-600 text-white text-xs shrink-0 whitespace-nowrap">⏳</Badge>
