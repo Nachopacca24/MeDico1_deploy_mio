@@ -17,6 +17,7 @@ from apps.medico.views.google_calendar_auth import (
     get_google_token,
     google_calendar_status,
     disconnect_google_calendar,
+    update_calendar_preferences,
 )
 from apps.medico.views.push_token import manage_push_token
 from apps.medico.views.anesthesia import anesthesia_case, add_anesthesia_item, remove_anesthesia_item, respond_anesthesia_invitation, anesthesia_pending_invitations
@@ -37,6 +38,7 @@ urlpatterns = [
     path('google-calendar/token/', get_google_token, name='google-calendar-token'),
     path('google-calendar/status/', google_calendar_status, name='google-calendar-status'),
     path('google-calendar/disconnect/', disconnect_google_calendar, name='google-calendar-disconnect'),
+    path('google-calendar/preferences/', update_calendar_preferences, name='google-calendar-preferences'),
 
     # Push notifications
     path('push-token/', manage_push_token, name='push-token'),

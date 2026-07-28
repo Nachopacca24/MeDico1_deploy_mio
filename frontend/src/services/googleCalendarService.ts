@@ -16,6 +16,7 @@ export interface CalendarEvent {
   summary: string;
   description?: string;
   location?: string;
+  colorId?: string;
   start: {
     dateTime?: string;
     date?: string;
@@ -43,6 +44,7 @@ interface CachedToken {
   access_token: string;
   expires_at: number; // ms timestamp
   email: string;
+  calendar_color_id: string;
 }
 
 interface CachedEvents {
@@ -112,6 +114,7 @@ class GoogleCalendarService {
       access_token: data.access_token,
       expires_at: Date.now() + data.expires_in * 1000,
       email: data.email || '',
+      calendar_color_id: data.calendar_color_id || '',
     };
 
     return this.cachedToken.access_token;
@@ -125,6 +128,20 @@ class GoogleCalendarService {
 
   getCachedEmail(): string {
     return this.cachedToken?.email || '';
+  }
+
+  getCalendarColorId(): string {
+    return this.cachedToken?.calendar_color_id || '';
+  }
+
+  async saveCalendarColorId(colorId: string): Promise<void> {
+    await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/google-calendar/preferences/`,
+      { method: 'PATCH', body: JSON.stringify({ calendar_color_id: colorId }) }
+    );
+    if (this.cachedToken) {
+      this.cachedToken.calendar_color_id = colorId;
+    }
   }
 
   invalidateCache(): void {
@@ -196,6 +213,7 @@ class GoogleCalendarService {
       access_token: data.access_token,
       expires_at: Date.now() + data.expires_in * 1000,
       email: data.email || '',
+      calendar_color_id: '',
     };
 
     return 'connected';

@@ -23,6 +23,10 @@ class GoogleCalendarToken(models.Model):
     )
     token_expiry = models.DateTimeField(verbose_name='Expiración del Access Token')
     google_email = models.EmailField(blank=True, default='', verbose_name='Email de Google')
+    calendar_color_id = models.CharField(
+        max_length=2, blank=True, default='',
+        verbose_name='Color de eventos (colorId Google Calendar)',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

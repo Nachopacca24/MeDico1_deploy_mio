@@ -32,10 +32,12 @@ class CalendarSyncService {
 
       const description = this.buildEventDescription(surgicalCase);
 
+      const colorId = googleCalendarService.getCalendarColorId() || undefined;
       const event: CalendarEvent = {
         summary: `Cirugía: ${surgicalCase.patient_name}`,
         description: description,
         location: surgicalCase.hospital_name || 'Hospital',
+        ...(colorId ? { colorId } : {}),
         start: { dateTime: startDateTime, timeZone: 'America/Guatemala' },
         end: { dateTime: endDateTime, timeZone: 'America/Guatemala' },
         reminders: {
@@ -94,10 +96,12 @@ class CalendarSyncService {
 
       const description = this.buildEventDescription(surgicalCase);
 
+      const colorId = googleCalendarService.getCalendarColorId() || undefined;
       const event: CalendarEvent = {
         summary: `Cirugía: ${surgicalCase.patient_name}`,
         description: description,
         location: surgicalCase.hospital_name || 'Hospital',
+        ...(colorId ? { colorId } : {}),
         start: {
           dateTime: startDateTime,
           timeZone: 'America/Guatemala',

@@ -123,6 +123,7 @@ def get_google_token(request):
         'access_token': access_token,
         'email': token_obj.google_email,
         'expires_in': max(seconds_left, 0),
+        'calendar_color_id': token_obj.calendar_color_id or '',
     })
 
 
@@ -135,6 +136,25 @@ def google_calendar_status(request):
         return Response({'connected': True, 'email': token_obj.google_email})
     except GoogleCalendarToken.DoesNotExist:
         return Response({'connected': False})
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_calendar_preferences(request):
+    """Guarda preferencias del calendario (por ahora: color de eventos)."""
+    try:
+        token_obj = GoogleCalendarToken.objects.get(user=request.user)
+    except GoogleCalendarToken.DoesNotExist:
+        return Response({'error': 'No conectado a Google Calendar.'}, status=status.HTTP_404_NOT_FOUND)
+
+    color_id = request.data.get('calendar_color_id', '')
+    # Acepta '' (ninguno) o '1'–'11'
+    if color_id != '' and color_id not in [str(i) for i in range(1, 12)]:
+        return Response({'error': 'colorId inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    token_obj.calendar_color_id = color_id
+    token_obj.save(update_fields=['calendar_color_id'])
+    return Response({'calendar_color_id': token_obj.calendar_color_id})
 
 
 @api_view(['DELETE'])

@@ -79,6 +79,8 @@ const CalendarPage = () => {
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [loadingEvents, setLoadingEvents] = useState(cachedEvents === null);
+  const [calendarColor, setCalendarColor] = useState(() => googleCalendarService.getCalendarColorId());
+  const [savingColor, setSavingColor] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const hasSyncedRef = useRef(false);
@@ -369,6 +371,20 @@ const CalendarPage = () => {
     }
   };
 
+  const handleColorChange = async (colorId: string) => {
+    const next = colorId === calendarColor ? '' : colorId;
+    setCalendarColor(next);
+    setSavingColor(true);
+    try {
+      await googleCalendarService.saveCalendarColorId(next);
+    } catch {
+      toast.error('Error', 'No se pudo guardar el color');
+      setCalendarColor(calendarColor);
+    } finally {
+      setSavingColor(false);
+    }
+  };
+
   const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
     const confirmed = confirm(`¿Eliminar el evento "${eventTitle}"?`);
     if (!confirmed) return;
@@ -498,6 +514,50 @@ const CalendarPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Color picker para eventos de cirugía */}
+        {(() => {
+          const GCAL_COLORS = [
+            { id: '11', hex: '#D50000', name: 'Tomato' },
+            { id: '4',  hex: '#E67C73', name: 'Flamingo' },
+            { id: '6',  hex: '#F4511E', name: 'Tangerine' },
+            { id: '5',  hex: '#F6BF26', name: 'Banana' },
+            { id: '2',  hex: '#33B679', name: 'Sage' },
+            { id: '10', hex: '#0B8043', name: 'Basil' },
+            { id: '7',  hex: '#039BE5', name: 'Peacock' },
+            { id: '9',  hex: '#3F51B5', name: 'Blueberry' },
+            { id: '1',  hex: '#7986CB', name: 'Lavender' },
+            { id: '3',  hex: '#8E24AA', name: 'Grape' },
+            { id: '8',  hex: '#616161', name: 'Graphite' },
+          ];
+          return (
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-sm text-muted-foreground shrink-0">Color de cirugías en Calendar:</span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {GCAL_COLORS.map(c => (
+                  <button
+                    key={c.id}
+                    title={c.name}
+                    disabled={savingColor}
+                    onClick={() => handleColorChange(c.id)}
+                    className={`w-6 h-6 rounded-full transition-all disabled:opacity-50 ${calendarColor === c.id ? 'ring-2 ring-offset-2 ring-foreground scale-110' : 'hover:scale-110'}`}
+                    style={{ backgroundColor: c.hex }}
+                  />
+                ))}
+                {calendarColor && (
+                  <button
+                    title="Sin color (predeterminado)"
+                    disabled={savingColor}
+                    onClick={() => handleColorChange('')}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 ml-1"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2">
