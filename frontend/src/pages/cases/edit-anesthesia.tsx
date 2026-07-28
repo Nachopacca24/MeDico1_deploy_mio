@@ -13,7 +13,7 @@ import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { anesthesiaService, type AnesthesiaItem } from '@/services/anesthesiaService';
-import { Loader2, User, Building2, Stethoscope, Wrench, Star } from 'lucide-react';
+import { Loader2, User, Building2, Stethoscope, Wrench, Star, Users } from 'lucide-react';
 import type { PatientGender } from '@/types/surgical-case';
 import { AnesthesiaCodesPicker, type AnesthesiaPickedItem, type CsvRow } from './AnesthesiaCodesPicker';
 
@@ -39,6 +39,8 @@ const EditAnesthesiaCase = () => {
   const [diagnosis, setDiagnosis] = useState('');
   const [notes, setNotes] = useState('');
   const [insuranceId, setInsuranceId] = useState('');
+  const [surgeonName, setSurgeonName] = useState('');
+  const [assistantName, setAssistantName] = useState('');
 
   // Anesthesia
   const [unitValue, setUnitValue] = useState('');
@@ -94,6 +96,8 @@ const EditAnesthesiaCase = () => {
         setDiagnosis(caseData.diagnosis || '');
         setNotes(caseData.notes || '');
         setInsuranceId(caseData.insurance_company ? String(caseData.insurance_company) : '');
+        setSurgeonName(caseData.surgeon_name || '');
+        setAssistantName(caseData.assistant_doctor_name || '');
 
         if (anesthesiaData) {
           setUnitValue(anesthesiaData.unit_value != null ? String(anesthesiaData.unit_value) : '');
@@ -154,6 +158,8 @@ const EditAnesthesiaCase = () => {
           diagnosis: diagnosis || undefined,
           notes: notes || undefined,
           insurance_company: insuranceId ? parseInt(insuranceId) : undefined,
+          surgeon_name: surgeonName.trim() || undefined,
+          assistant_doctor_name: assistantName.trim() || undefined,
         }),
         anesthesiaService.update(caseId, {
           unit_value: unitValue ? parseFloat(unitValue) : 0,
@@ -364,6 +370,43 @@ const EditAnesthesiaCase = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Equipo Médico */}
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <Users className="h-5 w-5" />
+                </div>
+                Equipo Médico
+              </CardTitle>
+              <CardDescription className="pl-12">Nombres del médico principal y ayudante (opcional)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="surgeonName" className="text-sm font-semibold">Médico Principal</Label>
+                  <Input
+                    id="surgeonName"
+                    value={surgeonName}
+                    onChange={(e) => setSurgeonName(e.target.value)}
+                    placeholder="Ej: Dr. Juan Pérez"
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="assistantName" className="text-sm font-semibold">Médico Ayudante</Label>
+                  <Input
+                    id="assistantName"
+                    value={assistantName}
+                    onChange={(e) => setAssistantName(e.target.value)}
+                    placeholder="Ej: Dra. María López"
+                    className="h-11"
+                  />
                 </div>
               </div>
             </CardContent>
