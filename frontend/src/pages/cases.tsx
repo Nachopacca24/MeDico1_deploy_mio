@@ -1624,19 +1624,55 @@ const CasesPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {archivedCases.map((surgicalCase) => {
                       const imagesPurgeDate = surgicalCase.images_purge_at ? new Date(surgicalCase.images_purge_at) : null;
-                      const casePurgeDate   = surgicalCase.archived_at     ? new Date(new Date(surgicalCase.archived_at).getTime() + 180 * 24 * 60 * 60 * 1000) : null;
+                      const casePurgeDate   = surgicalCase.archived_at ? new Date(new Date(surgicalCase.archived_at).getTime() + 180 * 24 * 60 * 60 * 1000) : null;
                       const now = new Date();
                       const imagesAlreadyPurged = imagesPurgeDate && imagesPurgeDate <= now;
+                      const isOwnerA = surgicalCase.is_owner ?? true;
+                      const isAnesthesiologistA = surgicalCase.is_anesthesiologist ?? false;
+                      const isAssistantA = !isOwnerA && !isAnesthesiologistA;
+                      const roleBorderA = isAnesthesiologistA && isOwnerA
+                        ? 'border-l-sky-400'
+                        : isAnesthesiologistA
+                          ? 'border-l-teal-500'
+                          : isAssistantA
+                            ? 'border-l-orange-400'
+                            : 'border-l-primary';
                       return (
                       <Card
                         key={surgicalCase.id}
-                        className={`opacity-80 hover:opacity-100 transition-opacity ${archivedSelectMode ? 'cursor-pointer' : ''} ${archivedSelectMode && archivedSelectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 opacity-100' : ''}`}
+                        className={`hover:border-primary transition-colors border-border/70 border-l-4 ${roleBorderA} overflow-hidden opacity-80 hover:opacity-100 ${archivedSelectMode ? 'cursor-pointer' : ''} ${archivedSelectMode && archivedSelectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400 opacity-100' : ''}`}
                         onClick={archivedSelectMode ? () => toggleArchivedSelect(surgicalCase.id) : undefined}
                       >
+                        {/* Franja de rol */}
+                        {isAnesthesiologistA && !isOwnerA && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border-b border-teal-200 dark:border-teal-800/50">
+                            <Stethoscope className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                            <span className="text-xs font-semibold text-teal-700 dark:text-teal-300">Colaborando como Anestesiólogo</span>
+                          </div>
+                        )}
+                        {isAnesthesiologistA && isOwnerA && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 border-b border-sky-200 dark:border-sky-800/50">
+                            <Stethoscope className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0" />
+                            <span className="text-xs font-semibold text-sky-700 dark:text-sky-300">Tu Cirugía · Anestesiólogo</span>
+                          </div>
+                        )}
+                        {isOwnerA && !isAnesthesiologistA && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 border-b border-sky-200 dark:border-sky-800/50">
+                            <Briefcase className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0" />
+                            <span className="text-xs font-semibold text-sky-700 dark:text-sky-300">Tu Cirugía</span>
+                          </div>
+                        )}
+                        {isAssistantA && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border-b border-orange-200 dark:border-orange-800/50">
+                            <Users className="w-3 h-3 text-orange-600 dark:text-orange-400 shrink-0" />
+                            <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">Colaborando como Ayudante</span>
+                          </div>
+                        )}
+
                         <CardHeader className="p-3">
                           <div className="flex items-center justify-between mb-1">
                             <CardTitle className="text-sm font-bold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 shrink-0">
                               {archivedSelectMode && (
                                 archivedSelectedIds.has(surgicalCase.id)
                                   ? <CheckSquare className="w-4 h-4 text-amber-400 flex-shrink-0" />
@@ -1653,12 +1689,44 @@ const CasesPage = () => {
                                 <Calendar className="w-3.5 h-3.5 text-blue-500" />
                               </div>
                               <span>{new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()}</span>
+                              {surgicalCase.surgery_time && (
+                                <span className="text-muted-foreground">{surgicalCase.surgery_time.slice(0, 5)}</span>
+                              )}
                             </div>
                             <div className="flex items-center gap-1.5 text-xs">
                               <div className="p-1 bg-purple-500/10 rounded">
                                 <Hospital className="w-3.5 h-3.5 text-purple-500" />
                               </div>
                               <span className="truncate">{surgicalCase.hospital_name}</span>
+                            </div>
+                            {/* Cirujano */}
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <div className="p-1 bg-orange-500/10 rounded">
+                                <Users className="w-3.5 h-3.5 text-orange-500" />
+                              </div>
+                              <span className="truncate">Cirujano: <span className="font-semibold text-foreground">{surgicalCase.created_by_name ?? 'N/A'}</span></span>
+                            </div>
+                            {/* Ayudante */}
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <div className="p-1 bg-teal-500/10 rounded">
+                                <Users className="w-3.5 h-3.5 text-teal-500" />
+                              </div>
+                              {surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== 'Sin ayudante' ? (
+                                <span className="truncate">Ayud: <span className="font-semibold text-foreground">{surgicalCase.assistant_display_name}</span></span>
+                              ) : (
+                                <span className="text-muted-foreground">Ayud: <span className="italic">N/A</span></span>
+                              )}
+                            </div>
+                            {/* Anestesiólogo */}
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <div className="p-1 bg-cyan-500/10 rounded">
+                                <Users className="w-3.5 h-3.5 text-cyan-500" />
+                              </div>
+                              {surgicalCase.anesthesiologist_display ? (
+                                <span className="truncate">Anest: <span className="font-semibold text-foreground">{surgicalCase.anesthesiologist_display}</span></span>
+                              ) : (
+                                <span className="text-muted-foreground">Anest: <span className="italic">N/A</span></span>
+                              )}
                             </div>
                             {surgicalCase.invoice_number && (
                               <div className="flex items-center gap-1.5 text-xs">
@@ -1672,37 +1740,59 @@ const CasesPage = () => {
                                   imagesAlreadyPurged ? (
                                     <p className="text-muted-foreground">Imágenes eliminadas</p>
                                   ) : (
-                                    <p className="text-amber-600 dark:text-amber-400">
-                                      Imgs. eliminan el {imagesPurgeDate.toLocaleDateString()}
-                                    </p>
+                                    <p className="text-amber-600 dark:text-amber-400">Imgs. eliminan el {imagesPurgeDate.toLocaleDateString()}</p>
                                   )
                                 )}
                                 {casePurgeDate && (
-                                  <p className="text-muted-foreground">
-                                    Caso elimina el {casePurgeDate.toLocaleDateString()}
-                                  </p>
+                                  <p className="text-muted-foreground">Caso elimina el {casePurgeDate.toLocaleDateString()}</p>
                                 )}
                               </div>
                             )}
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="p-3 pt-0 space-y-2">
-                          <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
-                              <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-0.5">RVU</div>
-                              <div className="text-sm font-semibold">{surgicalCase.total_rvu || 0}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-0.5">Valor</div>
-                              <div className="text-sm font-bold">
-                                Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          {isAnesthesiologistA ? (
+                            <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-0.5">Cód.</div>
+                                <div className="text-sm font-semibold">{surgicalCase.anesthesia_item_count ?? 0}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
+                                <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-0.5">Honorario</div>
+                                <div className="text-sm font-bold text-teal-600 dark:text-teal-400">
+                                  {surgicalCase.anesthesia_total_fee != null
+                                    ? `Q ${surgicalCase.anesthesia_total_fee.toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                                    : '—'}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
+                                <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-0.5">RVU</div>
+                                <div className="text-sm font-semibold">{surgicalCase.total_rvu || 0}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-0.5">Valor</div>
+                                <div className="text-sm font-bold">
+                                  Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {surgicalCase.primary_specialty && (
+                            <div className="text-center py-1 border-t">
+                              <span className="text-xs text-muted-foreground">{surgicalCase.primary_specialty}</span>
+                            </div>
+                          )}
                           <div className="flex gap-1 pt-1 border-t">
                             <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
                               <Link to={`/cases/${surgicalCase.id}`}>
@@ -1710,6 +1800,14 @@ const CasesPage = () => {
                                 Ver
                               </Link>
                             </Button>
+                            {isAnesthesiologistA && (
+                              <Button asChild variant="ghost" size="sm" className="flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950">
+                                <Link to={`/cases/${surgicalCase.id}/anesthesia`}>
+                                  <Stethoscope className="w-3.5 h-3.5 mr-1" />
+                                  Anestesia
+                                </Link>
+                              </Button>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
