@@ -197,9 +197,9 @@ const AnesthesiaEditorPage = () => {
         equipment_cost: equipmentEnabled && equipmentCost ? parseFloat(equipmentCost) : null,
       });
       setSession(updated);
-      // Sync time state from response so re-entry shows correct value
       setTimeMinutes(updated.time_minutes != null ? String(updated.time_minutes) : "");
       toast.success("Cambios guardados");
+      navigate('/cases');
     } catch (e: any) {
       toast.error(e.message || "Error al guardar");
     } finally {

@@ -90,8 +90,8 @@ def anesthesia_case(request, case_id):
 
     user = request.user
 
-    # El dueño del caso puede reasignar al anestesiólogo (misma lógica que el médico ayudante)
-    if case.created_by == user:
+    # El dueño del caso puede reasignar al anestesiólogo, pero solo si él mismo NO es el anestesiólogo
+    if case.created_by == user and anesthesia.anesthesiologist != user:
         allowed = {'anesthesiologist', 'anesthesiologist_name'}
         data = {k: v for k, v in request.data.items() if k in allowed}
         old_anesthesiologist_id = anesthesia.anesthesiologist_id
