@@ -379,29 +379,27 @@ const CaseDetailPage = () => {
               </Button>
             )}
 
-            {/* PDF export — visible siempre, activo solo para premium */}
-            {isOwner && (
-              isPremium ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExportPdf(true)}
-                  disabled={pdfLoading}
-                  className="border-amber-500/40 text-amber-500 hover:bg-amber-500/10"
-                >
-                  {pdfLoading
-                    ? <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mr-2" />
-                    : <Download className="w-4 h-4 mr-2" />
-                  }
-                  Exportar PDF
-                </Button>
-              ) : (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-muted/40 opacity-60 cursor-not-allowed select-none">
-                  <Download className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Exportar PDF</span>
-                  <span className="text-xs bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-medium ml-1">Premium</span>
-                </div>
-              )
+            {/* PDF export — visible para todos, activo solo con premium */}
+            {isPremium ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportPdf(true)}
+                disabled={pdfLoading}
+                className="border-amber-500/40 text-amber-500 hover:bg-amber-500/10"
+              >
+                {pdfLoading
+                  ? <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mr-2" />
+                  : <Download className="w-4 h-4 mr-2" />
+                }
+                Exportar PDF
+              </Button>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-muted/40 opacity-60 cursor-not-allowed select-none">
+                <Download className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Exportar PDF</span>
+                <span className="text-xs bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-medium ml-1">Premium</span>
+              </div>
             )}
 
             {canDelete && (

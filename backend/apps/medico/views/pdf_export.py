@@ -671,12 +671,19 @@ def export_case_pdf(request, case_id):
 
     include_factor = request.query_params.get('include_factor', 'true').lower() != 'false'
 
+    from django.db.models import Q
+    from ..models.anesthesia import AnesthesiaCase
     try:
         case = (
             SurgicalCase.objects
             .select_related('hospital', 'created_by', 'assistant_doctor')
-            .prefetch_related('procedures', 'images')
-            .get(pk=case_id, created_by=request.user)
+            .prefetch_related('procedures', 'images', 'anesthesia__items')
+            .get(
+                Q(created_by=request.user) |
+                Q(assistant_doctor=request.user, assistant_accepted=True) |
+                Q(anesthesia__anesthesiologist=request.user, anesthesia__anesthesiologist_accepted=True),
+                pk=case_id,
+            )
         )
     except SurgicalCase.DoesNotExist:
         return Response({'error': 'Caso no encontrado'}, status=status.HTTP_404_NOT_FOUND)
