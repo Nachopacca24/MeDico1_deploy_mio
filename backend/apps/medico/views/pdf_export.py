@@ -423,25 +423,28 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict, role: s
     except Exception:
         pass  # no anesthesia session exists
 
-    # ── Surgeon equipment (informational only) ────────────────────────────────
-    if case.equipment_name or case.equipment_cost:
-        story.append(Paragraph('USO DE EQUIPO PERSONAL', S['section']))
-        eq_rows = [
-            [Paragraph('Equipo', S['label']), Paragraph('Costo (informativo)', S['label'])],
-            [Paragraph(case.equipment_name or '—', S['body']),
-             Paragraph(f'Q {float(case.equipment_cost or 0):,.2f}' if case.equipment_cost else '—', S['body'])],
-        ]
-        eq_table = Table(eq_rows, colWidths=[4.5 * inch, 2 * inch])
-        eq_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
-            ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
-            ('PADDING', (0, 0), (-1, -1), 6),
-        ]))
-        story.append(eq_table)
-        story.append(Paragraph(
-            'Nota: el costo del equipo es informativo y no se incluye en el honorario.',
-            ParagraphStyle('eq_note', fontSize=7.5, textColor=C_MUTED, fontName='Helvetica', spaceAfter=4),
-        ))
+    # ── Surgeon equipment — name visible to all, cost only to owner ──────────
+    if case.equipment_name or (show_proc_fees and case.equipment_cost):
+        story.append(Paragraph('EQUIPO DEL CIRUJANO', S['section']))
+        if show_proc_fees:
+            eq_rows = [
+                [Paragraph('Equipo', S['label']), Paragraph('Costo (informativo)', S['label'])],
+                [Paragraph(case.equipment_name or '—', S['body']),
+                 Paragraph(f'Q {float(case.equipment_cost or 0):,.2f}' if case.equipment_cost else '—', S['body'])],
+            ]
+            eq_table = Table(eq_rows, colWidths=[4.5 * inch, 2 * inch])
+            eq_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+                ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+                ('PADDING', (0, 0), (-1, -1), 6),
+            ]))
+            story.append(eq_table)
+            story.append(Paragraph(
+                'Nota: el costo del equipo es informativo y no se incluye en el honorario.',
+                ParagraphStyle('eq_note', fontSize=7.5, textColor=C_MUTED, fontName='Helvetica', spaceAfter=4),
+            ))
+        else:
+            story.append(Paragraph(case.equipment_name or '—', S['body']))
         story.append(Spacer(1, 4))
 
     # ── Surgery images ────────────────────────────────────────────────────────
