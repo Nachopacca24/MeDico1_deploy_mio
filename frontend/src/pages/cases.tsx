@@ -691,12 +691,19 @@ const CasesPage = () => {
     caseId: number,
     patch: { anesthesia_is_operated?: boolean; anesthesia_is_billed?: boolean; anesthesia_is_paid?: boolean; anesthesia_invoice_number?: string | null }
   ) => {
+    if ('anesthesia_invoice_number' in patch) {
+      // Actualización silenciosa del número de factura
+      setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
+      return;
+    }
     const justBecamePaid = patch.anesthesia_is_paid === true;
-    setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
-    if ('anesthesia_invoice_number' in patch) return; // silencioso para factura
     if (justBecamePaid) {
-      toast.success('Anestesia cobrada', 'Marcaste tu honorario de anestesia como cobrado');
+      // Sacar de la lista activa — el backend ya no lo devuelve como activo
+      setCases(prev => prev.filter(c => c.id !== caseId));
+      setArchivedCases([]); // forzar recarga del tab cobrados
+      toast.success('Anestesia cobrada', 'Tu honorario de anestesia pasó a Cobrados');
     } else {
+      setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
       toast.success('Actualizado', 'Estado actualizado correctamente');
     }
   };

@@ -77,12 +77,29 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True)
             )
 
-        # El filtro de archivado solo aplica en el listado, no en detalle/edición
+        # El filtro de archivado solo aplica en el listado, no en detalle/edición.
+        # Regla por rol:
+        #   - Cirujano/ayudante: usa el archived_at/is_paid del SurgicalCase (controlado por el cirujano)
+        #   - Anestesiólogo (no dueño): usa su propio anesthesia.is_paid — el cirujano cobrar no lo archiva
         if self.action == 'list':
             if show_archived:
-                queryset = queryset.filter(Q(archived_at__isnull=False) | Q(is_paid=True))
+                queryset = queryset.filter(
+                    # Cirujano o ayudante: casos que el cirujano ya marcó como cobrado/archivado
+                    (Q(created_by=user) | Q(assistant_doctor=user, assistant_accepted=True)) &
+                    (Q(archived_at__isnull=False) | Q(is_paid=True)) |
+                    # Anestesiólogo (no dueño): casos donde ÉL marcó su anestesia como cobrada
+                    Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True,
+                      anesthesia__is_paid=True) & ~Q(created_by=user)
+                )
             else:
-                queryset = queryset.filter(archived_at__isnull=True, is_paid=False)
+                queryset = queryset.filter(
+                    # Cirujano o ayudante: casos activos desde la perspectiva del cirujano
+                    (Q(created_by=user) | Q(assistant_doctor=user, assistant_accepted=True)) &
+                    Q(archived_at__isnull=True, is_paid=False) |
+                    # Anestesiólogo (no dueño): visible hasta que ÉL marque su anestesia como cobrada
+                    Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True,
+                      anesthesia__is_paid=False) & ~Q(created_by=user)
+                )
 
         # Optimizamos con select_related y prefetch_related para evitar el problema N+1
         queryset = queryset.select_related(
