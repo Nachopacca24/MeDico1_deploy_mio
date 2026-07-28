@@ -1287,6 +1287,9 @@ const CasesPage = () => {
                               <Calendar className="w-3.5 h-3.5 text-blue-500" />
                             </div>
                             <span>{new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()}</span>
+                            {surgicalCase.surgery_time && (
+                              <span className="text-muted-foreground">{surgicalCase.surgery_time.slice(0, 5)}</span>
+                            )}
                           </div>
                           <div className="flex items-center gap-1.5 text-xs">
                             <div className="p-1 bg-purple-500/10 rounded">
