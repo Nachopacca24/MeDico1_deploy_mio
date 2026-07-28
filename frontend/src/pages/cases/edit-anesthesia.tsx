@@ -169,7 +169,7 @@ const EditAnesthesiaCase = () => {
       ]);
 
       toast.success('Caso actualizado', 'Los cambios fueron guardados correctamente');
-      navigate(`/cases/${caseId}`);
+      navigate('/cases');
     } catch (error: any) {
       const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';
       toast.error('Error al guardar', msg);

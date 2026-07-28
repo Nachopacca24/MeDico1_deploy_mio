@@ -1364,7 +1364,7 @@ const CasesPage = () => {
                               <Users className="w-3.5 h-3.5 text-orange-500" />
                             </div>
                             <span className="truncate">
-                              Cirujano: <span className="font-semibold text-foreground">{surgicalCase.created_by_name ?? 'N/A'}</span>
+                              Cirujano: <span className="font-semibold text-foreground">{surgicalCase.surgeon_name || surgicalCase.created_by_name || 'N/A'}</span>
                             </span>
                           </div>
 
@@ -1704,7 +1704,7 @@ const CasesPage = () => {
                               <div className="p-1 bg-orange-500/10 rounded">
                                 <Users className="w-3.5 h-3.5 text-orange-500" />
                               </div>
-                              <span className="truncate">Cirujano: <span className="font-semibold text-foreground">{surgicalCase.created_by_name ?? 'N/A'}</span></span>
+                              <span className="truncate">Cirujano: <span className="font-semibold text-foreground">{surgicalCase.surgeon_name || surgicalCase.created_by_name || 'N/A'}</span></span>
                             </div>
                             {/* Ayudante */}
                             <div className="flex items-center gap-1.5 text-xs">

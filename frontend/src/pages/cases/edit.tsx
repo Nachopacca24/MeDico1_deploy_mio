@@ -695,7 +695,7 @@ const EditCase = () => {
         `El caso de ${patientName} ha sido actualizado correctamente`
       );
 
-      navigate(`/cases/${id}`);
+      navigate('/cases');
     } catch (error: any) {
       toast.error('Error al actualizar caso', error.message || 'Por favor intenta de nuevo.');
     } finally {
