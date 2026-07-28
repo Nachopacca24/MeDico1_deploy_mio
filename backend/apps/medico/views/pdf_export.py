@@ -91,8 +91,16 @@ def _fmt_time(t):
     return t.strftime('%H:%M')
 
 
-def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list:
-    """Build the reportlab flowables for one surgical case."""
+def _build_case_story(case, include_hospital_factor: bool, styles: dict, role: str = 'owner') -> list:
+    """Build the reportlab flowables for one surgical case.
+
+    role: 'owner'           – surgeon; sees own procedure honorarios, no anesthesia fee
+          'anesthesiologist' – sees anesthesia honorarios only, procedure values hidden
+          'assistant'        – sees procedures + RVU only, no honorarios at all
+    """
+    show_proc_fees  = (role == 'owner')
+    show_anest_fees = (role == 'anesthesiologist')
+
     story = []
     S = styles
 
@@ -206,25 +214,29 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
         procs_count = len(procedures)
         use_multi = procs_count > 1
 
-        # Sort by value desc to assign multiple-rule ranks
         ranked = sorted(enumerate(procedures), key=lambda x: float(x[1].rvu or 0), reverse=True)
         rank_map = {orig_i: rank for rank, (orig_i, _) in enumerate(ranked)}
         pct_labels = ['100%', '50%', '25%', '10%']
 
-        if include_hospital_factor:
-            headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU',
-                       f'Factor\n{case.hospital.name[:15] if case.hospital else "Hospital"}',
-                       'Valor base', 'Regla múlt.', 'Honorario']
-            col_w = [0.25*inch, 0.7*inch, 1.6*inch, 0.8*inch, 0.45*inch, 0.6*inch, 0.7*inch, 0.6*inch, 0.7*inch]
+        if show_proc_fees:
+            if include_hospital_factor:
+                headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU',
+                           f'Factor\n{case.hospital.name[:15] if case.hospital else "Hospital"}',
+                           'Valor base', 'Regla múlt.', 'Honorario']
+                col_w = [0.25*inch, 0.7*inch, 1.6*inch, 0.8*inch, 0.45*inch, 0.6*inch, 0.7*inch, 0.6*inch, 0.7*inch]
+            else:
+                headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU', 'Valor base', 'Regla múlt.', 'Honorario']
+                col_w = [0.25*inch, 0.75*inch, 1.9*inch, 0.95*inch, 0.5*inch, 0.75*inch, 0.65*inch, 0.75*inch]
         else:
-            headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU', 'Valor base', 'Regla múlt.', 'Honorario']
-            col_w = [0.25*inch, 0.75*inch, 1.9*inch, 0.95*inch, 0.5*inch, 0.75*inch, 0.65*inch, 0.75*inch]
+            # No financial columns for anesthesiologist / assistant
+            headers = ['#', 'Código', 'Procedimiento', 'Especialidad', 'RVU']
+            col_w = [0.3*inch, 0.9*inch, 2.8*inch, 1.5*inch, 0.7*inch]
 
         proc_data = [[Paragraph(h, S['label']) for h in headers]]
 
-        total_rvu        = 0
-        total_value      = 0
-        total_multi      = 0
+        total_rvu   = 0
+        total_value = 0
+        total_multi = 0
 
         for i, proc in enumerate(procedures):
             rvu     = float(proc.rvu or 0)
@@ -238,8 +250,6 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
             total_value += val
             total_multi += multi_v
 
-            multi_style = ParagraphStyle('mp', fontSize=8, fontName='Helvetica-Bold',
-                                         textColor=C_AMBER if mult == 1.0 else C_MUTED)
             row = [
                 Paragraph(str(i + 1), S['body']),
                 Paragraph(proc.surgery_code or '—', S['body']),
@@ -247,29 +257,29 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
                 Paragraph(proc.specialty or '—', S['body']),
                 Paragraph(f'{rvu:.2f}', S['body']),
             ]
-            if include_hospital_factor:
-                row.append(Paragraph(f'{float(proc.hospital_factor or 0):.2f}', S['body']))
-            row.append(Paragraph(f'Q {val:,.2f}', S['body']))
-            row.append(Paragraph(pct, multi_style))
-            row.append(Paragraph(f'Q {multi_v:,.2f}',
-                                 ParagraphStyle('mv', fontSize=8, fontName='Helvetica-Bold',
-                                                textColor=C_AMBER if mult == 1.0 else C_DARK)))
+            if show_proc_fees:
+                multi_style = ParagraphStyle('mp', fontSize=8, fontName='Helvetica-Bold',
+                                             textColor=C_AMBER if mult == 1.0 else C_MUTED)
+                if include_hospital_factor:
+                    row.append(Paragraph(f'{float(proc.hospital_factor or 0):.2f}', S['body']))
+                row.append(Paragraph(f'Q {val:,.2f}', S['body']))
+                row.append(Paragraph(pct, multi_style))
+                row.append(Paragraph(f'Q {multi_v:,.2f}',
+                                     ParagraphStyle('mv', fontSize=8, fontName='Helvetica-Bold',
+                                                    textColor=C_AMBER if mult == 1.0 else C_DARK)))
             proc_data.append(row)
 
-        # Totals row
         tb = ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)
         ta = ParagraphStyle('ta', fontSize=9, fontName='Helvetica-Bold', textColor=C_AMBER)
         empty = Paragraph('', S['body'])
-        base_cols = [empty, empty,
-                     Paragraph('TOTAL', tb), empty,
-                     Paragraph(f'{total_rvu:.2f}', tb)]
-        if include_hospital_factor:
-            base_cols.append(empty)
-        base_cols += [
-            Paragraph(f'Q {total_value:,.2f}', tb),
-            empty,
-            Paragraph(f'Q {total_multi:,.2f}', ta),
-        ]
+
+        if show_proc_fees:
+            base_cols = [empty, empty, Paragraph('TOTAL', tb), empty, Paragraph(f'{total_rvu:.2f}', tb)]
+            if include_hospital_factor:
+                base_cols.append(empty)
+            base_cols += [Paragraph(f'Q {total_value:,.2f}', tb), empty, Paragraph(f'Q {total_multi:,.2f}', ta)]
+        else:
+            base_cols = [empty, empty, Paragraph('TOTAL', tb), empty, Paragraph(f'{total_rvu:.2f}', tb)]
         proc_data.append(base_cols)
 
         proc_table = Table(proc_data, colWidths=col_w, repeatRows=1)
@@ -289,23 +299,30 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
         story.append(proc_table)
         story.append(Spacer(1, 4))
 
-        if use_multi:
-            story.append(Paragraph(
-                f'RVU Total: <b>{total_rvu:.2f}</b> &nbsp;|&nbsp; '
-                f'Valor base: <b>Q {total_value:,.2f}</b> &nbsp;|&nbsp; '
-                f'<font color="#f59e0b">Honorario con regla múltiple: <b>Q {total_multi:,.2f}</b></font>',
-                ParagraphStyle('sum', fontSize=9, textColor=C_AMBER,
-                               fontName='Helvetica-Bold', alignment=TA_RIGHT)
-            ))
+        if show_proc_fees:
+            if use_multi:
+                story.append(Paragraph(
+                    f'RVU Total: <b>{total_rvu:.2f}</b> &nbsp;|&nbsp; '
+                    f'Valor base: <b>Q {total_value:,.2f}</b> &nbsp;|&nbsp; '
+                    f'<font color="#f59e0b">Honorario con regla múltiple: <b>Q {total_multi:,.2f}</b></font>',
+                    ParagraphStyle('sum', fontSize=9, textColor=C_AMBER,
+                                   fontName='Helvetica-Bold', alignment=TA_RIGHT)
+                ))
+            else:
+                story.append(Paragraph(
+                    f'RVU Total: <b>{total_rvu:.2f}</b> &nbsp;|&nbsp; '
+                    f'Honorario Total: <b>Q {total_value:,.2f}</b>',
+                    ParagraphStyle('sum', fontSize=10, textColor=C_AMBER,
+                                   fontName='Helvetica-Bold', alignment=TA_RIGHT)
+                ))
         else:
             story.append(Paragraph(
-                f'RVU Total: <b>{total_rvu:.2f}</b> &nbsp;|&nbsp; '
-                f'Honorario Total: <b>Q {total_value:,.2f}</b>',
-                ParagraphStyle('sum', fontSize=10, textColor=C_AMBER,
+                f'RVU Total: <b>{total_rvu:.2f}</b>',
+                ParagraphStyle('sum', fontSize=10, textColor=C_DARK,
                                fontName='Helvetica-Bold', alignment=TA_RIGHT)
             ))
 
-    # ── Anesthesia section (for surgeon's PDF — no fee) ───────────────────────
+    # ── Anesthesia section ────────────────────────────────────────────────────
     try:
         anesthesia = case.anesthesia
         items = list(anesthesia.items.all())
@@ -320,13 +337,21 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
             story.append(Spacer(1, 4))
 
             if items:
-                anest_data = [[Paragraph(h, S['label']) for h in ['Código', 'Procedimiento', 'Unidades base']]]
+                anest_hdrs = ['Código', 'Procedimiento', 'Unidades base']
+                anest_data = [[Paragraph(h, S['label']) for h in anest_hdrs]]
+                total_base = 0
                 for item in items:
+                    base = float(item.base_units)
+                    total_base += base
                     anest_data.append([
                         Paragraph(item.surgery_code or '—', S['body']),
                         Paragraph(item.surgery_name or '—', S['body']),
-                        Paragraph(f'{float(item.base_units):.2f}', S['body']),
+                        Paragraph(f'{base:.2f}', S['body']),
                     ])
+                if show_anest_fees:
+                    tb = ParagraphStyle('tb', fontSize=9, fontName='Helvetica-Bold', textColor=C_DARK)
+                    anest_data.append([Paragraph('', S['body']), Paragraph('TOTAL BASE', tb),
+                                       Paragraph(f'{total_base:.2f}', tb)])
                 anest_table = Table(anest_data, colWidths=[0.9*inch, 4.5*inch, 1.1*inch])
                 anest_table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, 0), C_MID),
@@ -335,6 +360,7 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
                     ('GRID', (0, 0), (-1, -1), 0.4, C_BORDER),
                     ('PADDING', (0, 0), (-1, -1), 4),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [C_WHITE, C_LIGHT]),
+                    *([('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#fef3c7'))] if show_anest_fees else []),
                 ]))
                 story.append(anest_table)
                 story.append(Spacer(1, 4))
@@ -346,6 +372,54 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict) -> list
                     S['body'],
                 ))
                 story.append(Spacer(1, 4))
+
+            # Full financial summary — anesthesiologist only
+            if show_anest_fees:
+                story.append(Paragraph('RESUMEN DE HONORARIOS DE ANESTESIA', S['section']))
+                total_base_u  = float(anesthesia.total_base_units)
+                time_u        = float(anesthesia.time_units or 0)
+                total_u       = total_base_u + time_u
+                unit_val      = float(anesthesia.unit_value)
+                base_fee      = total_u * unit_val
+                equipment_fee = float(anesthesia.equipment_cost or 0)
+                total_fee     = base_fee + equipment_fee
+                fin_rows = [
+                    [Paragraph('Unidades base', S['label']), Paragraph('Unidades tiempo', S['label']),
+                     Paragraph('Total unidades', S['label']), Paragraph('Valor/unidad (Q)', S['label']),
+                     Paragraph('Honorario base (Q)', S['label'])],
+                    [Paragraph(f'{total_base_u:.2f}', S['body']), Paragraph(f'{time_u:.0f}', S['body']),
+                     Paragraph(f'<b>{total_u:.2f}</b>', S['body']), Paragraph(f'Q {unit_val:,.2f}', S['body']),
+                     Paragraph(f'<b>Q {base_fee:,.2f}</b>', S['body'])],
+                ]
+                fin_table = Table(fin_rows, colWidths=[1.1*inch, 1.1*inch, 1.1*inch, 1.3*inch, 1.8*inch])
+                fin_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+                    ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+                    ('PADDING', (0, 0), (-1, -1), 6),
+                    ('ALIGN', (0, 1), (-1, -1), 'RIGHT'),
+                ]))
+                story.append(fin_table)
+                story.append(Spacer(1, 4))
+                if anesthesia.equipment_name or equipment_fee > 0:
+                    story.append(Paragraph('EQUIPO DE ANESTESIA', S['section']))
+                    eq_rows = [
+                        [Paragraph('Equipo', S['label']), Paragraph('Costo (Q)', S['label'])],
+                        [Paragraph(anesthesia.equipment_name or '—', S['body']),
+                         Paragraph(f'Q {equipment_fee:,.2f}', S['body'])],
+                    ]
+                    eq_table = Table(eq_rows, colWidths=[4.5*inch, 2*inch])
+                    eq_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), C_LIGHT),
+                        ('GRID', (0, 0), (-1, -1), 0.5, C_BORDER),
+                        ('PADDING', (0, 0), (-1, -1), 6),
+                    ]))
+                    story.append(eq_table)
+                    story.append(Spacer(1, 4))
+                story.append(Paragraph(
+                    f'HONORARIO TOTAL ANESTESIA: Q {total_fee:,.2f}',
+                    ParagraphStyle('anest_total', fontSize=11, fontName='Helvetica-Bold',
+                                   textColor=C_AMBER, alignment=TA_RIGHT, spaceBefore=4),
+                ))
     except Exception:
         pass  # no anesthesia session exists
 
@@ -611,8 +685,11 @@ def _build_anesthesia_story(case, anesthesia, styles: dict) -> list:
     return story
 
 
-def _generate_pdf(cases, include_hospital_factor: bool, doctor_name: str) -> bytes:
-    """Render all cases into a single PDF and return bytes."""
+def _generate_pdf(cases, include_hospital_factor: bool, doctor_name: str, roles: list = None) -> bytes:
+    """Render all cases into a single PDF and return bytes.
+    roles: list of role strings ('owner'|'anesthesiologist'|'assistant') aligned with cases.
+           Defaults to 'owner' for every case when not provided.
+    """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -629,7 +706,8 @@ def _generate_pdf(cases, include_hospital_factor: bool, doctor_name: str) -> byt
         if idx > 0:
             from reportlab.platypus import PageBreak
             story.append(PageBreak())
-        case_story = _build_case_story(case, include_hospital_factor, S)
+        role = (roles[idx] if roles and idx < len(roles) else 'owner')
+        case_story = _build_case_story(case, include_hospital_factor, S, role=role)
         story.extend(case_story)
 
     # Footer on every page
@@ -688,11 +766,19 @@ def export_case_pdf(request, case_id):
     except SurgicalCase.DoesNotExist:
         return Response({'error': 'Caso no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
+    # Determine role for privacy-aware rendering
+    if case.created_by_id == request.user.pk:
+        role = 'owner'
+    elif case.assistant_doctor_id == request.user.pk:
+        role = 'assistant'
+    else:
+        role = 'anesthesiologist'
+
     doctor_name = request.user.get_full_name() or request.user.email
-    logger.info('[PDF] user=%s exporting case=%s', request.user.id, case_id)
+    logger.info('[PDF] user=%s role=%s exporting case=%s', request.user.id, role, case_id)
 
     try:
-        pdf_bytes = _generate_pdf([case], include_factor, doctor_name)
+        pdf_bytes = _generate_pdf([case], include_factor, doctor_name, roles=[role])
     except Exception as e:
         logger.error('[PDF] generation error case=%s: %s', case_id, e, exc_info=True)
         return Response({'error': 'Error al generar el PDF'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -808,17 +894,29 @@ def export_cases_bulk_pdf(request):
     if not cases.exists():
         return Response({'error': 'No se encontraron casos'}, status=status.HTTP_404_NOT_FOUND)
 
+    # Determine role per case for privacy-aware rendering
+    user_id = request.user.pk
+    cases_list = list(cases)
+    roles = []
+    for c in cases_list:
+        if c.created_by_id == user_id:
+            roles.append('owner')
+        elif c.assistant_doctor_id == user_id:
+            roles.append('assistant')
+        else:
+            roles.append('anesthesiologist')
+
     doctor_name = request.user.get_full_name() or request.user.email
     logger.info('[PDF] user=%s bulk export cases=%s', request.user.id, case_ids)
 
     try:
-        pdf_bytes = _generate_pdf(list(cases), include_factor, doctor_name)
+        pdf_bytes = _generate_pdf(cases_list, include_factor, doctor_name, roles=roles)
     except Exception as e:
         logger.error('[PDF] bulk generation error: %s', e, exc_info=True)
         return Response({'error': 'Error al generar el PDF'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     today = date.today().strftime('%Y-%m-%d')
-    filename = f'cirugias_{today}_{cases.count()}_casos.pdf'
+    filename = f'cirugias_{today}_{len(cases_list)}_casos.pdf'
 
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
