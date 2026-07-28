@@ -260,3 +260,31 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         user.save()
         
         return Response({'message': 'Plan actualizado'})
+
+
+class AdminHospitalViewSet(viewsets.ModelViewSet):
+    """CRUD de hospitales/clínicas/consultorios — solo admin."""
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    pagination_class = None
+
+    def get_queryset(self):
+        from apps.medico.models import Hospital
+        return Hospital.objects.all().order_by('place_type', 'name')
+
+    def get_serializer_class(self):
+        from apps.medico.serializers.hospital import HospitalSerializer
+        return HospitalSerializer
+
+
+class AdminInsuranceViewSet(viewsets.ModelViewSet):
+    """CRUD de aseguradoras — solo admin."""
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    pagination_class = None
+
+    def get_queryset(self):
+        from apps.medico.models import InsuranceCompany
+        return InsuranceCompany.objects.all().order_by('name')
+
+    def get_serializer_class(self):
+        from apps.medico.serializers.insurance import InsuranceCompanySerializer
+        return InsuranceCompanySerializer

@@ -6,7 +6,9 @@ from apps.medico.views import (
     FavoriteViewSet,
     SurgicalCaseViewSet,
     CaseProcedureViewSet,
-    AdminUserViewSet
+    AdminUserViewSet,
+    AdminHospitalViewSet,
+    AdminInsuranceViewSet,
 )
 from apps.medico.serializers.hospital import HospitalViewSet
 from apps.medico.serializers.insurance import InsuranceCompanyViewSet
@@ -31,6 +33,8 @@ router.register(r'procedures', CaseProcedureViewSet, basename='case-procedure')
 router.register(r'hospitals', HospitalViewSet, basename='hospital')
 router.register(r'insurances', InsuranceCompanyViewSet, basename='insurance')
 router.register(r'admin/users', AdminUserViewSet, basename='admin-users')
+router.register(r'admin/hospitals', AdminHospitalViewSet, basename='admin-hospitals')
+router.register(r'admin/insurances', AdminInsuranceViewSet, basename='admin-insurances')
 
 urlpatterns = [
     # Google Calendar OAuth (Authorization Code flow)

@@ -18,6 +18,7 @@ import {
   CreditCard,
   Bell,
   Settings,
+  Building2,
 } from 'lucide-react';
 
 const adminMenuItems = [
@@ -50,6 +51,11 @@ const adminMenuItems = [
     title: 'Anuncios',
     href: '/admin/announcements',
     icon: Bell
+  },
+  {
+    title: 'Directorio',
+    href: '/admin/directories',
+    icon: Building2
   },
   {
     title: 'Procedimientos',

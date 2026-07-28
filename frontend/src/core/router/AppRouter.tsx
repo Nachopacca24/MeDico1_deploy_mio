@@ -14,6 +14,7 @@ import AnnouncementsPage from "@/admin/pages/AnnouncementsPage";
 import AdminSettingsPage from "@/admin/pages/SettingsPage";
 import UsersPage from "@/admin/pages/UsersPage";
 import SubscriptionsPage from "@/admin/pages/SubscriptionsPage";
+import DirectoriesPage from "@/admin/pages/DirectoriesPage";
 
 // Auth pages
 import LoginPage from "@/pages/login";
@@ -82,6 +83,7 @@ export const AppRouter = () => {
         <Route path='clients' element={<Clients />} />
         <Route path='advertisements' element={<Advertisements />} />
         <Route path='announcements' element={<AnnouncementsPage />} />
+        <Route path='directories' element={<DirectoriesPage />} />
         <Route path='settings' element={<AdminSettingsPage />} />
       </Route>
 
