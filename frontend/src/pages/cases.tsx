@@ -1294,49 +1294,61 @@ const CasesPage = () => {
                             </div>
                             <span className="truncate">{surgicalCase.hospital_name}</span>
                           </div>
-                          {(isAnesthesiologist || isAssistant) && surgicalCase.created_by_name && (
+                          {/* Cirujano — siempre visible */}
                           <div className="flex items-center gap-1.5 text-xs">
                             <div className="p-1 bg-orange-500/10 rounded">
                               <Users className="w-3.5 h-3.5 text-orange-500" />
                             </div>
-                            <span>
-                              Cirujano: <span className="font-semibold text-foreground">{surgicalCase.created_by_name}</span>
+                            <span className="truncate">
+                              Cirujano: <span className="font-semibold text-foreground">{surgicalCase.created_by_name ?? 'N/A'}</span>
                             </span>
                           </div>
-                        )}
 
-                        {isOwner && surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== "Sin ayudante" && (
+                          {/* Ayudante — siempre visible */}
                           <div className="flex items-center gap-1.5 text-xs">
                             <div className="p-1 bg-teal-500/10 rounded">
                               <Users className="w-3.5 h-3.5 text-teal-500" />
                             </div>
-                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                              <span className="truncate min-w-0">Ayud: {surgicalCase.assistant_display_name}</span>
-                              {surgicalCase.assistant_doctor && surgicalCase.assistant_accepted === true && (
-                                <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">✓</Badge>
-                              )}
-                              {surgicalCase.assistant_doctor && surgicalCase.assistant_accepted === false && (
-                                <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">✗</Badge>
-                              )}
-                            </div>
+                            {surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== 'Sin ayudante' ? (
+                              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                <span className="truncate min-w-0">Ayud: <span className="font-semibold text-foreground">{surgicalCase.assistant_display_name}</span></span>
+                                {surgicalCase.assistant_accepted === true && (
+                                  <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">✓</Badge>
+                                )}
+                                {surgicalCase.assistant_accepted === false && (
+                                  <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">✗</Badge>
+                                )}
+                                {surgicalCase.assistant_accepted === null && surgicalCase.assistant_doctor && (
+                                  <Badge className="bg-yellow-500 text-white text-xs shrink-0">⏳</Badge>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">Ayud: <span className="italic">N/A</span></span>
+                            )}
                           </div>
-                        )}
-                        {isOwner && surgicalCase.anesthesiologist_display && (
+
+                          {/* Anestesiólogo — siempre visible */}
                           <div className="flex items-center gap-1.5 text-xs">
                             <div className="p-1 bg-cyan-500/10 rounded">
                               <Users className="w-3.5 h-3.5 text-cyan-500" />
                             </div>
-                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                              <span className="truncate min-w-0">Anest: {surgicalCase.anesthesiologist_display}</span>
-                              {surgicalCase.anesthesiologist_accepted === true && (
-                                <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">✓</Badge>
-                              )}
-                              {surgicalCase.anesthesiologist_accepted === false && (
-                                <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">✗</Badge>
-                              )}
-                            </div>
+                            {surgicalCase.anesthesiologist_display ? (
+                              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                <span className="truncate min-w-0">Anest: <span className="font-semibold text-foreground">{surgicalCase.anesthesiologist_display}</span></span>
+                                {surgicalCase.anesthesiologist_accepted === true && (
+                                  <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">✓</Badge>
+                                )}
+                                {surgicalCase.anesthesiologist_accepted === false && (
+                                  <Badge variant="destructive" className="bg-red-600 text-white text-xs shrink-0">✗</Badge>
+                                )}
+                                {surgicalCase.anesthesiologist_accepted === null && (
+                                  <Badge className="bg-yellow-500 text-white text-xs shrink-0">⏳</Badge>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">Anest: <span className="italic">N/A</span></span>
+                            )}
                           </div>
-                        )}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-3 pt-0 space-y-2">
