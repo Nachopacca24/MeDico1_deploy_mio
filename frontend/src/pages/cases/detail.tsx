@@ -36,6 +36,7 @@ import { authService } from "@/shared/services/authService";
 import { calendarSyncService } from "@/services/calendarSyncService";
 import { googleCalendarService } from "@/services/googleCalendarService";
 import { AnesthesiaSection } from "./AnesthesiaSection";
+import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 
 interface SurgeryImage {
   id: number;
@@ -63,6 +64,7 @@ const CaseDetailPage = () => {
   const imagesSectionRef = useRef<HTMLDivElement>(null);
   const anesthesiaSectionRef = useRef<HTMLDivElement>(null);
   const [syncingCalendar, setSyncingCalendar] = useState(false);
+  const [anesthesiaSession, setAnesthesiaSession] = useState<AnesthesiaCase | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -178,6 +180,9 @@ const CaseDetailPage = () => {
       const data = await surgicalCaseService.getCase(parseInt(id!));
       setSurgicalCase(data);
       fetchImages(data.id);
+      if (data.is_anesthesiologist) {
+        anesthesiaService.get(data.id).then(s => setAnesthesiaSession(s)).catch(() => {});
+      }
     } catch (err: any) {
       setError(err.message || 'Error al cargar el caso');
     } finally {
@@ -561,78 +566,117 @@ const CaseDetailPage = () => {
               </CardContent>
             </Card>
 
-            {/* Procedures */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Procedimientos ({surgicalCase.procedure_count || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {surgicalCase.procedures && surgicalCase.procedures.length > 0 ? (
-                  <div className="space-y-3">
-                    {surgicalCase.procedures.map((procedure, index) => (
-                      <div
-                        key={procedure.id || index}
-                        className="p-4 border rounded-lg hover:border-primary transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-2">
+            {/* Procedures — anesthesia view for anesthesiologist, surgical view otherwise */}
+            {surgicalCase.is_anesthesiologist ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                    Códigos de anestesia ({anesthesiaSession?.items.length ?? 0})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {anesthesiaSession && anesthesiaSession.items.length > 0 ? (
+                    anesthesiaSession.items.map(item => (
+                      <div key={item.id} className="p-3 border rounded-lg border-teal-100 dark:border-teal-900">
+                        <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold mb-1 break-words">{procedure.surgery_name}</div>
-                            <div className="text-sm text-muted-foreground break-words">
-                              Código: {procedure.surgery_code} • {procedure.specialty}
-                              {procedure.grupo && ` • ${procedure.grupo}`}
-                            </div>
+                            <div className="font-medium text-sm break-words">{item.surgery_name}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">Código: {item.surgery_code}</div>
+                          </div>
+                          <div className="shrink-0 text-sm font-semibold text-teal-700 dark:text-teal-400">
+                            {item.base_units} uds
                           </div>
                         </div>
-                        
-                        {/* Mostrar RVU para todos, valores monetarios solo para el dueño */}
-                        <div className={`grid ${isAssistant ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-3 mt-3 pt-3 border-t`}>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">RVU</div>
-                            <div className="font-semibold flex items-center gap-1">
-                              <TrendingUp className="w-4 h-4 text-primary" />
-                              {procedure.rvu}
-                            </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-6 text-sm">
+                      Sin códigos registrados aún
+                    </p>
+                  )}
+
+                  {/* Equipment */}
+                  {anesthesiaSession?.equipment_name && (
+                    <div className="mt-2 p-3 border rounded-lg border-teal-100 dark:border-teal-900 bg-teal-50/50 dark:bg-teal-950/20">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Wrench className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">{anesthesiaSession.equipment_name}</div>
+                            <div className="text-xs text-muted-foreground">Equipo personal</div>
                           </div>
-                          
-                          {/* Solo mostrar factor y valor si NO es ayudante */}
-                          {!isAssistant && (
-                            <>
-                              <div>
-                                <div className="text-xs text-muted-foreground mb-1">Factor</div>
-                                <div className="font-semibold">{procedure.hospital_factor}x</div>
-                              </div>
-                              <div>
-                                <div className="text-xs text-muted-foreground mb-1">Valor</div>
-                                <div className="font-semibold text-primary">
-                                  Q {procedure.calculated_value?.toLocaleString('es-GT', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                  })}
-                                </div>
-                              </div>
-                            </>
-                          )}
                         </div>
-                        
-                        {procedure.notes && (
-                          <div className="mt-3 pt-3 border-t">
-                            <div className="text-xs text-muted-foreground mb-1">Notas</div>
-                            <p className="text-sm">{procedure.notes}</p>
+                        {anesthesiaSession.equipment_cost != null && anesthesiaSession.equipment_cost > 0 && (
+                          <div className="shrink-0 text-sm font-semibold text-teal-700 dark:text-teal-400">
+                            Q {Number(anesthesiaSession.equipment_cost).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No hay procedimientos registrados
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    Procedimientos ({surgicalCase.procedure_count || 0})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {surgicalCase.procedures && surgicalCase.procedures.length > 0 ? (
+                    <div className="space-y-3">
+                      {surgicalCase.procedures.map((procedure, index) => (
+                        <div key={procedure.id || index} className="p-4 border rounded-lg hover:border-primary transition-colors">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold mb-1 break-words">{procedure.surgery_name}</div>
+                              <div className="text-sm text-muted-foreground break-words">
+                                Código: {procedure.surgery_code} • {procedure.specialty}
+                                {procedure.grupo && ` • ${procedure.grupo}`}
+                              </div>
+                            </div>
+                          </div>
+                          <div className={`grid ${isAssistant ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-3 mt-3 pt-3 border-t`}>
+                            <div>
+                              <div className="text-xs text-muted-foreground mb-1">RVU</div>
+                              <div className="font-semibold flex items-center gap-1">
+                                <TrendingUp className="w-4 h-4 text-primary" />
+                                {procedure.rvu}
+                              </div>
+                            </div>
+                            {!isAssistant && (
+                              <>
+                                <div>
+                                  <div className="text-xs text-muted-foreground mb-1">Factor</div>
+                                  <div className="font-semibold">{procedure.hospital_factor}x</div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-muted-foreground mb-1">Valor</div>
+                                  <div className="font-semibold text-primary">
+                                    Q {procedure.calculated_value?.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          {procedure.notes && (
+                            <div className="mt-3 pt-3 border-t">
+                              <div className="text-xs text-muted-foreground mb-1">Notas</div>
+                              <p className="text-sm">{procedure.notes}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">No hay procedimientos registrados</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Surgeon Equipment — read-only display; edited via the case edit form */}
             {isOwner && surgicalCase.equipment_name && (
@@ -677,8 +721,50 @@ const CaseDetailPage = () => {
 
           {/* Right Column - Summary */}
           <div className="space-y-6">
-            {/* Financial Summary - Solo para el dueño */}
-            {isOwner && (
+            {/* Financial Summary */}
+            {surgicalCase.is_anesthesiologist ? (
+              <Card className="border-teal-200 dark:border-teal-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
+                    <TrendingUp className="w-5 h-5" />
+                    Resumen de Anestesia
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-1">Unidades base</div>
+                    <div className="text-2xl font-bold">{anesthesiaSession?.total_base_units ?? '—'}</div>
+                  </div>
+                  {anesthesiaSession?.time_units != null && (
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Unidades tiempo</div>
+                      <div className="text-2xl font-bold">{anesthesiaSession.time_units}</div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-1">Total unidades</div>
+                    <div className="text-2xl font-bold">{anesthesiaSession?.total_units ?? '—'}</div>
+                  </div>
+                  {anesthesiaSession?.equipment_cost != null && anesthesiaSession.equipment_cost > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Wrench className="w-3 h-3" />
+                        Equipo
+                      </span>
+                      <span>Q {Number(anesthesiaSession.equipment_cost).toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
+                  <div className="pt-4 border-t border-teal-200 dark:border-teal-800">
+                    <div className="text-sm text-muted-foreground mb-1">Honorario total</div>
+                    <div className="text-3xl font-bold text-teal-700 dark:text-teal-400">
+                      Q {anesthesiaSession
+                        ? Number(anesthesiaSession.total_fee).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        : '0.00'}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : isOwner ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -698,15 +784,12 @@ const CaseDetailPage = () => {
                   <div className="pt-4 border-t">
                     <div className="text-sm text-muted-foreground mb-1">Valor Total</div>
                     <div className="text-3xl font-bold text-primary">
-                      Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })}
+                      Q {(surgicalCase.total_value || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            )}
+            ) : null}
 
             {/* RVU Summary - Para el ayudante */}
             {isAssistant && (
