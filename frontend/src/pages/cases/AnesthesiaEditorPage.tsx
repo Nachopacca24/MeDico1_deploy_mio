@@ -112,10 +112,10 @@ const AnesthesiaEditorPage = () => {
   }, [caseId]);
 
   useEffect(() => {
-    if (window.location.hash === '#time') {
-      setTimeout(() => document.getElementById('time')?.scrollIntoView({ behavior: 'smooth' }), 300);
+    if (window.location.hash === '#time' && surgicalCase?.is_operated) {
+      setTimeout(() => document.getElementById('time')?.scrollIntoView({ behavior: 'smooth' }), 150);
     }
-  }, []);
+  }, [surgicalCase]);
 
   useEffect(() => {
     Promise.all(ANESTHESIA_CSVS.map(k => loadCSV(k).catch(() => [] as CsvRow[]))).then(results => {

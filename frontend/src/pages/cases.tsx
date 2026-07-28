@@ -1061,7 +1061,7 @@ const CasesPage = () => {
                         )}
 
                         {surgicalCase.is_anesthesiologist && surgicalCase.is_operated && (
-                          <Link to={`/cases/${surgicalCase.id}/anesthesia#time`} onClick={e => e.stopPropagation()} className="w-full">
+                          <Link to={`/cases/${surgicalCase.id}/anesthesia#time`} onClick={e => e.stopPropagation()} className="w-full mt-1 block">
                             <Button
                               variant="outline"
                               size="sm"
