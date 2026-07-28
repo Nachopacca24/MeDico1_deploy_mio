@@ -18,7 +18,7 @@ from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
-from apps.medico.models import SurgicalCase, CaseProcedure
+from apps.medico.models import SurgicalCase, CaseProcedure, CollaboratorRemoval
 from apps.medico.services.firebase import notify_user
 from apps.medico.serializers import (
     SurgicalCaseListSerializer,
@@ -49,11 +49,12 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         """Retornar casos del usuario autenticado (propios + donde es ayudante)"""
         user = self.request.user
 
-        # accept/reject necesitan ver invitaciones pendientes para poder procesarlas
-        if self.action in ('accept_invitation', 'reject_invitation', 'retrieve'):
+        # accept/reject/dismiss/leave necesitan acceso más amplio
+        if self.action in ('accept_invitation', 'reject_invitation', 'retrieve', 'dismiss_removal', 'leave_case'):
             return SurgicalCase.objects.filter(
                 Q(created_by=user) | Q(assistant_doctor=user) |
-                Q(anesthesia__anesthesiologist=user)
+                Q(anesthesia__anesthesiologist=user) |
+                Q(collaborator_removals__removed_user=user, collaborator_removals__acknowledged=False)
             ).select_related(
                 'hospital', 'created_by', 'assistant_doctor', 'insurance_company'
             ).prefetch_related('procedures', 'images').distinct()
@@ -70,11 +71,13 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 assistant_doctor=user, assistant_accepted=True
             )
         else:
-            # Casos propios, donde fui aceptado como ayudante, o donde acepté como anestesiólogo
+            # Casos propios, donde fui aceptado como ayudante, donde acepté como anestesiólogo,
+            # o donde fui removido (mientras no lo descarte)
             queryset = SurgicalCase.objects.filter(
                 Q(created_by=user) |
                 Q(assistant_doctor=user, assistant_accepted=True) |
-                Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True)
+                Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True) |
+                Q(collaborator_removals__removed_user=user, collaborator_removals__acknowledged=False)
             )
 
         # El filtro de archivado solo aplica en el listado, no en detalle/edición.
@@ -100,7 +103,9 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                     Q(assistant_doctor=user, assistant_accepted=True, assistant_is_paid=False) & ~Q(created_by=user) |
                     # Anestesiólogo (no dueño): visible hasta que ÉL marque como cobrado
                     Q(anesthesia__anesthesiologist=user, anesthesia__anesthesiologist_accepted=True,
-                      anesthesia__is_paid=False) & ~Q(created_by=user)
+                      anesthesia__is_paid=False) & ~Q(created_by=user) |
+                    # Removido (no dueño): visible hasta que descarte la notificación
+                    Q(collaborator_removals__removed_user=user, collaborator_removals__acknowledged=False) & ~Q(created_by=user)
                 )
 
         # Optimizamos con select_related y prefetch_related para evitar el problema N+1
@@ -243,10 +248,34 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             )
 
         prev_assistant_id = instance.assistant_doctor_id
+        prev_assistant_accepted = instance.assistant_accepted
 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         case = serializer.save()
+
+        # Si el ayudante había aceptado y fue reemplazado → notificación de remoción
+        if (
+            prev_assistant_id and
+            prev_assistant_accepted is True and
+            case.assistant_doctor_id != prev_assistant_id
+        ):
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                old_assistant = User.objects.get(pk=prev_assistant_id)
+                CollaboratorRemoval.objects.update_or_create(
+                    case=case, removed_user=old_assistant, role='assistant',
+                    defaults={'acknowledged': False},
+                )
+                notify_user(
+                    old_assistant,
+                    title='Cambio en una cirugía',
+                    body=f'{request.user.get_full_name() or request.user.username} cambió el médico ayudante en un caso en el que participabas.',
+                    data={'route': '/cases'},
+                )
+            except Exception:
+                logger.exception('Error creating collaborator removal notification case=%s', case.pk)
 
         case = SurgicalCase.objects.select_related(
             'hospital', 'created_by', 'assistant_doctor', 'insurance_company'
@@ -908,6 +937,60 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='dismiss-removal')
+    def dismiss_removal(self, request, pk=None):
+        """El colaborador removido descarta la notificación de remoción."""
+        instance = self.get_object()
+        updated = CollaboratorRemoval.objects.filter(
+            case=instance, removed_user=request.user, acknowledged=False
+        ).update(acknowledged=True)
+        if not updated:
+            return Response({'error': 'No hay notificación de remoción para descartar.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': 'acknowledged'})
+
+    @action(detail=True, methods=['post'], url_path='leave')
+    def leave_case(self, request, pk=None):
+        """Un colaborador aceptado se retira voluntariamente del caso."""
+        instance = self.get_object()
+        user = request.user
+        user_name = user.get_full_name() or user.username
+
+        # Ayudante dejando el caso
+        if instance.assistant_doctor == user and instance.assistant_accepted is True:
+            instance.assistant_accepted = False
+            instance.save(update_fields=['assistant_accepted'])
+            try:
+                notify_user(
+                    instance.created_by,
+                    title='Médico ayudante salió del caso',
+                    body=f'{user_name} salió de un caso en el que participaba como ayudante.',
+                    data={'route': f'/cases/{instance.pk}'},
+                )
+            except Exception:
+                logger.exception('Error notifying surgeon on leave case=%s', instance.pk)
+            return Response({'status': 'left', 'role': 'assistant'})
+
+        # Anestesiólogo dejando el caso
+        try:
+            anesthesia = instance.anesthesia
+            if anesthesia.anesthesiologist == user and anesthesia.anesthesiologist_accepted is True:
+                anesthesia.anesthesiologist_accepted = False
+                anesthesia.save(update_fields=['anesthesiologist_accepted'])
+                try:
+                    notify_user(
+                        instance.created_by,
+                        title='Anestesiólogo salió del caso',
+                        body=f'{user_name} salió de un caso en el que participaba como anestesiólogo.',
+                        data={'route': f'/cases/{instance.pk}'},
+                    )
+                except Exception:
+                    logger.exception('Error notifying surgeon on leave case=%s', instance.pk)
+                return Response({'status': 'left', 'role': 'anesthesiologist'})
+        except Exception:
+            pass
+
+        return Response({'error': 'No sos colaborador activo de este caso.'}, status=status.HTTP_403_FORBIDDEN)
 
 
 class CaseProcedureViewSet(viewsets.ModelViewSet):

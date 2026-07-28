@@ -515,3 +515,37 @@ class CaseProcedure(models.Model):
         if not self.calculated_value:
             self.calculated_value = self.rvu * self.hospital_factor
         super().save(*args, **kwargs)
+
+
+class CollaboratorRemoval(models.Model):
+    """
+    Notificación persistente para un colaborador (ayudante o anestesiólogo)
+    que fue reemplazado por el cirujano después de haber aceptado la invitación.
+    Permanece visible hasta que el colaborador la descarte (acknowledged=True).
+    """
+    ROLE_CHOICES = [
+        ('assistant', 'Médico Ayudante'),
+        ('anesthesiologist', 'Anestesiólogo'),
+    ]
+
+    case = models.ForeignKey(
+        SurgicalCase,
+        on_delete=models.CASCADE,
+        related_name='collaborator_removals',
+    )
+    removed_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='collaborator_removals',
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    removed_at = models.DateTimeField(auto_now_add=True)
+    acknowledged = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('case', 'removed_user', 'role')
+        verbose_name = 'Remoción de colaborador'
+        verbose_name_plural = 'Remociones de colaboradores'
+
+    def __str__(self):
+        return f'{self.removed_user} removed as {self.role} from case {self.case_id}'

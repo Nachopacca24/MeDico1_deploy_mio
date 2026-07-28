@@ -86,6 +86,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
     assistant_is_paid_own = serializers.SerializerMethodField()
     assistant_invoice_number_own = serializers.SerializerMethodField()
 
+    was_removed_as = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
     insurance_company_name = serializers.CharField(source='insurance_company.name', read_only=True, allow_null=True)
@@ -209,6 +210,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'assistant_is_billed_own',
             'assistant_is_paid_own',
             'assistant_invoice_number_own',
+            'was_removed_as',
             'total_rvu',
             'total_value',
             'procedure_count',
@@ -230,6 +232,15 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
         data['patient_name'] = decrypt_field(data.get('patient_name'))
         data['patient_name_for_assistant'] = decrypt_field(data.get('patient_name_for_assistant'))
         return data
+
+    def get_was_removed_as(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user:
+            return None
+        removal = obj.collaborator_removals.filter(
+            removed_user=request.user, acknowledged=False
+        ).first()
+        return removal.role if removal else None
 
     def get_can_edit(self, obj):
         request = self.context.get('request')

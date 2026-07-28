@@ -23,7 +23,7 @@ import { anesthesiaService } from "@/services/anesthesiaService";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
-import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus, Clock } from 'lucide-react';
+import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus, Clock, AlertCircle, LogOut } from 'lucide-react';
 import { authService } from "@/shared/services/authService";
 import { useIsUploading } from "@/shared/hooks/useUploadingCases";
 import { APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
@@ -833,6 +833,26 @@ const CasesPage = () => {
     }
   };
 
+  const handleDismissRemoval = async (caseId: number) => {
+    try {
+      await surgicalCaseService.dismissRemoval(caseId);
+      setCases(prev => prev.filter(c => c.id !== caseId));
+    } catch (e: any) {
+      toast.error('Error', e.message || 'No se pudo descartar la notificación');
+    }
+  };
+
+  const handleLeaveCase = async (caseId: number, role: 'assistant' | 'anesthesiologist') => {
+    try {
+      await surgicalCaseService.leaveCase(caseId);
+      setCases(prev => prev.filter(c => c.id !== caseId));
+      const msg = role === 'anesthesiologist' ? 'Saliste del caso como anestesiólogo' : 'Saliste del caso como ayudante';
+      toast.success('Saliste del caso', msg);
+    } catch (e: any) {
+      toast.error('Error', e.message || 'No se pudo salir del caso');
+    }
+  };
+
   const handleCaseError = (error: string) => {
     toast.error('Error', error);
   };
@@ -1221,6 +1241,43 @@ const CasesPage = () => {
                 const isOwner = surgicalCase.is_owner ?? true;
                 const isAnesthesiologist = surgicalCase.is_anesthesiologist ?? false;
                 const isAssistant = !isOwner && !isAnesthesiologist;
+                const wasRemovedAs = surgicalCase.was_removed_as ?? null;
+
+                // Card especial cuando el cirujano reemplazó a este colaborador
+                if (wasRemovedAs) {
+                  const roleLabel = wasRemovedAs === 'anesthesiologist' ? 'anestesiólogo' : 'médico ayudante';
+                  const borderColor = wasRemovedAs === 'anesthesiologist' ? 'border-l-teal-500' : 'border-l-orange-400';
+                  return (
+                    <React.Fragment key={`case-${surgicalCase.id}`}>
+                      <Card className={`border-l-4 ${borderColor} overflow-hidden opacity-80`}>
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 border-b ${wasRemovedAs === 'anesthesiologist' ? 'bg-teal-500/10 border-teal-200 dark:border-teal-800/50' : 'bg-orange-500/10 border-orange-200 dark:border-orange-800/50'}`}>
+                          <AlertCircle className={`w-3 h-3 shrink-0 ${wasRemovedAs === 'anesthesiologist' ? 'text-teal-600 dark:text-teal-400' : 'text-orange-600 dark:text-orange-400'}`} />
+                          <span className={`text-xs font-semibold ${wasRemovedAs === 'anesthesiologist' ? 'text-teal-700 dark:text-teal-300' : 'text-orange-700 dark:text-orange-300'}`}>
+                            Ya no participás como {roleLabel}
+                          </span>
+                        </div>
+                        <CardContent className="p-3 space-y-2">
+                          <p className="text-sm font-bold">{displayPatientName(surgicalCase.patient_name)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(surgicalCase.surgery_date + 'T12:00:00').toLocaleDateString()} · {surgicalCase.hospital_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            El médico principal te cambió de {roleLabel} en este caso.
+                          </p>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="w-full mt-1"
+                            onClick={() => handleDismissRemoval(surgicalCase.id)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                            Eliminar de mi lista
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </React.Fragment>
+                  );
+                }
 
                 // Color del borde: celeste=cirugía propia, teal=colaborando como anestesiólogo, naranja=ayudante, primary=cirujano
                 const roleBorderClass = isAnesthesiologist && isOwner
@@ -1467,6 +1524,17 @@ const CasesPage = () => {
                                 <Edit className="w-3.5 h-3.5 mr-1" />
                                 Editar
                               </Link>
+                            </Button>
+                          )}
+                          {(isAssistant || (isAnesthesiologist && !isOwner)) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-1 h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={e => { e.stopPropagation(); handleLeaveCase(surgicalCase.id, isAnesthesiologist ? 'anesthesiologist' : 'assistant'); }}
+                            >
+                              <LogOut className="w-3.5 h-3.5 mr-1" />
+                              Salir
                             </Button>
                           )}
                         </div>

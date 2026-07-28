@@ -109,6 +109,8 @@ export interface SurgicalCase {
   assistant_is_billed_own?: boolean | null;
   assistant_is_paid_own?: boolean | null;
   assistant_invoice_number_own?: string | null;
+  // Remoción: si el cirujano reemplazó al colaborador después de que aceptó
+  was_removed_as?: 'assistant' | 'anesthesiologist' | null;
 
   // Equipo personal del cirujano (informativo)
   equipment_name?: string | null;

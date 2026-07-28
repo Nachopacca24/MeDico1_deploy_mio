@@ -95,6 +95,7 @@ def anesthesia_case(request, case_id):
         allowed = {'anesthesiologist', 'anesthesiologist_name'}
         data = {k: v for k, v in request.data.items() if k in allowed}
         old_anesthesiologist_id = anesthesia.anesthesiologist_id
+        old_anesthesiologist_accepted = anesthesia.anesthesiologist_accepted  # capturar ANTES del save
         serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=data, partial=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -106,6 +107,28 @@ def anesthesia_case(request, case_id):
             else:
                 instance.anesthesiologist_accepted = True  # nombre libre → auto-aceptar
             instance.save(update_fields=['anesthesiologist_accepted'])
+
+            # Si el anestesiólogo anterior había aceptado → notificación de remoción
+            if old_anesthesiologist_id and old_anesthesiologist_accepted is True:
+                try:
+                    from django.contrib.auth import get_user_model
+                    from apps.medico.models.surgical_case import CollaboratorRemoval
+                    from apps.medico.services.firebase import notify_user
+                    User = get_user_model()
+                    old_anesth = User.objects.get(pk=old_anesthesiologist_id)
+                    CollaboratorRemoval.objects.update_or_create(
+                        case=case, removed_user=old_anesth, role='anesthesiologist',
+                        defaults={'acknowledged': False},
+                    )
+                    notify_user(
+                        old_anesth,
+                        title='Cambio en una cirugía',
+                        body=f'{case.created_by.get_full_name() or case.created_by.username} cambió el anestesiólogo en un caso.',
+                        data={'route': '/cases'},
+                    )
+                except Exception:
+                    import logging
+                    logging.getLogger(__name__).exception('Error creating anesthesiologist removal notification')
         return Response(AnesthesiaCaseSerializer(
             AnesthesiaCase.objects.prefetch_related('items').get(pk=instance.pk)
         ).data)

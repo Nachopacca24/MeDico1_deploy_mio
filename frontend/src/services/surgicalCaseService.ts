@@ -575,6 +575,28 @@ class SurgicalCaseService {
     return res.json();
   }
 
+  async dismissRemoval(id: number): Promise<void> {
+    const res = await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/cases/${id}/dismiss-removal/`,
+      { method: 'POST' }
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al descartar notificación');
+    }
+  }
+
+  async leaveCase(id: number): Promise<void> {
+    const res = await authService.authenticatedFetch(
+      `${API_URL}/api/v1/medico/cases/${id}/leave/`,
+      { method: 'POST' }
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al salir del caso');
+    }
+  }
+
   // ==================== UTILIDADES ====================
 
   canDelete(surgicalCase: SurgicalCase): { allowed: boolean; reason?: string } {

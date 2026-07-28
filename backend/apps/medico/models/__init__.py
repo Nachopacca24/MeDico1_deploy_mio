@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 
 # Import surgical case models
-from .surgical_case import SurgicalCase, CaseProcedure
+from .surgical_case import SurgicalCase, CaseProcedure, CollaboratorRemoval
 from .anesthesia import AnesthesiaCase, AnesthesiaItem
 from .surgery_image import SurgeryImage
 from .google_calendar_token import GoogleCalendarToken
