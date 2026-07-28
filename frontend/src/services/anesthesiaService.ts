@@ -25,6 +25,9 @@ export interface AnesthesiaCase {
   equipment_cost: number | null;
   notes: string | null;
   items: AnesthesiaItem[];
+  is_operated: boolean;
+  is_billed: boolean;
+  is_paid: boolean;
   total_base_units: number;
   total_units: number;
   total_fee: number;
@@ -105,6 +108,22 @@ class AnesthesiaService {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al eliminar código');
+    }
+    return res.json();
+  }
+
+  async updateStatus(caseId: number, data: {
+    is_operated?: boolean;
+    is_billed?: boolean;
+    is_paid?: boolean;
+  }): Promise<AnesthesiaCase> {
+    const res = await authService.authenticatedFetch(this.url(caseId), {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al actualizar estado de anestesia');
     }
     return res.json();
   }

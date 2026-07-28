@@ -99,6 +99,10 @@ export interface SurgicalCase {
   anesthesiologist_accepted?: boolean | null;
   is_anesthesiologist?: boolean;
   anesthesia_total_fee?: number | null;
+  // Estados independientes del anestesiólogo
+  anesthesia_is_operated?: boolean | null;
+  anesthesia_is_billed?: boolean | null;
+  anesthesia_is_paid?: boolean | null;
 
   // Equipo personal del cirujano (informativo)
   equipment_name?: string | null;

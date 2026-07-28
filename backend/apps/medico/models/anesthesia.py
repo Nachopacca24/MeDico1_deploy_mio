@@ -80,6 +80,12 @@ class AnesthesiaCase(models.Model):
         blank=True,
         verbose_name="Notas"
     )
+
+    # Estados independientes del anestesiólogo (no dependen del cirujano principal)
+    is_operated = models.BooleanField(default=False, verbose_name="Operado (anestesia)")
+    is_billed = models.BooleanField(default=False, verbose_name="Facturado (anestesia)")
+    is_paid = models.BooleanField(default=False, verbose_name="Cobrado (anestesia)")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

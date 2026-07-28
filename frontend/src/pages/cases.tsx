@@ -245,6 +245,73 @@ function CaseStatusToggles({
   );
 }
 
+// ── Toggles de estado para el anestesiólogo (independientes del cirujano) ──
+interface AnesthesiaStatusTogglesProps {
+  surgicalCase: SurgicalCase;
+  onUpdate: (patch: { anesthesia_is_operated?: boolean; anesthesia_is_billed?: boolean; anesthesia_is_paid?: boolean }) => void;
+  onError: (msg: string) => void;
+}
+
+function AnesthesiaStatusToggles({ surgicalCase, onUpdate, onError }: AnesthesiaStatusTogglesProps) {
+  const [updating, setUpdating] = useState<'operated' | 'billed' | 'paid' | null>(null);
+
+  const isOperated = surgicalCase.anesthesia_is_operated ?? false;
+  const isBilled   = surgicalCase.anesthesia_is_billed   ?? false;
+  const isPaid     = surgicalCase.anesthesia_is_paid     ?? false;
+
+  const handleToggle = async (type: 'operated' | 'billed' | 'paid', current: boolean) => {
+    if (type === 'billed' && !isOperated && !current) { onError('Primero marca la anestesia como operada'); return; }
+    if (type === 'paid'   && !isBilled   && !current) { onError('Primero marca la anestesia como facturada'); return; }
+    setUpdating(type);
+    try {
+      const payload = {
+        is_operated: type === 'operated' ? !current : isOperated,
+        is_billed:   type === 'billed'   ? !current : isBilled,
+        is_paid:     type === 'paid'     ? !current : isPaid,
+      };
+      await anesthesiaService.updateStatus(surgicalCase.id, payload);
+      onUpdate({
+        anesthesia_is_operated: payload.is_operated,
+        anesthesia_is_billed:   payload.is_billed,
+        anesthesia_is_paid:     payload.is_paid,
+      });
+    } catch (e: any) {
+      onError(e.message || 'Error al actualizar estado');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  return (
+    <div className="flex gap-1 flex-wrap" data-tutorial="anesthesia-status">
+      <Button variant={isOperated ? 'default' : 'outline'} size="sm"
+        onClick={() => handleToggle('operated', isOperated)} disabled={updating !== null}
+        className={isOperated
+          ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+          : 'border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-950'}>
+        {updating === 'operated' ? <Loader2 className="w-3 h-3 animate-spin" /> : isOperated ? <Check className="w-3 h-3" /> : null}
+        <span className={isOperated || updating === 'operated' ? 'ml-1' : ''}>Operado</span>
+      </Button>
+      <Button variant={isBilled ? 'default' : 'outline'} size="sm"
+        onClick={() => handleToggle('billed', isBilled)} disabled={updating !== null || (!isOperated && !isBilled)}
+        className={isBilled
+          ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600'
+          : 'border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-950'}>
+        {updating === 'billed' ? <Loader2 className="w-3 h-3 animate-spin" /> : isBilled ? <Check className="w-3 h-3" /> : null}
+        <span className={isBilled || updating === 'billed' ? 'ml-1' : ''}>Facturado</span>
+      </Button>
+      <Button variant={isPaid ? 'default' : 'outline'} size="sm"
+        onClick={() => handleToggle('paid', isPaid)} disabled={updating !== null || (!isBilled && !isPaid)}
+        className={isPaid
+          ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
+          : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-950'}>
+        {updating === 'paid' ? <Loader2 className="w-3 h-3 animate-spin" /> : isPaid ? <Check className="w-3 h-3" /> : null}
+        <span className={isPaid || updating === 'paid' ? 'ml-1' : ''}>Cobrado</span>
+      </Button>
+    </div>
+  );
+}
+
 const FREE_CASE_LIMIT = 5;
 
 const CasesPage = () => {
@@ -569,6 +636,19 @@ const CasesPage = () => {
       if (!isInvoiceOnlyUpdate) {
         toast.success('Actualizado', 'Estado actualizado correctamente');
       }
+    }
+  };
+
+  const handleAnesthesiaStatusUpdate = (
+    caseId: number,
+    patch: { anesthesia_is_operated?: boolean; anesthesia_is_billed?: boolean; anesthesia_is_paid?: boolean }
+  ) => {
+    const justBecamePaid = patch.anesthesia_is_paid === true;
+    setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
+    if (justBecamePaid) {
+      toast.success('Anestesia cobrada', 'Marcaste tu honorario de anestesia como cobrado');
+    } else {
+      toast.success('Actualizado', 'Estado actualizado correctamente');
     }
   };
 
@@ -958,16 +1038,25 @@ const CasesPage = () => {
               {filteredCases.map((surgicalCase, index) => {
                 const canEdit = surgicalCase.can_edit ?? true;
                 const isOwner = surgicalCase.is_owner ?? true;
-                
+                const isAnesthesiologist = surgicalCase.is_anesthesiologist ?? false;
+                const isAssistant = !isOwner && !isAnesthesiologist;
+
+                // Color del borde izquierdo y del badge según el rol del usuario en este caso
+                const roleBorderClass = isAnesthesiologist
+                  ? 'border-l-teal-500'
+                  : isAssistant
+                    ? 'border-l-orange-400'
+                    : 'border-l-primary';
+
                 return (
                   <React.Fragment key={`case-${surgicalCase.id}`}>
                     <Card
-                    className={`hover:border-primary transition-colors border-border/70 border-l-4 border-l-primary ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400' : ''}`}
+                    className={`hover:border-primary transition-colors border-border/70 border-l-4 ${roleBorderClass} ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400' : ''}`}
                     onClick={selectMode && isOwner ? () => toggleSelect(surgicalCase.id) : undefined}
                   >
                       <CardHeader className="p-3">
                         <div className="flex items-center justify-between mb-1">
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <CardTitle className="text-sm font-bold">{displayPatientName(surgicalCase.patient_name)}</CardTitle>
                             <UploadingBadge caseId={surgicalCase.id} />
                           </div>
@@ -977,17 +1066,25 @@ const CasesPage = () => {
                                 ? <CheckSquare className="w-4 h-4 text-amber-400 flex-shrink-0" />
                                 : <Square className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             )}
+                            {/* Badge de rol — solo cuando el usuario NO es dueño */}
+                            {isAnesthesiologist && (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300 shrink-0">
+                                <Stethoscope className="w-3 h-3" />
+                                Anestesia
+                              </span>
+                            )}
+                            {isAssistant && (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 shrink-0">
+                                <Users className="w-3 h-3" />
+                                Ayudante
+                              </span>
+                            )}
                             {isOwner && surgicalCase.assistant_doctor && surgicalCase.assistant_accepted !== true && surgicalCase.assistant_accepted !== false && (
                               <Badge className="bg-yellow-600 text-white text-xs shrink-0 whitespace-nowrap">⏳</Badge>
                             )}
-                            {getStatusBadge(surgicalCase.status)}
+                            {isOwner && getStatusBadge(surgicalCase.status)}
                           </div>
                         </div>
-                        {!isOwner && (
-                          <div className="mb-1">
-                            <ReadOnlyBadge />
-                          </div>
-                        )}
                         <CardDescription className="space-y-1">
                           <div className="flex items-center gap-1.5 text-xs">
                             <div className="p-1 bg-blue-500/10 rounded">
@@ -1001,20 +1098,20 @@ const CasesPage = () => {
                             </div>
                             <span className="truncate">{surgicalCase.hospital_name}</span>
                           </div>
-                          {!isOwner && surgicalCase.created_by_name && (
+                          {(isAnesthesiologist || isAssistant) && surgicalCase.created_by_name && (
                           <div className="flex items-center gap-1.5 text-xs">
                             <div className="p-1 bg-orange-500/10 rounded">
                               <Users className="w-3.5 h-3.5 text-orange-500" />
                             </div>
                             <span>
-                              De: <span className="font-semibold text-blue-600 dark:text-blue-400">{surgicalCase.created_by_name}</span>
+                              Cirujano: <span className="font-semibold text-foreground">{surgicalCase.created_by_name}</span>
                             </span>
                           </div>
                         )}
-                        {surgicalCase.is_anesthesiologist && surgicalCase.is_operated && (
-                          <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+                        {isAnesthesiologist && !surgicalCase.anesthesia_is_operated && surgicalCase.is_operated && (
+                          <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
                             <Check className="w-3.5 h-3.5 shrink-0" />
-                            Cirugía operada — registrá el tiempo de anestesia
+                            Cirugía operada — registrá tiempos
                           </div>
                         )}
 
@@ -1053,7 +1150,8 @@ const CasesPage = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-3 pt-0 space-y-2">
-                        {isOwner && (
+                        {/* Toggles del cirujano principal */}
+                        {isOwner && !isAnesthesiologist && (
                           <CaseStatusToggles
                             surgicalCase={surgicalCase}
                             onUpdate={handleCaseUpdate}
@@ -1062,7 +1160,39 @@ const CasesPage = () => {
                           />
                         )}
 
-                        {surgicalCase.is_anesthesiologist && surgicalCase.is_operated && (
+                        {/* Cuando el dueño ES TAMBIÉN el anestesiólogo: muestra ambos toggles */}
+                        {isOwner && isAnesthesiologist && (
+                          <>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1 font-medium">Cirugía</p>
+                              <CaseStatusToggles
+                                surgicalCase={surgicalCase}
+                                onUpdate={handleCaseUpdate}
+                                onError={handleCaseError}
+                                compact={true}
+                              />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1 font-medium">Mi anestesia</p>
+                              <AnesthesiaStatusToggles
+                                surgicalCase={surgicalCase}
+                                onUpdate={(patch) => handleAnesthesiaStatusUpdate(surgicalCase.id, patch)}
+                                onError={handleCaseError}
+                              />
+                            </div>
+                          </>
+                        )}
+
+                        {/* Toggles independientes del anestesiólogo (no dueño) */}
+                        {isAnesthesiologist && !isOwner && (
+                          <AnesthesiaStatusToggles
+                            surgicalCase={surgicalCase}
+                            onUpdate={(patch) => handleAnesthesiaStatusUpdate(surgicalCase.id, patch)}
+                            onError={handleCaseError}
+                          />
+                        )}
+
+                        {isAnesthesiologist && surgicalCase.is_operated && (
                           <Link to={`/cases/${surgicalCase.id}/anesthesia#time`} onClick={e => e.stopPropagation()} className="w-full mt-1 block">
                             <Button
                               variant="outline"
@@ -1076,7 +1206,7 @@ const CasesPage = () => {
                           </Link>
                         )}
 
-                        {surgicalCase.is_anesthesiologist ? (
+                        {isAnesthesiologist ? (
                           <div className="grid grid-cols-2 gap-1 text-center pt-1.5 border-t">
                             <div>
                               <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
@@ -1136,7 +1266,7 @@ const CasesPage = () => {
                               Ver
                             </Link>
                           </Button>
-                          {surgicalCase.is_anesthesiologist && (
+                          {isAnesthesiologist && (
                             <Button asChild variant="ghost" size="sm" className="flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950">
                               <Link to={`/cases/${surgicalCase.id}/anesthesia`}>
                                 <Stethoscope className="w-3.5 h-3.5 mr-1" />
@@ -1144,9 +1274,9 @@ const CasesPage = () => {
                               </Link>
                             </Button>
                           )}
-                          {canEdit && !(surgicalCase.is_paid) && (
+                          {canEdit && !surgicalCase.is_paid && (
                             <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
-                              <Link to={isOwner && surgicalCase.is_anesthesiologist
+                              <Link to={isOwner && isAnesthesiologist
                                 ? `/cases/${surgicalCase.id}/edit/anesthesia`
                                 : `/cases/${surgicalCase.id}/edit`}>
                                 <Edit className="w-3.5 h-3.5 mr-1" />
