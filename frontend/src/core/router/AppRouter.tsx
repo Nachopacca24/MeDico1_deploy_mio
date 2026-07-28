@@ -1,6 +1,13 @@
 // src/core/router/AppRouter.tsx
 
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 import { Capacitor } from "@capacitor/core";
 import { ProtectedRoute } from "@/shared/components/auth/ProtectedRoute";
 import { PersistentAdSystem } from "@/shared/components/ads/PersistentAdSystem";
@@ -54,6 +61,8 @@ import StatsPage from "@/pages/stats";
 
 export const AppRouter = () => {
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       {/* Public routes */}
       <Route path='/' element={
@@ -114,5 +123,6 @@ export const AppRouter = () => {
       </Route>
       <Route path='*' element={<NotFoundPage />} />
     </Routes>
+    </>
   );
 };
