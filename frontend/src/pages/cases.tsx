@@ -1150,47 +1150,21 @@ const CasesPage = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-3 pt-0 space-y-2">
-                        {/* Toggles del cirujano principal */}
-                        {isOwner && !isAnesthesiologist && (
+                        {/* Si el usuario actúa como anestesiólogo: solo estados de anestesia */}
+                        {isAnesthesiologist ? (
+                          <AnesthesiaStatusToggles
+                            surgicalCase={surgicalCase}
+                            onUpdate={(patch) => handleAnesthesiaStatusUpdate(surgicalCase.id, patch)}
+                            onError={handleCaseError}
+                          />
+                        ) : isOwner ? (
                           <CaseStatusToggles
                             surgicalCase={surgicalCase}
                             onUpdate={handleCaseUpdate}
                             onError={handleCaseError}
                             compact={true}
                           />
-                        )}
-
-                        {/* Cuando el dueño ES TAMBIÉN el anestesiólogo: muestra ambos toggles */}
-                        {isOwner && isAnesthesiologist && (
-                          <>
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1 font-medium">Cirugía</p>
-                              <CaseStatusToggles
-                                surgicalCase={surgicalCase}
-                                onUpdate={handleCaseUpdate}
-                                onError={handleCaseError}
-                                compact={true}
-                              />
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1 font-medium">Mi anestesia</p>
-                              <AnesthesiaStatusToggles
-                                surgicalCase={surgicalCase}
-                                onUpdate={(patch) => handleAnesthesiaStatusUpdate(surgicalCase.id, patch)}
-                                onError={handleCaseError}
-                              />
-                            </div>
-                          </>
-                        )}
-
-                        {/* Toggles independientes del anestesiólogo (no dueño) */}
-                        {isAnesthesiologist && !isOwner && (
-                          <AnesthesiaStatusToggles
-                            surgicalCase={surgicalCase}
-                            onUpdate={(patch) => handleAnesthesiaStatusUpdate(surgicalCase.id, patch)}
-                            onError={handleCaseError}
-                          />
-                        )}
+                        ) : null}
 
                         {isAnesthesiologist && surgicalCase.is_operated && (
                           <Link to={`/cases/${surgicalCase.id}/anesthesia#time`} onClick={e => e.stopPropagation()} className="w-full mt-1 block">
