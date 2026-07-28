@@ -53,6 +53,13 @@ class InsuranceCompany(models.Model):
 
 class Hospital(models.Model):
     """Hospitales y clínicas"""
+
+    PLACE_TYPE_CHOICES = [
+        ('hospital', 'Hospital'),
+        ('clinica', 'Clínica'),
+        ('consultorio', 'Consultorio'),
+    ]
+
     name = models.CharField(
         max_length=200,
         unique=True,
@@ -64,9 +71,15 @@ class Hospital(models.Model):
         null=True,
         verbose_name="Ubicación"
     )
+    place_type = models.CharField(
+        max_length=20,
+        choices=PLACE_TYPE_CHOICES,
+        default='hospital',
+        verbose_name="Tipo de lugar",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = 'Hospital'
         verbose_name_plural = 'Hospitales'

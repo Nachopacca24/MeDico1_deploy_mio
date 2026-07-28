@@ -253,6 +253,11 @@ const NewAnesthesiaCase = () => {
                           <div className="flex items-center gap-2">
                             {h.is_favorite && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
                             <span>{h.name}</span>
+                            {h.place_type && h.place_type !== 'hospital' && (
+                              <span className="text-xs text-muted-foreground border rounded px-1">
+                                {h.place_type === 'clinica' ? 'Clínica' : 'Consultorio'}
+                              </span>
+                            )}
                           </div>
                         </SelectItem>
                       ))}

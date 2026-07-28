@@ -9,6 +9,7 @@ export interface Hospital {
   id: number;
   name: string;
   location?: string;
+  place_type?: 'hospital' | 'clinica' | 'consultorio';
   is_favorite?: boolean;
   created_at: string;
   updated_at: string;

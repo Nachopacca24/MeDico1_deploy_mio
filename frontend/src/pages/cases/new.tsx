@@ -643,6 +643,11 @@ const NewCase = () => {
                               )}
                               <Building2 className="h-4 w-4" />
                               <span className="font-medium">{hospital.name}</span>
+                              {hospital.place_type && hospital.place_type !== 'hospital' && (
+                                <span className="text-xs text-muted-foreground border rounded px-1">
+                                  {hospital.place_type === 'clinica' ? 'Clínica' : 'Consultorio'}
+                                </span>
+                              )}
                             </div>
                           </SelectItem>
                         ))
