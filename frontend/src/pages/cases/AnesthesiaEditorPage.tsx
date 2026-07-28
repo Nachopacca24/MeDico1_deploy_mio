@@ -7,7 +7,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Switch } from "@/shared/components/ui/switch";
 import {
   ArrowLeft, Stethoscope, Trash2, Search, Loader2,
-  Clock, Calculator, FileDown, Wrench, Star, Tag,
+  Clock, Calculator, FileDown, Wrench, Star, Tag, Users,
 } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
@@ -285,7 +285,7 @@ const AnesthesiaEditorPage = () => {
     return null;
   }
 
-  const isOperated = surgicalCase.is_operated;
+  const isOperated = session.is_operated ?? false;
 
   return (
     <AppLayout>
@@ -302,6 +302,28 @@ const AnesthesiaEditorPage = () => {
                 Caso #{caseId} — {displayPatientName(surgicalCase.patient_name)}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Info del equipo quirúrgico */}
+        <div className="flex flex-col gap-1.5 px-1">
+          <div className="flex items-center gap-2 text-sm">
+            <div className="p-1 bg-orange-500/10 rounded shrink-0">
+              <Users className="w-3.5 h-3.5 text-orange-500" />
+            </div>
+            <span className="text-muted-foreground">Cirujano:</span>
+            <span className="font-semibold text-foreground">{surgicalCase.created_by_name ?? 'N/A'}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <div className="p-1 bg-teal-500/10 rounded shrink-0">
+              <Users className="w-3.5 h-3.5 text-teal-500" />
+            </div>
+            <span className="text-muted-foreground">Ayudante:</span>
+            <span className="font-semibold text-foreground">
+              {surgicalCase.assistant_display_name && surgicalCase.assistant_display_name !== 'Sin ayudante'
+                ? surgicalCase.assistant_display_name
+                : <span className="italic text-muted-foreground font-normal">N/A</span>}
+            </span>
           </div>
         </div>
 
