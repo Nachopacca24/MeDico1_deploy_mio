@@ -58,7 +58,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 7, route: '/cases', emoji: '📋', target: 'new-case-btn',
     title: 'Crear una cirugía',
-    description: 'Acá vas a ver todas tus cirugías. Ahora vamos a crear una de práctica juntos. Cuando termines el tutorial podés eliminarla desde el detalle del caso.',
+    description: 'Acá vas a ver todas tus cirugías. Ahora vamos a crear una de práctica juntos. Cuando termines el tutorial podés eliminarla desde el detalle del caso (tocá "Ver" → botón Eliminar).',
     hint: 'Tocá el botón "+ Nueva Cirugía" para empezar.',
   },
   {
@@ -94,13 +94,13 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 13, route: '/cases', emoji: '🔄', target: 'case-status',
     title: 'Los 3 estados de una cirugía',
-    description: '① Operado: cirugía realizada. ② Facturado: ingresás el número de factura cuando la enviás. ③ Cobrado: honorario recibido — el caso se archiva en la pestaña "Cobrados".',
-    hint: 'Los botones azul, violeta y verde aparecen en cada tarjeta de cirugía. Tocá cualquiera para cambiar el estado.',
+    description: '① Operado: cirugía realizada. ② Facturado: ingresás el número de factura cuando la enviás. ③ Cobrado: honorario recibido — el caso se mueve a la pestaña "Cobrados" y se suma a tus estadísticas.\n\n🗑️ Eliminar es diferente a Cobrado: si querés borrar un caso sin que cuente en estadísticas, entrá al detalle ("Ver") y usá el botón Eliminar. Cobrado archiva y suma; Eliminar borra sin registrar.',
+    hint: 'Cobrado → suma a estadísticas. Eliminar (desde "Ver") → borra sin afectar estadísticas.',
   },
   {
     step: 14, route: '/stats', emoji: '📊', target: 'stats-chart',
     title: 'Estadísticas',
-    description: 'Cada cirugía que pasás a "Cobrado" suma acá. Ves tu rendimiento por mes, los hospitales donde más operás y los procedimientos más frecuentes.',
+    description: 'Solo las cirugías que pasás a "Cobrado" suman acá. Ves tu rendimiento por mes, los hospitales donde más operás y los procedimientos más frecuentes.',
     hint: 'Usá los filtros de fecha para ver por semana, mes o rango personalizado.',
   },
   {
@@ -166,7 +166,7 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 8, route: '/cases', emoji: '📋', target: 'new-anesthesia-btn',
     title: 'Crear tu propio caso de anestesia',
-    description: 'Además de aceptar invitaciones, como anestesiólogo también podés registrar vos mismo tus propios casos — sin depender de que un cirujano te invite. Vamos a crear uno de práctica juntos. Cuando termines el tutorial podés eliminarlo desde el detalle del caso.',
+    description: 'Además de aceptar invitaciones, como anestesiólogo también podés registrar vos mismo tus propios casos — sin depender de que un cirujano te invite. Vamos a crear uno de práctica juntos. Cuando termines el tutorial podés eliminarlo desde el detalle del caso (tocá "Ver" → botón Eliminar).',
     hint: 'Tocá el botón "Nueva Anestesia" para empezar — no "Nueva Cirugía", ese botón es para cirujanos.',
   },
   {
@@ -201,14 +201,14 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     step: 14, route: '/cases', emoji: '🔄', target: 'case-status',
-    title: 'Marcá la cirugía como Operada',
-    description: 'Cuando la cirugía ya se realizó, tocá el estado "Operado" — aplica igual si es un caso propio o uno donde te invitaron. Esto habilita el campo de Unidades de Tiempo dentro del formulario de anestesia — ahí ingresás los minutos reales de anestesia para completar el cálculo (1 unidad cada 15 minutos). Sin marcarlo, ese campo no aparece y el honorario queda incompleto.',
-    hint: 'El campo de tiempo solo aparece después de marcar la cirugía como Operada.',
+    title: 'Los 3 estados de tu anestesia',
+    description: 'Cada caso tiene sus propios estados independientes del cirujano: ① Operado: habilitá el campo de Tiempo en tu formulario (1 unidad cada 15 minutos — necesario para calcular bien el honorario). ② Facturado: ingresás tu número de factura de anestesia. ③ Cobrado: honorario recibido — el caso pasa a "Cobrados" y suma a tus estadísticas.\n\n🗑️ Eliminar es diferente: si querés borrar un caso sin que cuente en estadísticas, entrá al detalle ("Ver") y usá el botón Eliminar. Cobrado archiva y suma; Eliminar borra sin registrar.',
+    hint: 'Cobrado → suma a tus estadísticas. Eliminar (desde "Ver") → borra sin afectar estadísticas.',
   },
   {
     step: 15, route: '/stats', emoji: '📊', target: 'stats-chart',
     title: 'Estadísticas',
-    description: 'Acá contás tus propios casos de anestesia y también los que aceptaste como anestesiólogo invitado — si operaste, cuenta para tu actividad. Incluye RVU, procedimientos y hospitales más frecuentes, y cuántas cirugías operás sin seguro.',
+    description: 'Solo los casos que pasás a "Cobrado" suman acá — tanto tus casos propios como los que aceptaste como anestesiólogo invitado. Incluye RVU, procedimientos y hospitales más frecuentes.',
     hint: 'Usá los filtros de fecha para ver por semana, mes o rango personalizado.',
   },
   {
