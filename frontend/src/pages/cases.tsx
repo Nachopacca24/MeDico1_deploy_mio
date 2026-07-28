@@ -1338,7 +1338,7 @@ const CasesPage = () => {
                             {surgicalCase.anesthesiologist_display ? (
                               <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                 <span className="truncate min-w-0">Anest: <span className="font-semibold text-foreground">{surgicalCase.anesthesiologist_display}</span></span>
-                                {surgicalCase.anesthesiologist_accepted === true && (
+                                {surgicalCase.anesthesiologist_accepted === true && !(isOwner && isAnesthesiologist) && (
                                   <Badge variant="default" className="bg-green-600 text-white text-xs shrink-0">✓</Badge>
                                 )}
                                 {surgicalCase.anesthesiologist_accepted === false && (
