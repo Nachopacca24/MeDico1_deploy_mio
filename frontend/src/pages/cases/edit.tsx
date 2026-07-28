@@ -992,7 +992,7 @@ const EditCase = () => {
                         <SelectValue placeholder="Selecciona un colega" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {colleagues.map((colleague) => (
+                        {colleagues.filter(c => c.specialty !== 'Anestesiología').map((colleague) => (
                           <SelectItem key={colleague.id} value={colleague.id.toString()}>
                             <div className="flex flex-col">
                               <span>{colleague.full_name}</span>
@@ -1055,9 +1055,9 @@ const EditCase = () => {
               {anesthesiologistType === 'colleague' && (
                 <div className="space-y-2">
                   <Label>Seleccionar Colega</Label>
-                  {colleagues.length === 0 ? (
+                  {colleagues.filter(c => c.specialty === 'Anestesiología').length === 0 ? (
                     <div className="text-sm text-muted-foreground p-4 border rounded-lg bg-muted/50">
-                      No tienes colegas agregados.
+                      No tienes colegas con especialidad Anestesiología.
                     </div>
                   ) : (
                     <Select
@@ -1068,7 +1068,7 @@ const EditCase = () => {
                         <SelectValue placeholder="Selecciona un colega" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        {colleagues.map((c) => (
+                        {colleagues.filter(c => c.specialty === 'Anestesiología').map((c) => (
                           <SelectItem key={c.id} value={c.id.toString()}>
                             <div className="flex flex-col">
                               <span>{c.full_name}</span>
