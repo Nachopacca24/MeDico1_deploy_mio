@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import (
     Specialty,
     Hospital,
+    InsuranceCompany,
     Operation,
     HospitalOperationRate,
     Favorite,
@@ -20,8 +21,21 @@ class SpecialtyAdmin(admin.ModelAdmin):
 
 @admin.register(Hospital)
 class HospitalAdmin(admin.ModelAdmin):
-    list_display = ['name', 'location', 'created_at']
+    list_display = ['name', 'place_type', 'location', 'created_at']
+    list_filter = ['place_type']
     search_fields = ['name', 'location']
+    ordering = ['place_type', 'name']
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'place_type', 'location'),
+        }),
+    )
+
+
+@admin.register(InsuranceCompany)
+class InsuranceCompanyAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_at']
+    search_fields = ['name']
     ordering = ['name']
 
 
