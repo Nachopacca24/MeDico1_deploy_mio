@@ -789,11 +789,19 @@ def export_cases_bulk_pdf(request):
 
     include_factor = request.data.get('include_factor', True)
 
+    from django.db.models import Q
+    from ..models.anesthesia import AnesthesiaCase
     cases = (
         SurgicalCase.objects
-        .select_related('hospital', 'created_by', 'assistant_doctor')
-        .prefetch_related('procedures', 'images')
-        .filter(pk__in=case_ids, created_by=request.user)
+        .select_related('hospital', 'created_by', 'assistant_doctor', 'anesthesia')
+        .prefetch_related('procedures', 'images', 'anesthesia__items')
+        .filter(
+            Q(created_by=request.user) |
+            Q(assistant_doctor=request.user, assistant_accepted=True) |
+            Q(anesthesia__anesthesiologist=request.user, anesthesia__anesthesiologist_accepted=True),
+            pk__in=case_ids,
+        )
+        .distinct()
         .order_by('surgery_date')
     )
 

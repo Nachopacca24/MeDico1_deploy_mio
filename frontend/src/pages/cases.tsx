@@ -1295,8 +1295,8 @@ const CasesPage = () => {
                 return (
                   <React.Fragment key={`case-${surgicalCase.id}`}>
                     <Card
-                    className={`hover:border-primary transition-colors border-border/70 border-l-4 ${roleBorderClass} overflow-hidden ${selectMode && isOwner ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400' : ''}`}
-                    onClick={selectMode && isOwner ? () => toggleSelect(surgicalCase.id) : undefined}
+                    className={`hover:border-primary transition-colors border-border/70 border-l-4 ${roleBorderClass} overflow-hidden ${selectMode ? 'cursor-pointer' : ''} ${selectMode && selectedIds.has(surgicalCase.id) ? 'border-amber-400 ring-1 ring-amber-400 border-l-amber-400' : ''}`}
+                    onClick={selectMode ? () => toggleSelect(surgicalCase.id) : undefined}
                   >
                       {/* Franja de rol */}
                       {isAnesthesiologist && !isOwner && (
@@ -1331,7 +1331,7 @@ const CasesPage = () => {
                             <UploadingBadge caseId={surgicalCase.id} />
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
-                            {selectMode && isOwner && (
+                            {selectMode && (
                               selectedIds.has(surgicalCase.id)
                                 ? <CheckSquare className="w-4 h-4 text-amber-400 flex-shrink-0" />
                                 : <Square className="w-4 h-4 text-muted-foreground flex-shrink-0" />
