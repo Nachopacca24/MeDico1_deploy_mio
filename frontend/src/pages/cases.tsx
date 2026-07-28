@@ -248,12 +248,18 @@ function CaseStatusToggles({
 // ── Toggles de estado para el anestesiólogo (independientes del cirujano) ──
 interface AnesthesiaStatusTogglesProps {
   surgicalCase: SurgicalCase;
-  onUpdate: (patch: { anesthesia_is_operated?: boolean; anesthesia_is_billed?: boolean; anesthesia_is_paid?: boolean }) => void;
+  onUpdate: (patch: { anesthesia_is_operated?: boolean; anesthesia_is_billed?: boolean; anesthesia_is_paid?: boolean; anesthesia_invoice_number?: string | null }) => void;
   onError: (msg: string) => void;
 }
 
 function AnesthesiaStatusToggles({ surgicalCase, onUpdate, onError }: AnesthesiaStatusTogglesProps) {
   const [updating, setUpdating] = useState<'operated' | 'billed' | 'paid' | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState(surgicalCase.anesthesia_invoice_number ?? '');
+  const [savingInvoice, setSavingInvoice] = useState(false);
+
+  useEffect(() => {
+    setInvoiceNumber(surgicalCase.anesthesia_invoice_number ?? '');
+  }, [surgicalCase.anesthesia_invoice_number]);
 
   const isOperated = surgicalCase.anesthesia_is_operated ?? false;
   const isBilled   = surgicalCase.anesthesia_is_billed   ?? false;
@@ -282,32 +288,74 @@ function AnesthesiaStatusToggles({ surgicalCase, onUpdate, onError }: Anesthesia
     }
   };
 
+  const handleSaveInvoice = async () => {
+    if (invoiceNumber === (surgicalCase.anesthesia_invoice_number ?? '')) return;
+    setSavingInvoice(true);
+    try {
+      await anesthesiaService.updateStatus(surgicalCase.id, { invoice_number: invoiceNumber || null });
+      onUpdate({ anesthesia_invoice_number: invoiceNumber || null });
+    } catch (e: any) {
+      onError(e.message || 'Error al guardar factura');
+    } finally {
+      setSavingInvoice(false);
+    }
+  };
+
   return (
-    <div className="flex gap-1 flex-wrap" data-tutorial="anesthesia-status">
-      <Button variant={isOperated ? 'default' : 'outline'} size="sm"
-        onClick={() => handleToggle('operated', isOperated)} disabled={updating !== null}
-        className={isOperated
-          ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
-          : 'border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-950'}>
-        {updating === 'operated' ? <Loader2 className="w-3 h-3 animate-spin" /> : isOperated ? <Check className="w-3 h-3" /> : null}
-        <span className={isOperated || updating === 'operated' ? 'ml-1' : ''}>Operado</span>
-      </Button>
-      <Button variant={isBilled ? 'default' : 'outline'} size="sm"
-        onClick={() => handleToggle('billed', isBilled)} disabled={updating !== null || (!isOperated && !isBilled)}
-        className={isBilled
-          ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600'
-          : 'border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-950'}>
-        {updating === 'billed' ? <Loader2 className="w-3 h-3 animate-spin" /> : isBilled ? <Check className="w-3 h-3" /> : null}
-        <span className={isBilled || updating === 'billed' ? 'ml-1' : ''}>Facturado</span>
-      </Button>
-      <Button variant={isPaid ? 'default' : 'outline'} size="sm"
-        onClick={() => handleToggle('paid', isPaid)} disabled={updating !== null || (!isBilled && !isPaid)}
-        className={isPaid
-          ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
-          : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-950'}>
-        {updating === 'paid' ? <Loader2 className="w-3 h-3 animate-spin" /> : isPaid ? <Check className="w-3 h-3" /> : null}
-        <span className={isPaid || updating === 'paid' ? 'ml-1' : ''}>Cobrado</span>
-      </Button>
+    <div className="flex flex-col gap-2" data-tutorial="anesthesia-status">
+      <div className="flex gap-1 flex-wrap">
+        <Button variant={isOperated ? 'default' : 'outline'} size="sm"
+          onClick={() => handleToggle('operated', isOperated)} disabled={updating !== null}
+          className={isOperated
+            ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+            : 'border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-950'}>
+          {updating === 'operated' ? <Loader2 className="w-3 h-3 animate-spin" /> : isOperated ? <Check className="w-3 h-3" /> : null}
+          <span className={isOperated || updating === 'operated' ? 'ml-1' : ''}>Operado</span>
+        </Button>
+        <Button variant={isBilled ? 'default' : 'outline'} size="sm"
+          onClick={() => handleToggle('billed', isBilled)} disabled={updating !== null || (!isOperated && !isBilled)}
+          className={isBilled
+            ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600'
+            : 'border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 dark:border-purple-600 dark:text-purple-400 dark:hover:bg-purple-950'}>
+          {updating === 'billed' ? <Loader2 className="w-3 h-3 animate-spin" /> : isBilled ? <Check className="w-3 h-3" /> : null}
+          <span className={isBilled || updating === 'billed' ? 'ml-1' : ''}>Facturado</span>
+        </Button>
+        <Button variant={isPaid ? 'default' : 'outline'} size="sm"
+          onClick={() => handleToggle('paid', isPaid)} disabled={updating !== null || (!isBilled && !isPaid)}
+          className={isPaid
+            ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
+            : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-950'}>
+          {updating === 'paid' ? <Loader2 className="w-3 h-3 animate-spin" /> : isPaid ? <Check className="w-3 h-3" /> : null}
+          <span className={isPaid || updating === 'paid' ? 'ml-1' : ''}>Cobrado</span>
+        </Button>
+      </div>
+
+      {/* N° de factura — solo cuando está facturado */}
+      {isBilled && (
+        <div className="flex items-center gap-1.5">
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="N° de factura"
+            value={invoiceNumber}
+            onChange={(e) => setInvoiceNumber(e.target.value.replace(/\D/g, ''))}
+            onKeyDown={(e) => e.key === 'Enter' && handleSaveInvoice()}
+            disabled={savingInvoice}
+            className="flex-1 h-8 text-xs px-2 rounded border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+          />
+          <button
+            onClick={handleSaveInvoice}
+            disabled={savingInvoice || invoiceNumber === (surgicalCase.anesthesia_invoice_number ?? '')}
+            className="h-8 w-8 flex items-center justify-center rounded border border-input bg-background hover:bg-accent disabled:opacity-40 transition-colors shrink-0"
+            title="Guardar número de factura"
+          >
+            {savingInvoice
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+              : <Check className="w-3.5 h-3.5 text-green-600" />}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -641,10 +689,11 @@ const CasesPage = () => {
 
   const handleAnesthesiaStatusUpdate = (
     caseId: number,
-    patch: { anesthesia_is_operated?: boolean; anesthesia_is_billed?: boolean; anesthesia_is_paid?: boolean }
+    patch: { anesthesia_is_operated?: boolean; anesthesia_is_billed?: boolean; anesthesia_is_paid?: boolean; anesthesia_invoice_number?: string | null }
   ) => {
     const justBecamePaid = patch.anesthesia_is_paid === true;
     setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
+    if ('anesthesia_invoice_number' in patch) return; // silencioso para factura
     if (justBecamePaid) {
       toast.success('Anestesia cobrada', 'Marcaste tu honorario de anestesia como cobrado');
     } else {
@@ -1041,12 +1090,14 @@ const CasesPage = () => {
                 const isAnesthesiologist = surgicalCase.is_anesthesiologist ?? false;
                 const isAssistant = !isOwner && !isAnesthesiologist;
 
-                // Color del borde izquierdo y del badge según el rol del usuario en este caso
-                const roleBorderClass = isAnesthesiologist
-                  ? 'border-l-teal-500'
-                  : isAssistant
-                    ? 'border-l-orange-400'
-                    : 'border-l-primary';
+                // Color del borde: celeste=cirugía propia, teal=colaborando como anestesiólogo, naranja=ayudante, primary=cirujano
+                const roleBorderClass = isAnesthesiologist && isOwner
+                  ? 'border-l-sky-400'
+                  : isAnesthesiologist
+                    ? 'border-l-teal-500'
+                    : isAssistant
+                      ? 'border-l-orange-400'
+                      : 'border-l-primary';
 
                 return (
                   <React.Fragment key={`case-${surgicalCase.id}`}>
@@ -1062,9 +1113,9 @@ const CasesPage = () => {
                         </div>
                       )}
                       {isAnesthesiologist && isOwner && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/10 border-b border-teal-200 dark:border-teal-800/50">
-                          <Stethoscope className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
-                          <span className="text-xs font-semibold text-teal-700 dark:text-teal-300">Tu Cirugía · Anestesiólogo</span>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 border-b border-sky-200 dark:border-sky-800/50">
+                          <Stethoscope className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0" />
+                          <span className="text-xs font-semibold text-sky-700 dark:text-sky-300">Tu Cirugía · Anestesiólogo</span>
                         </div>
                       )}
                       {isOwner && !isAnesthesiologist && (

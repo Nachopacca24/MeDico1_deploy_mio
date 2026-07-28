@@ -116,6 +116,7 @@ class AnesthesiaService {
     is_operated?: boolean;
     is_billed?: boolean;
     is_paid?: boolean;
+    invoice_number?: string | null;
   }): Promise<AnesthesiaCase> {
     const res = await authService.authenticatedFetch(this.url(caseId), {
       method: 'PATCH',

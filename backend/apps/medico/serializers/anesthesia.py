@@ -30,7 +30,7 @@ class AnesthesiaCaseSerializer(serializers.ModelSerializer):
             'anesthesiologist_accepted',
             'equipment_name', 'equipment_cost',
             'notes', 'items',
-            'is_operated', 'is_billed', 'is_paid',
+            'is_operated', 'is_billed', 'is_paid', 'invoice_number',
             'total_base_units', 'total_units', 'total_fee',
             'created_at', 'updated_at',
         ]
@@ -48,7 +48,7 @@ class AnesthesiaCaseWriteSerializer(serializers.ModelSerializer):
             'anesthesiologist_name', 'anesthesiologist',
             'equipment_name', 'equipment_cost',
             'notes',
-            'is_operated', 'is_billed', 'is_paid',
+            'is_operated', 'is_billed', 'is_paid', 'invoice_number',
         ]
 
     def validate(self, attrs):

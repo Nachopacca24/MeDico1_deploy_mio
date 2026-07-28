@@ -103,6 +103,7 @@ export interface SurgicalCase {
   anesthesia_is_operated?: boolean | null;
   anesthesia_is_billed?: boolean | null;
   anesthesia_is_paid?: boolean | null;
+  anesthesia_invoice_number?: string | null;
 
   // Equipo personal del cirujano (informativo)
   equipment_name?: string | null;

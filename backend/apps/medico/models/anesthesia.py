@@ -85,6 +85,9 @@ class AnesthesiaCase(models.Model):
     is_operated = models.BooleanField(default=False, verbose_name="Operado (anestesia)")
     is_billed = models.BooleanField(default=False, verbose_name="Facturado (anestesia)")
     is_paid = models.BooleanField(default=False, verbose_name="Cobrado (anestesia)")
+    invoice_number = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="N° de Factura (anestesia)"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

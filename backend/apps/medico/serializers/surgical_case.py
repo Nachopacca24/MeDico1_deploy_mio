@@ -78,6 +78,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
     anesthesia_is_operated = serializers.SerializerMethodField()
     anesthesia_is_billed = serializers.SerializerMethodField()
     anesthesia_is_paid = serializers.SerializerMethodField()
+    anesthesia_invoice_number = serializers.SerializerMethodField()
 
     can_edit = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
@@ -143,6 +144,10 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
         a = self._get_anesthesia_for_user(obj)
         return a.is_paid if a else None
 
+    def get_anesthesia_invoice_number(self, obj):
+        a = self._get_anesthesia_for_user(obj)
+        return a.invoice_number if a else None
+
     class Meta:
         model = SurgicalCase
         fields = [
@@ -175,6 +180,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'anesthesia_is_operated',
             'anesthesia_is_billed',
             'anesthesia_is_paid',
+            'anesthesia_invoice_number',
             'total_rvu',
             'total_value',
             'procedure_count',
