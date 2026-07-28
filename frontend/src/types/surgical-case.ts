@@ -121,6 +121,7 @@ export interface SurgicalCase {
   is_owner?: boolean;
   
   procedure_count?: number;
+  anesthesia_item_count?: number | null;
   total_rvu?: number;
   total_value?: number;
   primary_specialty?: string;

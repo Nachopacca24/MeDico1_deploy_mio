@@ -114,7 +114,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             'created_by',
             'assistant_doctor',
             'insurance_company',
-        ).prefetch_related('procedures', 'images').distinct()
+            'anesthesia',
+        ).prefetch_related('procedures', 'images', 'anesthesia__items', 'collaborator_removals').distinct()
 
         # Filtros opcionales
         status_filter = self.request.query_params.get('status', None)

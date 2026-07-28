@@ -23,7 +23,7 @@ import { anesthesiaService } from "@/services/anesthesiaService";
 import type { SurgicalCase, AssistedCasesResponse } from "@/types/surgical-case";
 import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
-import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus, Clock, AlertCircle, LogOut } from 'lucide-react';
+import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus, Clock, LogOut } from 'lucide-react';
 import { authService } from "@/shared/services/authService";
 import { useIsUploading } from "@/shared/hooks/useUploadingCases";
 import { APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
@@ -55,7 +55,8 @@ import {
   Loader2 as LoaderIcon,
   Users,
   Bell,
-  Stethoscope
+  Stethoscope,
+  Trash2
 } from "lucide-react";
 
 // Componente CaseStatusToggles inline
@@ -1449,7 +1450,11 @@ const CasesPage = () => {
                         )}
 
                         {isAnesthesiologist ? (
-                          <div className="grid grid-cols-2 gap-1 text-center pt-1.5 border-t">
+                          <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
+                            <div>
+                              <div className="text-xs text-muted-foreground mb-0.5">Cód.</div>
+                              <div className="text-sm font-semibold">{surgicalCase.anesthesia_item_count ?? 0}</div>
+                            </div>
                             <div>
                               <div className="text-xs text-muted-foreground mb-0.5">Proc.</div>
                               <div className="text-sm font-semibold">{surgicalCase.procedure_count || 0}</div>
