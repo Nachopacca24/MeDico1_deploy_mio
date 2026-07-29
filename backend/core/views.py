@@ -248,14 +248,16 @@ def admin_users(request):
     from apps.medico.models.google_calendar_token import GoogleCalendarToken
     from apps.medio_auth.models import Friendship
 
-    users = User.objects.all().values(
+    base_fields = [
         'id', 'username', 'email', 'first_name', 'last_name',
         'is_staff', 'is_active', 'is_superuser', 'is_verified',
         'date_joined', 'last_login', 'plan', 'specialty', 'phone',
         'trial_ends_at', 'is_permanent_premium', 'role',
-        'ls_renews_at', 'ls_cancelled', 'ls_subscription_id',
-        'tutorial_completed',
-    )
+        'ls_renews_at', 'ls_cancelled', 'tutorial_completed',
+    ]
+    if request.user.is_superuser:
+        base_fields.append('ls_subscription_id')
+    users = User.objects.all().values(*base_fields)
 
     # Feature adoption — simple flat ID sets
     calendar_ids = set(GoogleCalendarToken.objects.values_list('user_id', flat=True))

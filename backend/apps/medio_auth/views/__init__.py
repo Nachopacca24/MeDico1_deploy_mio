@@ -440,11 +440,13 @@ class VerifyEmailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        import hashlib
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
         try:
-            user = User.objects.get(email_verification_token=token)
+            user = User.objects.get(email_verification_token=token_hash)
         except User.DoesNotExist:
             return Response(
-                {'error': 'Token inválido o expirado'}, 
+                {'error': 'Token inválido o expirado'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -1470,8 +1472,10 @@ class ResetPasswordView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        import hashlib
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
         try:
-            user = User.objects.get(password_reset_token=token)
+            user = User.objects.get(password_reset_token=token_hash)
         except User.DoesNotExist:
             return Response(
                 {'error': 'Token inválido o expirado'},

@@ -341,10 +341,12 @@ class CustomUser(AbstractUser):
         Genera un token único para verificación de email.
         Retorna el token generado.
         """
-        self.email_verification_token = secrets.token_urlsafe(32)
+        import hashlib
+        raw_token = secrets.token_urlsafe(32)
+        self.email_verification_token = hashlib.sha256(raw_token.encode()).hexdigest()
         self.email_verification_sent_at = timezone.now()
         self.save()
-        return self.email_verification_token
+        return raw_token
     
     def save(self, *args, **kwargs):
         if not self.friend_code:
@@ -394,10 +396,12 @@ class CustomUser(AbstractUser):
                 return code
     
     def generate_password_reset_token(self):
-        self.password_reset_token = secrets.token_urlsafe(32)
+        import hashlib
+        raw_token = secrets.token_urlsafe(32)
+        self.password_reset_token = hashlib.sha256(raw_token.encode()).hexdigest()
         self.password_reset_sent_at = timezone.now()
         self.save(update_fields=['password_reset_token', 'password_reset_sent_at'])
-        return self.password_reset_token
+        return raw_token
 
     def clear_password_reset_token(self):
         self.password_reset_token = None

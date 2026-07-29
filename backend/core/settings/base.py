@@ -174,6 +174,13 @@ ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', '')
 if not ENCRYPTION_KEY and not DEBUG:
     from django.core.exceptions import ImproperlyConfigured
     raise ImproperlyConfigured('ENCRYPTION_KEY must be set in production.')
+if ENCRYPTION_KEY:
+    try:
+        from cryptography.fernet import Fernet as _Fernet
+        _Fernet(ENCRYPTION_KEY.encode() if isinstance(ENCRYPTION_KEY, str) else ENCRYPTION_KEY)
+    except Exception as _e:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(f'ENCRYPTION_KEY is invalid: {_e}') from _e
 
 # ============================================
 # GOOGLE CALENDAR CONFIGURATION
