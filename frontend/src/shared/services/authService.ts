@@ -12,6 +12,7 @@ const AUTH_ENDPOINTS = {
   me: `${API_URL}/api/auth/me/`,
   changePassword: `${API_URL}/api/auth/change-password/`,
   google: `${API_URL}/api/auth/google/`,
+  apple: `${API_URL}/api/auth/apple/`,
   forgotPassword: `${API_URL}/api/auth/forgot-password/`,
   resetPassword: `${API_URL}/api/auth/reset-password/`,
   deleteAccount: `${API_URL}/api/auth/delete-account/`,
@@ -251,6 +252,39 @@ class AuthService {
       this.saveUser(result.user);
 
 
+      return result;
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new NetworkError();
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * 🍎 Login con Apple (Sign in with Apple)
+   */
+  async loginWithApple(payload: {
+    identity_token: string;
+    given_name?: string | null;
+    family_name?: string | null;
+    email?: string | null;
+    referral_code?: string;
+  }): Promise<AuthResponse> {
+    try {
+      const response = await fetch(AUTH_ENDPOINTS.apple, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw await parseAuthError(response);
+      }
+
+      const result: AuthResponse = await response.json();
+      this.saveTokens(result.tokens);
+      this.saveUser(result.user);
       return result;
     } catch (error) {
       if (error instanceof TypeError) {

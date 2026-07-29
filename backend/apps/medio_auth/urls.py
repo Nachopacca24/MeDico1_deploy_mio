@@ -27,6 +27,7 @@ from .views import (
 
     # Social Auth
     GoogleLoginView,
+    AppleLoginView,
 
     # Password Reset
     ForgotPasswordView,
@@ -54,6 +55,7 @@ urlpatterns = [
     path('me/', UserProfileView.as_view(), name='me'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('google/', GoogleLoginView.as_view(), name='google_login'),
+    path('apple/', AppleLoginView.as_view(), name='apple_login'),
 
     # ============================================
     # RUTAS DE RESETEO DE CONTRASEÑA

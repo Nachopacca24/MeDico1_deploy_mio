@@ -1070,6 +1070,168 @@ class GoogleLoginView(APIView):
 
 
 # ============================================
+# SOCIAL AUTHENTICATION (APPLE)
+# ============================================
+
+class AppleLoginView(APIView):
+    """
+    Verifica un identity_token de Sign in with Apple y devuelve JWT tokens propios.
+    El email y nombre solo llegan en el PRIMER login; identificamos al usuario por apple_user_id (sub).
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        identity_token = request.data.get('identity_token')
+        if not identity_token:
+            return Response({'error': 'Se requiere identity_token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            apple_sub, email = self._verify_apple_token(identity_token)
+        except Exception as exc:
+            logger.warning("Apple token verification failed: %s", exc)
+            return Response({'error': 'Token de Apple inválido o expirado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        given_name  = (request.data.get('given_name')  or '').strip()
+        family_name = (request.data.get('family_name') or '').strip()
+
+        try:
+            user, created = self._get_or_create_user(apple_sub, email, given_name, family_name)
+        except Exception:
+            logger.exception("Error during Apple login for sub=%s", apple_sub)
+            return Response({'error': 'Error interno. Intentá de nuevo.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if not user.is_active:
+            return Response({'error': 'Esta cuenta está desactivada.'}, status=status.HTTP_403_FORBIDDEN)
+
+        if user.deletion_requested_at:
+            deletion_date = (user.deletion_requested_at + timedelta(days=30)).strftime('%d/%m/%Y')
+            return Response(
+                {'error': f'Esta cuenta está programada para eliminación el {deletion_date}.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        user.check_trial_expiry()
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
+
+        if created:
+            referral_code = request.data.get('referral_code', '').strip()
+            if referral_code:
+                try:
+                    referrer = User.objects.get(friend_code=referral_code)
+                    if referrer.id != user.id:
+                        from apps.medio_auth.models import Friendship
+                        Friendship.objects.get_or_create(
+                            user=min(referrer, user, key=lambda u: u.id),
+                            friend=max(referrer, user, key=lambda u: u.id),
+                        )
+                        _apply_referral(user, referrer)
+                except Exception:
+                    pass
+
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'message': 'Registro con Apple exitoso' if created else 'Login con Apple exitoso',
+            'user': UserSerializer(user).data,
+            'tokens': {'refresh': str(refresh), 'access': str(refresh.access_token)},
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    @staticmethod
+    def _verify_apple_token(identity_token: str):
+        """
+        Verifica el JWT usando las claves públicas de Apple.
+        Devuelve (sub, email).  email puede ser None en logins posteriores al primero.
+        """
+        import json
+        import base64
+        import jwt as pyjwt
+        from jwt.algorithms import RSAAlgorithm
+
+        # 1. Obtener las claves públicas de Apple
+        resp = requests.get('https://appleid.apple.com/auth/keys', timeout=10)
+        resp.raise_for_status()
+        apple_keys = resp.json().get('keys', [])
+
+        # 2. Leer el header sin verificar para saber qué kid usar
+        header_b64 = identity_token.split('.')[0]
+        # agregar padding si falta
+        header_b64 += '=' * (4 - len(header_b64) % 4)
+        header = json.loads(base64.urlsafe_b64decode(header_b64))
+        kid = header.get('kid')
+
+        matching_key = next((k for k in apple_keys if k.get('kid') == kid), None)
+        if not matching_key:
+            raise ValueError(f'No se encontró la clave pública de Apple con kid={kid}')
+
+        public_key = RSAAlgorithm.from_jwk(json.dumps(matching_key))
+
+        # 3. Verificar el token
+        payload = pyjwt.decode(
+            identity_token,
+            public_key,
+            algorithms=['RS256'],
+            audience='app.medicoapp.medico',
+            issuer='https://appleid.apple.com',
+        )
+
+        apple_sub = payload.get('sub')
+        email = payload.get('email')
+        if not apple_sub:
+            raise ValueError('Token de Apple sin sub')
+
+        return apple_sub, email
+
+    @staticmethod
+    def _get_or_create_user(apple_sub: str, email, given_name: str, family_name: str):
+        """
+        Busca al usuario por apple_user_id. Si no existe, lo crea.
+        Si existe una cuenta con el mismo email, vincula el apple_user_id a ella.
+        """
+        # 1. Usuario que ya inició sesión con Apple antes
+        user = User.objects.filter(apple_user_id=apple_sub).first()
+        if user:
+            return user, False
+
+        # 2. Cuenta existente con ese email → vincular Apple
+        if email:
+            user = User.objects.filter(email=email).first()
+            if user:
+                user.apple_user_id = apple_sub
+                if not user.is_email_verified:
+                    user.is_email_verified = True
+                user.save(update_fields=['apple_user_id', 'is_email_verified'])
+                return user, False
+
+        # 3. Crear cuenta nueva
+        if not email:
+            # Apple private relay: generar placeholder único
+            email = f"{apple_sub}@privaterelay.appleid.com"
+
+        base_username = email.split('@')[0]
+        unique_username = f"{base_username}_{uuid.uuid4().hex[:6]}"
+
+        free_for_all = SiteSetting.get('FREE_FOR_ALL_PREMIUM', '0') == '1'
+        trial_days = int(SiteSetting.get('TRIAL_DAYS', '30'))
+
+        user = User.objects.create(
+            email=email,
+            username=unique_username,
+            first_name=given_name,
+            last_name=family_name,
+            apple_user_id=apple_sub,
+            is_email_verified=True,
+            role=1,
+            trial_ends_at=None if free_for_all else timezone.now() + timedelta(days=trial_days),
+            plan='premium',
+            had_trial=True,
+        )
+        user.set_unusable_password()
+        user.save(update_fields=['password'])
+        return user, True
+
+
+# ============================================
 # ELIMINACIÓN DE CUENTA
 # ============================================
 

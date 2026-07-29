@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>MéDico App</string>
+	<string>MeDico</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,5 +47,19 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>MeDico necesita acceso a la cámara para fotografiar imágenes de cirugías.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MeDico necesita acceso a tus fotos para adjuntar imágenes a los registros quirúrgicos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MeDico guarda imágenes de cirugías en tu biblioteca de fotos.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>MeDico te envía notificaciones sobre invitaciones a cirugías y recordatorios.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

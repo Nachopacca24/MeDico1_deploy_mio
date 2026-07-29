@@ -270,6 +270,15 @@ class CustomUser(AbstractUser):
         help_text="Días Premium ganados por referidos; se aplican al terminar la promo FREE_FOR_ALL"
     )
 
+    apple_user_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        unique=True,
+        verbose_name="Apple User ID",
+        help_text="Identificador único de Apple (sub) para Sign in with Apple"
+    )
+
     @property
     def has_premium_access(self):
         """Effective premium access: real premium/permanent, or the site-wide free promo is on."""

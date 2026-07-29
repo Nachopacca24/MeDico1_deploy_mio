@@ -31,6 +31,7 @@ import { Loader2 } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -205,6 +206,40 @@ export default function Login() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const result = await SignInWithApple.authorize({
+        clientId: 'app.medicoapp.medico',
+        redirectURI: 'https://medico1deploymio-production.up.railway.app/api/auth/apple/callback/',
+        scopes: 'email name',
+        state: crypto.randomUUID(),
+        nonce: crypto.randomUUID(),
+      });
+
+      const { identityToken, givenName, familyName, email } = result.response;
+
+      await authService.loginWithApple({
+        identity_token: identityToken,
+        given_name: givenName,
+        family_name: familyName,
+        email,
+      });
+      window.dispatchEvent(new Event('auth-changed'));
+      toast({ title: '¡Bienvenido/a!', description: 'Has iniciado sesión con Apple exitosamente.' });
+      navigate(location.state?.from ?? '/dashboard');
+    } catch (error: any) {
+      const cancelled = error?.message?.includes('cancel') || error?.code === 1001;
+      if (!cancelled) {
+        toast({ variant: 'destructive', title: 'Error', description: error.message || 'No se pudo iniciar sesión con Apple.' });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isIOS = Capacitor.getPlatform() === 'ios';
+
   // Si ya está autenticado, redirigir según el rol
   if (isAuthenticated) {
     if (isAdmin) {
@@ -273,6 +308,21 @@ export default function Login() {
               <h1 className='text-2xl font-bold tracking-tight text-foreground'>Bienvenido de nuevo</h1>
               <p className='text-sm text-muted-foreground'>Ingresa tus credenciales para acceder a tu cuenta</p>
             </div>
+
+            {/* Apple — solo en iOS (requerido por App Store) */}
+            {isIOS && (
+              <button
+                type="button"
+                onClick={handleAppleSignIn}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-3 h-13 px-4 py-3.5 rounded-xl bg-black text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16.125 1C15.09 1.046 13.873 1.7 13.125 2.563c-.68.78-1.242 1.94-1.023 3.062 1.14.035 2.32-.647 3.047-1.5.68-.804 1.195-1.958.976-3.125zM20.5 8.25c-1.11-1.388-2.672-2.188-4.156-2.188-1.945 0-2.766.938-4.11.938-1.383 0-2.434-.938-4.11-.938-1.367 0-2.835.703-3.945 2.063C2.82 10 2.46 12.734 3.656 15.156c.82 1.68 1.899 3.453 3.297 3.469.774.008 1.29-.476 2.672-.484 1.38-.008 1.875.484 2.672.484 1.398-.016 2.46-1.758 3.281-3.438.891-1.843 1.25-3.656 1.25-3.75-.07-.023-2.54-1.016-2.563-3.968-.019-2.5 2.047-3.68 2.133-3.72z"/>
+                </svg>
+                {isLoading ? 'Conectando...' : 'Continuar con Apple'}
+              </button>
+            )}
 
             {/* Google — botón principal */}
             <button
