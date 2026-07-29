@@ -17,6 +17,17 @@ class PasswordResetThrottle(AnonRateThrottle):
     scope = 'password_reset'
 
 
+class LoginEmailThrottle(SimpleRateThrottle):
+    """Throttle per email address to limit brute-force against a single account across IPs."""
+    scope = 'login_email'
+
+    def get_cache_key(self, request, view):
+        email = (request.data.get('email') or '').lower().strip()
+        if not email:
+            return None
+        return self.cache_format % {'scope': self.scope, 'ident': email}
+
+
 class PasswordResetEmailThrottle(SimpleRateThrottle):
     """Throttle per email address so shared IPs (hospital networks) don't block other users."""
     scope = 'password_reset_email'

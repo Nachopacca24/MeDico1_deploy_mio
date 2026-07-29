@@ -173,7 +173,7 @@ class SecurityHeadersMiddleware:
     """
     _CSP = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "        # React/Vite necesita inline en algunos casos
+        "script-src 'self'; "
         "style-src 'self' 'unsafe-inline'; "         # Tailwind inline styles
         "img-src 'self' data: blob: "
             "https://res.cloudinary.com "

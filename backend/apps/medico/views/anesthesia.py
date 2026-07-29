@@ -166,7 +166,13 @@ def anesthesia_case(request, case_id):
         return Response({'error': 'Solo el anestesiólogo puede editar esta sección.'},
                         status=status.HTTP_403_FORBIDDEN)
 
-    serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=request.data, partial=True)
+    _ANEST_ALLOWED = {
+        'unit_value', 'time_units', 'time_minutes',
+        'equipment_name', 'equipment_cost',
+        'notes', 'is_operated', 'is_billed', 'is_paid', 'invoice_number',
+    }
+    data = {k: v for k, v in request.data.items() if k in _ANEST_ALLOWED}
+    serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=data, partial=True)
     if serializer.is_valid():
         serializer.save()
         anesthesia.refresh_from_db()

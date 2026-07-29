@@ -403,9 +403,8 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
         allow_blank=True
     )
     assistant_accepted = serializers.BooleanField(
-        required=False,
+        read_only=True,
         allow_null=True,
-        default=None
     )
 
     class Meta:
@@ -499,6 +498,12 @@ class SurgicalCaseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Validaciones de lógica de negocio"""
+        status_val = data.get('status')
+        if status_val is not None:
+            _VALID_STATUSES = {'scheduled', 'completed', 'billed', 'paid', 'cancelled'}
+            if status_val not in _VALID_STATUSES:
+                raise serializers.ValidationError({'status': 'Estado no válido'})
+
         assistant_doctor = data.get('assistant_doctor')
         assistant_doctor_name = data.get('assistant_doctor_name')
 

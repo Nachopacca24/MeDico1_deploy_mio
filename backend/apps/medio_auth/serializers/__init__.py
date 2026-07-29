@@ -79,9 +79,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         existing = User.objects.filter(email=attrs['email']).first()
         if existing:
             if existing.is_active or not existing.had_trial:
-                raise serializers.ValidationError({
-                    "email": "Este email ya está registrado."
-                })
+                raise serializers.ValidationError(
+                    "No se pudo completar el registro. Verificá los datos ingresados."
+                )
         
         # Validar username único
         if User.objects.filter(username=attrs['username']).exists():

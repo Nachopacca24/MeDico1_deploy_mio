@@ -5,6 +5,7 @@ import logging
 import time
 import urllib.request
 from datetime import date
+from xml.sax.saxutils import escape as _xe
 
 import cloudinary.utils
 
@@ -129,8 +130,8 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict, role: s
     # ── Patient info ──────────────────────────────────────────────────────────
     story.append(Paragraph('INFORMACIÓN DEL PACIENTE', S['section']))
 
-    patient_name = decrypt_field(case.patient_name) or '—'
-    patient_id   = decrypt_field(case.patient_id)   or '—'
+    patient_name = _xe(decrypt_field(case.patient_name) or '—')
+    patient_id   = _xe(decrypt_field(case.patient_id)   or '—')
     age_str      = str(case.patient_age) + ' años' if case.patient_age else '—'
     gender_str   = _gender_label(case.patient_gender)
 
@@ -154,13 +155,13 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict, role: s
     # ── Surgery info ──────────────────────────────────────────────────────────
     story.append(Paragraph('INFORMACIÓN DE LA CIRUGÍA', S['section']))
 
-    hospital_name = case.hospital.name if case.hospital else '—'
-    surgeon_name  = f'{case.created_by.get_full_name() or case.created_by.email}'
+    hospital_name = _xe(case.hospital.name if case.hospital else '—')
+    surgeon_name  = _xe(case.created_by.get_full_name() or case.created_by.email)
     assistant     = '—'
     if case.assistant_doctor:
-        assistant = case.assistant_doctor.get_full_name() or case.assistant_doctor.email
+        assistant = _xe(case.assistant_doctor.get_full_name() or case.assistant_doctor.email)
     elif case.assistant_doctor_name:
-        assistant = case.assistant_doctor_name
+        assistant = _xe(case.assistant_doctor_name)
 
     date_str  = _fmt_date(case.surgery_date)
     time_str  = _fmt_time(case.surgery_time)
@@ -191,8 +192,8 @@ def _build_case_story(case, include_hospital_factor: bool, styles: dict, role: s
     story.append(Spacer(1, 8))
 
     # ── Diagnosis / Notes ─────────────────────────────────────────────────────
-    diagnosis = decrypt_field(case.diagnosis)
-    notes     = decrypt_field(case.notes)
+    diagnosis = _xe(decrypt_field(case.diagnosis) or '')
+    notes     = _xe(decrypt_field(case.notes) or '')
 
     if diagnosis:
         story.append(Paragraph('DIAGNÓSTICO', S['section']))
@@ -534,8 +535,8 @@ def _build_anesthesia_story(case, anesthesia, styles: dict) -> list:
 
     # ── Patient info ──────────────────────────────────────────────────────────
     story.append(Paragraph('INFORMACIÓN DEL PACIENTE', S['section']))
-    patient_name = decrypt_field(case.patient_name) or '—'
-    patient_id   = decrypt_field(case.patient_id)   or '—'
+    patient_name = _xe(decrypt_field(case.patient_name) or '—')
+    patient_id   = _xe(decrypt_field(case.patient_id)   or '—')
     age_str      = str(case.patient_age) + ' años' if case.patient_age else '—'
     gender_str   = _gender_label(case.patient_gender)
     pat_data = [
@@ -555,8 +556,8 @@ def _build_anesthesia_story(case, anesthesia, styles: dict) -> list:
 
     # ── Surgery info ──────────────────────────────────────────────────────────
     story.append(Paragraph('INFORMACIÓN DE LA CIRUGÍA', S['section']))
-    hospital_name = case.hospital.name if case.hospital else '—'
-    surgeon_name  = case.created_by.get_full_name() or case.created_by.email
+    hospital_name = _xe(case.hospital.name if case.hospital else '—')
+    surgeon_name  = _xe(case.created_by.get_full_name() or case.created_by.email)
     date_str  = _fmt_date(case.surgery_date)
     time_str  = _fmt_time(case.surgery_time)
     etime_str = _fmt_time(case.surgery_end_time)

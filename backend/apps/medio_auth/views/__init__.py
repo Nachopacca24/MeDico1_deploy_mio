@@ -24,7 +24,7 @@ from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.decorators import throttle_classes, api_view, permission_classes
-from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle, PasswordResetEmailThrottle, ColleagueSearchThrottle, RefreshTokenThrottle
+from core.throttles import LoginRateThrottle, LoginEmailThrottle, RegisterRateThrottle, PasswordResetThrottle, PasswordResetEmailThrottle, ColleagueSearchThrottle, RefreshTokenThrottle
 
 from ..serializers import (
     UserSerializer,
@@ -141,9 +141,9 @@ class RegisterView(APIView):
                     fail_silently=True,
                 )
                 email_sent = True
-            except Exception as e:
-                print(f"Error enviando email de verificación: {e}")
-            
+            except Exception:
+                logger.exception("Error enviando email de verificación al nuevo usuario")
+
             # Conectar como colegas y registrar referido si vino con referral_code
             referral_code = request.data.get('referral_code', '').strip()
             if referral_code:
@@ -175,7 +175,7 @@ class RegisterView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
-    throttle_classes = [LoginRateThrottle]
+    throttle_classes = [LoginRateThrottle, LoginEmailThrottle]
 
     def post(self, request):
         serializer = LoginSerializer(
@@ -414,10 +414,10 @@ class SendVerificationEmailView(APIView):
                 'email': email
             }, status=status.HTTP_200_OK)
             
-        except Exception as e:
-            print(f"Error enviando email: {e}")
+        except Exception:
+            logger.exception("Error enviando email de verificación")
             return Response(
-                {'error': 'Error al enviar el email de verificación'}, 
+                {'error': 'Error al enviar el email de verificación'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -539,10 +539,10 @@ class ResendVerificationEmailView(APIView):
                 'message': 'Email de verificación reenviado correctamente'
             }, status=status.HTTP_200_OK)
             
-        except Exception as e:
-            print(f"Error enviando email: {e}")
+        except Exception:
+            logger.exception("Error reenviando email de verificación")
             return Response(
-                {'error': 'Error al enviar el email'}, 
+                {'error': 'Error al enviar el email'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -1395,8 +1395,7 @@ class ForgotPasswordView(APIView):
             reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}&email={user.email}"
             display_name = escape(user.first_name or user.username)
 
-            logger.info("Sending password reset email to %s (backend: %s, host: %s)",
-                        user.email, settings.EMAIL_BACKEND, settings.EMAIL_HOST)
+            logger.debug("Sending password reset email (backend: %s)", settings.EMAIL_BACKEND)
             try:
                 send_mail(
                     subject='Restablecer contraseña — MeDico App',

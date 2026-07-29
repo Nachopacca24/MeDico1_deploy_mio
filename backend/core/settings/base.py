@@ -218,6 +218,7 @@ REST_FRAMEWORK = {
         'ad_tracking': '600/hour',
         'password_reset': '3/hour',
         'password_reset_email': '5/hour',
+        'login_email': '20/hour',
         'colleague_search': '30/hour',
         'token_refresh': '20/min',
         'webhook': '300/min',
