@@ -278,5 +278,8 @@ temp/
 
 # Fin del .gitignorebackend/run.ps1
 
+# TypeScript build cache
+*.tsbuildinfo
+
 # Claude Code local settings (may contain secrets in allowed commands)
 .claude/
