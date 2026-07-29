@@ -22,14 +22,14 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 1, route: '/operations', emoji: '🩺', target: 'procedures-search',
     title: 'Buscá tus procedimientos',
-    description: 'Acá están los +4,000 procedimientos de la Tabla de California con su código y valor en RVU. Antes de crear tu primera cirugía, guardá los que más usás.',
+    description: 'Acá están los +4,000 procedimientos de la tabla de códigos quirúrgicos. Antes de crear tu primera cirugía, guardá los que más usás como favoritos.',
     hint: 'Escribí el nombre de un procedimiento → tocá ⭐ para guardarlo como favorito. Se cargarán automáticamente en cada cirugía.',
   },
   {
     step: 2, route: '/hospitals', emoji: '🏥', target: 'hospitals-list',
     title: 'Configurá tu hospital',
-    description: 'Registrá los hospitales donde operás. Cada hospital tiene su propio multiplicador RVU — ese número convierte el valor RVU en el honorario real que cobrás.',
-    hint: 'Encontrá tu hospital → tocá ⭐ → abrilo y configurá el multiplicador RVU. Sin esto el cálculo no funciona.',
+    description: 'Registrá los hospitales donde operás. Tenerlos guardados te permite llevar estadísticas por lugar y agiliza la carga al crear cada cirugía — se completa automáticamente.',
+    hint: 'Encontrá tu hospital → tocá ⭐ para guardarlo como favorito. Aparecerá primero al crear tus cirugías.',
   },
   {
     step: 3, route: '/insurances', emoji: '🛡️', target: 'insurances-list',
@@ -71,7 +71,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     step: 9, route: '/cases/new', emoji: '🏥', target: 'hospital-selector',
     title: '② Hospital, seguro y fecha',
     description: 'Seleccioná el hospital (tus favoritos aparecen primero), el seguro médico y la fecha de la cirugía. El multiplicador se carga solo según el hospital elegido.',
-    hint: 'RVU × multiplicador del hospital = honorario en Q. Podés cambiarlo manualmente si necesitás.',
+    hint: 'Tus hospitales favoritos aparecen primero. El multiplicador se carga solo — podés ajustarlo manualmente si necesitás.',
   },
   {
     step: 10, route: '/cases/new', emoji: '🩺', target: 'procedures-selector',
@@ -124,14 +124,14 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 1, route: '/operations', emoji: '🩺', target: 'procedures-search',
     title: 'Buscá tus procedimientos',
-    description: 'Acá están los +4,000 procedimientos de la Tabla de California con su código y valor en RVU. Antes de crear tu primera cirugía, guardá los que más usás.',
+    description: 'Acá están los +4,000 procedimientos de la tabla de códigos quirúrgicos. Antes de crear tu primera cirugía, guardá los que más usás como favoritos.',
     hint: 'Escribí el nombre de un procedimiento → tocá ⭐ para guardarlo como favorito. Se cargarán automáticamente en cada cirugía.',
   },
   {
     step: 2, route: '/hospitals', emoji: '🏥', target: 'hospitals-list',
     title: 'Configurá tu hospital',
-    description: 'Registrá los hospitales donde operás. Cada hospital tiene su propio multiplicador RVU — ese número convierte el valor RVU en el honorario real que cobrás.',
-    hint: 'Encontrá tu hospital → tocá ⭐ → abrilo y configurá el multiplicador RVU. Sin esto el cálculo no funciona.',
+    description: 'Registrá los hospitales donde operás. Tenerlos guardados te permite llevar estadísticas por lugar y agiliza la carga al crear cada cirugía — se completa automáticamente.',
+    hint: 'Encontrá tu hospital → tocá ⭐ para guardarlo como favorito. Aparecerá primero al crear tus cirugías.',
   },
   {
     step: 3, route: '/insurances', emoji: '🛡️', target: 'insurances-list',
