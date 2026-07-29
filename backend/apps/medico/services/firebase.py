@@ -67,6 +67,14 @@ def send_push_notification(tokens: list[str], title: str, body: str, data: dict 
                         channel_id='medico_default',
                     ),
                 ),
+                apns=messaging.APNSConfig(
+                    payload=messaging.APNSPayload(
+                        aps=messaging.Aps(
+                            sound='default',
+                            badge=1,
+                        ),
+                    ),
+                ),
             )
             for token in tokens
         ]
