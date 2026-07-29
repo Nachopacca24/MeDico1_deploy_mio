@@ -77,6 +77,26 @@ def anesthesia_case(request, case_id):
             if not anesthesia.anesthesiologist or anesthesia.anesthesiologist == case.created_by:
                 anesthesia.anesthesiologist_accepted = True
                 anesthesia.save(update_fields=['anesthesiologist_accepted'])
+            elif anesthesia.anesthesiologist:
+                # Notificar al anestesiólogo invitado
+                try:
+                    from apps.medico.services.firebase import notify_user
+                    import logging as _log
+                    principal_name = case.created_by.get_full_name() or case.created_by.username
+                    date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+                    time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
+                    inv_body = f'{principal_name} te invitó como anestesiólogo el {date_str}'
+                    if time_str:
+                        inv_body += f' a las {time_str}'
+                    inv_body += '. Revisá la sección Cirugías.'
+                    notify_user(
+                        anesthesia.anesthesiologist,
+                        title='Nueva invitación a cirugía',
+                        body=inv_body,
+                        data={'route': '/cases'},
+                    )
+                except Exception:
+                    _log.getLogger(__name__).exception('Error sending anesthesiologist invitation notification case=%s', case.pk)
             return Response(AnesthesiaCaseSerializer(anesthesia).data,
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -122,8 +142,8 @@ def anesthesia_case(request, case_id):
                     )
                     notify_user(
                         old_anesth,
-                        title='Cambio en una cirugía',
-                        body=f'{case.created_by.get_full_name() or case.created_by.username} cambió el anestesiólogo en un caso.',
+                        title='Actualización en una cirugía',
+                        body='Hubo un cambio en el equipo anestésico de una cirugía en la que participabas. Revisá tus casos.',
                         data={'route': '/cases'},
                     )
                 except Exception:
@@ -205,6 +225,31 @@ def respond_anesthesia_invitation(request, case_id):
 
     anesthesia.anesthesiologist_accepted = bool(accepted)
     anesthesia.save()
+
+    # Notificar al cirujano principal
+    try:
+        from apps.medico.services.firebase import notify_user
+        import logging as _log
+        anesth_name = request.user.get_full_name() or request.user.username
+        date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+        if bool(accepted):
+            notify_user(
+                case.created_by,
+                title='Equipo confirmado',
+                body=f'{anesth_name} confirmó su participación como anestesiólogo en tu cirugía del {date_str}.',
+                data={'route': f'/cases/{case.pk}'},
+            )
+        else:
+            notify_user(
+                case.created_by,
+                title='Cambio en tu equipo',
+                body=f'{anesth_name} no pudo aceptar la cirugía del {date_str}. Podés asignar otro anestesiólogo.',
+                data={'route': f'/cases/{case.pk}'},
+            )
+    except Exception:
+        import logging as _log
+        _log.getLogger(__name__).exception('Error sending anesthesiologist response notification case=%s', case.pk)
+
     return Response(AnesthesiaCaseSerializer(
         AnesthesiaCase.objects.prefetch_related('items').get(pk=anesthesia.pk)
     ).data)

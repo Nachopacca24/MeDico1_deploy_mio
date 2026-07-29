@@ -250,6 +250,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         prev_assistant_id = instance.assistant_doctor_id
         prev_assistant_accepted = instance.assistant_accepted
+        prev_surgery_date = instance.surgery_date
+        prev_surgery_time = instance.surgery_time
 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -271,8 +273,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 )
                 notify_user(
                     old_assistant,
-                    title='Cambio en una cirugía',
-                    body=f'{request.user.get_full_name() or request.user.username} cambió el médico ayudante en un caso en el que participabas.',
+                    title='Actualización en una cirugía',
+                    body='Hubo un cambio en el equipo de una cirugía en la que participabas. Revisá tus casos.',
                     data={'route': '/cases'},
                 )
             except Exception:
@@ -307,6 +309,35 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 )
         except Exception:
             logger.exception('Error sending push notification on case update case=%s', case.pk)
+
+        # Notificar al equipo si cambió la fecha u hora
+        date_changed = case.surgery_date != prev_surgery_date
+        time_changed = case.surgery_time != prev_surgery_time
+        if date_changed or time_changed:
+            date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+            time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
+            schedule_body = f'{principal_name} actualizó el horario de una cirugía en la que participás: {date_str}'
+            if time_str:
+                schedule_body += f' a las {time_str}'
+            schedule_body += '.'
+            try:
+                if case.assistant_doctor and case.assistant_accepted is True:
+                    notify_user(
+                        case.assistant_doctor,
+                        title='Cambio de horario',
+                        body=schedule_body,
+                        data={'route': f'/cases/{case.pk}'},
+                    )
+                anesthesia = getattr(case, 'anesthesia', None)
+                if anesthesia and anesthesia.anesthesiologist and anesthesia.anesthesiologist_accepted is True:
+                    notify_user(
+                        anesthesia.anesthesiologist,
+                        title='Cambio de horario',
+                        body=schedule_body,
+                        data={'route': f'/cases/{case.pk}'},
+                    )
+            except Exception:
+                logger.exception('Error sending schedule-change notification case=%s', case.pk)
 
         detail_serializer = SurgicalCaseDetailSerializer(case, context={'request': request})
         return Response(detail_serializer.data)
