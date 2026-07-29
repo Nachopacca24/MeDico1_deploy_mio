@@ -161,8 +161,8 @@ def anesthesia_case(request, case_id):
             AnesthesiaCase.objects.prefetch_related('items').get(pk=instance.pk)
         ).data)
 
-    # El anestesiólogo puede editar los datos de su propia sesión
-    if anesthesia.anesthesiologist != user:
+    # El anestesiólogo puede editar los datos de su propia sesión solo si aceptó
+    if anesthesia.anesthesiologist != user or anesthesia.anesthesiologist_accepted is not True:
         return Response({'error': 'Solo el anestesiólogo puede editar esta sección.'},
                         status=status.HTTP_403_FORBIDDEN)
 

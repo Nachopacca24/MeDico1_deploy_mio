@@ -1,4 +1,4 @@
-from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle, SimpleRateThrottle
 
 
 class LoginRateThrottle(AnonRateThrottle):
@@ -15,6 +15,17 @@ class AdTrackingThrottle(AnonRateThrottle):
 
 class PasswordResetThrottle(AnonRateThrottle):
     scope = 'password_reset'
+
+
+class PasswordResetEmailThrottle(SimpleRateThrottle):
+    """Throttle per email address so shared IPs (hospital networks) don't block other users."""
+    scope = 'password_reset_email'
+
+    def get_cache_key(self, request, view):
+        email = request.data.get('email', '').lower().strip()
+        if not email:
+            return None
+        return self.cache_format % {'scope': self.scope, 'ident': email}
 
 
 class ColleagueSearchThrottle(UserRateThrottle):

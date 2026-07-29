@@ -24,7 +24,7 @@ from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.decorators import throttle_classes, api_view, permission_classes
-from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle, ColleagueSearchThrottle, RefreshTokenThrottle
+from core.throttles import LoginRateThrottle, RegisterRateThrottle, PasswordResetThrottle, PasswordResetEmailThrottle, ColleagueSearchThrottle, RefreshTokenThrottle
 
 from ..serializers import (
     UserSerializer,
@@ -339,6 +339,7 @@ class SendVerificationEmailView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request):
         email = request.data.get('email')
@@ -427,6 +428,7 @@ class VerifyEmailView(APIView):
     Público - no requiere autenticación.
     """
     permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetThrottle]
     authentication_classes = []
 
     def post(self, request):
@@ -898,6 +900,7 @@ class GoogleLoginView(APIView):
     Soporta tanto ID Tokens (JWT) como Access Tokens (OAuth2).
     """
     permission_classes = [AllowAny]
+    throttle_classes = [LoginRateThrottle]
     authentication_classes = []
 
     def post(self, request):
@@ -1079,6 +1082,7 @@ class AppleLoginView(APIView):
     El email y nombre solo llegan en el PRIMER login; identificamos al usuario por apple_user_id (sub).
     """
     permission_classes = [AllowAny]
+    throttle_classes = [LoginRateThrottle]
     authentication_classes = []
 
     def post(self, request):
@@ -1373,7 +1377,7 @@ class ForgotPasswordView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []
-    throttle_classes = [PasswordResetThrottle]
+    throttle_classes = [PasswordResetThrottle, PasswordResetEmailThrottle]
 
     def post(self, request):
         email = request.data.get('email', '').strip().lower()

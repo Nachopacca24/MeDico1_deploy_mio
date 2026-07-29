@@ -33,12 +33,10 @@ def connect_google_calendar(request):
     }, timeout=10)
 
     if not resp.ok:
-        try:
-            google_error = resp.json()
-        except Exception:
-            google_error = resp.text
+        import logging as _log
+        _log.getLogger(__name__).warning('Google token exchange failed: %s', resp.text[:200])
         return Response(
-            {'error': f'Google rechazó el código: {google_error}'},
+            {'error': 'No se pudo conectar con Google Calendar. Intentá de nuevo.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -76,7 +74,7 @@ def connect_google_calendar(request):
     token_obj.google_email = email
     token_obj.save()
 
-    return Response({'access_token': access_token, 'email': email, 'expires_in': expires_in})
+    return Response({'connected': True, 'email': email})
 
 
 @api_view(['GET'])
