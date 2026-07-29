@@ -481,10 +481,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         assistant_name = request.user.get_full_name() or request.user.username
         try:
+            date_str = _fmt_date(case.surgery_date)
             notify_user(
                 case.created_by,
-                title='Invitación aceptada',
-                body=f'{assistant_name} aceptó tu invitación al caso.',
+                title='Equipo confirmado',
+                body=f'{assistant_name} confirmó su participación como ayudante en tu cirugía del {date_str}.',
                 data={'route': f'/cases/{case.pk}'},
             )
         except Exception:
@@ -520,10 +521,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         case.save(update_fields=['assistant_doctor', 'assistant_accepted'])
 
         try:
+            date_str = _fmt_date(case.surgery_date)
             notify_user(
                 principal,
-                title='Invitación rechazada',
-                body=f'{assistant_name} rechazó tu invitación al caso.',
+                title='Cambio en tu equipo',
+                body=f'{assistant_name} no pudo aceptar la cirugía del {date_str}. Podés asignar otro ayudante.',
                 data={'route': f'/cases/{case.pk}'},
             )
         except Exception:
