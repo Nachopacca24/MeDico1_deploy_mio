@@ -250,7 +250,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         plan = request.data.get('plan')
         
-        if plan not in ['bronze', 'silver', 'gold']:
+        if plan not in ['free', 'premium']:
             return Response(
                 {'error': 'Plan inválido'},
                 status=status.HTTP_400_BAD_REQUEST

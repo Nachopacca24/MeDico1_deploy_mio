@@ -5,8 +5,12 @@ The ENCRYPTION_KEY env var must be a 32-byte URL-safe base64 string
 (generate once with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
 """
 
+import logging
+
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 _fernet: Fernet | None = None
 
@@ -47,5 +51,12 @@ def decrypt_field(value: str | None) -> str | None:
         return value  # old E2EE data — can't decrypt, return raw
     try:
         return _get_fernet().decrypt(value.encode('ascii')).decode('utf-8')
-    except (InvalidToken, Exception):
-        return value  # plaintext or unrecognised format — return as-is
+    except InvalidToken:
+        # If it looks like a Fernet token (long base64 string starting with 'gA'),
+        # decryption genuinely failed — don't expose the ciphertext.
+        if value.startswith('gA') and len(value) > 80:
+            logger.error('decrypt_field: InvalidToken for Fernet-looking value — corrupted or wrong key')
+            return None
+        return value  # legacy plaintext — return as-is
+    except Exception:
+        return value  # other errors — return as-is

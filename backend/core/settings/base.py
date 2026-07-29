@@ -276,8 +276,6 @@ CORS_ALLOWED_ORIGINS = list(set(_cors_env + [
     # Capacitor 5+ serves from https://localhost on Android (androidScheme default)
     'https://localhost',
     'http://localhost',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
 ]))
 
 CORS_ALLOW_CREDENTIALS = True

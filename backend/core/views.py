@@ -217,7 +217,7 @@ def admin_activity(request):
         activities.append({
             'id': f'case-{case.id}',
             'type': 'case',
-            'description': f'Nuevo caso quirúrgico en {case.hospital.name}',
+            'description': f'Nuevo caso quirúrgico en {case.hospital.name if case.hospital else "Sin hospital"}',
             'timestamp': case.created_at.isoformat(),
             'user_name': doctor_name
         })

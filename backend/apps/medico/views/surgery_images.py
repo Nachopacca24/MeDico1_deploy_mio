@@ -1,7 +1,7 @@
 # apps/medico/views/surgery_images.py
 
 import logging
-
+import os
 import time
 import cloudinary
 import cloudinary.uploader
@@ -180,7 +180,7 @@ def upload_surgery_image(request, case_id):
         uploaded_by=request.user,
         cloudinary_public_id=result['public_id'],
         cloudinary_url=result['secure_url'],
-        original_filename=file.name or '',
+        original_filename=os.path.basename(file.name or '')[:255],
         file_size=file.size,
     )
 

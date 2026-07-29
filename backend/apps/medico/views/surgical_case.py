@@ -880,7 +880,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             )
 
         calendar_event_id = request.data.get('calendar_event_id')
-        if not calendar_event_id or not isinstance(calendar_event_id, str):
+        if not calendar_event_id or not isinstance(calendar_event_id, str) or len(calendar_event_id) > 255:
             return Response(
                 {'error': 'calendar_event_id es requerido'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -907,7 +907,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             )
 
         calendar_event_id = request.data.get('calendar_event_id')
-        if not calendar_event_id or not isinstance(calendar_event_id, str):
+        if not calendar_event_id or not isinstance(calendar_event_id, str) or len(calendar_event_id) > 255:
             return Response(
                 {'error': 'calendar_event_id es requerido'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -936,7 +936,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             )
 
         calendar_event_id = request.data.get('calendar_event_id')
-        if not calendar_event_id or not isinstance(calendar_event_id, str):
+        if not calendar_event_id or not isinstance(calendar_event_id, str) or len(calendar_event_id) > 255:
             return Response(
                 {'error': 'calendar_event_id es requerido'},
                 status=status.HTTP_400_BAD_REQUEST
