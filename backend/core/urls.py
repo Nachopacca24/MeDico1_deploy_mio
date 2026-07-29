@@ -19,13 +19,6 @@ from core.views import (
 )
 from apps.communication.views import admin_announcements, admin_announcement_detail
 from apps.medico.views.site_settings import site_settings_public, site_settings_admin
-
-from django.contrib.admin.views.decorators import staff_member_required
-
-@staff_member_required
-def trigger_error(request):
-    division_by_zero = 1 / 0
-
 urlpatterns = [
     # Django Admin Panel
     path('django-admin/', admin.site.urls),
@@ -38,9 +31,6 @@ urlpatterns = [
         'User-agent: *\nDisallow: /api/\nDisallow: /django-admin/\nAllow: /\n',
         content_type='text/plain'
     )),
-
-    # Sentry Verify
-    path('sentry-debug/', trigger_error),
 
     path('api/auth/', include('apps.medio_auth.urls')),
     path('api/v1/medico/', include('apps.medico.urls')),

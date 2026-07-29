@@ -1043,8 +1043,14 @@ class CaseProcedureViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsEmailVerified]
 
     def get_queryset(self):
-        """Retornar solo procedimientos de casos del usuario"""
+        user = self.request.user
+        # Write operations: only the case owner can modify or delete procedures
+        if self.action in ('update', 'partial_update', 'destroy'):
+            return CaseProcedure.objects.filter(
+                case__created_by=user
+            ).select_related('case', 'case__hospital')
+        # Read operations: owner + accepted assistant
         return CaseProcedure.objects.filter(
-            Q(case__created_by=self.request.user) | 
-            Q(case__assistant_doctor=self.request.user)
+            Q(case__created_by=user) |
+            Q(case__assistant_doctor=user, case__assistant_accepted=True)
         ).select_related('case', 'case__hospital').distinct()
