@@ -245,6 +245,13 @@ class SurgicalCase(models.Model):
         help_text="Marca que ya se envió el recordatorio push para esta cirugía"
     )
 
+    operated_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de operado enviado el",
+        help_text="Marca que ya se envió el recordatorio de marcar como operada"
+    )
+
     # Metadatos
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
