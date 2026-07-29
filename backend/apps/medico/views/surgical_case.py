@@ -18,6 +18,14 @@ from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
+_MONTHS = ['enero','febrero','marzo','abril','mayo','junio',
+           'julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+def _fmt_date(d):
+    if not d:
+        return ''
+    return f"{d.day} de {_MONTHS[d.month - 1]}"
+
 from apps.medico.models import SurgicalCase, CaseProcedure, CollaboratorRemoval
 from apps.medico.services.firebase import notify_user
 from apps.medico.serializers import (
@@ -210,7 +218,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             if case.assistant_doctor:
                 try:
                     principal_name = request.user.get_full_name() or request.user.username
-                    date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+                    date_str = _fmt_date(case.surgery_date)
                     time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
                     inv_body = f'{principal_name} te invitó a asistir el {date_str}'
                     if time_str:
@@ -288,7 +296,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         try:
             if case.assistant_doctor and case.assistant_doctor_id != prev_assistant_id:
-                date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+                date_str = _fmt_date(case.surgery_date)
                 time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
                 inv_body = f'{principal_name} te invitó a asistir el {date_str}'
                 if time_str:
@@ -314,7 +322,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         date_changed = case.surgery_date != prev_surgery_date
         time_changed = case.surgery_time != prev_surgery_time
         if date_changed or time_changed:
-            date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+            date_str = _fmt_date(case.surgery_date)
             time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
             schedule_body = f'{principal_name} actualizó el horario de una cirugía en la que participás: {date_str}'
             if time_str:

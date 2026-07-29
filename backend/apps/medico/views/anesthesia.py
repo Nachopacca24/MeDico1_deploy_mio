@@ -14,6 +14,14 @@ from apps.medico.serializers.anesthesia import (
 
 from apps.medico.serializers.surgical_case import SurgicalCaseListSerializer
 
+_MONTHS = ['enero','febrero','marzo','abril','mayo','junio',
+           'julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+def _fmt_date(d):
+    if not d:
+        return ''
+    return f"{d.day} de {_MONTHS[d.month - 1]}"
+
 
 def _get_case(case_id, user):
     """Devuelve el caso si el usuario puede verlo, o None."""
@@ -83,7 +91,7 @@ def anesthesia_case(request, case_id):
                     from apps.medico.services.firebase import notify_user
                     import logging as _log
                     principal_name = case.created_by.get_full_name() or case.created_by.username
-                    date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+                    date_str = _fmt_date(case.surgery_date)
                     time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
                     inv_body = f'{principal_name} te invitó como anestesiólogo el {date_str}'
                     if time_str:
@@ -231,7 +239,7 @@ def respond_anesthesia_invitation(request, case_id):
         from apps.medico.services.firebase import notify_user
         import logging as _log
         anesth_name = request.user.get_full_name() or request.user.username
-        date_str = case.surgery_date.strftime('%d/%m/%Y') if case.surgery_date else ''
+        date_str = _fmt_date(case.surgery_date)
         if bool(accepted):
             notify_user(
                 case.created_by,
