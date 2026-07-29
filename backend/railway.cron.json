@@ -3,6 +3,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py notify_image_expiry && python manage.py purge_surgery_images && python manage.py purge_archived_cases && python manage.py cleanup_blacklisted_tokens && python manage.py send_operated_reminders"
+    "startCommand": "python manage.py notify_image_expiry && python manage.py purge_surgery_images && python manage.py purge_archived_cases && python manage.py cleanup_blacklisted_tokens"
   }
 }
