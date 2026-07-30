@@ -161,6 +161,30 @@ class CalendarSyncService {
     }
   }
 
+  // localStorage: { [caseId]: updated_at } — skip syncing cases whose data hasn't changed
+  private readonly SYNC_TIMESTAMPS_KEY = 'medico_calendar_sync_timestamps_v1';
+
+  private getSyncTimestamps(): Record<number, string> {
+    try {
+      const raw = localStorage.getItem(this.SYNC_TIMESTAMPS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  }
+
+  private saveSyncTimestamp(caseId: number, updatedAt: string): void {
+    try {
+      const map = this.getSyncTimestamps();
+      map[caseId] = updatedAt;
+      localStorage.setItem(this.SYNC_TIMESTAMPS_KEY, JSON.stringify(map));
+    } catch { /* storage full */ }
+  }
+
+  private needsSync(surgicalCase: SurgicalCase): boolean {
+    if (!surgicalCase.updated_at) return true;
+    const map = this.getSyncTimestamps();
+    return map[surgicalCase.id] !== surgicalCase.updated_at;
+  }
+
   // localStorage: { [caseId]: eventId } for assisted cases — kept as migration fallback only
   private readonly ASSISTED_SYNCED_KEY = 'medico_assisted_calendar_synced_v2';
   // Module-level lock: prevents concurrent sync calls from creating duplicates
@@ -298,9 +322,11 @@ class CalendarSyncService {
         const stableId = `medicocase${surgicalCase.id}`;
         try {
           if (existingEventId && existingEventId === stableId) {
-            // Already on stableId — just update
+            // Already on stableId — skip if data hasn't changed
+            if (!this.needsSync(surgicalCase)) continue;
             const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
             await this.updateEventForCase(caseWithEventId);
+            this.saveSyncTimestamp(surgicalCase.id!, surgicalCase.updated_at);
           } else if (existingEventId && existingEventId !== stableId) {
             // Old random-format ID in DB — migrate: create/confirm stableId, delete old event
             const newEventId = await this.createEventForCase(surgicalCase, stableId);
@@ -311,23 +337,24 @@ class CalendarSyncService {
               this.deleteEventForCase(existingEventId).catch(() => {});
               this.markAssistedSynced(surgicalCase.id!, newEventId);
               await this.saveAssistedEventIdToDb(surgicalCase.id!, newEventId);
+              this.saveSyncTimestamp(surgicalCase.id!, surgicalCase.updated_at);
               synced++;
             } else {
               // Could not create stableId event — fall back to updating the old one
+              if (!this.needsSync(surgicalCase)) continue;
               const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
               await this.updateEventForCase(caseWithEventId);
+              this.saveSyncTimestamp(surgicalCase.id!, surgicalCase.updated_at);
             }
           } else {
-            // No stored event ID. Use a stable, deterministic ID so that if storage
-            // was lost we never create a second duplicate — the API returns 409 and
-            // googleCalendarService.createEvent returns the stableId on 409.
+            // No stored event ID — always create regardless of updated_at
             const eventId = await this.createEventForCase(surgicalCase, stableId);
             if (!eventId) { failed++; continue; }
-            // If the event already existed (409 → stableId returned), update it with fresh data
             const caseWithEventId = { ...surgicalCase, calendar_event_id: eventId };
             await this.updateEventForCase(caseWithEventId);
             this.markAssistedSynced(surgicalCase.id!, eventId);
             await this.saveAssistedEventIdToDb(surgicalCase.id!, eventId);
+            this.saveSyncTimestamp(surgicalCase.id!, surgicalCase.updated_at);
             synced++;
           }
         } catch { failed++; }
@@ -341,14 +368,19 @@ class CalendarSyncService {
         const existingEventId = surgicalCase.anesthesiologist_calendar_event_id || null;
         try {
           if (existingEventId) {
+            // Skip if data hasn't changed since last sync
+            if (!this.needsSync(surgicalCase)) continue;
             const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
             await this.updateEventForCase(caseWithEventId);
+            this.saveSyncTimestamp(surgicalCase.id!, surgicalCase.updated_at);
           } else {
+            // Always create if no event exists yet
             const eventId = await this.createEventForCase(surgicalCase, stableId);
             if (!eventId) { failed++; continue; }
             const caseWithEventId = { ...surgicalCase, calendar_event_id: eventId };
             await this.updateEventForCase(caseWithEventId);
             await this.saveAnesthesiologistEventIdToDb(surgicalCase.id!, eventId);
+            this.saveSyncTimestamp(surgicalCase.id!, surgicalCase.updated_at);
           }
           synced++;
         } catch { failed++; }

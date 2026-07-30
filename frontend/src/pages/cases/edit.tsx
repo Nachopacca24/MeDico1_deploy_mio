@@ -20,7 +20,8 @@ import { loadCSV } from '@/shared/utils/csvLoader';
 import { favoritesService } from '@/services/favoritesService';
 import { Loader2, Plus, X, Search, Calendar, User, Building2, Stethoscope, Star, Users, ArrowLeft, AlertCircle, ImagePlus, Images } from 'lucide-react';
 import { useAuth } from '@/shared/contexts/AuthContext';
-import type { PatientGender } from '@/types/surgical-case';
+import { calendarSyncService } from '@/services/calendarSyncService';
+import type { PatientGender, SurgicalCase } from '@/types/surgical-case';
 
 
 interface ProcedureData {
@@ -125,6 +126,8 @@ const EditCase = () => {
   const [selectedProcedures, setSelectedProcedures] = useState<SelectedProcedure[]>([]);
   const [showProcedureSearch, setShowProcedureSearch] = useState(false);
 
+  const [loadedCase, setLoadedCase] = useState<SurgicalCase | null>(null);
+
   // Data state
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
@@ -177,6 +180,7 @@ const EditCase = () => {
           }
         }
 
+        setLoadedCase(caseData);
         setEquipmentName(caseData.equipment_name ?? '');
         setEquipmentCost(caseData.equipment_cost != null ? String(caseData.equipment_cost) : '');
 
@@ -641,6 +645,29 @@ const EditCase = () => {
 
       // ✅ CRÍTICO: Llamar a updateCase (NO createCase)
       await surgicalCaseService.updateCase(parseInt(id!), caseData);
+
+      // Sync calendar event for the surgeon's own case — fire and forget
+      if (loadedCase?.calendar_event_id) {
+        const hospital = hospitals.find(h => String(h.id) === hospitalId);
+        calendarSyncService.updateEventForCase({
+          ...loadedCase,
+          patient_name: patientName,
+          patient_age: patientAge ? parseInt(patientAge) : undefined,
+          diagnosis: diagnosis || undefined,
+          notes: notes || undefined,
+          hospital_name: hospital?.name || loadedCase.hospital_name,
+          surgery_date: surgeryDate,
+          surgery_time: surgeryTime || undefined,
+          surgery_end_time: surgeryEndTime || undefined,
+          procedures: selectedProcedures.map(p => ({
+            surgery_code: p.surgery_code,
+            surgery_name: p.surgery_name,
+            specialty: p.specialty,
+            grupo: p.grupo,
+            rvu: p.rvu,
+          })),
+        }).catch(() => {});
+      }
 
       // Actualizar o crear sesión de anestesia
       const anestPayload: any = {};

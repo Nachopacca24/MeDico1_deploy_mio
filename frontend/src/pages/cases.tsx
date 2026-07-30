@@ -26,6 +26,7 @@ import { displayPatientName } from "@/shared/utils/patientHash";
 import { Link } from "react-router-dom";
 import { Loader2, Check, Archive, Download, CheckSquare, Square, ImagePlus, Clock, LogOut } from 'lucide-react';
 import { authService } from "@/shared/services/authService";
+import { calendarSyncService } from "@/services/calendarSyncService";
 import { useIsUploading } from "@/shared/hooks/useUploadingCases";
 import { APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
 
@@ -704,6 +705,7 @@ const CasesPage = () => {
       setLoading(true);
       const data = await surgicalCaseService.getCases();
       setCases(data);
+      calendarSyncService.syncMissingCases(data).catch(() => {});
     } catch (err: any) {
       setError(err.message || 'Error al cargar casos');
       toast.error('Error', 'No se pudieron cargar los casos');

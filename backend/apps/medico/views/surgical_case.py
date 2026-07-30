@@ -312,11 +312,23 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 notify_user(
                     case.assistant_doctor,
                     title='Caso actualizado',
-                    body=f'{principal_name} editó un caso en el que participás.',
-                    data={'route': f'/cases/{case.pk}'},
+                    body=f'{principal_name} actualizó una cirugía en la que participás. Revisá Mis Cirugías.',
+                    data={'route': '/cases'},
                 )
         except Exception:
             logger.exception('Error sending push notification on case update case=%s', case.pk)
+
+        try:
+            anesthesia = getattr(case, 'anesthesia', None)
+            if anesthesia and anesthesia.anesthesiologist and anesthesia.anesthesiologist_accepted is True:
+                notify_user(
+                    anesthesia.anesthesiologist,
+                    title='Caso actualizado',
+                    body=f'{principal_name} actualizó una cirugía en la que participás. Revisá Mis Cirugías.',
+                    data={'route': '/cases'},
+                )
+        except Exception:
+            logger.exception('Error sending anesthesiologist update notification case=%s', case.pk)
 
         # Notificar al equipo si cambió la fecha u hora
         date_changed = case.surgery_date != prev_surgery_date
@@ -334,7 +346,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                         case.assistant_doctor,
                         title='Cambio de horario',
                         body=schedule_body,
-                        data={'route': f'/cases/{case.pk}'},
+                        data={'route': '/cases'},
                     )
                 anesthesia = getattr(case, 'anesthesia', None)
                 if anesthesia and anesthesia.anesthesiologist and anesthesia.anesthesiologist_accepted is True:
@@ -342,7 +354,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                         anesthesia.anesthesiologist,
                         title='Cambio de horario',
                         body=schedule_body,
-                        data={'route': f'/cases/{case.pk}'},
+                        data={'route': '/cases'},
                     )
             except Exception:
                 logger.exception('Error sending schedule-change notification case=%s', case.pk)
