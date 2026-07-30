@@ -32,7 +32,7 @@ import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
 import { Loader2, Activity, HeartPulse, Crown } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 // Lista de especialidades médicas basadas en tu sistema
 const SPECIALTIES = [
@@ -240,9 +240,9 @@ export default function SignupForm() {
   const handleGoogleNative = async () => {
     setIsLoading(true);
     try {
-      await GoogleAuth.initialize();
-      const googleUser = await GoogleAuth.signIn();
-      const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const token = result.credential?.idToken;
+      if (!token) throw new Error('No se pudo obtener el token de Google');
       const resultNative = await loginWithGoogle(token, referralCode || undefined);
       const colleagueNameNative = await processPendingInvite();
       const isNewNative = resultNative.message.includes('Registro');

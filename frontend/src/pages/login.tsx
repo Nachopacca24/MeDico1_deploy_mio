@@ -30,7 +30,7 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 export default function Login() {
@@ -178,9 +178,9 @@ export default function Login() {
   const handleGoogleNative = async () => {
     setIsLoading(true);
     try {
-      await GoogleAuth.initialize();
-      const googleUser = await GoogleAuth.signIn();
-      const token = googleUser.authentication.idToken || googleUser.authentication.accessToken;
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const token = result.credential?.idToken;
+      if (!token) throw new Error('No se pudo obtener el token de Google');
       await loginWithGoogle(token);
       toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
       navigate(location.state?.from ?? "/dashboard");

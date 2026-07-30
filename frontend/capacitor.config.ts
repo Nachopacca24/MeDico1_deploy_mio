@@ -20,10 +20,9 @@ const config: CapacitorConfig = {
       resize: 'body',
       resizeOnFullScreen: true,
     },
-    GoogleAuth: {
-      scopes: ['profile', 'email'],
-      serverClientId: '425899211446-4l33eafrfc1k4kco3aiupdhk41lur5l7.apps.googleusercontent.com',
-      forceCodeForRefreshToken: false,
+    FirebaseAuthentication: {
+      skipNativeAuth: true,
+      providers: ['google.com'],
     },
     SplashScreen: {
       launchShowDuration: 2000,
