@@ -46,6 +46,7 @@ const EditAnesthesiaCase = () => {
 
   // Anesthesia
   const [unitValue, setUnitValue] = useState('');
+  const [anesthesiaNotes, setAnesthesiaNotes] = useState('');
   const [equipmentEnabled, setEquipmentEnabled] = useState(false);
   const [equipmentName, setEquipmentName] = useState('');
   const [equipmentCost, setEquipmentCost] = useState('');
@@ -104,6 +105,7 @@ const EditAnesthesiaCase = () => {
 
         if (anesthesiaData) {
           setUnitValue(anesthesiaData.unit_value != null ? String(anesthesiaData.unit_value) : '');
+          setAnesthesiaNotes(anesthesiaData.notes || '');
           setEquipmentEnabled(!!anesthesiaData.equipment_name);
           setEquipmentName(anesthesiaData.equipment_name || '');
           setEquipmentCost(anesthesiaData.equipment_cost != null ? String(anesthesiaData.equipment_cost) : '');
@@ -166,6 +168,7 @@ const EditAnesthesiaCase = () => {
         }),
         anesthesiaService.update(caseId, {
           unit_value: unitValue ? parseFloat(unitValue) : 0,
+          notes: anesthesiaNotes.trim() || undefined,
           equipment_name: equipmentEnabled ? equipmentName.trim() || null : null,
           equipment_cost: equipmentEnabled && equipmentCost ? parseFloat(equipmentCost) : null,
         }),
@@ -451,12 +454,23 @@ const EditAnesthesiaCase = () => {
                 <Input
                   id="unitValue"
                   type="number"
-                  step="0.01"
+                  step="any"
                   min="0"
                   value={unitValue}
                   onChange={(e) => setUnitValue(e.target.value)}
                   placeholder="Ej: 1500.00"
                   className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="anesthesiaNotes" className="text-sm font-semibold">Notas de Anestesia</Label>
+                <Textarea
+                  id="anesthesiaNotes"
+                  value={anesthesiaNotes}
+                  onChange={(e) => setAnesthesiaNotes(e.target.value)}
+                  placeholder="Observaciones propias de la sesión de anestesia..."
+                  className="resize-none"
+                  rows={3}
                 />
               </div>
             </CardContent>
@@ -496,7 +510,7 @@ const EditAnesthesiaCase = () => {
                     <Input
                       id="equipmentCost"
                       type="number"
-                      step="0.01"
+                      step="any"
                       min="0"
                       value={equipmentCost}
                       onChange={(e) => setEquipmentCost(e.target.value)}

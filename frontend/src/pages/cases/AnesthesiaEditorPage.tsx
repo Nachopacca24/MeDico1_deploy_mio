@@ -346,7 +346,7 @@ const AnesthesiaEditorPage = () => {
             <div className="flex-1 min-w-0">
               <label className="text-sm font-medium mb-1 block">Valor (Q)</label>
               <input
-                type="number" min="0" step="0.01"
+                type="number" min="0" step="any"
                 value={editUnitValue}
                 onChange={e => setEditUnitValue(e.target.value)}
                 className="w-full min-w-0 border rounded-md px-3 py-2 text-sm bg-background focus:ring-2 focus:ring-teal-400 outline-none"
@@ -557,7 +557,7 @@ const AnesthesiaEditorPage = () => {
                 <div className="min-w-0">
                   <label className="text-xs text-muted-foreground mb-1 block">Costo (Q)</label>
                   <input
-                    type="number" min="0" step="0.01"
+                    type="number" min="0" step="any"
                     value={equipmentCost}
                     onChange={e => setEquipmentCost(e.target.value)}
                     placeholder="0.00"

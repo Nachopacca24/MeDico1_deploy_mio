@@ -394,7 +394,7 @@ const NewAnesthesiaCase = () => {
                 <Input
                   id="unitValue"
                   type="number"
-                  step="0.01"
+                  step="any"
                   min="0"
                   value={unitValue}
                   onChange={(e) => setUnitValue(e.target.value)}
@@ -441,7 +441,7 @@ const NewAnesthesiaCase = () => {
                     <Input
                       id="equipmentCost"
                       type="number"
-                      step="0.01"
+                      step="any"
                       min="0"
                       value={equipmentCost}
                       onChange={(e) => setEquipmentCost(e.target.value)}

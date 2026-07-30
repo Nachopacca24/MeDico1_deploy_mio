@@ -284,7 +284,7 @@ export default function CalculatorPage() {
               <CardContent>
                 <Input
                   type="number"
-                  step="0.01"
+                  step="any"
                   min="0.01"
                   value={factor}
                   onChange={e => setFactor(e.target.value)}
