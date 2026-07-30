@@ -475,11 +475,17 @@ class CalendarSyncService {
     }
 
     const isInvitedAnest = !surgicalCase.is_owner && surgicalCase.is_anesthesiologist;
-    const notes = isInvitedAnest
-      ? (surgicalCase.anesthesia_notes || surgicalCase.notes)
-      : surgicalCase.notes;
-    if (notes) {
-      description += `\nNotas: ${notes}\n`;
+    if (isInvitedAnest) {
+      if (surgicalCase.notes) {
+        description += `\nNotas del cirujano: ${surgicalCase.notes}\n`;
+      }
+      if (surgicalCase.anesthesia_notes) {
+        description += `\nNotas de anestesia: ${surgicalCase.anesthesia_notes}\n`;
+      } else {
+        description += '\n⚠️ Recordá agregar tus notas de anestesia en la app.\n';
+      }
+    } else if (surgicalCase.notes) {
+      description += `\nNotas: ${surgicalCase.notes}\n`;
     }
 
     description += `\n---\nCreado con MeDico App`;
