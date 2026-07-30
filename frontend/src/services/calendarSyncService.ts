@@ -247,7 +247,7 @@ class CalendarSyncService {
       });
 
       const ownedToSync = uniqueCases.filter(
-        c => c.is_owner && c.surgery_date && !CLOSED_STATUSES.includes(c.status) && !c.calendar_event_id
+        c => c.is_owner && c.surgery_date && !CLOSED_STATUSES.includes(c.status)
       );
       const assistedActive = uniqueCases.filter(
         c => !c.is_owner && c.assistant_accepted === true && c.surgery_date &&
@@ -268,12 +268,16 @@ class CalendarSyncService {
           return { synced, failed, paused: true, message: 'Sincronización pausada: reconecta Google Calendar para continuar' };
         }
         try {
-          const eventId = await this.createEventForCase(surgicalCase);
-          if (!eventId) { failed++; continue; }
-          await authService.authenticatedFetch(
-            `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/sync-calendar/`,
-            { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
-          );
+          if (surgicalCase.calendar_event_id) {
+            await this.updateEventForCase(surgicalCase);
+          } else {
+            const eventId = await this.createEventForCase(surgicalCase);
+            if (!eventId) { failed++; continue; }
+            await authService.authenticatedFetch(
+              `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/sync-calendar/`,
+              { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
+            );
+          }
           synced++;
         } catch { failed++; }
       }
