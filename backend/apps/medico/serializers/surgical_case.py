@@ -63,6 +63,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
     primary_specialty = serializers.CharField(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    procedures = CaseProcedureSerializer(many=True, read_only=True)
 
     is_operated = serializers.BooleanField(default=False)
     is_billed = serializers.BooleanField(default=False)
@@ -222,6 +223,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'total_rvu',
             'total_value',
             'procedure_count',
+            'procedures',
             'primary_specialty',
             'can_edit',
             'is_owner',
