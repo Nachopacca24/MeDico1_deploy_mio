@@ -29,6 +29,7 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   AlertCircle,
   Loader2,
   Clock,
@@ -45,6 +46,20 @@ const DAYS_SHORT = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+const GCAL_COLORS = [
+  { id: '11', hex: '#D50000', name: 'Tomate' },
+  { id: '4',  hex: '#E67C73', name: 'Flamingo' },
+  { id: '6',  hex: '#F4511E', name: 'Naranja' },
+  { id: '5',  hex: '#F6BF26', name: 'Banana' },
+  { id: '2',  hex: '#33B679', name: 'Salvia' },
+  { id: '10', hex: '#0B8043', name: 'Albahaca' },
+  { id: '7',  hex: '#039BE5', name: 'Pavo real' },
+  { id: '9',  hex: '#3F51B5', name: 'Arándano' },
+  { id: '1',  hex: '#7986CB', name: 'Lavanda' },
+  { id: '3',  hex: '#8E24AA', name: 'Uva' },
+  { id: '8',  hex: '#616161', name: 'Grafito' },
 ];
 
 interface CalendarDay {
@@ -81,6 +96,7 @@ const CalendarPage = () => {
   const [loadingEvents, setLoadingEvents] = useState(cachedEvents === null);
   const [calendarColor, setCalendarColor] = useState(() => googleCalendarService.getCalendarColorId());
   const [savingColor, setSavingColor] = useState(false);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const hasSyncedRef = useRef(false);
@@ -517,44 +533,57 @@ const CalendarPage = () => {
 
         {/* Color picker para eventos de cirugía */}
         {(() => {
-          const GCAL_COLORS = [
-            { id: '11', hex: '#D50000', name: 'Tomato' },
-            { id: '4',  hex: '#E67C73', name: 'Flamingo' },
-            { id: '6',  hex: '#F4511E', name: 'Tangerine' },
-            { id: '5',  hex: '#F6BF26', name: 'Banana' },
-            { id: '2',  hex: '#33B679', name: 'Sage' },
-            { id: '10', hex: '#0B8043', name: 'Basil' },
-            { id: '7',  hex: '#039BE5', name: 'Peacock' },
-            { id: '9',  hex: '#3F51B5', name: 'Blueberry' },
-            { id: '1',  hex: '#7986CB', name: 'Lavender' },
-            { id: '3',  hex: '#8E24AA', name: 'Grape' },
-            { id: '8',  hex: '#616161', name: 'Graphite' },
-          ];
+          const selected = GCAL_COLORS.find(c => c.id === calendarColor);
           return (
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm text-muted-foreground shrink-0">Color de cirugías en Calendar:</span>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {GCAL_COLORS.map(c => (
-                  <button
-                    key={c.id}
-                    title={c.name}
-                    disabled={savingColor}
-                    onClick={() => handleColorChange(c.id)}
-                    className={`w-6 h-6 rounded-full transition-all disabled:opacity-50 ${calendarColor === c.id ? 'ring-2 ring-offset-2 ring-foreground scale-110' : 'hover:scale-110'}`}
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
-                {calendarColor && (
-                  <button
-                    title="Sin color (predeterminado)"
-                    disabled={savingColor}
-                    onClick={() => handleColorChange('')}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 ml-1"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Elegí el color con el que tus cirugías aparecen en Google Calendar — te ayuda a identificarlas de un vistazo entre otros eventos.
+              </p>
+              <button
+                onClick={() => setColorPickerOpen(o => !o)}
+                disabled={savingColor}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg border bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
+              >
+                <span
+                  className="w-5 h-5 rounded flex-shrink-0 ring-1 ring-black/10"
+                  style={{ backgroundColor: selected?.hex ?? '#e5e7eb' }}
+                />
+                <span className="text-sm font-medium">
+                  {selected ? selected.name : 'Sin color'}
+                </span>
+                {savingColor
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground ml-1" />
+                  : <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground ml-1 transition-transform duration-200 ${colorPickerOpen ? 'rotate-180' : ''}`} />
+                }
+              </button>
+
+              {colorPickerOpen && (
+                <div className="flex items-center gap-2 flex-wrap p-3 rounded-lg border bg-muted/30">
+                  {GCAL_COLORS.map(c => (
+                    <button
+                      key={c.id}
+                      title={c.name}
+                      disabled={savingColor}
+                      onClick={() => { handleColorChange(c.id); setColorPickerOpen(false); }}
+                      className={`w-7 h-7 rounded-md transition-all disabled:opacity-50 ${
+                        calendarColor === c.id
+                          ? 'ring-2 ring-offset-2 ring-foreground scale-110'
+                          : 'hover:scale-110 hover:ring-1 hover:ring-black/20'
+                      }`}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                  {calendarColor && (
+                    <button
+                      disabled={savingColor}
+                      onClick={() => { handleColorChange(''); setColorPickerOpen(false); }}
+                      className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border hover:bg-muted transition-colors disabled:opacity-50"
+                    >
+                      Sin color
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })()}
