@@ -27,7 +27,7 @@ class CalendarSyncService {
         : this.buildDateTime(surgicalCase.surgery_date, surgicalCase.surgery_time, 2);
 
       if (endDateTime <= startDateTime) {
-        endDateTime = new Date(new Date(startDateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+        endDateTime = this.addHoursToLocalDateTime(startDateTime, 2);
       }
 
       const description = this.buildEventDescription(surgicalCase);
@@ -91,7 +91,7 @@ class CalendarSyncService {
 
       // Guard: end must be strictly after start
       if (endDateTime <= startDateTime) {
-        endDateTime = new Date(new Date(startDateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+        endDateTime = this.addHoursToLocalDateTime(startDateTime, 2);
       }
 
       const description = this.buildEventDescription(surgicalCase);
@@ -373,15 +373,25 @@ class CalendarSyncService {
   }
 
   /**
-   * Build an ISO datetime string from a date + time.
-   * addHours is applied after parsing. Falls back to 08:00 if time is invalid.
+   * Build a local datetime string from a date + time.
+   * Returns "YYYY-MM-DDTHH:MM:SS" with NO timezone suffix so that Google Calendar
+   * uses the event's timeZone field (America/Guatemala) to interpret it correctly,
+   * regardless of the device's local timezone. Falls back to 08:00 if time is invalid.
    */
   private buildDateTime(date: string, time: string | null | undefined, addHours: number = 0): string {
     const [year, month, day] = date.split('-').map(Number);
     const safeTime = this.isValidTime(time) ? time : '08:00';
     const [hours, minutes] = safeTime.split(':').map(Number);
-    const dateTime = new Date(year, month - 1, day, hours + addHours, minutes, 0, 0);
-    return dateTime.toISOString();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${year}-${pad(month)}-${pad(day)}T${pad(hours + addHours)}:${pad(minutes)}:00`;
+  }
+
+  /** Add hours to a local datetime string "YYYY-MM-DDTHH:MM:SS" without any UTC conversion. */
+  private addHoursToLocalDateTime(localDt: string, hours: number): string {
+    const [datePart, timePart] = localDt.split('T');
+    const [h, m] = timePart.split(':').map(Number);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${datePart}T${pad(h + hours)}:${pad(m)}:00`;
   }
 
   /**
