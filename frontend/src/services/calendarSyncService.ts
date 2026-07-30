@@ -396,7 +396,7 @@ class CalendarSyncService {
       description += `Hospital: ${surgicalCase.hospital_name}\n`;
     }
 
-    const surgeonName = surgicalCase.created_by_name || surgicalCase.surgeon_name;
+    const surgeonName = surgicalCase.surgeon_name || surgicalCase.created_by_name;
     if (surgeonName) {
       description += `Cirujano: ${surgeonName}\n`;
     }
@@ -410,6 +410,11 @@ class CalendarSyncService {
       description += '\n--- Procedimientos ---\n';
       surgicalCase.procedures.forEach((proc, index) => {
         description += `${index + 1}. ${proc.surgery_name} (${proc.surgery_code})\n`;
+      });
+    } else if (surgicalCase.anesthesia_items && surgicalCase.anesthesia_items.length > 0) {
+      description += '\n--- Procedimientos de Anestesia ---\n';
+      surgicalCase.anesthesia_items.forEach((item, index) => {
+        description += `${index + 1}. ${item.surgery_name} (${item.surgery_code})\n`;
       });
     } else if (surgicalCase.procedure_count) {
       description += `\nProcedimientos: ${surgicalCase.procedure_count}\n`;
