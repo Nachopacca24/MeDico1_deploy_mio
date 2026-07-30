@@ -31,7 +31,6 @@ import { Loader2 } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -209,18 +208,18 @@ export default function Login() {
   const handleAppleSignIn = async () => {
     setIsLoading(true);
     try {
-      const result = await SignInWithApple.authorize({
-        clientId: 'app.medicoapp.medico',
-        redirectURI: 'https://medico1deploymio-production.up.railway.app/api/auth/apple/callback/',
-        scopes: 'email name',
-        state: crypto.randomUUID(),
-        nonce: crypto.randomUUID(),
-      });
+      const result = await FirebaseAuthentication.signInWithApple();
+      const idToken = result.credential?.idToken;
+      if (!idToken) throw new Error('No se pudo obtener el token de Apple');
 
-      const { identityToken, givenName, familyName, email } = result.response;
+      const email = result.user?.email ?? null;
+      const displayName = result.user?.displayName ?? null;
+      const nameParts = displayName ? displayName.split(' ') : [];
+      const givenName = nameParts[0] ?? null;
+      const familyName = nameParts.slice(1).join(' ') || null;
 
       await authService.loginWithApple({
-        identity_token: identityToken,
+        identity_token: idToken,
         given_name: givenName,
         family_name: familyName,
         email,
@@ -229,7 +228,7 @@ export default function Login() {
       toast({ title: '¡Bienvenido/a!', description: 'Has iniciado sesión con Apple exitosamente.' });
       navigate(location.state?.from ?? '/dashboard');
     } catch (error: any) {
-      const cancelled = error?.message?.includes('cancel') || error?.code === 1001;
+      const cancelled = error?.message?.includes('cancel') || error?.code === 'popup-closed-by-user';
       if (!cancelled) {
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'No se pudo iniciar sesión con Apple.' });
       }
