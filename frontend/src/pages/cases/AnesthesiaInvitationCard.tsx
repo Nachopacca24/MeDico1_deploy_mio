@@ -4,6 +4,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Calendar, Hospital, Users, CheckCircle, XCircle, Loader2, Stethoscope } from "lucide-react";
 import { useState } from "react";
 import { anesthesiaService } from "@/services/anesthesiaService";
+import { calendarSyncService } from "@/services/calendarSyncService";
 import { useToast } from "@/shared/hooks/useToast";
 import type { SurgicalCase } from "@/types/surgical-case";
 
@@ -23,6 +24,14 @@ export function AnesthesiaInvitationCard({ case: surgicalCase, onAccept, onRejec
     try {
       await anesthesiaService.respond(surgicalCase.id, true);
       toast.success('¡Invitación aceptada!', 'El caso ahora aparece en tu lista');
+
+      // Create calendar event immediately — fire and forget, doesn't block the UI
+      const stableId = `medicoanest${surgicalCase.id}`;
+      const acceptedCase = { ...surgicalCase, is_anesthesiologist: true, is_owner: false };
+      calendarSyncService.createEventForCase(acceptedCase, stableId).then(eventId => {
+        if (eventId) calendarSyncService.saveAnesthesiologistEventIdToDb(surgicalCase.id, eventId);
+      }).catch(() => {});
+
       onAccept(surgicalCase.id);
     } catch (error: any) {
       toast.error('Error', error.message || 'No se pudo aceptar la invitación');

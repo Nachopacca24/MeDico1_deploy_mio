@@ -424,6 +424,8 @@ class CalendarSyncService {
       surgicalCase.anesthesia_items.forEach((item, index) => {
         description += `${index + 1}. ${item.surgery_name} (${item.surgery_code})\n`;
       });
+    } else if (!surgicalCase.is_owner && surgicalCase.is_anesthesiologist) {
+      description += '\n⚠️ Recordá agregar tus códigos de anestesia en la sección Anestesia de la app.\n';
     }
 
     if (!surgicalCase.procedures?.length && !surgicalCase.anesthesia_items?.length && surgicalCase.procedure_count) {
