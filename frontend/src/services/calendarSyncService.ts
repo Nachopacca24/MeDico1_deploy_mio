@@ -247,7 +247,7 @@ class CalendarSyncService {
       });
 
       const ownedToSync = uniqueCases.filter(
-        c => c.is_owner && c.surgery_date && !CLOSED_STATUSES.includes(c.status)
+        c => c.is_owner && c.surgery_date && !CLOSED_STATUSES.includes(c.status) && !c.calendar_event_id
       );
       const assistedActive = uniqueCases.filter(
         c => !c.is_owner && c.assistant_accepted === true && c.surgery_date &&
@@ -257,7 +257,7 @@ class CalendarSyncService {
       // anesthesia case already syncs via ownedToSync above).
       const anesthesiologistActive = uniqueCases.filter(
         c => !c.is_owner && c.is_anesthesiologist === true && c.surgery_date &&
-             !CLOSED_STATUSES.includes(c.status) && !c.anesthesiologist_calendar_event_id
+             !CLOSED_STATUSES.includes(c.status)
       );
 
       let synced = 0;
@@ -268,16 +268,12 @@ class CalendarSyncService {
           return { synced, failed, paused: true, message: 'Sincronización pausada: reconecta Google Calendar para continuar' };
         }
         try {
-          if (surgicalCase.calendar_event_id) {
-            await this.updateEventForCase(surgicalCase);
-          } else {
-            const eventId = await this.createEventForCase(surgicalCase);
-            if (!eventId) { failed++; continue; }
-            await authService.authenticatedFetch(
-              `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/sync-calendar/`,
-              { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
-            );
-          }
+          const eventId = await this.createEventForCase(surgicalCase);
+          if (!eventId) { failed++; continue; }
+          await authService.authenticatedFetch(
+            `${API_URL}/api/v1/medico/cases/${surgicalCase.id}/sync-calendar/`,
+            { method: 'POST', body: JSON.stringify({ calendar_event_id: eventId }) }
+          );
           synced++;
         } catch { failed++; }
       }
@@ -341,13 +337,19 @@ class CalendarSyncService {
         if (!await googleCalendarService.getValidToken()) {
           return { synced, failed, paused: true, message: 'Sincronización pausada: reconecta Google Calendar para continuar' };
         }
+        const stableId = `medicoanest${surgicalCase.id}`;
+        const existingEventId = surgicalCase.anesthesiologist_calendar_event_id || null;
         try {
-          const stableId = `medicoanest${surgicalCase.id}`;
-          const eventId = await this.createEventForCase(surgicalCase, stableId);
-          if (!eventId) { failed++; continue; }
-          const caseWithEventId = { ...surgicalCase, calendar_event_id: eventId };
-          await this.updateEventForCase(caseWithEventId);
-          await this.saveAnesthesiologistEventIdToDb(surgicalCase.id!, eventId);
+          if (existingEventId) {
+            const caseWithEventId = { ...surgicalCase, calendar_event_id: existingEventId };
+            await this.updateEventForCase(caseWithEventId);
+          } else {
+            const eventId = await this.createEventForCase(surgicalCase, stableId);
+            if (!eventId) { failed++; continue; }
+            const caseWithEventId = { ...surgicalCase, calendar_event_id: eventId };
+            await this.updateEventForCase(caseWithEventId);
+            await this.saveAnesthesiologistEventIdToDb(surgicalCase.id!, eventId);
+          }
           synced++;
         } catch { failed++; }
       }
@@ -415,17 +417,25 @@ class CalendarSyncService {
       surgicalCase.procedures.forEach((proc, index) => {
         description += `${index + 1}. ${proc.surgery_name} (${proc.surgery_code})\n`;
       });
-    } else if (surgicalCase.anesthesia_items && surgicalCase.anesthesia_items.length > 0) {
-      description += '\n--- Procedimientos de Anestesia ---\n';
+    }
+
+    if (surgicalCase.anesthesia_items && surgicalCase.anesthesia_items.length > 0) {
+      description += '\n--- Códigos de Anestesia ---\n';
       surgicalCase.anesthesia_items.forEach((item, index) => {
         description += `${index + 1}. ${item.surgery_name} (${item.surgery_code})\n`;
       });
-    } else if (surgicalCase.procedure_count) {
+    }
+
+    if (!surgicalCase.procedures?.length && !surgicalCase.anesthesia_items?.length && surgicalCase.procedure_count) {
       description += `\nProcedimientos: ${surgicalCase.procedure_count}\n`;
     }
 
-    if (surgicalCase.notes) {
-      description += `\nNotas: ${surgicalCase.notes}\n`;
+    const isInvitedAnest = !surgicalCase.is_owner && surgicalCase.is_anesthesiologist;
+    const notes = isInvitedAnest
+      ? (surgicalCase.anesthesia_notes || surgicalCase.notes)
+      : surgicalCase.notes;
+    if (notes) {
+      description += `\nNotas: ${notes}\n`;
     }
 
     description += `\n---\nCreado con MeDico App`;

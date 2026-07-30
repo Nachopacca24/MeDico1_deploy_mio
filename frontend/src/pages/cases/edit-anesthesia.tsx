@@ -14,7 +14,8 @@ import { hospitalService, type Hospital } from '@/services/hospitalService';
 import { insuranceService, type InsuranceCompany } from '@/services/insuranceService';
 import { anesthesiaService, type AnesthesiaItem } from '@/services/anesthesiaService';
 import { Loader2, User, Building2, Stethoscope, Wrench, Star, Users } from 'lucide-react';
-import type { PatientGender } from '@/types/surgical-case';
+import type { PatientGender, SurgicalCase } from '@/types/surgical-case';
+import { calendarSyncService } from '@/services/calendarSyncService';
 import { AnesthesiaCodesPicker, type AnesthesiaPickedItem, type CsvRow } from './AnesthesiaCodesPicker';
 
 const EditAnesthesiaCase = () => {
@@ -24,6 +25,7 @@ const EditAnesthesiaCase = () => {
   const caseId = Number(id);
 
   const [loading, setLoading] = useState(true);
+  const [loadedCase, setLoadedCase] = useState<SurgicalCase | null>(null);
 
   // Patient info
   const [patientName, setPatientName] = useState('');
@@ -85,6 +87,7 @@ const EditAnesthesiaCase = () => {
           insuranceService.getInsurances().catch(() => [] as InsuranceCompany[]),
         ]);
 
+        setLoadedCase(caseData);
         setPatientName(caseData.patient_name || '');
         setPatientId(caseData.patient_id || '');
         setPatientAge(caseData.patient_age != null ? String(caseData.patient_age) : '');
@@ -169,6 +172,25 @@ const EditAnesthesiaCase = () => {
       ]);
 
       toast.success('Caso actualizado', 'Los cambios fueron guardados correctamente');
+
+      if (loadedCase?.calendar_event_id) {
+        const hospital = hospitals.find(h => String(h.id) === hospitalId);
+        calendarSyncService.updateEventForCase({
+          ...loadedCase,
+          patient_name: patientName,
+          patient_age: patientAge ? parseInt(patientAge) : undefined,
+          diagnosis: diagnosis || undefined,
+          notes: notes || undefined,
+          hospital_name: hospital?.name || loadedCase.hospital_name,
+          surgeon_name: surgeonName.trim() || null,
+          assistant_doctor_name: assistantName.trim() || null,
+          surgery_date: surgeryDate,
+          surgery_time: surgeryTime || undefined,
+          surgery_end_time: surgeryEndTime || undefined,
+          anesthesia_items: codeItems.map(i => ({ surgery_code: i.surgery_code, surgery_name: i.surgery_name })),
+        }).catch(() => {});
+      }
+
       navigate('/cases');
     } catch (error: any) {
       const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';

@@ -82,6 +82,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
     anesthesia_is_paid = serializers.SerializerMethodField()
     anesthesia_invoice_number = serializers.SerializerMethodField()
     anesthesia_items = serializers.SerializerMethodField()
+    anesthesia_notes = serializers.SerializerMethodField()
 
     # Estados del ayudante (solo visibles cuando el usuario ES el ayudante)
     assistant_is_operated_own = serializers.SerializerMethodField()
@@ -173,6 +174,12 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
         except Exception:
             return []
 
+    def get_anesthesia_notes(self, obj):
+        try:
+            return obj.anesthesia.notes or None
+        except Exception:
+            return None
+
     def _is_assistant_for_user(self, obj):
         request = self.context.get('request')
         if not request or not request.user:
@@ -226,6 +233,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'anesthesia_is_paid',
             'anesthesia_invoice_number',
             'anesthesia_items',
+            'anesthesia_notes',
             'assistant_is_operated_own',
             'assistant_is_billed_own',
             'assistant_is_paid_own',

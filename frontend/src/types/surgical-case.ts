@@ -123,6 +123,7 @@ export interface SurgicalCase {
   procedure_count?: number;
   anesthesia_item_count?: number | null;
   anesthesia_items?: { surgery_code: string; surgery_name: string }[];
+  anesthesia_notes?: string | null;
   total_rvu?: number;
   total_value?: number;
   primary_specialty?: string;
