@@ -97,6 +97,15 @@ const CalendarPage = () => {
   const [calendarColor, setCalendarColor] = useState(() => googleCalendarService.getCalendarColorId());
   const [savingColor, setSavingColor] = useState(false);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
+
+  // Sync color from backend when connection is confirmed — cachedToken is only
+  // populated after getValidToken(), which checkStatus() doesn't call.
+  useEffect(() => {
+    if (!isConnected) return;
+    googleCalendarService.getValidToken().then(() => {
+      setCalendarColor(googleCalendarService.getCalendarColorId());
+    }).catch(() => {});
+  }, [isConnected]);
   const [syncing, setSyncing] = useState(false);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const hasSyncedRef = useRef(false);
