@@ -184,6 +184,7 @@ const EditAnesthesiaCase = () => {
           patient_age: patientAge ? parseInt(patientAge) : undefined,
           diagnosis: diagnosis || undefined,
           notes: notes || undefined,
+          anesthesia_notes: anesthesiaNotes.trim() || undefined,
           hospital_name: hospital?.name || loadedCase.hospital_name,
           surgeon_name: surgeonName.trim() || null,
           assistant_doctor_name: assistantName.trim() || null,
@@ -368,12 +369,12 @@ const EditAnesthesiaCase = () => {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="notes" className="text-sm font-semibold">Notas</Label>
+                  <Label htmlFor="notes" className="text-sm font-semibold">Notas del caso</Label>
                   <Textarea
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Observaciones adicionales..."
+                    placeholder="Observaciones visibles para todos los participantes..."
                     className="resize-none"
                     rows={3}
                   />
