@@ -7,7 +7,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Switch } from "@/shared/components/ui/switch";
 import {
   ArrowLeft, Stethoscope, Trash2, Search, Loader2,
-  Clock, Calculator, FileDown, Wrench, Star, Tag, Users,
+  Clock, Calculator, FileDown, Wrench, Star, Tag, Users, FileText,
 } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
@@ -74,6 +74,7 @@ const AnesthesiaEditorPage = () => {
 
   // Unit value
   const [editUnitValue, setEditUnitValue] = useState("0");
+  const [editNotes, setEditNotes] = useState("");
 
   // Time
   const [timeMinutes, setTimeMinutes] = useState("");
@@ -103,6 +104,7 @@ const AnesthesiaEditorPage = () => {
       setSession(an);
       if (an) {
         setEditUnitValue(String(an.unit_value));
+        setEditNotes(an.notes ?? "");
         setTimeMinutes(an.time_minutes != null ? String(an.time_minutes) : "");
         setEquipmentName(an.equipment_name ?? "");
         setEquipmentCost(an.equipment_cost != null ? String(an.equipment_cost) : "");
@@ -195,6 +197,7 @@ const AnesthesiaEditorPage = () => {
         time_minutes: timeMinutes ? parseFloat(timeMinutes) : null,
         equipment_name: equipmentEnabled ? equipmentName.trim() || null : null,
         equipment_cost: equipmentEnabled && equipmentCost ? parseFloat(equipmentCost) : null,
+        notes: editNotes.trim() || undefined,
       });
       setSession(updated);
       setTimeMinutes(updated.time_minutes != null ? String(updated.time_minutes) : "");
@@ -627,6 +630,25 @@ const AnesthesiaEditorPage = () => {
             </CardContent>
           )}
         </Card>}
+
+        {/* Notes */}
+        <Card className="border-teal-200 dark:border-teal-800">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400 text-base">
+              <FileText className="w-4 h-4" />
+              Notas adicionales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <textarea
+              value={editNotes}
+              onChange={e => setEditNotes(e.target.value)}
+              placeholder="Observaciones propias de la sesión de anestesia..."
+              rows={3}
+              className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none focus:ring-2 focus:ring-teal-400 outline-none"
+            />
+          </CardContent>
+        </Card>
 
         {/* Single save button for unit value + equipment */}
         <Button

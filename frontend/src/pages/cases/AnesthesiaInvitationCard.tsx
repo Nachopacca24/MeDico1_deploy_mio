@@ -1,8 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
-import { Textarea } from "@/shared/components/ui/textarea";
-import { Label } from "@/shared/components/ui/label";
 import { Calendar, Hospital, CheckCircle, XCircle, Loader2, Stethoscope } from "lucide-react";
 import { useState } from "react";
 import { anesthesiaService } from "@/services/anesthesiaService";
@@ -20,28 +18,16 @@ export function AnesthesiaInvitationCard({ case: surgicalCase, onAccept, onRejec
   const { toast } = useToast();
   const [accepting, setAccepting] = useState(false);
   const [rejecting, setRejecting] = useState(false);
-  const [anesthesiaNotes, setAnesthesiaNotes] = useState('');
 
   const handleAccept = async () => {
     setAccepting(true);
     try {
       await anesthesiaService.respond(surgicalCase.id, true);
-
-      const trimmedNotes = anesthesiaNotes.trim();
-      if (trimmedNotes) {
-        await anesthesiaService.update(surgicalCase.id, { notes: trimmedNotes });
-      }
-
       toast.success('¡Invitación aceptada!', 'El caso ahora aparece en tu lista');
 
       // Create calendar event immediately — fire and forget, doesn't block the UI
       const stableId = `medicoanest${surgicalCase.id}`;
-      const acceptedCase = {
-        ...surgicalCase,
-        is_anesthesiologist: true,
-        is_owner: false,
-        anesthesia_notes: trimmedNotes || undefined,
-      };
+      const acceptedCase = { ...surgicalCase, is_anesthesiologist: true, is_owner: false };
       calendarSyncService.createEventForCase(acceptedCase, stableId).then(eventId => {
         if (eventId) calendarSyncService.saveAnesthesiologistEventIdToDb(surgicalCase.id, eventId);
       }).catch(() => {});
@@ -112,21 +98,7 @@ export function AnesthesiaInvitationCard({ case: surgicalCase, onAccept, onRejec
           </div>
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="space-y-1.5">
-          <Label htmlFor={`anest-notes-${surgicalCase.id}`} className="text-xs font-semibold text-muted-foreground">
-            Notas de anestesia (opcional)
-          </Label>
-          <Textarea
-            id={`anest-notes-${surgicalCase.id}`}
-            value={anesthesiaNotes}
-            onChange={e => setAnesthesiaNotes(e.target.value)}
-            placeholder="Ej: requiere intubación difícil, alergias..."
-            className="resize-none text-sm"
-            rows={2}
-            disabled={accepting || rejecting}
-          />
-        </div>
+      <CardContent>
         <div className="flex gap-2">
           <Button
             onClick={handleAccept}
