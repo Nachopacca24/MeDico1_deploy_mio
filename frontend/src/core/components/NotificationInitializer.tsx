@@ -1,6 +1,7 @@
 // src/core/components/NotificationInitializer.tsx
 
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/shared/hooks/useToast';
 import { notificationService } from '@/services/notificationService';
 import { pushNotificationService } from '@/services/pushNotificationService';
@@ -9,6 +10,7 @@ import { useAuth } from '@/shared/contexts/AuthContext';
 export function NotificationInitializer() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     notificationService.initialize();
@@ -29,6 +31,27 @@ export function NotificationInitializer() {
       notificationService.destroy();
     };
   }, [toast]);
+
+  // Handle navigation from push notification taps.
+  // pushNotificationService dispatches 'notification_navigate' when a notification
+  // is tapped, and also stores the route in sessionStorage as a fallback for the
+  // case where this component mounts after the event fires (killed-app launch).
+  useEffect(() => {
+    const handleNavigate = (e: Event) => {
+      const route = (e as CustomEvent<{ route: string }>).detail?.route;
+      if (route) navigate(route);
+    };
+    window.addEventListener('notification_navigate', handleNavigate);
+
+    // Killed-app fallback: consume pending route stored before React mounted
+    const pending = sessionStorage.getItem('pending_notification_route');
+    if (pending) {
+      sessionStorage.removeItem('pending_notification_route');
+      navigate(pending);
+    }
+
+    return () => window.removeEventListener('notification_navigate', handleNavigate);
+  }, [navigate]);
 
   // Initialize FCM only when user is authenticated
   useEffect(() => {

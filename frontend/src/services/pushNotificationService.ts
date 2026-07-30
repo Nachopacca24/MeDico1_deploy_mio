@@ -6,6 +6,13 @@ import { authService } from '@/shared/services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+// Dispatches a navigation event that NotificationInitializer picks up via useNavigate.
+// Falls back to sessionStorage so the route is not lost if React isn't mounted yet.
+function navigateTo(route: string) {
+  sessionStorage.setItem('pending_notification_route', route);
+  window.dispatchEvent(new CustomEvent('notification_navigate', { detail: { route } }));
+}
+
 class PushNotificationService {
   private listenersRegistered = false;
   private tokenRegistered = false;
@@ -43,13 +50,22 @@ class PushNotificationService {
         await FirebaseMessaging.addListener('notificationReceived', async ({ notification }) => {
           try {
             const { LocalNotifications } = await import('@capacitor/local-notifications');
+            const route = (notification.data as Record<string, string> | undefined)?.route;
             await LocalNotifications.schedule({
               notifications: [{
                 id: Date.now() % 2147483647,
                 title: notification.title ?? 'MeDico',
                 body: notification.body ?? '',
                 channelId: 'medico_default',
+                extra: route ? { route } : undefined,
               }],
+            });
+            // Also register the action listener here so tapping the local
+            // notification navigates when the app is in the foreground.
+            const { LocalNotifications: LN } = await import('@capacitor/local-notifications');
+            LN.addListener('localNotificationActionPerformed', ({ notification: ln }) => {
+              const r = (ln.extra as Record<string, string> | undefined)?.route;
+              if (r) navigateTo(r);
             });
           } catch (err) {
             console.error('[FCM] LocalNotifications error:', err);
@@ -58,9 +74,8 @@ class PushNotificationService {
 
         await FirebaseMessaging.addListener('notificationActionPerformed', ({ notification }) => {
           const data = notification.data as Record<string, string> | undefined;
-          if (data?.route) {
-            window.location.hash = data.route;
-          }
+          const route = data?.route;
+          if (route) navigateTo(route);
         });
 
         this.listenersRegistered = true;
