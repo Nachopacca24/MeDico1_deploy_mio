@@ -245,6 +245,9 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'images_purge_at',
             'insurance_company',
             'insurance_company_name',
+            'patient_age',
+            'diagnosis',
+            'notes',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -252,6 +255,8 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['patient_name'] = decrypt_field(data.get('patient_name'))
         data['patient_name_for_assistant'] = decrypt_field(data.get('patient_name_for_assistant'))
+        data['diagnosis'] = decrypt_field(data.get('diagnosis'))
+        data['notes'] = decrypt_field(data.get('notes'))
         return data
 
     def get_was_removed_as(self, obj):
