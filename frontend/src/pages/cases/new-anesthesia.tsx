@@ -135,7 +135,7 @@ const NewAnesthesiaCase = () => {
       }
 
       toast.success('¡Caso creado!', `El caso de ${patientName} fue registrado.`);
-      navigate(`/cases/${newCase.id}`);
+      navigate('/cases');
     } catch (error: any) {
       const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';
       toast.error('Error al crear caso', msg);
