@@ -471,6 +471,53 @@ function AssistantStatusToggles({ surgicalCase, onUpdate, onError }: AssistantSt
 
 const FREE_CASE_LIMIT = 5;
 
+const CASES_CACHE_KEY = 'medico_cases_v2';
+function readCasesCache(): SurgicalCase[] | null {
+  try {
+    const raw = localStorage.getItem(CASES_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function writeCasesCache(data: SurgicalCase[]) {
+  try { localStorage.setItem(CASES_CACHE_KEY, JSON.stringify(data)); } catch { }
+}
+
+function CaseCardSkeleton() {
+  return (
+    <div className="rounded-lg border border-border/70 border-l-4 border-l-muted overflow-hidden animate-pulse">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 border-b border-border/50">
+        <div className="w-3 h-3 rounded bg-muted-foreground/20" />
+        <div className="h-3 w-24 rounded bg-muted-foreground/20" />
+      </div>
+      <div className="p-3 space-y-2.5">
+        <div className="flex justify-between items-center">
+          <div className="h-4 w-32 rounded bg-muted-foreground/20" />
+          <div className="h-5 w-16 rounded bg-muted-foreground/15" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded bg-muted-foreground/15" />
+            <div className="h-3 w-24 rounded bg-muted-foreground/15" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded bg-muted-foreground/15" />
+            <div className="h-3 w-36 rounded bg-muted-foreground/15" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded bg-muted-foreground/15" />
+            <div className="h-3 w-28 rounded bg-muted-foreground/15" />
+          </div>
+        </div>
+        <div className="flex gap-2 pt-1">
+          <div className="h-8 flex-1 rounded bg-muted-foreground/15" />
+          <div className="h-8 flex-1 rounded bg-muted-foreground/15" />
+          <div className="h-8 flex-1 rounded bg-muted-foreground/15" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const CasesPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -478,10 +525,11 @@ const CasesPage = () => {
   const adSettings = useAdSystem(isMobile);
   const isFreePlan = !user?.has_premium_access;
 
-  const [cases, setCases] = useState<SurgicalCase[]>([]);
+  const [cases, setCases] = useState<SurgicalCase[]>(() => readCasesCache() ?? []);
   // Casos propios + asistidos aceptados cuentan para el límite del plan
   const countForLimit = cases.filter(c => c.is_owner !== false || c.assistant_accepted === true).length;
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => readCasesCache() === null);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -702,15 +750,21 @@ const CasesPage = () => {
 
   const fetchCases = async () => {
     try {
-      setLoading(true);
+      if (loading) {
+        // First load — no cache yet, show skeletons
+      } else {
+        setRefreshing(true);
+      }
       const data = await surgicalCaseService.getCases();
       setCases(data);
+      writeCasesCache(data);
       calendarSyncService.syncMissingCases(data).catch(() => {});
     } catch (err: any) {
-      setError(err.message || 'Error al cargar casos');
+      if (loading) setError(err.message || 'Error al cargar casos');
       toast.error('Error', 'No se pudieron cargar los casos');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -983,8 +1037,18 @@ const CasesPage = () => {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
+        <div className="pb-4 space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight">Mis Cirugías</h1>
+              <p className="text-muted-foreground text-sm">Cargando...</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <CaseCardSkeleton />
+            <CaseCardSkeleton />
+            <CaseCardSkeleton />
+          </div>
         </div>
       </AppLayout>
     );
@@ -1013,7 +1077,10 @@ const CasesPage = () => {
         <div className="flex-1 space-y-6 min-w-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight">Mis Cirugías</h1>
+              <h1 className="text-2xl sm:text-3xl font-semibold mb-1 tracking-tight flex items-center gap-2">
+                Mis Cirugías
+                {refreshing && <LoaderIcon className="h-4 w-4 animate-spin text-muted-foreground" />}
+              </h1>
               {activeTab === 'activos' && (
                 <p className="text-muted-foreground text-sm">
                   {filteredCases.length} de {cases.length} caso{cases.length !== 1 ? 's' : ''} activos
