@@ -92,11 +92,12 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         # Regla por rol:
         #   - Cirujano/ayudante: usa el archived_at/is_paid del SurgicalCase (controlado por el cirujano)
         #   - Anestesiólogo (no dueño): usa su propio anesthesia.is_paid — el cirujano cobrar no lo archiva
+        #   - Cirujano que es también su propio anestesiólogo: activo hasta que marque SU anestesia como cobrada
         if self.action == 'list':
             if show_archived:
                 queryset = queryset.filter(
-                    # Cirujano: cobrado/archivado por él
-                    Q(created_by=user) & (Q(archived_at__isnull=False) | Q(is_paid=True)) |
+                    # Cirujano: cobrado/archivado por él (incluye el caso donde él mismo es el anestesiólogo y cobró)
+                    Q(created_by=user) & (Q(archived_at__isnull=False) | Q(is_paid=True) | Q(anesthesia__anesthesiologist=user, anesthesia__is_paid=True)) |
                     # Ayudante (no dueño): cobrado por él mismo
                     Q(assistant_doctor=user, assistant_accepted=True, assistant_is_paid=True) & ~Q(created_by=user) |
                     # Anestesiólogo (no dueño): cobrado por él mismo
@@ -105,8 +106,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 )
             else:
                 queryset = queryset.filter(
-                    # Cirujano: casos activos
-                    Q(created_by=user, archived_at__isnull=True, is_paid=False) |
+                    # Cirujano: casos activos. Si él mismo es el anestesiólogo, solo activo mientras su anestesia no esté cobrada.
+                    Q(created_by=user, archived_at__isnull=True, is_paid=False) & ~Q(anesthesia__anesthesiologist=user, anesthesia__is_paid=True) |
                     # Ayudante (no dueño): visible hasta que ÉL marque como cobrado
                     Q(assistant_doctor=user, assistant_accepted=True, assistant_is_paid=False) & ~Q(created_by=user) |
                     # Anestesiólogo (no dueño): visible hasta que ÉL marque como cobrado

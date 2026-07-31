@@ -861,7 +861,8 @@ const CasesPage = () => {
       setCases(prev => prev.map(c => c.id === caseId ? { ...c, ...patch } : c));
       return;
     }
-    const justBecamePaid = patch.anesthesia_is_paid === true;
+    const existingCase = cases.find(c => c.id === caseId);
+    const justBecamePaid = patch.anesthesia_is_paid === true && !existingCase?.anesthesia_is_paid;
     if (justBecamePaid) {
       // Sacar de la lista activa — el backend ya no lo devuelve como activo
       setCases(prev => prev.filter(c => c.id !== caseId));
