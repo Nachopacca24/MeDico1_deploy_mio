@@ -223,13 +223,13 @@ export default function TestersPage() {
               <p className="font-semibold mb-1">¿No te llega el link o no funciona?</p>
               <p className="mb-2">Entrá directamente desde acá:</p>
               <a
-                href="https://play.google.com/apps/testing/app.medicoapp.medico"
+                href="https://play.google.com/store/apps/details?id=app.medicoapp.medico"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-sky-600 font-semibold hover:underline break-all"
               >
                 <ArrowRight className="h-3.5 w-3.5 flex-shrink-0" />
-                play.google.com/apps/testing/app.medicoapp.medico
+                play.google.com/store/apps/details?id=app.medicoapp.medico
               </a>
             </div>
           </div>

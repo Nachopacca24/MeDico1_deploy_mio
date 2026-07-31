@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { siteSettingsService } from '@/services/siteSettingsService';
 
-const PLAY_TESTING_URL = 'https://play.google.com/apps/testing/app.medicoapp.medico';
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=app.medicoapp.medico';
 
 function compareVersions(installed: string, minimum: string): boolean {
   const toArr = (v: string) => v.split('.').map(n => parseInt(n, 10) || 0);
@@ -39,7 +39,7 @@ export function UpdateChecker() {
   }, []);
 
   const handleUpdate = async () => {
-    await Browser.open({ url: PLAY_TESTING_URL });
+    await Browser.open({ url: PLAY_STORE_URL });
   };
 
   if (!showDialog) return null;

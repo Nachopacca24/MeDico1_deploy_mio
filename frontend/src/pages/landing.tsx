@@ -158,7 +158,7 @@ export default function LandingPage() {
                 to="/testers"
                 className="inline-flex items-center justify-center gap-2 border border-amber-400/40 text-amber-400 font-semibold text-lg px-8 py-4 rounded-xl hover:bg-amber-400/10 transition-all"
               >
-                🧪 Beta Testers oficiales
+                Más información
               </Link>
             </div>
             <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
