@@ -1572,7 +1572,7 @@ const CasesPage = () => {
                                 variant="outline"
                                 size="sm"
                                 type="button"
-                                className={`w-full border-teal-400/60 text-teal-600 hover:bg-teal-400/10 hover:border-teal-400 dark:text-teal-400 transition-shadow${needsTiempos ? ' animate-pulse ring-2 ring-teal-400/70 shadow-[0_0_12px_rgba(45,212,191,0.45)]' : ''}`}
+                                className={`w-full border-teal-400/60 text-teal-600 hover:bg-teal-400/10 hover:border-teal-400 dark:text-teal-400${needsTiempos ? ' teal-glow-pulse' : ''}`}
                               >
                                 <Clock className="w-3 h-3 mr-1.5" />
                                 Agregar tiempos
@@ -1648,7 +1648,7 @@ const CasesPage = () => {
                           {isAnesthesiologist && (() => {
                             const glowAnestesia = (surgicalCase.anesthesia_item_count ?? 0) === 0 && (isOwner || surgicalCase.anesthesiologist_accepted === true);
                             return (
-                              <Button asChild variant="ghost" size="sm" className={`flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950 transition-shadow${glowAnestesia ? ' animate-pulse ring-2 ring-teal-400/70 rounded-md shadow-[0_0_12px_rgba(45,212,191,0.45)]' : ''}`}>
+                              <Button asChild variant="ghost" size="sm" className={`flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950 rounded-md${glowAnestesia ? ' teal-glow-pulse' : ''}`}>
                                 <Link to={`/cases/${surgicalCase.id}/anesthesia`}>
                                   <Stethoscope className="w-3.5 h-3.5 mr-1" />
                                   Anestesia

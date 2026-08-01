@@ -23,6 +23,15 @@
 .amber-cta:hover  { transform: translateY(-1px) scale(1.01); }
 .amber-cta:active { transform: scale(0.98); animation: none; }
 
+@keyframes tealGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45,212,191,0), 0 2px 8px rgba(0,0,0,0.06); }
+  50%       { box-shadow: 0 0 0 4px rgba(45,212,191,0.35), 0 4px 20px rgba(45,212,191,0.35); }
+}
+.teal-glow-pulse {
+  animation: tealGlow 1.8s ease-in-out infinite;
+  border-color: rgb(45 212 191 / 0.7) !important;
+}
+
 @keyframes googleGlow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(14,165,233,0), 0 2px 8px rgba(0,0,0,0.06); }
   50%       { box-shadow: 0 0 0 4px rgba(14,165,233,0.18), 0 4px 16px rgba(14,165,233,0.18); }
