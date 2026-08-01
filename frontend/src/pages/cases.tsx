@@ -533,6 +533,7 @@ const CasesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'sin-estado' | 'operado' | 'facturado'>('all');
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [leaveConfirm, setLeaveConfirm] = useState<{ caseId: number; role: 'assistant' | 'anesthesiologist' } | null>(null);
   const [activeTab, setActiveTab] = useState<'activos' | 'facturados'>('activos');
@@ -919,15 +920,41 @@ const CasesPage = () => {
 
   const filteredCases = useMemo(() => {
     return cases.filter(case_ => {
-      return searchQuery === "" ||
+      const matchesSearch = searchQuery === "" ||
         case_.patient_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         case_.patient_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         case_.hospital_name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      if (statusFilter !== 'all') {
+        const caseIsAnesthesiologist = case_.is_anesthesiologist ?? false;
+        const caseIsOwner = case_.is_owner ?? true;
+        const caseIsAssistant = !caseIsOwner && !caseIsAnesthesiologist;
+
+        let operated: boolean, billed: boolean;
+        if (caseIsAnesthesiologist && !caseIsOwner) {
+          operated = case_.anesthesia_is_operated ?? false;
+          billed   = case_.anesthesia_is_billed   ?? false;
+        } else if (caseIsAssistant) {
+          operated = case_.assistant_is_operated_own ?? false;
+          billed   = case_.assistant_is_billed_own   ?? false;
+        } else {
+          operated = case_.is_operated ?? false;
+          billed   = case_.is_billed   ?? false;
+        }
+
+        if (statusFilter === 'sin-estado' && (operated || billed)) return false;
+        if (statusFilter === 'operado'    && (!operated || billed)) return false;
+        if (statusFilter === 'facturado'  && !billed)              return false;
+      }
+
+      return true;
     }).sort((a, b) => {
       const diff = new Date(a.surgery_date).getTime() - new Date(b.surgery_date).getTime();
       return sortOrder === 'asc' ? diff : -diff;
     });
-  }, [cases, searchQuery, sortOrder]);
+  }, [cases, searchQuery, sortOrder, statusFilter]);
 
   const getStatusBadge = (status: string) => {
     const config: Record<string, { style: string; label: string }> = {
@@ -1261,7 +1288,7 @@ const CasesPage = () => {
                   className="pl-10"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant={sortOrder === "asc" ? "default" : "outline"}
                   size="sm"
@@ -1275,6 +1302,35 @@ const CasesPage = () => {
                   onClick={() => setSortOrder("desc")}
                 >
                   Más lejana
+                </Button>
+                <div className="w-px bg-border self-stretch hidden sm:block" />
+                <Button
+                  variant={statusFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("all")}
+                >
+                  Todos
+                </Button>
+                <Button
+                  variant={statusFilter === "sin-estado" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("sin-estado")}
+                >
+                  Sin estado
+                </Button>
+                <Button
+                  variant={statusFilter === "operado" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("operado")}
+                >
+                  Operados
+                </Button>
+                <Button
+                  variant={statusFilter === "facturado" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("facturado")}
+                >
+                  Facturados
                 </Button>
               </div>
             </div>
@@ -1508,19 +1564,22 @@ const CasesPage = () => {
                           />
                         ) : null}
 
-                        {isAnesthesiologist && surgicalCase.anesthesia_is_operated && (
-                          <Link to={`/cases/${surgicalCase.id}/anesthesia#time`} onClick={e => e.stopPropagation()} className="w-full mt-1 block">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              type="button"
-                              className="w-full border-teal-400/60 text-teal-600 hover:bg-teal-400/10 hover:border-teal-400 dark:text-teal-400"
-                            >
-                              <Clock className="w-3 h-3 mr-1.5" />
-                              Agregar tiempos
-                            </Button>
-                          </Link>
-                        )}
+                        {isAnesthesiologist && surgicalCase.anesthesia_is_operated && (() => {
+                          const needsTiempos = (surgicalCase.anesthesia_item_count ?? 0) === 0;
+                          return (
+                            <Link to={`/cases/${surgicalCase.id}/anesthesia#time`} onClick={e => e.stopPropagation()} className="w-full mt-1 block">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                type="button"
+                                className={`w-full border-teal-400/60 text-teal-600 hover:bg-teal-400/10 hover:border-teal-400 dark:text-teal-400 transition-shadow${needsTiempos ? ' animate-pulse ring-2 ring-teal-400/70 shadow-[0_0_12px_rgba(45,212,191,0.45)]' : ''}`}
+                              >
+                                <Clock className="w-3 h-3 mr-1.5" />
+                                Agregar tiempos
+                              </Button>
+                            </Link>
+                          );
+                        })()}
 
                         {isAnesthesiologist ? (
                           <div className="grid grid-cols-3 gap-1 text-center pt-1.5 border-t">
@@ -1586,14 +1645,17 @@ const CasesPage = () => {
                               Ver
                             </Link>
                           </Button>
-                          {isAnesthesiologist && (
-                            <Button asChild variant="ghost" size="sm" className="flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950">
-                              <Link to={`/cases/${surgicalCase.id}/anesthesia`}>
-                                <Stethoscope className="w-3.5 h-3.5 mr-1" />
-                                Anestesia
-                              </Link>
-                            </Button>
-                          )}
+                          {isAnesthesiologist && (() => {
+                            const glowAnestesia = (surgicalCase.anesthesia_item_count ?? 0) === 0 && surgicalCase.anesthesiologist_accepted === true;
+                            return (
+                              <Button asChild variant="ghost" size="sm" className={`flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950 transition-shadow${glowAnestesia ? ' animate-pulse ring-2 ring-teal-400/70 rounded-md shadow-[0_0_12px_rgba(45,212,191,0.45)]' : ''}`}>
+                                <Link to={`/cases/${surgicalCase.id}/anesthesia`}>
+                                  <Stethoscope className="w-3.5 h-3.5 mr-1" />
+                                  Anestesia
+                                </Link>
+                              </Button>
+                            );
+                          })()}
                           {canEdit && !surgicalCase.is_paid && (
                             <Button asChild variant="ghost" size="sm" className="flex-1 h-8">
                               <Link to={isOwner && isAnesthesiologist
