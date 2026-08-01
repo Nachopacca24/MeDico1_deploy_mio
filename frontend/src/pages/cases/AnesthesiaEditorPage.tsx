@@ -491,7 +491,7 @@ const AnesthesiaEditorPage = () => {
 
         {/* Time — only when operated */}
         {isOperated && (
-          <Card id="time" className="border-teal-200 dark:border-teal-800">
+          <Card id="time" className={`border-teal-200 dark:border-teal-800${!timeMinutes ? ' teal-glow-pulse' : ''}`}>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-400 text-base">
                 <Clock className="w-4 h-4" />
