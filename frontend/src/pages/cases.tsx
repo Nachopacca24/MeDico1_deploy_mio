@@ -1646,7 +1646,7 @@ const CasesPage = () => {
                             </Link>
                           </Button>
                           {isAnesthesiologist && (() => {
-                            const glowAnestesia = (surgicalCase.anesthesia_item_count ?? 0) === 0 && surgicalCase.anesthesiologist_accepted === true;
+                            const glowAnestesia = (surgicalCase.anesthesia_item_count ?? 0) === 0 && (isOwner || surgicalCase.anesthesiologist_accepted === true);
                             return (
                               <Button asChild variant="ghost" size="sm" className={`flex-1 h-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950 transition-shadow${glowAnestesia ? ' animate-pulse ring-2 ring-teal-400/70 rounded-md shadow-[0_0_12px_rgba(45,212,191,0.45)]' : ''}`}>
                                 <Link to={`/cases/${surgicalCase.id}/anesthesia`}>
