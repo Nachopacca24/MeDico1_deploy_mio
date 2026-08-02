@@ -122,6 +122,7 @@ export interface SurgicalCase {
   
   procedure_count?: number;
   anesthesia_item_count?: number | null;
+  anesthesia_time_minutes?: number | null;
   anesthesia_items?: { surgery_code: string; surgery_name: string }[];
   anesthesia_notes?: string | null;
   total_rvu?: number;

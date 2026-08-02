@@ -77,6 +77,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
     is_anesthesiologist = serializers.SerializerMethodField()
     anesthesia_total_fee = serializers.SerializerMethodField()
     anesthesia_item_count = serializers.SerializerMethodField()
+    anesthesia_time_minutes = serializers.SerializerMethodField()
     anesthesia_is_operated = serializers.SerializerMethodField()
     anesthesia_is_billed = serializers.SerializerMethodField()
     anesthesia_is_paid = serializers.SerializerMethodField()
@@ -148,6 +149,10 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             return obj.anesthesia.items.count()
         except Exception:
             return None
+
+    def get_anesthesia_time_minutes(self, obj):
+        a = self._get_anesthesia_for_user(obj)
+        return a.time_minutes if a else None
 
     def get_anesthesia_is_operated(self, obj):
         a = self._get_anesthesia_for_user(obj)
@@ -228,6 +233,7 @@ class SurgicalCaseListSerializer(serializers.ModelSerializer):
             'is_anesthesiologist',
             'anesthesia_total_fee',
             'anesthesia_item_count',
+            'anesthesia_time_minutes',
             'anesthesia_is_operated',
             'anesthesia_is_billed',
             'anesthesia_is_paid',

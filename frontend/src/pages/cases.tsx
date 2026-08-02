@@ -1565,7 +1565,7 @@ const CasesPage = () => {
                         ) : null}
 
                         {isAnesthesiologist && surgicalCase.anesthesia_is_operated && (() => {
-                          const needsTiempos = (surgicalCase.anesthesia_item_count ?? 0) === 0;
+                          const needsTiempos = surgicalCase.anesthesia_time_minutes == null;
                           return (
                             <Link to={`/cases/${surgicalCase.id}/anesthesia#time`} onClick={e => e.stopPropagation()} className="w-full mt-1 block">
                               <Button
