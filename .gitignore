@@ -29,6 +29,9 @@
 # Android signing — NEVER commit these
 frontend/android/keystore.properties
 frontend/android/app/google-services.json
+
+# iOS Firebase config — same treatment as google-services.json above
+frontend/ios/App/App/GoogleService-Info.plist
 id_rsa
 id_rsa.pub
 authorized_keys
