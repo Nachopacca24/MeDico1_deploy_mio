@@ -212,7 +212,7 @@ const Settings = () => {
         email: user.email || "",
         darkMode: user.theme_preference === 'dark',
       }));
-      setSurgeryReminderHours(user.surgery_reminder_hours ?? 24);
+      setSurgeryReminderHours(user.surgery_reminder_hours ?? 2);
       // Theme is applied by AuthContext — calling setTheme here too causes an
       // infinite reset loop when setTheme's reference changes on re-render.
     }
@@ -477,10 +477,10 @@ const Settings = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">1 hora antes</SelectItem>
-                      <SelectItem value="2">2 horas antes</SelectItem>
+                      <SelectItem value="2">2 horas antes (predeterminado)</SelectItem>
                       <SelectItem value="6">6 horas antes</SelectItem>
                       <SelectItem value="12">12 horas antes</SelectItem>
-                      <SelectItem value="24">24 horas antes (predeterminado)</SelectItem>
+                      <SelectItem value="24">24 horas antes</SelectItem>
                       <SelectItem value="48">48 horas antes</SelectItem>
                     </SelectContent>
                   </Select>

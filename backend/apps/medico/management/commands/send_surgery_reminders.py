@@ -2,15 +2,19 @@
 Envía recordatorios push a los médicos antes de sus cirugías programadas.
 
 Diseñado para correr cada 5 minutos via cron en Railway.
-Cada usuario configura cuántas horas antes quiere el recordatorio (default: 24h).
-Usa surgery_reminder_sent_at para no enviar el recordatorio más de una vez por caso.
-Si la fecha/hora de la cirugía cambia, surgery_reminder_sent_at se resetea (ver modelo).
+Cada usuario configura cuántas horas antes quiere el recordatorio (default: 2h) —
+el médico principal, el ayudante y el anestesiólogo invitado tienen su propia
+configuración y se evalúan de forma independiente, cada uno con su propia ventana
+y su propio flag de "ya enviado" (no se usa la config del médico principal para
+notificar a los demás).
+Si la fecha/hora de la cirugía cambia, los tres flags de envío se resetean (ver modelo).
 """
 
 import logging
 from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.medico.models import SurgicalCase
@@ -28,16 +32,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         now = timezone.now()
 
-        # Casos pendientes de recordatorio: activos, no cancelados, no archivados
+        # Casos con al menos un recordatorio pendiente (para el médico principal,
+        # el ayudante o el anestesiólogo): activos, no cancelados, no archivados
         candidates = (
             SurgicalCase.objects
             .filter(
-                surgery_reminder_sent_at__isnull=True,
+                Q(surgery_reminder_sent_at__isnull=True) |
+                Q(assistant_reminder_sent_at__isnull=True) |
+                Q(anesthesiologist_reminder_sent_at__isnull=True),
                 archived_at__isnull=True,
                 is_paid=False,
             )
             .exclude(status='cancelled')
             .select_related('created_by', 'assistant_doctor')
+            .prefetch_related('anesthesia')
         )
 
         sent = 0
@@ -46,10 +54,6 @@ class Command(BaseCommand):
         logger.info('[REMINDER] now=%s candidates=%d', now.isoformat(), candidates.count())
 
         for case in candidates:
-            user = case.created_by
-            reminder_hours = getattr(user, 'surgery_reminder_hours', 24)
-
-            # Construir el datetime de la cirugía (combinar fecha + hora si existe)
             surgery_time = case.surgery_time or datetime.min.time()
             surgery_dt = timezone.make_aware(
                 datetime.combine(case.surgery_date, surgery_time)
@@ -60,26 +64,6 @@ class Command(BaseCommand):
                 skipped += 1
                 continue
 
-            # Ventana objetivo: [now + hours - WINDOW, now + hours + WINDOW]
-            # Si la ventana ya pasó (caso creado con menos de reminder_hours de anticipación)
-            # pero la cirugía aún no ocurrió, mandar igual — es mejor tarde que nunca.
-            target = now + timedelta(hours=reminder_hours)
-            window_start = target - timedelta(minutes=WINDOW_MINUTES)
-            window_end = target + timedelta(minutes=WINDOW_MINUTES)
-            past_window = surgery_dt < window_start  # ventana ya pasó
-
-            in_window = window_start <= surgery_dt <= window_end
-
-            logger.info(
-                '[REMINDER] case=%s user=%s reminder_hours=%s surgery_dt=%s in_window=%s past_window=%s',
-                case.pk, user.id, reminder_hours,
-                surgery_dt.isoformat(), in_window, past_window,
-            )
-
-            if not in_window and not past_window:
-                skipped += 1
-                continue
-
             date_str = case.surgery_date.strftime('%d/%m/%Y')
             time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
             body = f'Cirugía programada para el {date_str}'
@@ -87,27 +71,60 @@ class Command(BaseCommand):
                 body += f' a las {time_str}'
             body += '.'
 
-            notify_user(
-                user,
-                title=f'Recordatorio: cirugía en {reminder_hours}h',
-                body=body,
-                data={'route': f'/cases/{case.pk}'},
-            )
-
-            # Also notify the assistant doctor if they accepted
+            # Cada destinatario evalúa su propia ventana según SU propia configuración
+            recipients = [
+                (case.created_by, 'surgery_reminder_sent_at'),
+            ]
             if case.assistant_doctor and case.assistant_accepted is True:
+                recipients.append((case.assistant_doctor, 'assistant_reminder_sent_at'))
+
+            anesthesiologist = None
+            try:
+                anesthesia = case.anesthesia
+                if anesthesia.anesthesiologist and anesthesia.anesthesiologist_accepted is True:
+                    anesthesiologist = anesthesia.anesthesiologist
+            except Exception:
+                pass
+            if anesthesiologist:
+                recipients.append((anesthesiologist, 'anesthesiologist_reminder_sent_at'))
+
+            any_sent_for_case = False
+
+            for user, sent_field in recipients:
+                if getattr(case, sent_field) is not None:
+                    continue  # ya se le envió a este destinatario
+
+                reminder_hours = getattr(user, 'surgery_reminder_hours', 2)
+
+                target = now + timedelta(hours=reminder_hours)
+                window_start = target - timedelta(minutes=WINDOW_MINUTES)
+                window_end = target + timedelta(minutes=WINDOW_MINUTES)
+                past_window = surgery_dt < window_start
+                in_window = window_start <= surgery_dt <= window_end
+
+                logger.info(
+                    '[REMINDER] case=%s user=%s field=%s reminder_hours=%s surgery_dt=%s in_window=%s past_window=%s',
+                    case.pk, user.id, sent_field, reminder_hours,
+                    surgery_dt.isoformat(), in_window, past_window,
+                )
+
+                if not in_window and not past_window:
+                    continue
+
                 notify_user(
-                    case.assistant_doctor,
+                    user,
                     title=f'Recordatorio: cirugía en {reminder_hours}h',
                     body=body,
                     data={'route': f'/cases/{case.pk}'},
                 )
-                logger.info('[REMINDER] sent to assistant=%s for case=%s', case.assistant_doctor_id, case.pk)
+                SurgicalCase.objects.filter(pk=case.pk).update(**{sent_field: now})
+                sent += 1
+                any_sent_for_case = True
+                logger.info('[REMINDER] sent to user=%s (%s) for case=%s', user.id, sent_field, case.pk)
 
-            SurgicalCase.objects.filter(pk=case.pk).update(surgery_reminder_sent_at=now)
-            sent += 1
-            logger.info('[REMINDER] sent to user=%s for case=%s', user.id, case.pk)
+            if not any_sent_for_case:
+                skipped += 1
 
         self.stdout.write(
-            self.style.SUCCESS(f'Recordatorios enviados: {sent}, omitidos: {skipped}')
+            self.style.SUCCESS(f'Recordatorios enviados: {sent}, casos omitidos: {skipped}')
         )

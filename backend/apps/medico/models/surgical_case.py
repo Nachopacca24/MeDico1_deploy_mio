@@ -242,7 +242,19 @@ class SurgicalCase(models.Model):
         blank=True,
         null=True,
         verbose_name="Recordatorio de cirugía enviado el",
-        help_text="Marca que ya se envió el recordatorio push para esta cirugía"
+        help_text="Marca que ya se envió el recordatorio push al médico principal para esta cirugía"
+    )
+    assistant_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de cirugía enviado al ayudante el",
+        help_text="Marca que ya se envió el recordatorio push al médico ayudante, según sus propias horas de anticipación"
+    )
+    anesthesiologist_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de cirugía enviado al anestesiólogo el",
+        help_text="Marca que ya se envió el recordatorio push al anestesiólogo invitado, según sus propias horas de anticipación"
     )
 
     operated_reminder_sent_at = models.DateTimeField(
@@ -321,10 +333,12 @@ class SurgicalCase(models.Model):
                     # Si hay un nuevo ayudante, notificar
                     if self.assistant_doctor:
                         self.assistant_notified_at = timezone.now()
-                # Si cambió la fecha u hora de la cirugía, resetear el recordatorio
+                # Si cambió la fecha u hora de la cirugía, resetear los recordatorios
                 if (old_instance.surgery_date != self.surgery_date or
                         old_instance.surgery_time != self.surgery_time):
                     self.surgery_reminder_sent_at = None
+                    self.assistant_reminder_sent_at = None
+                    self.anesthesiologist_reminder_sent_at = None
                 # Auto-archivar cuando se marca como cobrado
                 if not old_instance.is_paid and self.is_paid and not self.archived_at:
                     self.archived_at = timezone.now()
