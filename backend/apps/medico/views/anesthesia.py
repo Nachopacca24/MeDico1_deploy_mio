@@ -136,6 +136,27 @@ def anesthesia_case(request, case_id):
                 instance.anesthesiologist_accepted = True  # nombre libre → auto-aceptar
             instance.save(update_fields=['anesthesiologist_accepted'])
 
+            # Notificar al nuevo anestesiólogo invitado (si es un colega con cuenta, no nombre libre)
+            if instance.anesthesiologist:
+                try:
+                    from apps.medico.services.firebase import notify_user
+                    principal_name = case.created_by.get_full_name() or case.created_by.username
+                    date_str = _fmt_date(case.surgery_date)
+                    time_str = case.surgery_time.strftime('%H:%M') if case.surgery_time else ''
+                    inv_body = f'{principal_name} te invitó como anestesiólogo el {date_str}'
+                    if time_str:
+                        inv_body += f' a las {time_str}'
+                    inv_body += '. Revisá la sección Cirugías.'
+                    notify_user(
+                        instance.anesthesiologist,
+                        title='Nueva invitación a cirugía',
+                        body=inv_body,
+                        data={'route': '/cases'},
+                    )
+                except Exception:
+                    import logging
+                    logging.getLogger(__name__).exception('Error sending anesthesiologist invitation notification (reassign) case=%s', case.pk)
+
             # Si el anestesiólogo anterior había aceptado → notificación de remoción
             if old_anesthesiologist_id and old_anesthesiologist_accepted is True:
                 try:
