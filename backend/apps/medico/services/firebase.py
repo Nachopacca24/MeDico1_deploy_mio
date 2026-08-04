@@ -1,10 +1,12 @@
 import json
 import logging
 import os
+import threading
 
 logger = logging.getLogger(__name__)
 
 _app = None
+_app_lock = threading.Lock()
 
 
 def _get_app():
@@ -12,6 +14,15 @@ def _get_app():
     if _app is not None:
         return _app
 
+    with _app_lock:
+        # Another thread may have finished initializing while we waited for the lock
+        if _app is not None:
+            return _app
+        return _init_app()
+
+
+def _init_app():
+    global _app
     try:
         import firebase_admin
         from firebase_admin import credentials
