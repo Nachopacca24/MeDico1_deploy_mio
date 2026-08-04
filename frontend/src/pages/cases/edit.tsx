@@ -10,6 +10,7 @@ import { Label } from '@/shared/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { FormSkeleton } from '@/shared/components/ui/form-skeleton';
 import { useToast } from '@/shared/hooks/useToast';
 import { authService } from '@/shared/services/authService';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
@@ -733,9 +734,7 @@ const EditCase = () => {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-[70vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <FormSkeleton sections={4} />
       </AppLayout>
     );
   }

@@ -1215,6 +1215,17 @@ const CasesPage = () => {
             <TabsContent value="activos" className="space-y-6 mt-0">
 
           {/* SECCIÓN DE INVITACIONES PENDIENTES — AYUDANTE */}
+          {loadingInvitations && (
+            <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 animate-pulse">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-orange-200/60 dark:bg-orange-800/40" />
+                  <div className="h-5 w-40 rounded bg-orange-200/60 dark:bg-orange-800/40" />
+                </div>
+                <div className="h-3 w-64 rounded bg-orange-200/40 dark:bg-orange-800/30 mt-2" />
+              </CardHeader>
+            </Card>
+          )}
           {!loadingInvitations && invitations.total_pending > 0 && (
             <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
               <CardHeader>
@@ -1249,6 +1260,17 @@ const CasesPage = () => {
           )}
 
           {/* SECCIÓN DE INVITACIONES PENDIENTES — ANESTESIA */}
+          {loadingAnesthesiaInv && (
+            <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 animate-pulse">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-orange-200/60 dark:bg-orange-800/40" />
+                  <div className="h-5 w-48 rounded bg-orange-200/60 dark:bg-orange-800/40" />
+                </div>
+                <div className="h-3 w-64 rounded bg-orange-200/40 dark:bg-orange-800/30 mt-2" />
+              </CardHeader>
+            </Card>
+          )}
           {!loadingAnesthesiaInv && anesthesiaInvitations.length > 0 && (
             <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20" data-tutorial="anesthesia-invitations">
               <CardHeader>

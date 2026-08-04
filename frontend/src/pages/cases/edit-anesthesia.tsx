@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Switch } from '@/shared/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { FormSkeleton } from '@/shared/components/ui/form-skeleton';
 import { useToast } from '@/shared/hooks/useToast';
 import { surgicalCaseService } from '@/services/surgicalCaseService';
 import { hospitalService, type Hospital } from '@/services/hospitalService';
@@ -207,9 +208,7 @@ const EditAnesthesiaCase = () => {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex justify-center items-center min-h-[300px]">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        </div>
+        <FormSkeleton sections={3} />
       </AppLayout>
     );
   }
