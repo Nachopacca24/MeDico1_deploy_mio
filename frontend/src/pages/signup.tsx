@@ -69,7 +69,7 @@ export default function SignupForm() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
-  const { register, isAuthenticated, loginWithGoogle } = useAuth();
+  const { register, isAuthenticated, loading: authLoading, loginWithGoogle } = useAuth();
   const [searchParams] = useSearchParams();
   const [referralCode, setReferralCode] = useState<string | null>(null);
 
@@ -279,6 +279,15 @@ export default function SignupForm() {
       loginGoogle();
     }
   };
+
+  // Mientras se valida la sesión existente, no mostrar el formulario
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // Si ya está autenticado, redirigir al dashboard
   if (isAuthenticated) {

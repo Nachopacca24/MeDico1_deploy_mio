@@ -43,7 +43,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { login, isAuthenticated, isAdmin, loginWithGoogle, loginWithApple } = useAuth();
+  const { login, isAuthenticated, isAdmin, loading: authLoading, loginWithGoogle, loginWithApple } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -238,6 +238,16 @@ export default function Login() {
   };
 
   const isIOS = Capacitor.getPlatform() === 'ios';
+
+  // Mientras se valida la sesión existente, no mostrar el formulario de login
+  // (evita el flash de login -> dashboard al reabrir la app)
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // Si ya está autenticado, redirigir según el rol
   if (isAuthenticated) {
