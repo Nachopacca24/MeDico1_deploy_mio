@@ -108,6 +108,25 @@ body {
   padding-right: var(--sar);
 }
 
+/* iOS/WKWebView renders the value inside <input type="date"/"time"> flush against
+   the field's own edge, ignoring the input's padding-right — this pulls it back in
+   without touching any component markup. */
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: left;
+  padding-right: 0.5rem;
+}
+
+/* iOS auto-zooms the whole page on focus for any form control under 16px, and the
+   zoom can get stuck — some hand-rolled inputs/selects/textareas use text-sm/text-xs
+   (14px/12px). Force those back up to 16px specifically on form elements, without
+   touching text-sm/text-xs anywhere else. */
+input.text-xs, input.text-sm,
+select.text-xs, select.text-sm,
+textarea.text-xs, textarea.text-sm {
+  font-size: 16px;
+}
+
 @layer base {
   :root {
     /* Blue-gray wash — light but not glaring white */
