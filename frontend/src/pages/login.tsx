@@ -113,7 +113,7 @@ export default function Login() {
         navigate("/dashboard");
       }
     } catch (error: any) {
-      console.error('Error en login:', error);
+      console.error('Error en login:', error?.name, error?.message);
 
       let errorMessage = "Credenciales inválidas. Por favor, intenta de nuevo.";
 
@@ -229,6 +229,7 @@ export default function Login() {
     } catch (error: any) {
       const cancelled = error?.message?.includes('cancel') || error?.code === 'popup-closed-by-user';
       if (!cancelled) {
+        console.error('Error en login con Apple:', error?.name, error?.message);
         toast({ variant: 'destructive', title: 'Error', description: error.message || 'No se pudo iniciar sesión con Apple.' });
       }
     } finally {
