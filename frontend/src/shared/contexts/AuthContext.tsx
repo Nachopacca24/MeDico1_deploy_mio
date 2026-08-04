@@ -16,6 +16,13 @@ interface AuthContextType {
   accessToken: string | null;
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   loginWithGoogle: (token: string, referralCode?: string) => Promise<AuthResponse>;
+  loginWithApple: (payload: {
+    identity_token: string;
+    given_name?: string | null;
+    family_name?: string | null;
+    email?: string | null;
+    referral_code?: string;
+  }) => Promise<AuthResponse>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
@@ -127,6 +134,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   /**
+   * Login con Apple
+   */
+  const loginWithApple = async (payload: {
+    identity_token: string;
+    given_name?: string | null;
+    family_name?: string | null;
+    email?: string | null;
+    referral_code?: string;
+  }): Promise<AuthResponse> => {
+    try {
+      const response = await authService.loginWithApple(payload);
+      setUser(response.user);
+
+      if (response.user.role === 0) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  /**
    * Registro de usuario
    */
   const register = async (data: RegisterData) => {
@@ -192,6 +224,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     accessToken: authService.getAccessToken(),  // ← AGREGADO
     login,
     loginWithGoogle,
+    loginWithApple,
     register,
     logout,
     updateUser,

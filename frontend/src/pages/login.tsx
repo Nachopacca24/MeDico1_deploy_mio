@@ -43,7 +43,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { login, isAuthenticated, isAdmin, loginWithGoogle } = useAuth();
+  const { login, isAuthenticated, isAdmin, loginWithGoogle, loginWithApple } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -218,13 +218,12 @@ export default function Login() {
       const givenName = nameParts[0] ?? null;
       const familyName = nameParts.slice(1).join(' ') || null;
 
-      await authService.loginWithApple({
+      await loginWithApple({
         identity_token: idToken,
         given_name: givenName,
         family_name: familyName,
         email,
       });
-      window.dispatchEvent(new Event('auth-changed'));
       toast({ title: '¡Bienvenido/a!', description: 'Has iniciado sesión con Apple exitosamente.' });
       navigate(location.state?.from ?? '/dashboard');
     } catch (error: any) {
