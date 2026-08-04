@@ -198,7 +198,7 @@ export default function Login() {
   };
 
   const handleGoogleClick = () => {
-    if (Capacitor.getPlatform() === 'android') {
+    if (Capacitor.isNativePlatform()) {
       handleGoogleNative();
     } else {
       loginGoogle();

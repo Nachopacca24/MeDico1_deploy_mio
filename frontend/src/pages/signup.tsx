@@ -273,7 +273,7 @@ export default function SignupForm() {
   };
 
   const handleGoogleClick = () => {
-    if (Capacitor.getPlatform() === 'android') {
+    if (Capacitor.isNativePlatform()) {
       handleGoogleNative();
     } else {
       loginGoogle();
