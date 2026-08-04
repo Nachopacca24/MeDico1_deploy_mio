@@ -211,7 +211,15 @@ class AuthService {
         );
       }
 
-      const result: AuthResponse = await response.json();
+      const rawBody = await response.text();
+      let result: AuthResponse;
+      try {
+        result = JSON.parse(rawBody);
+      } catch {
+        throw new NetworkError(
+          `Respuesta inválida del servidor (status ${response.status}) en ${url}: ${rawBody.slice(0, 200) || '(vacía)'}`
+        );
+      }
 
       this.saveTokens(result.tokens);
       this.saveUser(result.user);
@@ -282,11 +290,20 @@ class AuthService {
         throw await parseAuthError(response);
       }
 
-      const result: AuthResponse = await response.json();
+      const rawBody = await response.text();
+      let result: AuthResponse;
+      try {
+        result = JSON.parse(rawBody);
+      } catch {
+        throw new NetworkError(
+          `Respuesta inválida del servidor (status ${response.status}) en ${AUTH_ENDPOINTS.apple}: ${rawBody.slice(0, 200) || '(vacía)'}`
+        );
+      }
       this.saveTokens(result.tokens);
       this.saveUser(result.user);
       return result;
     } catch (error) {
+      if (error instanceof NetworkError) throw error;
       if (error instanceof TypeError) {
         throw new NetworkError();
       }

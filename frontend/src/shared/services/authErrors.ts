@@ -83,8 +83,14 @@ export async function parseAuthError(response: Response): Promise<AuthError> {
   let message = 'An error occurred';
 
   try {
-    const data = await response.json();
-    
+    const text = await response.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(`Non-JSON response (status ${response.status}): ${text.slice(0, 200) || '(empty body)'}`);
+    }
+
     if (typeof data === 'object') {
       errors = data;
       
@@ -104,8 +110,8 @@ export async function parseAuthError(response: Response): Promise<AuthError> {
       }
     }
   } catch (e) {
-    // If parsing fails, use generic message
-    message = `Request failed with status ${response.status}`;
+    // Non-JSON body — surface what actually came back instead of a generic message
+    message = e instanceof Error ? e.message : `Request failed with status ${response.status}`;
   }
 
   return new AuthError(message, response.status, errors);
