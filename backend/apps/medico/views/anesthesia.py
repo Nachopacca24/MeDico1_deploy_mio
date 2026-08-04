@@ -175,6 +175,7 @@ def anesthesia_case(request, case_id):
     serializer = AnesthesiaCaseWriteSerializer(anesthesia, data=data, partial=True)
     if serializer.is_valid():
         serializer.save()
+        case.save(update_fields=['updated_at'])
         anesthesia.refresh_from_db()
         return Response(AnesthesiaCaseSerializer(
             AnesthesiaCase.objects.prefetch_related('items').get(pk=anesthesia.pk)
@@ -205,6 +206,9 @@ def add_anesthesia_item(request, case_id):
     if serializer.is_valid():
         last_order = anesthesia.items.count()
         serializer.save(anesthesia_case=anesthesia, order=last_order)
+        # Bump the parent case's updated_at so the calendar sync (which only
+        # looks at SurgicalCase.updated_at) notices the new code and re-syncs.
+        case.save(update_fields=['updated_at'])
         return Response(
             AnesthesiaCaseSerializer(
                 AnesthesiaCase.objects.prefetch_related('items').get(pk=anesthesia.pk)
@@ -239,6 +243,7 @@ def respond_anesthesia_invitation(request, case_id):
 
     anesthesia.anesthesiologist_accepted = bool(accepted)
     anesthesia.save()
+    case.save(update_fields=['updated_at'])
 
     # Notificar al cirujano principal
     try:
@@ -293,6 +298,7 @@ def remove_anesthesia_item(request, case_id, item_id):
 
     anesthesia_pk = item.anesthesia_case_id
     item.delete()
+    case.save(update_fields=['updated_at'])
 
     return Response(
         AnesthesiaCaseSerializer(
