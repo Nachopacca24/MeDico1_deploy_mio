@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { anesthesiaService, type AnesthesiaCase } from "@/services/anesthesiaService";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
+import { calendarSyncService } from "@/services/calendarSyncService";
 import { favoritesService, type Favorite } from "@/services/favoritesService";
 import { loadCSV } from "@/shared/utils/csvLoader";
 import { useToast } from "@/shared/hooks/useToast";
@@ -189,6 +190,23 @@ const AnesthesiaEditorPage = () => {
     }
   };
 
+  // Push the freshly saved anesthesia data into the calendar event right away,
+  // instead of waiting for the next periodic sync (which only fires on app load
+  // and only if it notices SurgicalCase.updated_at changed).
+  const syncCalendarForAnesthesiaChange = (updatedSession: AnesthesiaCase) => {
+    if (!surgicalCase) return;
+    const existingEventId = surgicalCase.is_owner
+      ? surgicalCase.calendar_event_id
+      : surgicalCase.anesthesiologist_calendar_event_id;
+    if (!existingEventId) return;
+    calendarSyncService.updateEventForCase({
+      ...surgicalCase,
+      calendar_event_id: existingEventId,
+      anesthesia_items: updatedSession.items.map(i => ({ surgery_code: i.surgery_code, surgery_name: i.surgery_name })),
+      anesthesia_notes: updatedSession.notes ?? undefined,
+    }).catch(() => {});
+  };
+
   const handleSaveAll = async () => {
     setSaving(true);
     try {
@@ -201,6 +219,7 @@ const AnesthesiaEditorPage = () => {
       });
       setSession(updated);
       setTimeMinutes(updated.time_minutes != null ? String(updated.time_minutes) : "");
+      syncCalendarForAnesthesiaChange(updated);
       toast.success("Cambios guardados");
       navigate('/cases');
     } catch (e: any) {
@@ -222,6 +241,7 @@ const AnesthesiaEditorPage = () => {
       setSession(updated);
       setCodeSearch("");
       setCodeResults([]);
+      syncCalendarForAnesthesiaChange(updated);
     } catch (e: any) {
       toast.error(e.message || "Error al agregar código");
     } finally {
@@ -234,6 +254,7 @@ const AnesthesiaEditorPage = () => {
     try {
       const updated = await anesthesiaService.removeItem(caseId, itemId);
       setSession(updated);
+      syncCalendarForAnesthesiaChange(updated);
     } catch (e: any) {
       toast.error(e.message || "Error al eliminar código");
     } finally {
