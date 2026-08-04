@@ -136,8 +136,9 @@ def anesthesia_case(request, case_id):
                 instance.anesthesiologist_accepted = True  # nombre libre → auto-aceptar
             instance.save(update_fields=['anesthesiologist_accepted'])
 
-            # Notificar al nuevo anestesiólogo invitado (si es un colega con cuenta, no nombre libre)
-            if instance.anesthesiologist:
+            # Notificar al nuevo anestesiólogo invitado (si es un colega con cuenta, no nombre libre,
+            # y no es el propio dueño reasignándose a sí mismo)
+            if instance.anesthesiologist and instance.anesthesiologist_id != user.id:
                 try:
                     from apps.medico.services.firebase import notify_user
                     principal_name = case.created_by.get_full_name() or case.created_by.username

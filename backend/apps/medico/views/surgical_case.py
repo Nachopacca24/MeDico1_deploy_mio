@@ -309,7 +309,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                     body=inv_body,
                     data={'route': '/cases/assisted'},
                 )
-            elif case.assistant_doctor and case.assistant_accepted is True:
+            elif case.assistant_doctor and case.assistant_doctor_id != request.user.id and case.assistant_accepted is True:
                 notify_user(
                     case.assistant_doctor,
                     title='Caso actualizado',
@@ -321,7 +321,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         try:
             anesthesia = getattr(case, 'anesthesia', None)
-            if anesthesia and anesthesia.anesthesiologist and anesthesia.anesthesiologist_accepted is True:
+            if (
+                anesthesia and anesthesia.anesthesiologist
+                and anesthesia.anesthesiologist_id != request.user.id
+                and anesthesia.anesthesiologist_accepted is True
+            ):
                 notify_user(
                     anesthesia.anesthesiologist,
                     title='Caso actualizado',
@@ -342,7 +346,7 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 schedule_body += f' a las {time_str}'
             schedule_body += '.'
             try:
-                if case.assistant_doctor and case.assistant_accepted is True:
+                if case.assistant_doctor and case.assistant_doctor_id != request.user.id and case.assistant_accepted is True:
                     notify_user(
                         case.assistant_doctor,
                         title='Cambio de horario',
@@ -350,7 +354,11 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                         data={'route': '/cases'},
                     )
                 anesthesia = getattr(case, 'anesthesia', None)
-                if anesthesia and anesthesia.anesthesiologist and anesthesia.anesthesiologist_accepted is True:
+                if (
+                    anesthesia and anesthesia.anesthesiologist
+                    and anesthesia.anesthesiologist_id != request.user.id
+                    and anesthesia.anesthesiologist_accepted is True
+                ):
                     notify_user(
                         anesthesia.anesthesiologist,
                         title='Cambio de horario',
