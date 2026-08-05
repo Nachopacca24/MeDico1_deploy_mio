@@ -7,6 +7,11 @@ logger = logging.getLogger(__name__)
 
 _app = None
 _app_lock = threading.Lock()
+# Serializes actual FCM sends within a worker process. The credentials object's
+# token refresh isn't guaranteed thread-safe, and with gthread workers, multiple
+# requests can now genuinely run concurrently in the same process (impossible
+# under the old sync workers) — this closes that race.
+_send_lock = threading.Lock()
 
 
 def _get_app():
@@ -66,46 +71,58 @@ def send_push_notification(tokens: list[str], title: str, body: str, data: dict 
     try:
         from firebase_admin import messaging
 
-        messages = [
-            messaging.Message(
-                notification=messaging.Notification(title=title, body=body),
-                data={k: str(v) for k, v in (data or {}).items()},
-                token=token,
-                android=messaging.AndroidConfig(
-                    priority='high',
-                    notification=messaging.AndroidNotification(
-                        sound='default',
-                        channel_id='medico_default',
-                    ),
-                ),
-                apns=messaging.APNSConfig(
-                    payload=messaging.APNSPayload(
-                        aps=messaging.Aps(
-                            sound='default',
-                            badge=1,
-                        ),
-                    ),
-                ),
-            )
-            for token in tokens
-        ]
-
-        batch_response = messaging.send_each(messages)
-
-        success = []
-        failed_tokens = []
-        for token, response in zip(tokens, batch_response.responses):
-            if response.success:
-                success.append(token)
-            else:
-                logger.warning(f'FCM send failed for token: {response.exception}')
-                failed_tokens.append(token)
-
-        return {'success': success, 'failed_tokens': failed_tokens}
-
+        with _send_lock:
+            return _send_batch(messaging, tokens, title, body, data)
     except Exception as e:
+        # A batch-level failure (e.g. broken credentials) says nothing about
+        # whether any individual token is valid — don't delete any of them.
         logger.error(f'FCM batch send error: {e}')
-        return {'success': [], 'failed_tokens': tokens}
+        return {'success': [], 'failed_tokens': []}
+
+
+def _send_batch(messaging, tokens, title, body, data):
+    messages = [
+        messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            data={k: str(v) for k, v in (data or {}).items()},
+            token=token,
+            android=messaging.AndroidConfig(
+                priority='high',
+                notification=messaging.AndroidNotification(
+                    sound='default',
+                    channel_id='medico_default',
+                ),
+            ),
+            apns=messaging.APNSConfig(
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(
+                        sound='default',
+                        badge=1,
+                    ),
+                ),
+            ),
+        )
+        for token in tokens
+    ]
+
+    batch_response = messaging.send_each(messages)
+
+    success = []
+    invalid_tokens = []
+    for token, response in zip(tokens, batch_response.responses):
+        if response.success:
+            success.append(token)
+        elif isinstance(response.exception, messaging.UnregisteredError):
+            # The only case where the token itself is actually bad — safe to remove.
+            logger.warning(f'FCM token unregistered, removing: {token[:20]}...')
+            invalid_tokens.append(token)
+        else:
+            # Any other failure (bad server credentials, transient errors, etc.)
+            # is not the token's fault — log it but don't delete a token that
+            # might still be perfectly valid.
+            logger.warning(f'FCM send failed (token kept): {response.exception}')
+
+    return {'success': success, 'failed_tokens': invalid_tokens}
 
 
 def notify_user(user, title: str, body: str, data: dict | None = None):
