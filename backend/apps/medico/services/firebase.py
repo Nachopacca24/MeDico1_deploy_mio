@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import threading
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -68,16 +69,33 @@ def send_push_notification(tokens: list[str], title: str, body: str, data: dict 
     if app is None:
         return {'success': [], 'failed_tokens': tokens}
 
-    try:
-        from firebase_admin import messaging
+    from firebase_admin import messaging
 
-        with _send_lock:
-            return _send_batch(messaging, tokens, title, body, data)
-    except Exception as e:
-        # A batch-level failure (e.g. broken credentials) says nothing about
-        # whether any individual token is valid — don't delete any of them.
-        logger.error(f'FCM batch send error: {e}')
-        return {'success': [], 'failed_tokens': []}
+    # A fresh Firebase app hasn't necessarily finished fetching its first OAuth
+    # access token yet — the very first send right after init can race that and
+    # fail with a bogus "missing authentication credential" error. One retry
+    # after a short pause clears this without masking a real, persistent
+    # problem (which would fail the retry too).
+    all_success = []
+    all_invalid = []
+    remaining = tokens
+    for attempt in range(2):
+        if not remaining:
+            break
+        try:
+            with _send_lock:
+                result = _send_batch(messaging, remaining, title, body, data)
+        except Exception as e:
+            logger.error(f'FCM batch send error (attempt {attempt + 1}): {e}')
+            result = {'success': [], 'failed_tokens': [], 'retry_tokens': remaining}
+
+        all_success.extend(result['success'])
+        all_invalid.extend(result['failed_tokens'])
+        remaining = result.get('retry_tokens', [])
+        if remaining and attempt == 0:
+            time.sleep(1)
+
+    return {'success': all_success, 'failed_tokens': all_invalid}
 
 
 def _send_batch(messaging, tokens, title, body, data):
@@ -109,6 +127,7 @@ def _send_batch(messaging, tokens, title, body, data):
 
     success = []
     invalid_tokens = []
+    retry_tokens = []
     for token, response in zip(tokens, batch_response.responses):
         if response.success:
             success.append(token)
@@ -117,12 +136,12 @@ def _send_batch(messaging, tokens, title, body, data):
             logger.warning(f'FCM token unregistered, removing: {token[:20]}...')
             invalid_tokens.append(token)
         else:
-            # Any other failure (bad server credentials, transient errors, etc.)
-            # is not the token's fault — log it but don't delete a token that
-            # might still be perfectly valid.
-            logger.warning(f'FCM send failed (token kept): {response.exception}')
+            # Not the token's fault (bad server credentials, transient errors,
+            # etc.) — worth one retry, and never delete the token over this.
+            logger.warning(f'FCM send failed (will retry): {response.exception}')
+            retry_tokens.append(token)
 
-    return {'success': success, 'failed_tokens': invalid_tokens}
+    return {'success': success, 'failed_tokens': invalid_tokens, 'retry_tokens': retry_tokens}
 
 
 def notify_user(user, title: str, body: str, data: dict | None = None):
