@@ -53,7 +53,7 @@ class CalendarSyncService {
       console.log('✅ Evento creado en Google Calendar:', eventId, stableId ? '(stable ID)' : '(auto ID)');
       return eventId;
     } catch (error: any) {
-      console.error('❌ Error al crear evento en Google Calendar:', error);
+      console.error('❌ Error al crear evento en Google Calendar:', error?.name, error?.message);
       if (error.message?.includes('expirada')) {
         console.warn('⚠️ Sesión de Google Calendar expirada');
       }
@@ -123,7 +123,7 @@ class CalendarSyncService {
       console.log('✅ Evento actualizado exitosamente en Google Calendar');
       return true;
     } catch (error: any) {
-      console.error('❌ Error al actualizar evento en Google Calendar:', error);
+      console.error('❌ Error al actualizar evento en Google Calendar:', error?.name, error?.message);
 
       // Si el error es por token expirado, mostrar mensaje específico
       if (error.message?.includes('expirada')) {
@@ -151,7 +151,7 @@ class CalendarSyncService {
       console.log('✅ Evento eliminado de Google Calendar');
       return true;
     } catch (error: any) {
-      console.error('❌ Error al eliminar evento de Google Calendar:', error);
+      console.error('❌ Error al eliminar evento de Google Calendar:', error?.name, error?.message);
 
       if (error.message?.includes('expirada')) {
         console.warn('⚠️ Sesión de Google Calendar expirada');
