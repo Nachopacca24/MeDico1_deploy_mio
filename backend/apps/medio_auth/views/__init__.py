@@ -918,13 +918,22 @@ class GoogleLoginView(APIView):
         
         # 1. Intentar validar como ID Token (JWT)
         try:
+            # audience=None: verificamos la audiencia nosotros mismos contra la
+            # lista de Client IDs válidos (web + iOS + Android), en vez de exigir
+            # uno solo — un login nativo trae un token con audience distinta al web.
             idinfo = id_token.verify_oauth2_token(
-                token, 
-                google_requests.Request(), 
-                settings.GOOGLE_CLIENT_ID
+                token,
+                google_requests.Request(),
+                audience=None,
             )
             # Verificar el emisor para ID Token
             if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                idinfo = None
+            elif idinfo.get('aud') not in settings.GOOGLE_OAUTH_CLIENT_IDS:
+                logger.warning(
+                    'Google id_token aud no reconocida: %s (permitidas: %s)',
+                    idinfo.get('aud'), settings.GOOGLE_OAUTH_CLIENT_IDS,
+                )
                 idinfo = None
         except Exception:
             # Si falla, idinfo permanece None y probaremos como Access Token

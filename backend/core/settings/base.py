@@ -186,6 +186,17 @@ if ENCRYPTION_KEY:
 # GOOGLE CALENDAR CONFIGURATION
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+
+# Google Sign-In (login/registro): a native iOS/Android app can present an ID
+# token audienced to that platform's own OAuth client instead of the web one
+# above — accept any of them rather than hardcoding a single expected audience.
+GOOGLE_OAUTH_CLIENT_IDS = [
+    cid for cid in [
+        GOOGLE_CLIENT_ID,
+        os.environ.get('GOOGLE_CLIENT_ID_IOS'),
+        os.environ.get('GOOGLE_CLIENT_ID_ANDROID'),
+    ] if cid
+]
 # The domain must match what's configured in Google Cloud Console
 # In Replit, this is usually the project domain
 BASE_DOMAIN = os.environ.get('REPLIT_DEV_DOMAIN', 'me-dico-1--josepaccagnella.replit.app')
