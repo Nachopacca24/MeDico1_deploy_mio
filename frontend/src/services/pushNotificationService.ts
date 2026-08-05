@@ -13,12 +13,14 @@ function navigateTo(route: string) {
   window.dispatchEvent(new CustomEvent('notification_navigate', { detail: { route } }));
 }
 
+export type PushInitResult = 'granted' | 'denied' | 'not-native' | 'error';
+
 class PushNotificationService {
   private listenersRegistered = false;
   private tokenRegistered = false;
 
-  async init(): Promise<void> {
-    if (!Capacitor.isNativePlatform()) return;
+  async init(): Promise<PushInitResult> {
+    if (!Capacitor.isNativePlatform()) return 'not-native';
 
     try {
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
@@ -40,7 +42,7 @@ class PushNotificationService {
 
         const { receive } = await FirebaseMessaging.requestPermissions();
         console.log('[FCM] Permiso:', receive);
-        if (receive !== 'granted') return;
+        if (receive !== 'granted') return 'denied';
 
         await FirebaseMessaging.addListener('tokenReceived', async ({ token }) => {
           this.tokenRegistered = false;
@@ -87,8 +89,10 @@ class PushNotificationService {
         console.log('[FCM] Token obtenido:', token ? 'OK' : 'null');
         if (token) await this.registerToken(token);
       }
+      return 'granted';
     } catch (err) {
       console.error('[FCM] Error:', err);
+      return 'error';
     }
   }
 

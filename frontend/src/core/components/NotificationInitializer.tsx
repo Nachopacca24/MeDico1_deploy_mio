@@ -56,8 +56,15 @@ export function NotificationInitializer() {
   // Initialize FCM only when user is authenticated
   useEffect(() => {
     if (!user) return;
-    pushNotificationService.init();
-  }, [user]);
+    pushNotificationService.init().then((result) => {
+      if (result === 'denied') {
+        toast.warning(
+          'Activá las notificaciones',
+          'Las usamos para avisarte recordatorios de tus cirugías, invitaciones de colegas y actualizaciones — activalas desde Configuración del sistema para no perderte nada.',
+        );
+      }
+    });
+  }, [user, toast]);
 
   return null;
 }
