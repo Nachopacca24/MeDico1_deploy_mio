@@ -418,16 +418,23 @@ class CalendarSyncService {
     const [year, month, day] = date.split('-').map(Number);
     const safeTime = this.isValidTime(time) ? time : '08:00';
     const [hours, minutes] = safeTime.split(':').map(Number);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${year}-${pad(month)}-${pad(day)}T${pad(hours + addHours)}:${pad(minutes)}:00`;
+    // new Date() with an out-of-range hour (e.g. 22 + 2 = 24) correctly rolls
+    // over to the next day — plain string padding just clamped to "24:15",
+    // an invalid RFC3339 hour that Google Calendar rejected as Bad Request.
+    return this.formatLocalDateTime(new Date(year, month - 1, day, hours + addHours, minutes, 0));
   }
 
-  /** Add hours to a local datetime string "YYYY-MM-DDTHH:MM:SS" without any UTC conversion. */
+  /** Add hours to a local datetime string "YYYY-MM-DDTHH:MM:SS", rolling over to the next day/month/year as needed. */
   private addHoursToLocalDateTime(localDt: string, hours: number): string {
     const [datePart, timePart] = localDt.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
     const [h, m] = timePart.split(':').map(Number);
+    return this.formatLocalDateTime(new Date(year, month - 1, day, h + hours, m, 0));
+  }
+
+  private formatLocalDateTime(d: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
-    return `${datePart}T${pad(h + hours)}:${pad(m)}:00`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
   }
 
   /**
