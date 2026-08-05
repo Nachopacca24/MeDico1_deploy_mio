@@ -10,6 +10,7 @@ from .google_calendar_token import GoogleCalendarToken
 from .fcm_token import FCMToken
 from .system_news import SystemNews
 from .site_setting import SiteSetting
+from .stats import UserStatsTotals, PurgedHospitalStats, PurgedInsuranceStats, PurgedProcedureStats
 
 
 class Specialty(models.Model):

@@ -26,7 +26,10 @@ def _fmt_date(d):
         return ''
     return f"{d.day} de {_MONTHS[d.month - 1]}"
 
-from apps.medico.models import SurgicalCase, CaseProcedure, CollaboratorRemoval
+from apps.medico.models import (
+    SurgicalCase, CaseProcedure, CollaboratorRemoval,
+    UserStatsTotals, PurgedHospitalStats, PurgedInsuranceStats, PurgedProcedureStats,
+)
 from apps.medico.services.firebase import notify_user
 from apps.medico.serializers import (
     SurgicalCaseListSerializer,
@@ -632,6 +635,22 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         total_rvu = float(all_procedures_qs.aggregate(t=Sum('rvu'))['t'] or 0)
         avg_rvu_per_case = round(total_rvu / total_cases, 2) if total_cases > 0 else 0.0
 
+        # ── Lifetime totals: live queryset + purged history (purge_archived_cases
+        # banks a case's contribution here right before hard-deleting it) ──
+        # Kept separate from total_cases/total_rvu above, which stay live-only
+        # since avg_per_week below needs them scoped to the live date range.
+        purged_totals = UserStatsTotals.objects.filter(user=request.user).first()
+        lifetime_total_cases = total_cases + (purged_totals.total_cases if purged_totals else 0)
+        lifetime_total_rvu = total_rvu + float(purged_totals.total_rvu) if purged_totals else total_rvu
+        lifetime_total_value = total_value + (purged_totals.total_value if purged_totals else Decimal('0.00'))
+        lifetime_avg_rvu_per_case = (
+            round(lifetime_total_rvu / lifetime_total_cases, 2) if lifetime_total_cases > 0 else 0.0
+        )
+        purged_procedure_count = PurgedProcedureStats.objects.filter(
+            user=request.user
+        ).aggregate(t=Sum('procedure_count'))['t'] or 0
+        lifetime_total_procedures = total_procedures + purged_procedure_count
+
         # RVU this month / last month
         cases_this_month_qs = queryset.filter(surgery_date__gte=this_month_start)
         cases_last_month_qs = queryset.filter(
@@ -670,66 +689,95 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 'count': count, 'rvu': round(rvu, 1),
             })
 
-        # Top 5 procedures by count + total RVU
-        top_procedures = list(
+        # Procedures by count + total RVU (live) — merged with purged history below,
+        # so no [:5] slice yet.
+        live_procedures = list(
             CaseProcedure.objects.filter(case__in=queryset)
             .values('surgery_name')
             .annotate(count=Count('id'), total_rvu=Sum('rvu'))
-            .order_by('-count')[:5]
         )
+        # key by name here (matches live grouping); purged rows carry surgery_code,
+        # but we merge on name since that's what's actually shown/ranked on.
+        procedures_by_name = {
+            p['surgery_name']: {'name': p['surgery_name'], 'count': p['count'], 'total_rvu': float(p['total_rvu'] or 0)}
+            for p in live_procedures
+        }
+        for p in PurgedProcedureStats.objects.filter(user=request.user):
+            entry = procedures_by_name.setdefault(
+                p.surgery_name, {'name': p.surgery_name, 'count': 0, 'total_rvu': 0.0}
+            )
+            entry['count'] += p.procedure_count
+            entry['total_rvu'] += float(p.total_rvu)
+
+        merged_procedures = list(procedures_by_name.values())
         top_procedures_list = [
-            {'name': p['surgery_name'], 'count': p['count'], 'total_rvu': round(float(p['total_rvu'] or 0), 1)}
-            for p in top_procedures
+            {**p, 'total_rvu': round(p['total_rvu'], 1)}
+            for p in sorted(merged_procedures, key=lambda x: -x['count'])[:5]
         ]
-
-        # Top 5 procedures by RVU
-        top_procedures_by_rvu = list(
-            CaseProcedure.objects.filter(case__in=queryset)
-            .values('surgery_name')
-            .annotate(count=Count('id'), total_rvu=Sum('rvu'))
-            .order_by('-total_rvu')[:5]
-        )
         top_procedures_by_rvu_list = [
-            {'name': p['surgery_name'], 'count': p['count'], 'total_rvu': round(float(p['total_rvu'] or 0), 1)}
-            for p in top_procedures_by_rvu
+            {**p, 'total_rvu': round(p['total_rvu'], 1)}
+            for p in sorted(merged_procedures, key=lambda x: -x['total_rvu'])[:5]
         ]
 
-        # Top 5 hospitals by count
-        top_hospitals = list(
-            queryset.exclude(hospital__isnull=True)
-            .values('hospital__name')
-            .annotate(count=Count('id'))
-            .order_by('-count')[:5]
-        )
-        top_hospitals_list = [{'name': h['hospital__name'], 'count': h['count']} for h in top_hospitals]
+        # Hospitals by count + RVU (live), merged with purged history
+        live_hospitals_count = {
+            h['hospital__name']: h['count']
+            for h in queryset.exclude(hospital__isnull=True).values('hospital__name').annotate(count=Count('id'))
+        }
+        live_hospitals_rvu = {
+            h['case__hospital__name']: float(h['total_rvu'] or 0)
+            for h in CaseProcedure.objects.filter(case__in=queryset, case__hospital__isnull=False)
+            .values('case__hospital__name').annotate(total_rvu=Sum('rvu'))
+        }
+        hospitals_by_name = {}
+        for name, count in live_hospitals_count.items():
+            hospitals_by_name[name] = {'name': name, 'count': count, 'total_rvu': live_hospitals_rvu.get(name, 0.0)}
+        for hs in PurgedHospitalStats.objects.filter(user=request.user).select_related('hospital'):
+            entry = hospitals_by_name.setdefault(
+                hs.hospital.name, {'name': hs.hospital.name, 'count': 0, 'total_rvu': 0.0}
+            )
+            entry['count'] += hs.case_count
+            entry['total_rvu'] += float(hs.total_rvu)
 
-        # Top 5 hospitals by RVU
-        top_hospitals_by_rvu = list(
-            CaseProcedure.objects.filter(case__in=queryset, case__hospital__isnull=False)
-            .values('case__hospital__name')
-            .annotate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
-            .order_by('-total_rvu')[:5]
-        )
+        merged_hospitals = list(hospitals_by_name.values())
+        top_hospitals_list = [
+            {'name': h['name'], 'count': h['count']}
+            for h in sorted(merged_hospitals, key=lambda x: -x['count'])[:5]
+        ]
         top_hospitals_by_rvu_list = [
-            {'name': h['case__hospital__name'], 'total_rvu': round(float(h['total_rvu'] or 0), 1), 'count': h['count']}
-            for h in top_hospitals_by_rvu
+            {'name': h['name'], 'total_rvu': round(h['total_rvu'], 1), 'count': h['count']}
+            for h in sorted(merged_hospitals, key=lambda x: -x['total_rvu'])[:5]
         ]
 
-        # Specialty stats — add RVU
-        specialty_stats_rvu = CaseProcedure.objects.filter(
-            case__in=queryset
-        ).values('specialty').annotate(
-            count=Count('id'),
-            total_rvu=Sum('rvu'),
-        ).order_by('-count')[:8]
+        # Specialty stats — add RVU, merged with purged history
+        live_specialty = list(
+            CaseProcedure.objects.filter(case__in=queryset)
+            .values('specialty').annotate(count=Count('id'), total_rvu=Sum('rvu'))
+        )
         cases_by_specialty = {
             item['specialty']: {
                 'count': item['count'],
                 'total_value': 0,
-                'total_rvu': round(float(item['total_rvu'] or 0), 1),
+                'total_rvu': float(item['total_rvu'] or 0),
             }
-            for item in specialty_stats_rvu
+            for item in live_specialty
         }
+        purged_specialty = (
+            PurgedProcedureStats.objects.filter(user=request.user)
+            .values('specialty').annotate(count=Sum('procedure_count'), total_rvu=Sum('total_rvu'))
+        )
+        for item in purged_specialty:
+            entry = cases_by_specialty.setdefault(
+                item['specialty'], {'count': 0, 'total_value': 0, 'total_rvu': 0.0}
+            )
+            entry['count'] += item['count']
+            entry['total_rvu'] += float(item['total_rvu'] or 0)
+        # Keep only the top 8 by count, same as before, and round RVU for display
+        cases_by_specialty = dict(
+            sorted(cases_by_specialty.items(), key=lambda kv: -kv[1]['count'])[:8]
+        )
+        for entry in cases_by_specialty.values():
+            entry['total_rvu'] = round(entry['total_rvu'], 1)
 
         # Collaborators this month (distinct assistant doctors on cases I own —
         # not cases where I'm the one collaborating)
@@ -755,52 +803,60 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         else:
             avg_per_week = 0.0
 
-        # Insurers by case count — "Sin seguro" is a synthetic bucket for cases
-        # with no insurance_company set, so doctors can see how many surgeries
-        # they operate without insurance (default until they pick one).
+        # Insurers by case count + RVU — "Sin seguro" is a synthetic bucket for
+        # cases with no insurance_company set. Merged with purged history below.
+        insurers_by_name = {}
+
         insured_by_count = (
             queryset.exclude(insurance_company__isnull=True)
             .values('insurance_company__name')
             .annotate(count=Count('id'))
         )
-        top_insurers_by_count_list = [
-            {'name': i['insurance_company__name'], 'count': i['count']}
-            for i in insured_by_count
-        ]
+        for i in insured_by_count:
+            insurers_by_name[i['insurance_company__name']] = {
+                'name': i['insurance_company__name'], 'count': i['count'], 'total_rvu': 0.0,
+            }
         no_insurance_count = queryset.filter(insurance_company__isnull=True).count()
         if no_insurance_count > 0:
-            top_insurers_by_count_list.append({'name': 'Sin seguro', 'count': no_insurance_count})
-        top_insurers_by_count_list.sort(key=lambda x: -x['count'])
-        top_insurers_by_count_list = top_insurers_by_count_list[:5]
+            insurers_by_name['Sin seguro'] = {'name': 'Sin seguro', 'count': no_insurance_count, 'total_rvu': 0.0}
 
-        # Insurers by RVU — same "Sin seguro" bucket
         insured_by_rvu = (
-            CaseProcedure.objects.filter(
-                case__in=queryset.exclude(insurance_company__isnull=True)
-            )
+            CaseProcedure.objects.filter(case__in=queryset.exclude(insurance_company__isnull=True))
             .values('case__insurance_company__name')
-            .annotate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
+            .annotate(total_rvu=Sum('rvu'))
         )
-        top_insurers_by_rvu_list = [
-            {'name': i['case__insurance_company__name'], 'total_rvu': round(float(i['total_rvu'] or 0), 1), 'count': i['count']}
-            for i in insured_by_rvu
-        ]
+        for i in insured_by_rvu:
+            entry = insurers_by_name.setdefault(
+                i['case__insurance_company__name'],
+                {'name': i['case__insurance_company__name'], 'count': 0, 'total_rvu': 0.0},
+            )
+            entry['total_rvu'] = float(i['total_rvu'] or 0)
         no_insurance_rvu = CaseProcedure.objects.filter(
             case__in=queryset.filter(insurance_company__isnull=True)
-        ).aggregate(total_rvu=Sum('rvu'), count=Count('case', distinct=True))
-        if no_insurance_rvu['count']:
-            top_insurers_by_rvu_list.append({
-                'name': 'Sin seguro',
-                'total_rvu': round(float(no_insurance_rvu['total_rvu'] or 0), 1),
-                'count': no_insurance_rvu['count'],
-            })
-        top_insurers_by_rvu_list.sort(key=lambda x: -x['total_rvu'])
-        top_insurers_by_rvu_list = top_insurers_by_rvu_list[:5]
+        ).aggregate(total_rvu=Sum('rvu'))
+        if no_insurance_count > 0:
+            insurers_by_name['Sin seguro']['total_rvu'] = float(no_insurance_rvu['total_rvu'] or 0)
+
+        for ins in PurgedInsuranceStats.objects.filter(user=request.user).select_related('insurance'):
+            name = ins.insurance.name if ins.insurance_id else 'Sin seguro'
+            entry = insurers_by_name.setdefault(name, {'name': name, 'count': 0, 'total_rvu': 0.0})
+            entry['count'] += ins.case_count
+            entry['total_rvu'] += float(ins.total_rvu)
+
+        merged_insurers = list(insurers_by_name.values())
+        top_insurers_by_count_list = [
+            {'name': i['name'], 'count': i['count']}
+            for i in sorted(merged_insurers, key=lambda x: -x['count'])[:5]
+        ]
+        top_insurers_by_rvu_list = [
+            {'name': i['name'], 'total_rvu': round(i['total_rvu'], 1), 'count': i['count']}
+            for i in sorted(merged_insurers, key=lambda x: -x['total_rvu'])[:5]
+        ]
 
         stats_data = {
-            'total_cases': total_cases,
-            'total_procedures': total_procedures,
-            'total_value': float(total_value),
+            'total_cases': lifetime_total_cases,
+            'total_procedures': lifetime_total_procedures,
+            'total_value': float(lifetime_total_value),
             'cases_by_status': cases_by_status,
             'cases_by_specialty': cases_by_specialty,
             'recent_cases': recent_serializer.data,
@@ -815,8 +871,8 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             'collaborators_this_month': collaborators_this_month,
             'active_specialties': active_specialties,
             'avg_per_week': avg_per_week,
-            'total_rvu': total_rvu,
-            'avg_rvu_per_case': avg_rvu_per_case,
+            'total_rvu': lifetime_total_rvu,
+            'avg_rvu_per_case': lifetime_avg_rvu_per_case,
             'rvu_this_month': rvu_this_month,
             'rvu_last_month': rvu_last_month,
             'pipeline_month': pipeline_month,

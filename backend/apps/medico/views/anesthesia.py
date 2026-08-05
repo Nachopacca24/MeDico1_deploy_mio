@@ -3,6 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
+from django.utils import timezone
+
 from apps.medico.models.surgical_case import SurgicalCase
 from apps.medico.models.anesthesia import AnesthesiaCase, AnesthesiaItem
 from apps.medico.serializers.anesthesia import (
@@ -103,6 +105,7 @@ def anesthesia_case(request, case_id):
                         body=inv_body,
                         data={'route': '/cases'},
                     )
+                    SurgicalCase.objects.filter(pk=case.pk).update(anesthesiologist_notified_at=timezone.now())
                 except Exception:
                     _log.getLogger(__name__).exception('Error sending anesthesiologist invitation notification case=%s', case.pk)
             return Response(AnesthesiaCaseSerializer(anesthesia).data,
@@ -154,6 +157,7 @@ def anesthesia_case(request, case_id):
                         body=inv_body,
                         data={'route': '/cases'},
                     )
+                    SurgicalCase.objects.filter(pk=case.pk).update(anesthesiologist_notified_at=timezone.now())
                 except Exception:
                     import logging
                     logging.getLogger(__name__).exception('Error sending anesthesiologist invitation notification (reassign) case=%s', case.pk)

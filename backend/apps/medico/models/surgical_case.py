@@ -161,6 +161,12 @@ class SurgicalCase(models.Model):
         verbose_name="Fecha de Notificación al Ayudante",
         help_text="Cuándo se notificó al ayudante sobre este caso"
     )
+    anesthesiologist_notified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de Notificación al Anestesiólogo",
+        help_text="Cuándo se notificó al anestesiólogo invitado sobre este caso"
+    )
 
     # Estados independientes del médico ayudante
     assistant_is_operated = models.BooleanField(default=False, verbose_name="Operado (ayudante)")
@@ -262,6 +268,18 @@ class SurgicalCase(models.Model):
         null=True,
         verbose_name="Recordatorio de operado enviado el",
         help_text="Marca que ya se envió el recordatorio de marcar como operada"
+    )
+    assistant_operated_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de operado enviado al ayudante el",
+        help_text="Marca que ya se envió el recordatorio al ayudante de marcar como operada su parte"
+    )
+    anesthesiologist_operated_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de operado enviado al anestesiólogo el",
+        help_text="Marca que ya se envió el recordatorio al anestesiólogo de marcar como operada su parte"
     )
 
     # Metadatos
