@@ -1,17 +1,22 @@
 """
-Notifica al médico cuando su cirugía ya finalizó pero aún no la marcó como operada.
+Notifica al cirujano, ayudante y anestesiólogo cuando la cirugía ya finalizó
+pero cada uno todavía no marcó como operada su propia parte.
 
 Corre cada 5 minutos via cron en Railway.
 Usa surgery_end_time + DELAY_MINUTES para disparar la notificación.
-Solo envía una vez por caso (operated_reminder_sent_at).
+Cada rol tiene su propio flag de "operado" y su propio recordatorio — se
+avisa una sola vez por caso y por rol (operated_reminder_sent_at,
+assistant_operated_reminder_sent_at, anesthesiologist_operated_reminder_sent_at).
 """
 
 import logging
 from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from django.utils import timezone
 
+from apps.medico.crypto_utils import decrypt_field
 from apps.medico.models import SurgicalCase
 from apps.medico.services.firebase import notify_user
 
@@ -30,21 +35,31 @@ def _fmt_date(d):
 
 
 class Command(BaseCommand):
-    help = 'Notifica al médico que marque la cirugía como operada'
+    help = 'Notifica a cirujano, ayudante y anestesiólogo que marquen su parte como operada'
 
     def handle(self, *args, **options):
         now = timezone.now()
 
+        needs_creator = Q(is_operated=False, operated_reminder_sent_at__isnull=True)
+        needs_assistant = Q(
+            assistant_doctor__isnull=False, assistant_accepted=True,
+            assistant_is_operated=False, assistant_operated_reminder_sent_at__isnull=True,
+        )
+        needs_anesthesiologist = Q(
+            anesthesia__anesthesiologist__isnull=False, anesthesia__anesthesiologist_accepted=True,
+            anesthesia__is_operated=False, anesthesiologist_operated_reminder_sent_at__isnull=True,
+        )
+
         candidates = (
             SurgicalCase.objects
             .filter(
-                is_operated=False,
-                operated_reminder_sent_at__isnull=True,
                 surgery_end_time__isnull=False,
                 archived_at__isnull=True,
             )
             .exclude(status='cancelled')
-            .select_related('created_by')
+            .filter(needs_creator | needs_assistant | needs_anesthesiologist)
+            .select_related('created_by', 'assistant_doctor', 'anesthesia', 'anesthesia__anesthesiologist')
+            .distinct()
         )
 
         sent = 0
@@ -63,16 +78,53 @@ class Command(BaseCommand):
                 continue
 
             date_str = _fmt_date(case.surgery_date)
-            notify_user(
-                case.created_by,
-                title='¿Ya terminó la cirugía?',
-                body=f'Recordá marcar la cirugía del {date_str} como operada en la app.',
-                data={'route': f'/cases/{case.pk}'},
-            )
+            patient_name = decrypt_field(case.patient_name) or 'un paciente'
+            # Respect the same "different name for the assistant" privacy split
+            # used everywhere else — fall back to the real name if unset.
+            patient_name_assistant = decrypt_field(case.patient_name_for_assistant) or patient_name
 
-            SurgicalCase.objects.filter(pk=case.pk).update(operated_reminder_sent_at=now)
-            sent += 1
-            logger.info('[OPERATED] sent to user=%s for case=%s', case.created_by_id, case.pk)
+            if not case.is_operated and not case.operated_reminder_sent_at:
+                notify_user(
+                    case.created_by,
+                    title='¿Ya terminó la cirugía?',
+                    body=f'Recordá marcar como operada la cirugía de {patient_name} del {date_str}.',
+                    data={'route': f'/cases/{case.pk}'},
+                )
+                SurgicalCase.objects.filter(pk=case.pk).update(operated_reminder_sent_at=now)
+                sent += 1
+                logger.info('[OPERATED] sent to creator user=%s for case=%s', case.created_by_id, case.pk)
+
+            if (
+                case.assistant_doctor_id and case.assistant_accepted is True
+                and not case.assistant_is_operated and not case.assistant_operated_reminder_sent_at
+            ):
+                notify_user(
+                    case.assistant_doctor,
+                    title='¿Ya terminó la cirugía?',
+                    body=f'Recordá marcar como operada la cirugía de {patient_name_assistant} del {date_str} en la que participaste como ayudante.',
+                    data={'route': f'/cases/{case.pk}'},
+                )
+                SurgicalCase.objects.filter(pk=case.pk).update(assistant_operated_reminder_sent_at=now)
+                sent += 1
+                logger.info('[OPERATED] sent to assistant user=%s for case=%s', case.assistant_doctor_id, case.pk)
+
+            anesthesia = getattr(case, 'anesthesia', None)
+            if (
+                anesthesia and anesthesia.anesthesiologist_id and anesthesia.anesthesiologist_accepted is True
+                and not anesthesia.is_operated and not case.anesthesiologist_operated_reminder_sent_at
+            ):
+                notify_user(
+                    anesthesia.anesthesiologist,
+                    title='¿Ya terminó la cirugía?',
+                    body=f'Recordá marcar como operada la cirugía de {patient_name} del {date_str} en la que participaste como anestesiólogo.',
+                    data={'route': f'/cases/{case.pk}'},
+                )
+                SurgicalCase.objects.filter(pk=case.pk).update(anesthesiologist_operated_reminder_sent_at=now)
+                sent += 1
+                logger.info(
+                    '[OPERATED] sent to anesthesiologist user=%s for case=%s',
+                    anesthesia.anesthesiologist_id, case.pk,
+                )
 
         self.stdout.write(
             self.style.SUCCESS(f'Recordatorios de operado: enviados={sent}, omitidos={skipped}')
