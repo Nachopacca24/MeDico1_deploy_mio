@@ -16,6 +16,7 @@ class CalendarSyncService {
       return null;
     }
 
+    let event: CalendarEvent | undefined;
     try {
       const startDateTime = this.buildDateTime(
         surgicalCase.surgery_date,
@@ -33,7 +34,7 @@ class CalendarSyncService {
       const description = this.buildEventDescription(surgicalCase);
 
       const colorId = googleCalendarService.getCalendarColorId() || undefined;
-      const event: CalendarEvent = {
+      event = {
         summary: `Cirugía: ${surgicalCase.patient_name}`,
         description: description,
         location: surgicalCase.hospital_name || 'Hospital',
@@ -53,7 +54,10 @@ class CalendarSyncService {
       console.log('✅ Evento creado en Google Calendar:', eventId, stableId ? '(stable ID)' : '(auto ID)');
       return eventId;
     } catch (error: any) {
-      console.error('❌ Error al crear evento en Google Calendar:', error?.name, error?.message);
+      console.error(
+        '❌ Error al crear evento en Google Calendar:', error?.name, error?.message,
+        'stableId:', stableId, 'payload:', JSON.stringify(event),
+      );
       if (error.message?.includes('expirada')) {
         console.warn('⚠️ Sesión de Google Calendar expirada');
       }
