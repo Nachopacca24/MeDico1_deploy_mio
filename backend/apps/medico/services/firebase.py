@@ -138,7 +138,13 @@ def _send_batch(messaging, tokens, title, body, data):
         else:
             # Not the token's fault (bad server credentials, transient errors,
             # etc.) — worth one retry, and never delete the token over this.
-            logger.warning(f'FCM send failed (will retry): {response.exception}')
+            exc = response.exception
+            code = getattr(exc, 'code', None)
+            http_status = getattr(getattr(exc, 'http_response', None), 'status_code', None)
+            logger.warning(
+                'FCM send failed (will retry): type=%s code=%s http_status=%s msg=%s',
+                type(exc).__name__, code, http_status, exc,
+            )
             retry_tokens.append(token)
 
     return {'success': success, 'failed_tokens': invalid_tokens, 'retry_tokens': retry_tokens}
