@@ -69,7 +69,7 @@ export default function SignupForm() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
-  const { register, isAuthenticated, loading: authLoading, loginWithGoogle } = useAuth();
+  const { register, isAuthenticated, loading: authLoading, loginWithGoogle, loginWithApple } = useAuth();
   const [searchParams] = useSearchParams();
   const [referralCode, setReferralCode] = useState<string | null>(null);
 
@@ -280,6 +280,54 @@ export default function SignupForm() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const result = await FirebaseAuthentication.signInWithApple();
+      const idToken = result.credential?.idToken;
+      if (!idToken) throw new Error('No se pudo obtener el token de Apple');
+
+      const email = result.user?.email ?? null;
+      const displayName = result.user?.displayName ?? null;
+      const nameParts = displayName ? displayName.split(' ') : [];
+      const givenName = nameParts[0] ?? null;
+      const familyName = nameParts.slice(1).join(' ') || null;
+
+      const resultApple = await loginWithApple({
+        identity_token: idToken,
+        given_name: givenName,
+        family_name: familyName,
+        email,
+        referral_code: referralCode || undefined,
+      });
+      const colleagueNameApple = await processPendingInvite();
+      const isNewApple = resultApple.message.includes('Registro');
+      toast({
+        title: isNewApple ? "¡Bienvenido/a! Tienes 30 días Premium gratis" : "¡Bienvenido/a de nuevo!",
+        description: isNewApple
+          ? "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba."
+          : "Iniciaste sesión con Apple correctamente.",
+      });
+      if (colleagueNameApple) {
+        setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${colleagueNameApple} automáticamente.` }), 800);
+      }
+    } catch (error: any) {
+      const cancelled = error?.message?.includes('cancel') || error?.code === 'popup-closed-by-user';
+      if (!cancelled) {
+        console.error('Error en registro con Apple:', error?.name, error?.message);
+        let msg = "No se pudo registrar con Apple.";
+        if (error instanceof AuthError) msg = error.getUserMessage();
+        else if (error instanceof NetworkError) msg = "Sin conexión a internet. Verificá tu red e intentá de nuevo.";
+        else if (error instanceof Error) msg = error.message;
+        toast({ variant: "destructive", title: "Error al registrarse", description: msg });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isIOS = Capacitor.getPlatform() === 'ios';
+
   // Mientras se valida la sesión existente, no mostrar el formulario
   if (authLoading) {
     return (
@@ -347,6 +395,21 @@ export default function SignupForm() {
               <Crown className="h-4 w-4 text-amber-900 shrink-0" />
               <span className="text-sm font-bold text-amber-900">{isFreeForAllPromo ? 'Gratis durante el período de desarrollo — Premium sin costo' : '30 días de acceso Premium gratis al registrarte'}</span>
             </div>
+
+            {/* Apple — solo en iOS (requerido por App Store) */}
+            {isIOS && (
+              <button
+                type="button"
+                onClick={handleAppleSignIn}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-3 h-13 px-4 py-3.5 rounded-xl bg-black text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16.125 1C15.09 1.046 13.873 1.7 13.125 2.563c-.68.78-1.242 1.94-1.023 3.062 1.14.035 2.32-.647 3.047-1.5.68-.804 1.195-1.958.976-3.125zM20.5 8.25c-1.11-1.388-2.672-2.188-4.156-2.188-1.945 0-2.766.938-4.11.938-1.383 0-2.434-.938-4.11-.938-1.367 0-2.835.703-3.945 2.063C2.82 10 2.46 12.734 3.656 15.156c.82 1.68 1.899 3.453 3.297 3.469.774.008 1.29-.476 2.672-.484 1.38-.008 1.875.484 2.672.484 1.398-.016 2.46-1.758 3.281-3.438.891-1.843 1.25-3.656 1.25-3.75-.07-.023-2.54-1.016-2.563-3.968-.019-2.5 2.047-3.68 2.133-3.72z"/>
+                </svg>
+                {isLoading ? 'Conectando...' : 'Continuar con Apple'}
+              </button>
+            )}
 
             {/* ——— GOOGLE (botón principal, arriba) ——— */}
             <button
