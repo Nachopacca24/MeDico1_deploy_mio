@@ -71,6 +71,18 @@ class Command(BaseCommand):
             end_dt = timezone.make_aware(
                 datetime.combine(case.surgery_date, case.surgery_end_time)
             )
+            # Overnight surgery (e.g. starts 23:31, ends 00:45): surgery_end_time is a
+            # bare TimeField with no date of its own, so combining it with surgery_date
+            # as-is lands it *before* the start time on the same calendar day — the
+            # reminder would then fire almost immediately after the case is saved,
+            # hours before the surgery even begins. Same guard already used on the
+            # frontend for Google Calendar sync (calendarSyncService.ts).
+            if case.surgery_time:
+                start_dt = timezone.make_aware(
+                    datetime.combine(case.surgery_date, case.surgery_time)
+                )
+                if end_dt <= start_dt:
+                    end_dt += timedelta(days=1)
             trigger_at = end_dt + timedelta(minutes=DELAY_MINUTES)
 
             if now < trigger_at:
