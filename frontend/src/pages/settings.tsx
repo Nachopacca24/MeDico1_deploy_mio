@@ -19,6 +19,7 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
 import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen, Trash2, AlertTriangle } from "lucide-react";
 import { InviteCard } from '@/shared/components/ui/InviteCard';
+import { openLegalDoc } from '@/shared/utils/openLegalDoc';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { authService } from "@/shared/services/authService";
 import { useTutorial } from "@/core/contexts/TutorialContext";
@@ -1052,8 +1053,7 @@ const Settings = () => {
                 <CardContent className="space-y-3">
                   <a
                     href="/terms.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={(e) => { e.preventDefault(); openLegalDoc('/terms.html'); }}
                     className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
@@ -1070,8 +1070,7 @@ const Settings = () => {
 
                   <a
                     href="/privacy.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={(e) => { e.preventDefault(); openLegalDoc('/privacy.html'); }}
                     className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">

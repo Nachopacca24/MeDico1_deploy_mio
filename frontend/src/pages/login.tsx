@@ -4,6 +4,7 @@ import { useNavigate, Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
 import { authService } from '@/shared/services/authService';
+import { openLegalDoc } from '@/shared/utils/openLegalDoc';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -425,9 +426,9 @@ export default function Login() {
             {/* Legal */}
             <p className='text-center text-xs text-muted-foreground/70 pb-6 border-t border-slate-100 pt-3'>
               Al usar MeDico App aceptas nuestros{' '}
-              <a href='/terms.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 transition-colors'>Términos de Uso</a>
+              <a href='/terms.html' onClick={(e) => { e.preventDefault(); openLegalDoc('/terms.html'); }} className='text-primary underline underline-offset-2 hover:text-primary/80 transition-colors'>Términos de Uso</a>
               {' '}y{' '}
-              <a href='/privacy.html' target='_blank' rel='noopener noreferrer' className='text-primary underline underline-offset-2 hover:text-primary/80 transition-colors'>Política de Privacidad</a>
+              <a href='/privacy.html' onClick={(e) => { e.preventDefault(); openLegalDoc('/privacy.html'); }} className='text-primary underline underline-offset-2 hover:text-primary/80 transition-colors'>Política de Privacidad</a>
             </p>
 
           </div>
