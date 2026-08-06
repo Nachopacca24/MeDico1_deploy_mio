@@ -30,7 +30,7 @@ from apps.medico.models import (
     SurgicalCase, CaseProcedure, CollaboratorRemoval,
     UserStatsTotals, PurgedHospitalStats, PurgedInsuranceStats, PurgedProcedureStats,
 )
-from apps.medico.services.firebase import notify_user
+from apps.medico.services.firebase import notify_user, notify_team
 from apps.medico.serializers import (
     SurgicalCaseListSerializer,
     SurgicalCaseDetailSerializer,
@@ -506,10 +506,10 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         assistant_name = request.user.get_full_name() or request.user.username
         try:
             date_str = _fmt_date(case.surgery_date)
-            notify_user(
-                case.created_by,
+            notify_team(
+                case, exclude_user=request.user,
                 title='Equipo confirmado',
-                body=f'{assistant_name} confirmó su participación como ayudante en tu cirugía del {date_str}.',
+                body=f'{assistant_name} confirmó su participación como ayudante en la cirugía del {date_str}.',
                 data={'route': f'/cases/{case.pk}'},
             )
         except Exception:
@@ -535,7 +535,6 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        principal = case.created_by
         assistant_name = request.user.get_full_name() or request.user.username
 
         # Rechazar invitación — limpiar la asignación completamente
@@ -546,10 +545,10 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
 
         try:
             date_str = _fmt_date(case.surgery_date)
-            notify_user(
-                principal,
-                title='Cambio en tu equipo',
-                body=f'{assistant_name} no pudo aceptar la cirugía del {date_str}. Podés asignar otro ayudante.',
+            notify_team(
+                case, exclude_user=request.user,
+                title='Cambio en el equipo',
+                body=f'{assistant_name} no pudo aceptar la cirugía del {date_str}. El médico principal puede asignar otro ayudante.',
                 data={'route': f'/cases/{case.pk}'},
             )
         except Exception:
@@ -1080,14 +1079,14 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
             instance.assistant_accepted = False
             instance.save(update_fields=['assistant_accepted'])
             try:
-                notify_user(
-                    instance.created_by,
+                notify_team(
+                    instance, exclude_user=user,
                     title='Médico ayudante salió del caso',
                     body=f'{user_name} salió de un caso en el que participaba como ayudante.',
                     data={'route': f'/cases/{instance.pk}'},
                 )
             except Exception:
-                logger.exception('Error notifying surgeon on leave case=%s', instance.pk)
+                logger.exception('Error notifying team on leave case=%s', instance.pk)
             return Response({'status': 'left', 'role': 'assistant'})
 
         # Anestesiólogo dejando el caso
@@ -1097,14 +1096,14 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
                 anesthesia.anesthesiologist_accepted = False
                 anesthesia.save(update_fields=['anesthesiologist_accepted'])
                 try:
-                    notify_user(
-                        instance.created_by,
+                    notify_team(
+                        instance, exclude_user=user,
                         title='Anestesiólogo salió del caso',
                         body=f'{user_name} salió de un caso en el que participaba como anestesiólogo.',
                         data={'route': f'/cases/{instance.pk}'},
                     )
                 except Exception:
-                    logger.exception('Error notifying surgeon on leave case=%s', instance.pk)
+                    logger.exception('Error notifying team on leave case=%s', instance.pk)
                 return Response({'status': 'left', 'role': 'anesthesiologist'})
         except Exception:
             pass

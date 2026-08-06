@@ -165,3 +165,31 @@ def notify_user(user, title: str, body: str, data: dict | None = None):
     # Clean up tokens that are no longer valid
     if result['failed_tokens']:
         FCMToken.objects.filter(token__in=result['failed_tokens']).delete()
+
+
+def notify_team(case, exclude_user, title: str, body: str, data: dict | None = None):
+    """
+    Notify every accepted collaborator on a case (creator, assistant, anesthesiologist),
+    skipping exclude_user (normally whoever triggered the event). Previously most case
+    events only reached case.created_by, so e.g. the assistant never learned the
+    anesthesiologist had accepted/left/added procedures, and vice versa.
+    """
+    recipients = []
+    if case.created_by_id != exclude_user.id:
+        recipients.append(case.created_by)
+    if (
+        case.assistant_doctor_id
+        and case.assistant_accepted is True
+        and case.assistant_doctor_id != exclude_user.id
+    ):
+        recipients.append(case.assistant_doctor)
+    anesthesia = getattr(case, 'anesthesia', None)
+    if (
+        anesthesia and anesthesia.anesthesiologist_id
+        and anesthesia.anesthesiologist_accepted is True
+        and anesthesia.anesthesiologist_id != exclude_user.id
+    ):
+        recipients.append(anesthesia.anesthesiologist)
+
+    for recipient in recipients:
+        notify_user(recipient, title=title, body=body, data=data)

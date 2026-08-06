@@ -231,10 +231,22 @@ def add_anesthesia_item(request, case_id):
     serializer = AnesthesiaItemSerializer(data=request.data)
     if serializer.is_valid():
         last_order = anesthesia.items.count()
-        serializer.save(anesthesia_case=anesthesia, order=last_order)
+        item = serializer.save(anesthesia_case=anesthesia, order=last_order)
         # Bump the parent case's updated_at so the calendar sync (which only
         # looks at SurgicalCase.updated_at) notices the new code and re-syncs.
         case.save(update_fields=['updated_at'])
+        try:
+            from apps.medico.services.firebase import notify_team
+            anesth_name = request.user.get_full_name() or request.user.username
+            notify_team(
+                case, exclude_user=request.user,
+                title='Códigos de anestesia agregados',
+                body=f'{anesth_name} agregó "{item.surgery_name}" a la sesión de anestesia del {_fmt_date(case.surgery_date)}.',
+                data={'route': f'/cases/{case.pk}'},
+            )
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception('Error notifying team on add_anesthesia_item case=%s', case.pk)
         return Response(
             AnesthesiaCaseSerializer(
                 AnesthesiaCase.objects.prefetch_related('items').get(pk=anesthesia.pk)
@@ -271,24 +283,23 @@ def respond_anesthesia_invitation(request, case_id):
     anesthesia.save()
     case.save(update_fields=['updated_at'])
 
-    # Notificar al cirujano principal
+    # Notificar al resto del equipo (principal + ayudante aceptado, si lo hay)
     try:
-        from apps.medico.services.firebase import notify_user
-        import logging as _log
+        from apps.medico.services.firebase import notify_team
         anesth_name = request.user.get_full_name() or request.user.username
         date_str = _fmt_date(case.surgery_date)
         if bool(accepted):
-            notify_user(
-                case.created_by,
+            notify_team(
+                case, exclude_user=request.user,
                 title='Equipo confirmado',
-                body=f'{anesth_name} confirmó su participación como anestesiólogo en tu cirugía del {date_str}.',
+                body=f'{anesth_name} confirmó su participación como anestesiólogo en la cirugía del {date_str}.',
                 data={'route': f'/cases/{case.pk}'},
             )
         else:
-            notify_user(
-                case.created_by,
-                title='Cambio en tu equipo',
-                body=f'{anesth_name} no pudo aceptar la cirugía del {date_str}. Podés asignar otro anestesiólogo.',
+            notify_team(
+                case, exclude_user=request.user,
+                title='Cambio en el equipo',
+                body=f'{anesth_name} no pudo aceptar la cirugía del {date_str}. El médico principal puede asignar otro anestesiólogo.',
                 data={'route': f'/cases/{case.pk}'},
             )
     except Exception:

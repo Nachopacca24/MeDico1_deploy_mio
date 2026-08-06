@@ -1,11 +1,13 @@
 from datetime import date, time, timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
-from apps.medico.models import Hospital, SurgicalCase
+from apps.medico.models import AnesthesiaCase, Hospital, SurgicalCase
+from apps.medico.services.firebase import notify_team
 
 User = get_user_model()
 
@@ -82,3 +84,85 @@ class SendOperatedRemindersOvernightTest(TestCase):
         call_command('send_operated_reminders')
         case.refresh_from_db()
         self.assertIsNotNone(case.operated_reminder_sent_at)
+
+
+class NotifyTeamTest(TestCase):
+    """
+    notify_team debe llegar a todo el equipo aceptado del caso (principal, ayudante,
+    anestesiólogo) salvo a quien disparó el evento — antes, la mayoría de estos
+    eventos (aceptar/rechazar, salir del caso, agregar procedimientos) solo le
+    llegaban al médico principal.
+    """
+
+    def _team_case(self, assistant_accepted=True, anesthesiologist_accepted=True):
+        principal = User.objects.create(username='principal', email='principal@example.com')
+        assistant = User.objects.create(username='assistant', email='assistant@example.com')
+        anesthesiologist = User.objects.create(username='anesth', email='anesth@example.com')
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        case = SurgicalCase.objects.create(
+            patient_name='Miguel',
+            hospital=hospital,
+            created_by=principal,
+            surgery_date=date.today(),
+            status='scheduled',
+            assistant_doctor=assistant,
+            assistant_accepted=assistant_accepted,
+        )
+        AnesthesiaCase.objects.create(
+            case=case,
+            anesthesiologist=anesthesiologist,
+            anesthesiologist_accepted=anesthesiologist_accepted,
+        )
+        return principal, assistant, anesthesiologist, case
+
+    @patch('apps.medico.services.firebase.notify_user')
+    def test_anesthesiologist_accepts_notifies_principal_and_assistant(self, mock_notify):
+        principal, assistant, anesthesiologist, case = self._team_case()
+        notify_team(case, exclude_user=anesthesiologist, title='t', body='b')
+        notified = {call.args[0] for call in mock_notify.call_args_list}
+        self.assertEqual(notified, {principal, assistant})
+
+    @patch('apps.medico.services.firebase.notify_user')
+    def test_assistant_leaves_notifies_principal_and_anesthesiologist(self, mock_notify):
+        principal, assistant, anesthesiologist, case = self._team_case()
+        notify_team(case, exclude_user=assistant, title='t', body='b')
+        notified = {call.args[0] for call in mock_notify.call_args_list}
+        self.assertEqual(notified, {principal, anesthesiologist})
+
+    @patch('apps.medico.services.firebase.notify_user')
+    def test_principal_action_notifies_assistant_and_anesthesiologist(self, mock_notify):
+        principal, assistant, anesthesiologist, case = self._team_case()
+        notify_team(case, exclude_user=principal, title='t', body='b')
+        notified = {call.args[0] for call in mock_notify.call_args_list}
+        self.assertEqual(notified, {assistant, anesthesiologist})
+
+    @patch('apps.medico.services.firebase.notify_user')
+    def test_pending_collaborators_not_notified(self, mock_notify):
+        """Un ayudante/anestesiólogo que todavía no aceptó (accepted=None) no es 'equipo' todavía."""
+        principal, assistant, anesthesiologist, case = self._team_case(
+            assistant_accepted=None, anesthesiologist_accepted=None,
+        )
+        notify_team(case, exclude_user=principal, title='t', body='b')
+        notified = {call.args[0] for call in mock_notify.call_args_list}
+        self.assertEqual(notified, set())
+
+    @patch('apps.medico.services.firebase.notify_user')
+    def test_rejected_collaborator_not_notified(self, mock_notify):
+        """Un ayudante que rechazó (accepted=False) tampoco debe recibir el aviso."""
+        principal, assistant, anesthesiologist, case = self._team_case(assistant_accepted=False)
+        notify_team(case, exclude_user=principal, title='t', body='b')
+        notified = {call.args[0] for call in mock_notify.call_args_list}
+        self.assertEqual(notified, {anesthesiologist})
+
+    @patch('apps.medico.services.firebase.notify_user')
+    def test_case_without_assistant_or_anesthesiologist(self, mock_notify):
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        principal = User.objects.create(username='solo_principal', email='solo@example.com')
+        case = SurgicalCase.objects.create(
+            patient_name='Miguel', hospital=hospital, created_by=principal,
+            surgery_date=date.today(), status='scheduled',
+        )
+        actor = User.objects.create(username='someone_else', email='someone@example.com')
+        notify_team(case, exclude_user=actor, title='t', body='b')
+        notified = {call.args[0] for call in mock_notify.call_args_list}
+        self.assertEqual(notified, {principal})
