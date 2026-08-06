@@ -25,7 +25,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'name',
             'role', 'is_admin', 'plan', 'trial_ends_at', 'is_permanent_premium',
-            'ls_renews_at', 'ls_cancelled', 'has_premium_access', 'credit_days', 'friend_code',
+            'ls_renews_at', 'ls_cancelled', 'ls_payment_overdue_since', 'ls_payment_failed_downgrade',
+            'has_premium_access', 'credit_days', 'friend_code',
             'phone', 'specialty', 'license_number', 'hospital_default',
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
@@ -36,6 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'is_verified', 'is_email_verified', 'friend_code',
             'created_at', 'updated_at', 'name', 'full_name', 'is_admin',
             'trial_ends_at', 'is_permanent_premium', 'ls_renews_at', 'ls_cancelled',
+            'ls_payment_overdue_since', 'ls_payment_failed_downgrade',
             'has_premium_access', 'credit_days', 'has_usable_password'
         ]
 

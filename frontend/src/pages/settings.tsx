@@ -622,6 +622,19 @@ const Settings = () => {
                 </CardHeader>
               </Card>
 
+              {/* Payment-failed downgrade banner — shown when a renewal payment was rejected
+                  and the safety-net cron passed the account to Free after the grace period. */}
+              {user?.ls_payment_failed_downgrade && (
+                <Alert className="border-red-400/50 bg-red-50 dark:bg-red-950/20">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800 dark:text-red-300 text-sm">
+                    <strong>Tu último pago fue rechazado</strong> y tu suscripción pasó al plan gratuito.
+                    Si creés que se trata de un error, escribinos a{' '}
+                    <a href="mailto:contacto@medicoapp.app" className="underline underline-offset-2 font-medium">contacto@medicoapp.app</a>.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Free-for-all promo banner — shown when admin activates the site-wide free Premium mode */}
               {isFreeForAllPromo && (
                 <Alert className="border-emerald-400/50 bg-emerald-50 dark:bg-emerald-950/20">

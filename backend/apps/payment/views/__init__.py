@@ -186,7 +186,8 @@ def cancel_subscription(request):
         resp.raise_for_status()
         # Mark as cancelled optimistically so frontend reflects it immediately.
         # The webhook (subscription_cancelled) will later add ls_renews_at (end date).
-        User.objects.filter(pk=user.pk).update(ls_cancelled=True)
+        # Clear any payment-overdue tracking — manual cancellation takes priority over it.
+        User.objects.filter(pk=user.pk).update(ls_cancelled=True, ls_payment_overdue_since=None)
         logger.info('[LS cancel] subscription cancelled for user=%s — marked ls_cancelled optimistically', user.id)
         return Response({'ok': True, 'message': 'Suscripción cancelada. Se mantendrá activa hasta el fin del período.'})
     except requests.HTTPError as e:
@@ -289,7 +290,10 @@ def lemonsqueezy_webhook(request):
             _mark_cancelled(user, attrs)
 
         elif event_name == 'subscription_payment_failed':
-            # LS retries automatically — keep premium, just log
+            # LS retries automatically — keep premium during the retry window, but start
+            # (or keep) the overdue clock so the safety-net cron can downgrade after 3 days
+            # if it never recovers (see apps.medio_auth.management.commands.expire_trials).
+            _mark_payment_overdue(user)
             logger.warning('[LS webhook] payment failed for user=%s — keeping premium during retry period', user.id)
 
         elif event_name == 'subscription_updated':
@@ -329,10 +333,17 @@ def _activate_premium(user, attrs: dict, ls_sub_id: str = None):
     user.plan = 'premium'
     user.is_permanent_premium = False
     user.ls_cancelled = False
+    # Any successful (re)activation clears the overdue-payment grace period/flag —
+    # the subscription is paid up again.
+    user.ls_payment_overdue_since = None
+    user.ls_payment_failed_downgrade = False
     renews_at = _parse_ls_date(attrs.get('renews_at'))
     if renews_at:
         user.ls_renews_at = renews_at
-    update_fields = ['plan', 'is_permanent_premium', 'ls_cancelled', 'updated_at']
+    update_fields = [
+        'plan', 'is_permanent_premium', 'ls_cancelled',
+        'ls_payment_overdue_since', 'ls_payment_failed_downgrade', 'updated_at',
+    ]
     # Preserve trial_ends_at if it's a future referral bonus — don't wipe it on paid renewal.
     # It will be used if the subscription later expires without renewal.
     has_pending_bonus = user.trial_ends_at and user.trial_ends_at > timezone.now()
@@ -348,15 +359,32 @@ def _activate_premium(user, attrs: dict, ls_sub_id: str = None):
     logger.info('[LS] activated premium for user=%s renews_at=%s pending_bonus=%s', user.id, renews_at, bool(has_pending_bonus))
 
 
+def _mark_payment_overdue(user):
+    """
+    Renewal payment failed — start the grace-period clock if it isn't already running.
+    Plan stays premium; the safety-net cron (expire_trials) downgrades to free after
+    3 days if it never recovers. Idempotent — repeated failure webhooks for the same
+    overdue period don't reset the clock.
+    """
+    if user.is_permanent_premium or user.ls_cancelled or user.ls_payment_overdue_since:
+        return
+    user.ls_payment_overdue_since = timezone.now()
+    user.save(update_fields=['ls_payment_overdue_since', 'updated_at'])
+    logger.info('[LS] payment overdue clock started for user=%s', user.id)
+
+
 def _mark_cancelled(user, attrs: dict):
     """User cancelled — keep premium until end of billing period."""
     if user.is_permanent_premium:
         return
     ends_at = _parse_ls_date(attrs.get('ends_at')) or _parse_ls_date(attrs.get('renews_at'))
     user.ls_cancelled = True
+    # Explicit cancellation supersedes any payment-overdue tracking — the cancelled-flow
+    # messaging in Settings takes priority over the "payment rejected" one.
+    user.ls_payment_overdue_since = None
     if ends_at:
         user.ls_renews_at = ends_at
-    update_fields = ['ls_cancelled', 'updated_at']
+    update_fields = ['ls_cancelled', 'ls_payment_overdue_since', 'updated_at']
     if ends_at:
         update_fields.append('ls_renews_at')
     user.save(update_fields=update_fields)
@@ -367,6 +395,10 @@ def _deactivate_premium(user):
     if user.is_permanent_premium:
         logger.info('[LS] user=%s has permanent premium — skipping deactivation', user.id)
         return
+    # If this deactivation traces back to an unpaid renewal (not a manual cancellation —
+    # _mark_cancelled already clears ls_payment_overdue_since), flag it so Settings can
+    # show the "your payment was rejected" message instead of a generic free-plan state.
+    was_payment_overdue = bool(user.ls_payment_overdue_since)
     # If a referral bonus is pending (future trial_ends_at), activate trial instead of free.
     has_pending_bonus = user.trial_ends_at and user.trial_ends_at > timezone.now()
     user.plan = 'premium' if has_pending_bonus else 'free'
@@ -375,9 +407,17 @@ def _deactivate_premium(user):
     user.ls_cancelled = False
     user.ls_renews_at = None
     user.ls_subscription_id = None
-    update_fields = ['plan', 'trial_ends_at', 'ls_cancelled', 'ls_renews_at', 'ls_subscription_id', 'updated_at']
+    user.ls_payment_overdue_since = None
+    user.ls_payment_failed_downgrade = was_payment_overdue and not has_pending_bonus
+    update_fields = [
+        'plan', 'trial_ends_at', 'ls_cancelled', 'ls_renews_at', 'ls_subscription_id',
+        'ls_payment_overdue_since', 'ls_payment_failed_downgrade', 'updated_at',
+    ]
     user.save(update_fields=update_fields)
-    logger.info('[LS] deactivated subscription for user=%s — plan=%s (pending_bonus=%s)', user.id, user.plan, bool(has_pending_bonus))
+    logger.info(
+        '[LS] deactivated subscription for user=%s — plan=%s (pending_bonus=%s, payment_failed=%s)',
+        user.id, user.plan, bool(has_pending_bonus), user.ls_payment_failed_downgrade,
+    )
 
 
 def _log_over_limit_warning(user):

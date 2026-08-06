@@ -33,6 +33,8 @@ export interface User {
   is_permanent_premium: boolean;
   ls_renews_at: string | null;
   ls_cancelled: boolean;
+  ls_payment_overdue_since: string | null;
+  ls_payment_failed_downgrade: boolean;
   has_premium_access: boolean;
   credit_days: number;
   friend_code: string;

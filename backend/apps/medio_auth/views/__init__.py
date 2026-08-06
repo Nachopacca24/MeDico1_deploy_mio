@@ -75,6 +75,8 @@ class RegisterView(APIView):
             returning.ls_subscription_id = None
             returning.ls_renews_at = None
             returning.ls_cancelled = False
+            returning.ls_payment_overdue_since = None
+            returning.ls_payment_failed_downgrade = False
             returning.is_active = True
             returning.deletion_requested_at = None
             returning.is_email_verified = False
@@ -1025,6 +1027,8 @@ class GoogleLoginView(APIView):
                     user.ls_subscription_id = None
                     user.ls_renews_at = None
                     user.ls_cancelled = False
+                    user.ls_payment_overdue_since = None
+                    user.ls_payment_failed_downgrade = False
                     user.is_active = True
                     user.deletion_requested_at = None
                     user.is_email_verified = True

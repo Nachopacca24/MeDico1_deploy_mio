@@ -126,6 +126,22 @@ class CustomUser(AbstractUser):
         help_text="True si el usuario canceló pero aún tiene acceso hasta ls_renews_at"
     )
 
+    ls_payment_overdue_since = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Vencido desde",
+        help_text=(
+            "Fecha desde la que la renovación del pago está vencida (pago rechazado o "
+            "webhook de vencimiento perdido). Si pasan más de 3 días, se baja a Free."
+        )
+    )
+
+    ls_payment_failed_downgrade = models.BooleanField(
+        default=False,
+        verbose_name="Bajado a Free por pago rechazado",
+        help_text="True si se lo bajó a Free por falta de pago (no por cancelación manual). Se muestra en Settings."
+    )
+
     tutorial_completed = models.BooleanField(
         default=False,
         verbose_name="Tutorial completado",

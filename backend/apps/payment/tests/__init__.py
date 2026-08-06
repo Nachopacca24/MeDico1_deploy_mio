@@ -4,12 +4,13 @@ import json
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 from unittest.mock import patch
 
 from apps.medico.models.site_setting import SiteSetting
-from apps.payment.views import _activate_premium, _deactivate_premium, _mark_cancelled
+from apps.payment.views import _activate_premium, _deactivate_premium, _mark_cancelled, _mark_payment_overdue
 
 User = get_user_model()
 
@@ -316,3 +317,179 @@ class FullScenarioTest(TestCase):
         self.assertGreater(user.trial_ends_at, timezone.now() + timedelta(days=39))
         # No más de 41 días (30+10+1 de margen)
         self.assertLess(user.trial_ends_at, timezone.now() + timedelta(days=41))
+
+
+class PaymentOverdueTest(TestCase):
+    """subscription_payment_failed → grace period → downgrade after 3 days (safety net)"""
+
+    def test_payment_failed_starts_overdue_clock(self):
+        user = _make_user(plan='premium', ls_subscription_id='sub_1')
+        _mark_payment_overdue(user)
+        user.refresh_from_db()
+        self.assertIsNotNone(user.ls_payment_overdue_since)
+        self.assertEqual(user.plan, 'premium')  # still premium during grace period
+
+    def test_repeated_failure_does_not_reset_clock(self):
+        """Varios payment_failed seguidos (reintentos de LS) no deben correr la fecha."""
+        first_failure = timezone.now() - timedelta(days=2)
+        user = _make_user(plan='premium', ls_subscription_id='sub_1', ls_payment_overdue_since=first_failure)
+        _mark_payment_overdue(user)
+        user.refresh_from_db()
+        self.assertEqual(user.ls_payment_overdue_since, first_failure)
+
+    def test_permanent_premium_never_marked_overdue(self):
+        user = _make_user(plan='premium', is_permanent_premium=True, ls_subscription_id='sub_1')
+        _mark_payment_overdue(user)
+        user.refresh_from_db()
+        self.assertIsNone(user.ls_payment_overdue_since)
+
+    def test_already_cancelled_not_marked_overdue(self):
+        """Si ya canceló manualmente, el mensaje de 'pago rechazado' no debe pisar ese estado."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1', ls_cancelled=True)
+        _mark_payment_overdue(user)
+        user.refresh_from_db()
+        self.assertIsNone(user.ls_payment_overdue_since)
+
+    def test_successful_payment_clears_overdue_clock(self):
+        """Si el cobro se recupera antes de los 3 días, se borra el estado de vencido."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_payment_overdue_since=timezone.now() - timedelta(days=1))
+        _activate_premium(user, _attrs(), ls_sub_id='sub_1')
+        user.refresh_from_db()
+        self.assertIsNone(user.ls_payment_overdue_since)
+        self.assertFalse(user.ls_payment_failed_downgrade)
+
+    def test_manual_cancel_clears_overdue_clock(self):
+        """Cancelar manualmente durante el período de gracia prioriza el flujo de cancelación."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_payment_overdue_since=timezone.now() - timedelta(days=1))
+        _mark_cancelled(user, {'ends_at': (timezone.now() + timedelta(days=5)).isoformat(), 'renews_at': None})
+        user.refresh_from_db()
+        self.assertIsNone(user.ls_payment_overdue_since)
+        self.assertTrue(user.ls_cancelled)
+
+    def test_deactivate_after_overdue_sets_payment_failed_flag(self):
+        """Bajado a free por vencimiento de pago → se marca para mostrar el aviso en Settings."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_payment_overdue_since=timezone.now() - timedelta(days=4))
+        _deactivate_premium(user)
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'free')
+        self.assertTrue(user.ls_payment_failed_downgrade)
+        self.assertIsNone(user.ls_payment_overdue_since)
+
+    def test_deactivate_without_overdue_does_not_set_payment_failed_flag(self):
+        """Bajado a free por el flujo normal de cancelación → NO debe mostrar el aviso de pago rechazado."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1', ls_cancelled=True,
+                          ls_renews_at=timezone.now() - timedelta(days=1))
+        _deactivate_premium(user)
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'free')
+        self.assertFalse(user.ls_payment_failed_downgrade)
+
+    def test_deactivate_with_pending_bonus_does_not_set_payment_failed_flag(self):
+        """Si el usuario cae en un bono de referidos, no se le muestra el aviso de pago rechazado."""
+        bonus = timezone.now() + timedelta(days=20)
+        user = _make_user(plan='premium', ls_subscription_id='sub_1', trial_ends_at=bonus,
+                          ls_payment_overdue_since=timezone.now() - timedelta(days=4))
+        _deactivate_premium(user)
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'premium')  # sigue premium por el bono
+        self.assertFalse(user.ls_payment_failed_downgrade)
+        self.assertIsNone(user.ls_payment_overdue_since)
+
+
+class ExpireTrialsOverdueSafetyNetTest(TestCase):
+    """Comando expire_trials — pasos 3 y 4: red de seguridad para webhooks perdidos"""
+
+    def test_missed_renewal_gets_backdated_overdue_clock(self):
+        """Renewal vencida hace 2 días, sin webhook payment_failed recibido — el cron debe marcarla."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_renews_at=timezone.now() - timedelta(days=2))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertIsNotNone(user.ls_payment_overdue_since)
+        self.assertEqual(user.plan, 'premium')  # todavía dentro de los 3 días de gracia
+
+    def test_backdated_clock_uses_actual_due_date_not_detection_time(self):
+        """La fecha de 'vencido desde' debe ser la fecha real de renovación, no 'ahora'.
+        Usa un vencimiento de 1 día (dentro del período de gracia) para poder verificar
+        el campo antes de que el mismo cron lo baje a free."""
+        due_date = timezone.now() - timedelta(days=1)
+        user = _make_user(plan='premium', ls_subscription_id='sub_1', ls_renews_at=due_date)
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertAlmostEqual(user.ls_payment_overdue_since, due_date, delta=timedelta(seconds=5))
+        self.assertEqual(user.plan, 'premium')
+
+    def test_overdue_more_than_3_days_downgrades_in_same_run(self):
+        """Si ya estaba vencida hace 5 días (nunca detectada antes), baja a free en la misma corrida."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_renews_at=timezone.now() - timedelta(days=5))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'free')
+        self.assertTrue(user.ls_payment_failed_downgrade)
+        self.assertIsNone(user.ls_subscription_id)
+
+    def test_overdue_under_3_days_stays_premium(self):
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_payment_overdue_since=timezone.now() - timedelta(days=2))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'premium')
+
+    def test_overdue_over_3_days_downgrades_to_free(self):
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_payment_overdue_since=timezone.now() - timedelta(days=4))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'free')
+        self.assertTrue(user.ls_payment_failed_downgrade)
+
+    def test_cancelled_subscriptions_not_touched_by_overdue_logic(self):
+        """Las canceladas manualmente siguen su propio flujo (paso 2), no el de pago rechazado."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1', ls_cancelled=True,
+                          ls_renews_at=timezone.now() - timedelta(days=10))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'free')
+        self.assertFalse(user.ls_payment_failed_downgrade)  # bajó por el flujo de cancelación, no de pago
+
+    def test_permanent_premium_never_downgraded_by_overdue_logic(self):
+        user = _make_user(plan='premium', is_permanent_premium=True, ls_subscription_id='sub_1',
+                          ls_renews_at=timezone.now() - timedelta(days=10))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'premium')
+        self.assertIsNone(user.ls_payment_overdue_since)
+
+    def test_active_subscription_not_touched(self):
+        """Suscripción al día (renews_at futuro) no debe marcarse como vencida."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_renews_at=timezone.now() + timedelta(days=10))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertIsNone(user.ls_payment_overdue_since)
+        self.assertEqual(user.plan, 'premium')
+
+    def test_scenario_payment_fails_and_recovers_before_deadline(self):
+        """Escenario completo: falla el pago → 1 día vencido → se recupera → sigue premium sin aviso."""
+        user = _make_user(plan='premium', ls_subscription_id='sub_1',
+                          ls_renews_at=timezone.now() - timedelta(days=1))
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertIsNotNone(user.ls_payment_overdue_since)
+        self.assertEqual(user.plan, 'premium')
+
+        # El pago se recupera (subscription_payment_success)
+        _activate_premium(user, _attrs(renews_at=(timezone.now() + timedelta(days=30)).isoformat()), ls_sub_id='sub_1')
+        user.refresh_from_db()
+        self.assertIsNone(user.ls_payment_overdue_since)
+        self.assertFalse(user.ls_payment_failed_downgrade)
+
+        # Corridas futuras del cron no deben tocarlo
+        call_command('expire_trials')
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'premium')
+        self.assertIsNone(user.ls_payment_overdue_since)
