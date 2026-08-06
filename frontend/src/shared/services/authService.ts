@@ -2,6 +2,7 @@
 
 import { parseAuthError, NetworkError, TokenRefreshError } from './authErrors';
 import { googleCalendarService } from '@/services/googleCalendarService';
+import { pushNotificationService } from '@/services/pushNotificationService';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 const AUTH_ENDPOINTS = {
@@ -153,6 +154,12 @@ class AuthService {
 
     // 🔒 CRÍTICO: Limpiar tokens de Google Calendar
     googleCalendarService.invalidateCache();
+
+    // 🔒 CRÍTICO: si otro usuario inicia sesión en este mismo dispositivo sin que la
+    // app se reinicie, esto evita que el token de push (FCM) siga asociado a esta
+    // cuenta — sin esto, el próximo login no lo re-registraría y las notificaciones
+    // de esta cuenta podrían seguir llegando al dispositivo del otro usuario.
+    pushNotificationService.markStale();
   }
 
   // A session exists if there's a refresh token — access token restores itself on first request
@@ -335,6 +342,12 @@ class AuthService {
         console.error('Error durante logout:', error);
       }
     }
+
+    // Best-effort: borra el token de push del backend mientras la sesión todavía es
+    // válida. clearAuth() de abajo ya garantiza la corrección aunque esto falle.
+    try {
+      await pushNotificationService.removeToken();
+    } catch { /* clearAuth().markStale() below still protects the next login */ }
 
     // 🔒 CRÍTICO: Limpiar TODOS los datos (incluyendo Google Calendar)
     this.clearAuth();

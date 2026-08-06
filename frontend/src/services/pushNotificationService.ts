@@ -129,14 +129,30 @@ class PushNotificationService {
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
       const { token } = await FirebaseMessaging.getToken();
       if (token) {
-        await authService.authenticatedFetch(`${API_URL}/api/v1/medico/push-token/`, {
-          method: 'DELETE',
-          body: JSON.stringify({ token }),
-        });
+        try {
+          await authService.authenticatedFetch(`${API_URL}/api/v1/medico/push-token/`, {
+            method: 'DELETE',
+            body: JSON.stringify({ token }),
+          });
+        } catch { /* backend cleanup is best-effort — markStale() below still protects the next login */ }
       }
       await FirebaseMessaging.deleteToken();
+    } catch { /* silent */ } finally {
       this.tokenRegistered = false;
-    } catch { /* silent */ }
+    }
+  }
+
+  /**
+   * Forces the next init() to re-register the FCM token with the backend.
+   * Call this whenever a session ends (logout, account deletion, forced
+   * session expiry) — otherwise, if a different user logs in on this same
+   * device without the app fully restarting, this in-memory flag would still
+   * say "already registered" and skip re-registering, leaving the token
+   * (and therefore this device's notifications) assigned to the PREVIOUS
+   * user on the backend.
+   */
+  markStale(): void {
+    this.tokenRegistered = false;
   }
 }
 
