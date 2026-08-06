@@ -20,6 +20,7 @@ import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
 import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen, Trash2, AlertTriangle } from "lucide-react";
 import { InviteCard } from '@/shared/components/ui/InviteCard';
 import { openLegalDoc } from '@/shared/utils/openLegalDoc';
+import { Browser } from '@capacitor/browser';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { authService } from "@/shared/services/authService";
 import { useTutorial } from "@/core/contexts/TutorialContext";
@@ -80,7 +81,14 @@ const Settings = () => {
     setCheckoutLoading(true);
     try {
       const url = await createCheckout(billingCycle);
-      window.open(url, '_blank');
+      // On native, closing the in-app browser doesn't navigate the app back to
+      // "?upgraded=1" (that redirect lands inside the browser tab, not our WebView),
+      // so we poll for the plan change ourselves once the user dismisses it.
+      const listener = await Browser.addListener('browserFinished', () => {
+        listener.remove();
+        startUpgradePolling();
+      });
+      await Browser.open({ url });
     } catch {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo abrir el checkout. Intenta de nuevo.' });
     } finally {
@@ -157,13 +165,10 @@ const Settings = () => {
     }
   }, [user?.plan]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handle redirect back from LemonSqueezy checkout (?upgraded=1)
-  useEffect(() => {
-    if (searchParams.get('upgraded') !== '1') return;
-
-    // Remove the query param immediately to avoid re-triggering on refresh
-    setSearchParams({}, { replace: true });
-    setActiveTab('plan');
+  // Shared by the web redirect handler below and the native "browser closed" listener
+  // in handleUpgrade — both need to start polling once the user is back from checkout.
+  const startUpgradePolling = () => {
+    if (upgradePollingRef.current) clearInterval(upgradePollingRef.current);
 
     toast({
       title: '¡Gracias por suscribirte!',
@@ -179,8 +184,20 @@ const Settings = () => {
       } catch { /* ignore */ }
       if (attempts >= 20) {  // 20 × 3s = 60s
         clearInterval(upgradePollingRef.current!);
+        upgradePollingRef.current = null;
       }
     }, 3000);
+  };
+
+  // Handle redirect back from LemonSqueezy checkout (?upgraded=1) — this only fires
+  // on web, where the checkout tab navigates back into the same app instance.
+  useEffect(() => {
+    if (searchParams.get('upgraded') !== '1') return;
+
+    // Remove the query param immediately to avoid re-triggering on refresh
+    setSearchParams({}, { replace: true });
+    setActiveTab('plan');
+    startUpgradePolling();
 
     return () => {
       if (upgradePollingRef.current) clearInterval(upgradePollingRef.current);
