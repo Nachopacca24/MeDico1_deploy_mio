@@ -16,6 +16,7 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import { notificationService } from "@/services/notificationService";
 import { advertisementService, type ActiveAd } from "@/admin/services/advertisementService";
+import { openAdLink } from "@/shared/utils/openAdLink";
 import { useToast } from "@/shared/hooks/useToast";
 import { ReadOnlyBadge } from "@/pages/cases/ReadOnlyBadge";
 import { InvitationCard } from "@/pages/cases/InvitationCard";
@@ -737,10 +738,10 @@ const CasesPage = () => {
   const handleAdClick = async (ad: ActiveAd) => {
     try {
       await advertisementService.trackClick(ad.id);
-      window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
     } catch (error) {
       console.error('Error tracking click:', error);
     }
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
   };
 
   useEffect(() => {

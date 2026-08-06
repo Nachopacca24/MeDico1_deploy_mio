@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { AppLayout, APP_REFRESH_EVENT } from "@/shared/components/layout/AppLayout";
 import { advertisementService, type FeedAd, type AdCategory } from "@/admin/services/advertisementService";
+import { openAdLink } from "@/shared/utils/openAdLink";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useNovedadesNew } from "@/shared/hooks/useNovedadesNew";
 import { Search, ExternalLink, Loader2, Newspaper, Sparkles, ArrowRight } from "lucide-react";
@@ -37,7 +38,7 @@ function HeroAdCard({ ad, isNew }: { ad: FeedAd; isNew?: boolean }) {
 
   const handleClick = async () => {
     try { await advertisementService.trackClick(ad.id); } catch { /* silent */ }
-    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
   };
 
   return (
@@ -101,7 +102,7 @@ function AdCard({ ad, isNew }: { ad: FeedAd; isNew?: boolean }) {
 
   const handleClick = async () => {
     try { await advertisementService.trackClick(ad.id); } catch { /* silent */ }
-    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
   };
 
   return (

@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
+import { openAdLink } from '@/shared/utils/openAdLink';
 import { useAdSystem, useIsMobile } from '@/shared/hooks/useAdSystem';
 import { useAuth } from '@/shared/contexts/AuthContext';
 
@@ -69,7 +70,7 @@ export function BetweenContentAd({ className = '' }: BetweenContentAdProps) {
 
   const handleClick = async () => {
     await advertisementService.trackClick(ad.id).catch(() => {});
-    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
   };
 
   return (

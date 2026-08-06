@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { ExternalLink, Sparkles, X } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
+import { openAdLink } from '@/shared/utils/openAdLink';
 
 interface MobileForYouSectionProps {
   specialty?: string;
@@ -60,7 +61,7 @@ function MobileAdCard({ ad }: { ad: ActiveAd }) {
 
   const handleClick = async () => {
     await advertisementService.trackClick(ad.id).catch(() => {});
-    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
   };
 
   return (

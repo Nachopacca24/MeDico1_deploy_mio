@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
+import { openAdLink } from '@/shared/utils/openAdLink';
 
 interface ForYouAdsProps {
   specialty: string;
@@ -32,10 +33,10 @@ export function ForYouAds({ specialty }: ForYouAdsProps) {
   const handleClick = async (ad: ActiveAd) => {
     try {
       await advertisementService.trackClick(ad.id);
-      window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
     } catch {
-      window.open(ad.redirect_url, '_blank');
+      // non-critical, still open the ad even if tracking failed
     }
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
   };
 
   return (

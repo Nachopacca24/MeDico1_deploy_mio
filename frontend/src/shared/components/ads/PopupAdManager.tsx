@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { advertisementService, type ActiveAd } from '@/admin/services/advertisementService';
+import { openAdLink } from '@/shared/utils/openAdLink';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { Button } from '@/shared/components/ui/button';
 
@@ -127,7 +128,7 @@ export function PopupAdManager({
 
   const handleAdClick = async (ad: ActiveAd) => {
     await advertisementService.trackClick(ad.id).catch(() => {});
-    window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
     handleClose();
   };
 

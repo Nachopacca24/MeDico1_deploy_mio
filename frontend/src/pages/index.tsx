@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { surgicalCaseService } from "@/services/surgicalCaseService";
 import { advertisementService, type ActiveAd } from "@/admin/services/advertisementService";
+import { openAdLink } from "@/shared/utils/openAdLink";
 import { BetweenContentAd } from "@/shared/components/ads/BetweenContentAd";
 import { useIsMobile } from "@/shared/hooks/useAdSystem";
 import type { CaseStats } from "@/types/surgical-case";
@@ -97,10 +98,10 @@ const Index = () => {
   const handleAdClick = async (ad: ActiveAd) => {
     try {
       await advertisementService.trackClick(ad.id);
-      window.open(ad.redirect_url, ad.open_in_new_tab ? '_blank' : '_self');
     } catch (error) {
       console.error('Error tracking click:', error);
     }
+    openAdLink(ad.redirect_url, ad.open_in_new_tab);
   };
 
   const goToPrevious = () => {
