@@ -20,12 +20,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Android App Link for Google Calendar OAuth callback -->
+            <!-- Android App Link: Google Calendar OAuth callback + colleague-invite QR/link -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="medicoapp.app" android:pathPrefix="/calendar" />
+                <data android:scheme="https" android:host="medicoapp.app" android:pathPrefix="/invite" />
             </intent-filter>
         </activity>
 

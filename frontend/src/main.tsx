@@ -12,6 +12,7 @@ import { QueryProvider, TooltipProviderWrapper } from "@/core/providers";
 import { AppRouter } from "@/core/router";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import { NotificationInitializer } from "@/core/components/NotificationInitializer";
+import { AppLinkHandler } from "@/core/components/AppLinkHandler";
 import { UpdateChecker } from "@/core/components/UpdateChecker";
 import { TutorialProvider } from "@/core/contexts/TutorialContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -45,6 +46,7 @@ createRoot(document.getElementById("root")!).render(
               <FavoritesProvider>
                 <TutorialProvider>
                   <NotificationInitializer />
+                  <AppLinkHandler />
                   <UpdateChecker />
                   <AppRouter />
                   <ToastContainer />

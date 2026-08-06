@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "FY7L23C6XV.app.medicoapp.medico",
+        "paths": ["/invite", "/invite/*", "/calendar", "/calendar/*"]
+      }
+    ]
+  }
+}
