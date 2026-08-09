@@ -437,8 +437,10 @@ def capture_previous_ad_status(sender, instance, **kwargs):
 @receiver(post_save, sender=Advertisement)
 def notify_users_on_advertisement_activated(sender, instance, created, **kwargs):
     """
-    Envía notificación push a todos los usuarios cuando un anuncio se activa
-    (creado como active, o cambia de draft/paused a active).
+    Envía notificación push cuando un anuncio se activa (creado como active, o
+    cambia de draft/paused a active) — solo a los usuarios dentro del targeting
+    por especialidad del anuncio (target_specialties vacío = todos), igual que
+    el resto del sistema de ads (ver get_active_ads/get_feed en views.py).
     """
     if instance.status != 'active':
         return
@@ -452,7 +454,10 @@ def notify_users_on_advertisement_activated(sender, instance, created, **kwargs)
         from apps.medico.models import FCMToken
         from apps.medico.services.firebase import send_push_notification
 
-        tokens = list(FCMToken.objects.values_list('token', flat=True))
+        tokens_qs = FCMToken.objects.all()
+        if instance.target_specialties:
+            tokens_qs = tokens_qs.filter(user__specialty__in=instance.target_specialties)
+        tokens = list(tokens_qs.values_list('token', flat=True))
         if not tokens:
             return
 
@@ -460,6 +465,9 @@ def notify_users_on_advertisement_activated(sender, instance, created, **kwargs)
         body = instance.description or 'Mirá las novedades en MeDico'
 
         send_push_notification(tokens, title=title, body=body, data={'route': '/'})
-        logger.info('[AD] Notificación enviada para anuncio id=%s a %d tokens', instance.pk, len(tokens))
+        logger.info(
+            '[AD] Notificación enviada para anuncio id=%s a %d tokens (target_specialties=%s)',
+            instance.pk, len(tokens), instance.target_specialties or 'todos',
+        )
     except Exception:
         logger.exception('[AD] Error enviando notificación para anuncio id=%s', instance.pk)
