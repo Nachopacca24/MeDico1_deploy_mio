@@ -187,8 +187,13 @@ class GoogleCalendarService {
 
     if (!code && !error) return false;
 
-    // Clean the browser URL only on web (App Links don't change window.location)
-    if (!isAppLink) {
+    // Always strip these from the visible URL if they're there — including when we
+    // read the code from an explicit sourceUrl (App Link): if anything upstream
+    // (e.g. a router navigate() call) already pushed them into window.location,
+    // leaving a used, single-use code sitting in the URL means any future mount
+    // that reads window.location.search reprocesses it as if it were new, and
+    // fails forever since Google already consumed it.
+    if (window.location.search.includes('code=') || window.location.search.includes('error=')) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 

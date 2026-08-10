@@ -7,6 +7,13 @@ import { App as CapApp } from '@capacitor/app';
 
 const APP_LINK_HOST = 'medicoapp.app';
 
+// calendar.tsx owns the Google OAuth callback end-to-end (its own getLaunchUrl
+// check + appUrlOpen listener + single-use-code guard via oauthProcessingRef).
+// If we also navigate() for it here, Calendar mounts/re-processes the same
+// (single-use) code a second time via its own logic, which fails as an
+// invalid/expired grant and can leave the SPA bouncing between routes.
+const EXCLUDED_PREFIXES = ['/calendar'];
+
 // Only the path is meaningful to React Router — strip the scheme/host so we don't
 // accidentally navigate off medicoapp.app if some other host ever shows up here.
 function extractPath(url: string): string | null {
@@ -14,7 +21,9 @@ function extractPath(url: string): string | null {
     const parsed = new URL(url);
     if (parsed.hostname !== APP_LINK_HOST) return null;
     const path = parsed.pathname + parsed.search;
-    return path === '/' ? null : path;
+    if (path === '/') return null;
+    if (EXCLUDED_PREFIXES.some(prefix => parsed.pathname.startsWith(prefix))) return null;
+    return path;
   } catch {
     return null;
   }
