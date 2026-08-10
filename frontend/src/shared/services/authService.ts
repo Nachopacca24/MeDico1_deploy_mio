@@ -322,32 +322,32 @@ class AuthService {
 
   /**
    * 🔒 Logout de usuario
+   *
+   * clearAuth() es lo único de lo que depende un logout correcto (borra los
+   * tokens locales y llama a markStale() para el próximo login) — por eso corre
+   * de forma síncrona, ya. El blacklist del refresh token en el backend y la
+   * baja del push token son solo limpieza del lado del servidor: no bloquean
+   * al usuario, se disparan en background ("fire and forget") para que cerrar
+   * sesión sea instantáneo en vez de esperar dos round-trips de red seguidos.
    */
   async logout(): Promise<void> {
     const refreshToken = this.getRefreshToken();
-    const currentUser = this.getCurrentUser();
-
+    const accessToken = this.getAccessToken();
 
     if (refreshToken) {
-      try {
-        await fetch(AUTH_ENDPOINTS.logout, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.getAccessToken()}`,
-          },
-          body: JSON.stringify({ refresh: refreshToken }),
-        });
-      } catch (error) {
-        console.error('Error durante logout:', error);
-      }
+      fetch(AUTH_ENDPOINTS.logout, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      }).catch(error => console.error('Error durante logout:', error));
     }
 
-    // Best-effort: borra el token de push del backend mientras la sesión todavía es
-    // válida. clearAuth() de abajo ya garantiza la corrección aunque esto falle.
-    try {
-      await pushNotificationService.removeToken();
-    } catch { /* clearAuth().markStale() below still protects the next login */ }
+    pushNotificationService.removeToken().catch(() => {
+      /* clearAuth().markStale() below still protects the next login */
+    });
 
     // 🔒 CRÍTICO: Limpiar TODOS los datos (incluyendo Google Calendar)
     this.clearAuth();

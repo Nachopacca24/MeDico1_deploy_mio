@@ -12,6 +12,7 @@ import {
   BarChart2,
   ShieldCheck,
   Calculator,
+  Loader2,
 } from "lucide-react";
 import { ForYouAds } from "@/shared/components/ads/ForYouAds";
 
@@ -124,11 +125,17 @@ export function AppSidebar() {
   const { hasNew: novedadesHasNew } = useNovedadesNew();
   const { hasPendingCases, hasPendingColleagues } = useInvitationBadges();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const userSpecialty = user?.specialty || '';
 
   const handleLogout = async () => {
+    if (isLoggingOut) return; // evita doble-tap
+    setIsLoggingOut(true);
     setIsOpen(false);
     await logout();
+    // No hace falta resetear isLoggingOut — navigate('/login') dentro de logout()
+    // desmonta este componente. Si por algo raro no navegara, se resetea solo la
+    // próxima vez que se abra el sidebar (nuevo montaje).
   };
 
   const isActive = (url: string) => {
@@ -282,8 +289,12 @@ export function AppSidebar() {
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex-col sm:flex-row gap-3 mt-6 sm:space-x-0">
                   <AlertDialogCancel className="mt-0 w-full sm:w-1/2 rounded-xl h-11 border-slate-200 hover:bg-slate-100 font-medium">Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleLogout} className="w-full sm:w-1/2 rounded-xl h-11 bg-destructive hover:bg-destructive/90 text-white font-medium">
-                    Sí, cerrar sesión
+                  <AlertDialogAction
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="w-full sm:w-1/2 rounded-xl h-11 bg-destructive hover:bg-destructive/90 text-white font-medium disabled:opacity-70"
+                  >
+                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sí, cerrar sesión'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
