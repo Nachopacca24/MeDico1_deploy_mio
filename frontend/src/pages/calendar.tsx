@@ -129,6 +129,16 @@ const CalendarPage = () => {
     const processOAuthUrl = async (url?: string) => {
       if (oauthProcessingRef.current) return;
       oauthProcessingRef.current = true;
+      // The Universal Link callback reaches the app without dismissing the in-app
+      // browser (SFSafariViewController/Custom Tab) that's still showing Google's
+      // consent screen on top — Browser.close() was never called anywhere, so it
+      // just sat there looking "stuck" even once we'd already received the code.
+      if (url && Capacitor.isNativePlatform()) {
+        try {
+          const { Browser } = await import('@capacitor/browser');
+          await Browser.close();
+        } catch { /* already closed / nothing to close — fine */ }
+      }
       try {
         const result = await googleCalendarService.handleOAuthCallback(url);
         if (result === 'connected') {
