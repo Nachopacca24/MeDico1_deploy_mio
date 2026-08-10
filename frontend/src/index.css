@@ -117,6 +117,16 @@ input[type="time"]::-webkit-date-and-time-value {
   padding-right: 0.5rem;
 }
 
+/* Same WKWebView quirk, vertically: the native date/time value ignores the
+   input's fixed height (h-11 etc.) and sits top-aligned, overlapping the
+   field's top border instead of being centered. The Input component already
+   sets display:flex — WebKit centers this specific pseudo-content when the
+   host is a flex container with align-items set. */
+input[type="date"],
+input[type="time"] {
+  align-items: center;
+}
+
 /* iOS auto-zooms the whole page on focus for any form control under 16px, and the
    zoom can get stuck — some hand-rolled inputs/selects/textareas use text-sm/text-xs
    (14px/12px). Force those back up to 16px specifically on form elements, without
