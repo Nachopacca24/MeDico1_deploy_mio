@@ -1,6 +1,6 @@
 // src/shared/services/authService.ts
 
-import { parseAuthError, NetworkError, TokenRefreshError } from './authErrors';
+import { parseAuthError, AuthError, NetworkError, TokenRefreshError } from './authErrors';
 import { googleCalendarService } from '@/services/googleCalendarService';
 import { pushNotificationService } from '@/services/pushNotificationService';
 
@@ -184,7 +184,14 @@ class AuthService {
         throw await parseAuthError(response);
       }
 
-      const result: AuthResponse = await response.json();
+      const rawBody = await response.text();
+      let result: AuthResponse;
+      try {
+        result = JSON.parse(rawBody);
+      } catch {
+        console.error('[register] Invalid JSON response', { status: response.status, url: AUTH_ENDPOINTS.register, body: rawBody.slice(0, 500) || '(vacía)' });
+        throw new NetworkError('El servidor devolvió una respuesta inválida. Intentá de nuevo en unos minutos.');
+      }
 
       // Guardar tokens y usuario
       this.saveTokens(result.tokens);
@@ -192,6 +199,7 @@ class AuthService {
 
       return result;
     } catch (error) {
+      if (error instanceof NetworkError || error instanceof AuthError) throw error;
       if (error instanceof TypeError) {
         throw new NetworkError();
       }
@@ -214,10 +222,10 @@ class AuthService {
       });
 
       if (!response.ok) {
-        const authError = await parseAuthError(response);
-        throw new NetworkError(
-          `HTTP ${response.status} en ${url}: ${authError.message}`
-        );
+        // parseAuthError already builds a clean, user-facing AuthError — throw it
+        // as-is instead of wrapping it in a NetworkError with the raw URL baked
+        // into the message (that used to end up shown directly in the UI toast).
+        throw await parseAuthError(response);
       }
 
       const rawBody = await response.text();
@@ -225,9 +233,8 @@ class AuthService {
       try {
         result = JSON.parse(rawBody);
       } catch {
-        throw new NetworkError(
-          `Respuesta inválida del servidor (status ${response.status}) en ${url}: ${rawBody.slice(0, 200) || '(vacía)'}`
-        );
+        console.error('[login] Invalid JSON response', { status: response.status, url, body: rawBody.slice(0, 500) || '(vacía)' });
+        throw new NetworkError('El servidor devolvió una respuesta inválida. Intentá de nuevo en unos minutos.');
       }
 
       this.saveTokens(result.tokens);
@@ -235,12 +242,11 @@ class AuthService {
 
       return result;
     } catch (error) {
-      if (error instanceof NetworkError) throw error;
+      if (error instanceof NetworkError || error instanceof AuthError) throw error;
       if (error instanceof TypeError) {
         // TypeError: "Failed to fetch" → CORS bloqueado o sin red
-        throw new NetworkError(
-          `No se pudo conectar a ${url}. Posible error de CORS o sin conexión. Detalle: ${(error as TypeError).message}`
-        );
+        console.error('[login] Network-level failure', { url, detail: (error as TypeError).message });
+        throw new NetworkError('No se pudo conectar. Verificá tu conexión a internet e intentá de nuevo.');
       }
       throw error;
     }
@@ -304,15 +310,14 @@ class AuthService {
       try {
         result = JSON.parse(rawBody);
       } catch {
-        throw new NetworkError(
-          `Respuesta inválida del servidor (status ${response.status}) en ${AUTH_ENDPOINTS.apple}: ${rawBody.slice(0, 200) || '(vacía)'}`
-        );
+        console.error('[loginWithApple] Invalid JSON response', { status: response.status, url: AUTH_ENDPOINTS.apple, body: rawBody.slice(0, 500) || '(vacía)' });
+        throw new NetworkError('El servidor devolvió una respuesta inválida. Intentá de nuevo en unos minutos.');
       }
       this.saveTokens(result.tokens);
       this.saveUser(result.user);
       return result;
     } catch (error) {
-      if (error instanceof NetworkError) throw error;
+      if (error instanceof NetworkError || error instanceof AuthError) throw error;
       if (error instanceof TypeError) {
         throw new NetworkError();
       }

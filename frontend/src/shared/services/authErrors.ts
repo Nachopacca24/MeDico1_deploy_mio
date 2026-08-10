@@ -54,7 +54,7 @@ export class AuthError extends Error {
 }
 
 export class NetworkError extends Error {
-  constructor(message: string = 'Network error. Please check your connection.') {
+  constructor(message: string = 'No se pudo conectar. Verificá tu conexión a internet e intentá de nuevo.') {
     super(message);
     this.name = 'NetworkError';
     
@@ -78,9 +78,18 @@ export class TokenRefreshError extends Error {
 /**
  * Parse error response from API and create appropriate error
  */
+// Generic, user-facing fallback — never show a raw response body (HTML error
+// pages from a proxy/gateway timeout, a backend traceback, etc.) to the user.
+// Those details are only useful to a developer, so they go to console.error.
+function genericMessageFor(status: number): string {
+  if (status >= 500) return 'El servidor no está disponible en este momento. Intentá de nuevo en unos minutos.';
+  if (status === 0) return 'No se pudo conectar. Verificá tu conexión a internet.';
+  return 'Ocurrió un error inesperado. Intentá de nuevo.';
+}
+
 export async function parseAuthError(response: Response): Promise<AuthError> {
   let errors: ApiErrorResponse = {};
-  let message = 'An error occurred';
+  let message = genericMessageFor(response.status);
 
   try {
     const text = await response.text();
@@ -88,12 +97,16 @@ export async function parseAuthError(response: Response): Promise<AuthError> {
     try {
       data = JSON.parse(text);
     } catch {
-      throw new Error(`Non-JSON response (status ${response.status}): ${text.slice(0, 200) || '(empty body)'}`);
+      console.error(
+        '[parseAuthError] Non-JSON response',
+        { status: response.status, url: response.url, body: text.slice(0, 500) || '(empty body)' },
+      );
+      return new AuthError(message, response.status, errors);
     }
 
     if (typeof data === 'object') {
       errors = data;
-      
+
       // Extract message from common error formats
       if (data.detail) {
         message = data.detail;
@@ -110,8 +123,7 @@ export async function parseAuthError(response: Response): Promise<AuthError> {
       }
     }
   } catch (e) {
-    // Non-JSON body — surface what actually came back instead of a generic message
-    message = e instanceof Error ? e.message : `Request failed with status ${response.status}`;
+    console.error('[parseAuthError] Failed to read response body', e);
   }
 
   return new AuthError(message, response.status, errors);

@@ -190,10 +190,12 @@ export default function SignupForm() {
 
       let errorMessage = "Ocurrió un error. Por favor intenta de nuevo.";
 
-      // Manejar errores estructurados de AuthError
+      // Manejar errores estructurados de AuthError/NetworkError — cualquier otro
+      // tipo de error queda con el mensaje genérico de arriba en vez de mostrar
+      // error.message crudo (puede ser un mensaje técnico del navegador/SDK).
       if (error instanceof AuthError) {
         errorMessage = error.getUserMessage();
-      } else if (error?.message) {
+      } else if (error instanceof NetworkError) {
         errorMessage = error.message;
       }
 
@@ -226,7 +228,6 @@ export default function SignupForm() {
       let msg = "No se pudo registrar con Google.";
       if (error instanceof AuthError) msg = error.getUserMessage();
       else if (error instanceof NetworkError) msg = "Sin conexión a internet. Verificá tu red e intentá de nuevo.";
-      else if (error instanceof Error) msg = error.message;
       toast({ variant: "destructive", title: "Error al registrarse", description: msg });
     } finally {
       setIsLoading(false);
@@ -265,7 +266,6 @@ export default function SignupForm() {
         let msg = "No se pudo registrar con Google.";
         if (error instanceof AuthError) msg = error.getUserMessage();
         else if (error instanceof NetworkError) msg = "Sin conexión a internet. Verificá tu red e intentá de nuevo.";
-        else if (error instanceof Error) msg = error.message;
         toast({ variant: "destructive", title: "Error al registrarse", description: msg });
       }
     } finally {
@@ -319,7 +319,6 @@ export default function SignupForm() {
         let msg = "No se pudo registrar con Apple.";
         if (error instanceof AuthError) msg = error.getUserMessage();
         else if (error instanceof NetworkError) msg = "Sin conexión a internet. Verificá tu red e intentá de nuevo.";
-        else if (error instanceof Error) msg = error.message;
         toast({ variant: "destructive", title: "Error al registrarse", description: msg });
       }
     } finally {

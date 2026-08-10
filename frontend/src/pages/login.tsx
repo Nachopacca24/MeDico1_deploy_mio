@@ -114,16 +114,17 @@ export default function Login() {
         navigate("/dashboard");
       }
     } catch (error: any) {
-      console.error('Error en login:', error?.name, error?.message);
+      console.error('Error en login:', error);
 
-      let errorMessage = "Credenciales inválidas. Por favor, intenta de nuevo.";
+      // NetworkError/AuthError always carry a clean, user-facing message — anything
+      // else is unexpected, so show a generic message instead of a raw error.message
+      // (which could be a browser/SDK technical string, not something written for users).
+      let errorMessage = "Ocurrió un error inesperado. Intentá de nuevo.";
 
       if (error instanceof NetworkError) {
         errorMessage = error.message;
       } else if (error instanceof AuthError) {
         errorMessage = error.getUserMessage();
-      } else if (error?.message) {
-        errorMessage = error.message;
       }
 
       toast({
@@ -137,12 +138,15 @@ export default function Login() {
     }
   };
 
-  // Extracts the most descriptive message from any error type
+  // Extracts the most descriptive message from any error type. Deliberately does
+  // NOT fall back to a raw Error.message for generic Error/TypeError instances —
+  // those are browser/JS-level failures (e.g. "Failed to fetch") never meant for
+  // an end user to read. The { message } / { error } object-shape handling below
+  // is a narrower, intentional exception for known native SDK response shapes.
   const extractErrorMessage = (error: unknown): string => {
     if (error instanceof AuthError) return error.getUserMessage();
     if (error instanceof NetworkError) return 'Sin conexión a internet. Verificá tu red e intentá de nuevo.';
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'object' && error !== null) {
+    if (!(error instanceof Error) && typeof error === 'object' && error !== null) {
       const e = error as Record<string, unknown>;
       // Native Google SDK errors come as { error: '...' } or { message: '...' }
       if (typeof e.message === 'string' && e.message) return e.message;
