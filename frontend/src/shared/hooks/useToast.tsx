@@ -100,8 +100,16 @@ export const useToastStore = create<ToastStore>((set) => ({
 // Toast Hook
 export const useToast = () => {
   const { addToast } = useToastStore()
-  
-  return {
+
+  // addToast itself is a stable zustand action reference, but this hook used to
+  // build a brand-new { toast: {...} } wrapper object on every single render.
+  // Any effect with `toast` in its dependency array (e.g. NotificationInitializer)
+  // would then re-run on every render of the whole app, not just when something
+  // actually relevant changed — on a permission-denied device, that meant a new
+  // "Activá las notificaciones" toast piling up on nearly every render, which is
+  // exactly what Apple's review flagged. Memoizing on the stable addToast makes
+  // this object identity-stable for the life of the app.
+  return React.useMemo(() => ({
     toast: {
       success: (title: string, description?: string) =>
         addToast({ title, description, type: 'success' }),
@@ -112,7 +120,7 @@ export const useToast = () => {
       info: (title: string, description?: string) =>
         addToast({ title, description, type: 'info' })
     }
-  }
+  }), [addToast])
 }
 
 // Toast Container

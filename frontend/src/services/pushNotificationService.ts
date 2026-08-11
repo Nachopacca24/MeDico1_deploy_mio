@@ -18,9 +18,14 @@ export type PushInitResult = 'granted' | 'denied' | 'not-native' | 'error';
 class PushNotificationService {
   private listenersRegistered = false;
   private tokenRegistered = false;
+  // Once we've asked and the OS said no, don't ask again this session — avoids
+  // re-prompting native permission and re-triggering the "enable notifications"
+  // toast every time init() gets called again (e.g. from a re-render).
+  private deniedThisSession = false;
 
   async init(): Promise<PushInitResult> {
     if (!Capacitor.isNativePlatform()) return 'not-native';
+    if (this.deniedThisSession) return 'denied';
 
     try {
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
@@ -42,7 +47,10 @@ class PushNotificationService {
 
         const { receive } = await FirebaseMessaging.requestPermissions();
         console.log('[FCM] Permiso:', receive);
-        if (receive !== 'granted') return 'denied';
+        if (receive !== 'granted') {
+          this.deniedThisSession = true;
+          return 'denied';
+        }
 
         await FirebaseMessaging.addListener('tokenReceived', async ({ token }) => {
           this.tokenRegistered = false;

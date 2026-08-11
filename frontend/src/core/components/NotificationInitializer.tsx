@@ -1,6 +1,6 @@
 // src/core/components/NotificationInitializer.tsx
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/shared/hooks/useToast';
 import { notificationService } from '@/services/notificationService';
@@ -11,6 +11,10 @@ export function NotificationInitializer() {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  // Guards against showing this more than once per app session — e.g. if `user`
+  // legitimately changes reference more than once (profile update, refreshUser),
+  // re-running init() while permission is still denied shouldn't pile up toasts.
+  const deniedToastShownRef = useRef(false);
 
   useEffect(() => {
     notificationService.initialize();
@@ -57,7 +61,8 @@ export function NotificationInitializer() {
   useEffect(() => {
     if (!user) return;
     pushNotificationService.init().then((result) => {
-      if (result === 'denied') {
+      if (result === 'denied' && !deniedToastShownRef.current) {
+        deniedToastShownRef.current = true;
         toast.warning(
           'Activá las notificaciones',
           'Las usamos para avisarte recordatorios de tus cirugías, invitaciones de colegas y actualizaciones — activalas desde Configuración del sistema para no perderte nada.',
