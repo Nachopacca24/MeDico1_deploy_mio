@@ -41,28 +41,29 @@ function extractPath(url: string): string | null {
  * OAuth callback (scoped to when that page is mounted); this one is global so
  * links work no matter what screen the app is on, or a cold start.
  */
-// Capacitor's redelivery of a duplicate appUrlOpen event happens within
-// milliseconds of the first one — a few seconds of dedup window is enough to
-// absorb that without blocking a genuine later re-tap of the same link (e.g.
-// removing a colleague and immediately re-adding them with the same QR).
-const DEDUP_WINDOW_MS = 4000;
-
+// On iOS, Capacitor can keep redelivering the *same* appUrlOpen event well beyond
+// a single instant — seen redelivering the same colleague-invite link 8+ times
+// over an extended interaction, not just once or twice back-to-back. A short
+// dedup window (previously 4s) isn't enough: every redelivery called navigate()
+// again with the same link, yanking the user back to /invite each time they
+// tried to leave — it looked like an unbreakable loop.
+//
+// So this is permanent for the app's process lifetime, not time-windowed: once
+// we've navigated for a given exact path, we never do it again unless the app
+// is fully restarted. The one thing this gives up: re-tapping the *same* QR
+// intentionally later in the same session (e.g. remove a colleague, then
+// immediately re-add them with the same code) needs an app restart to register
+// again — a real but narrow trade-off, and the app doesn't get stuck for it.
 export function AppLinkHandler() {
   const navigate = useNavigate();
-  // See DEDUP_WINDOW_MS above — without this, every redelivery calls navigate()
-  // again with the same one-time-use link (e.g. a colleague invite), which
-  // yanks the user back to it right after they navigate away — it looked
-  // "stuck", the exit button appeared to just not work.
-  const lastRef = useRef<{ path: string; at: number } | null>(null);
+  const handledPaths = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
     const go = (path: string) => {
-      const now = Date.now();
-      const last = lastRef.current;
-      if (last && last.path === path && now - last.at < DEDUP_WINDOW_MS) return;
-      lastRef.current = { path, at: now };
+      if (handledPaths.current.has(path)) return;
+      handledPaths.current.add(path);
       navigate(path);
     };
 
