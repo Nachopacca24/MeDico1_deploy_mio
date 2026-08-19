@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { authService } from '@/shared/services/authService';
-import { Loader2, UserCheck, AlertCircle } from 'lucide-react';
+import { Loader2, UserCheck, AlertCircle, Share2 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -14,7 +14,7 @@ export default function InvitePage() {
   // Captured once — clearing ?ref= below (after processing) must not change this
   // and re-trigger the effect with an empty ref, which would bounce to '/'.
   const ref = useRef((searchParams.get('ref') || '').toUpperCase()).current;
-  const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'self' | 'error'>('loading');
 
   useEffect(() => {
     // Guardar el código inmediatamente, antes de saber si está autenticado
@@ -41,7 +41,8 @@ export default function InvitePage() {
     })
       .then(res => res.json())
       .then(data => {
-        setStatus(data.ok ? (data.created ? 'done' : 'already') : 'error');
+        if (data.self) setStatus('self');
+        else setStatus(data.ok ? (data.created ? 'done' : 'already') : 'error');
       })
       .catch(() => setStatus('error'))
       .finally(() => {
@@ -76,6 +77,17 @@ export default function InvitePage() {
               {status === 'done'
                 ? 'Quedaron conectados automáticamente.'
                 : 'Ya estaban conectados como colegas.'}
+            </p>
+          </>
+        )}
+        {status === 'self' && (
+          <>
+            <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full w-fit mx-auto">
+              <Share2 className="h-8 w-8 text-blue-600" />
+            </div>
+            <h1 className="text-xl font-bold">Este es tu propio link</h1>
+            <p className="text-muted-foreground text-sm">
+              Compartilo con un colega para conectarse — no podés agregarte a vos mismo.
             </p>
           </>
         )}

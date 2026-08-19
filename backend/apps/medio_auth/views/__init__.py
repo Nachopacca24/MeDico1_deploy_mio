@@ -1574,7 +1574,11 @@ def accept_invite(request):
     except User.DoesNotExist:
         return Response({'error': 'Código inválido'}, status=404)
     if other == request.user:
-        return Response({'error': 'No podés agregarte a vos mismo'}, status=400)
+        # Not an error — the user just tapped/scanned their own invite link/QR
+        # (easy to do by accident). ok=True + self=True lets the frontend show a
+        # clean "that's your own link" message instead of a generic invalid-link
+        # error, and it's not a Friendship to create either way.
+        return Response({'ok': True, 'self': True})
     from apps.medio_auth.models import Friendship
     # Enforce free plan colleague limit
     if not request.user.has_premium_access:
