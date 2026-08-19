@@ -41,21 +41,28 @@ function extractPath(url: string): string | null {
  * OAuth callback (scoped to when that page is mounted); this one is global so
  * links work no matter what screen the app is on, or a cold start.
  */
+// Capacitor's redelivery of a duplicate appUrlOpen event happens within
+// milliseconds of the first one — a few seconds of dedup window is enough to
+// absorb that without blocking a genuine later re-tap of the same link (e.g.
+// removing a colleague and immediately re-adding them with the same QR).
+const DEDUP_WINDOW_MS = 4000;
+
 export function AppLinkHandler() {
   const navigate = useNavigate();
-  // Capacitor can redeliver the same appUrlOpen event more than once for a single
-  // tap (seen in practice on iOS). Without this guard, every redelivery calls
-  // navigate() again with the same one-time-use link (e.g. a colleague invite),
-  // which yanks the user back to it right after they navigate away — it looked
+  // See DEDUP_WINDOW_MS above — without this, every redelivery calls navigate()
+  // again with the same one-time-use link (e.g. a colleague invite), which
+  // yanks the user back to it right after they navigate away — it looked
   // "stuck", the exit button appeared to just not work.
-  const lastPathRef = useRef<string | null>(null);
+  const lastRef = useRef<{ path: string; at: number } | null>(null);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
     const go = (path: string) => {
-      if (path === lastPathRef.current) return;
-      lastPathRef.current = path;
+      const now = Date.now();
+      const last = lastRef.current;
+      if (last && last.path === path && now - last.at < DEDUP_WINDOW_MS) return;
+      lastRef.current = { path, at: now };
       navigate(path);
     };
 
