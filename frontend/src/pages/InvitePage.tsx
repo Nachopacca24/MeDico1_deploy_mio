@@ -9,31 +9,43 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function InvitePage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
-  // Captured once — clearing ?ref= below (after processing) must not change this
-  // and re-trigger the effect with an empty ref, which would bounce to '/'.
-  const ref = useRef((searchParams.get('ref') || '').toUpperCase()).current;
+  // Live, not captured once — this page has to keep working if the user scans/taps
+  // a *different* colleague's link while still sitting on this screen (e.g. adding
+  // several people in a row at a conference). React Router keeps the same
+  // InvitePage instance mounted across /invite?ref=A -> /invite?ref=B, it doesn't
+  // remount, so a captured-once ref would get stuck showing the first one forever.
+  const ref = (searchParams.get('ref') || '').toUpperCase();
   const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'self' | 'error'>('loading');
+  // Which ref we've already processed (or are processing) — lets us tell "the
+  // query string was cleared after a successful add" (ignore) apart from "a new
+  // ref showed up" (process it), and stops a redelivered app-link event from
+  // re-submitting the same one.
+  const processedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Guardar el código inmediatamente, antes de saber si está autenticado
-    if (ref) localStorage.setItem('referral_code', ref);
+    if (!ref) {
+      // Only bounce to '/' for a bare /invite visit — not right after we clear
+      // ?ref= ourselves once a code was successfully handled.
+      if (!processedRef.current && !loading) navigate('/');
+      return;
+    }
+    if (ref === processedRef.current) return; // already handled this exact code
 
+    localStorage.setItem('referral_code', ref);
     if (loading) return; // esperar a que AuthContext termine de cargar
-    if (!ref) { navigate('/'); return; }
 
     if (!isAuthenticated) {
       navigate(`/signup?ref=${ref}`);
       return;
     }
 
-    if (user?.friend_code === ref) {
-      navigate('/colleagues');
-      return;
-    }
+    processedRef.current = ref;
+    setStatus('loading');
 
-    // Crear amistad directamente
+    // Crear amistad directamente (el backend también contempla el caso de que
+    // sea tu propio código y devuelve {ok:true, self:true} en vez de un error)
     authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
