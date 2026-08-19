@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { authService } from '@/shared/services/authService';
@@ -8,10 +8,12 @@ import { Button } from '@/shared/components/ui/button';
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function InvitePage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated, user, loading } = useAuth();
   const navigate = useNavigate();
-  const ref = (searchParams.get('ref') || '').toUpperCase();
+  // Captured once — clearing ?ref= below (after processing) must not change this
+  // and re-trigger the effect with an empty ref, which would bounce to '/'.
+  const ref = useRef((searchParams.get('ref') || '').toUpperCase()).current;
   const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'error'>('loading');
 
   useEffect(() => {
@@ -39,10 +41,16 @@ export default function InvitePage() {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.ok) setStatus(data.created ? 'done' : 'already');
-        else setStatus('error');
+        setStatus(data.ok ? (data.created ? 'done' : 'already') : 'error');
       })
-      .catch(() => setStatus('error'));
+      .catch(() => setStatus('error'))
+      .finally(() => {
+        // Strip ?ref= once handled — a redelivered app-link event (Capacitor can
+        // fire the same one more than once) or any other remount then lands on a
+        // plain /invite with nothing left to reprocess, instead of re-submitting
+        // the same code and re-running this whole effect again.
+        setSearchParams({}, { replace: true });
+      });
   }, [loading, isAuthenticated, ref]);
 
   if (status === 'loading') {

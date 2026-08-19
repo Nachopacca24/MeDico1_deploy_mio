@@ -1,6 +1,6 @@
 // src/core/components/AppLinkHandler.tsx
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
@@ -43,22 +43,34 @@ function extractPath(url: string): string | null {
  */
 export function AppLinkHandler() {
   const navigate = useNavigate();
+  // Capacitor can redeliver the same appUrlOpen event more than once for a single
+  // tap (seen in practice on iOS). Without this guard, every redelivery calls
+  // navigate() again with the same one-time-use link (e.g. a colleague invite),
+  // which yanks the user back to it right after they navigate away — it looked
+  // "stuck", the exit button appeared to just not work.
+  const lastPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
+
+    const go = (path: string) => {
+      if (path === lastPathRef.current) return;
+      lastPathRef.current = path;
+      navigate(path);
+    };
 
     // Cold start: the app was launched directly via the link.
     CapApp.getLaunchUrl().then(launch => {
       if (!launch?.url) return;
       const path = extractPath(launch.url);
-      if (path) navigate(path);
+      if (path) go(path);
     }).catch(() => { /* getLaunchUrl not available on this platform */ });
 
     // Already running: the link was tapped while the app is foregrounded/backgrounded.
     let listenerHandle: { remove: () => void } | null = null;
     CapApp.addListener('appUrlOpen', ({ url }) => {
       const path = extractPath(url);
-      if (path) navigate(path);
+      if (path) go(path);
     }).then(handle => { listenerHandle = handle; });
 
     return () => { listenerHandle?.remove(); };
