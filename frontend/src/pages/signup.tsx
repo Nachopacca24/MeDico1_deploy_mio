@@ -4,26 +4,7 @@ import { useState, useEffect } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
-import { authService } from '@/shared/services/authService';
 import { openLegalDoc } from '@/shared/utils/openLegalDoc';
-
-const API_URL = import.meta.env.VITE_API_URL || '';
-
-async function processPendingInvite(): Promise<string | null> {
-  const code = localStorage.getItem('referral_code');
-  if (!code) return null;
-  localStorage.removeItem('referral_code');
-  try {
-    const res = await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ friend_code: code }),
-    });
-    const data = await res.json();
-    if (data.ok && data.colleague_name) return data.colleague_name;
-  } catch {}
-  return null;
-}
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -159,7 +140,7 @@ export default function SignupForm() {
     setIsLoading(true);
 
     try {
-      await register({
+      const result = await register({
         username: formData.username,
         email: formData.email,
         password: formData.password,
@@ -169,9 +150,11 @@ export default function SignupForm() {
         specialty: formData.specialty,
         ...(referralCode ? { referral_code: referralCode } : {}),
       });
+      if (referralCode) localStorage.removeItem('referral_code');
 
-      // processPendingInvite obtiene el nombre del colega (el backend ya creó la amistad)
-      const colleagueName = await processPendingInvite();
+      // El backend ya conectó al colega y devuelve su nombre en la misma respuesta —
+      // no depende de una segunda llamada de red que podía fallar en silencio.
+      const colleagueName = result.colleague_name;
 
       toast({
         title: `¡Cuenta creada! Tienes ${trialDays} días Premium gratis`,
@@ -214,7 +197,8 @@ export default function SignupForm() {
     setIsLoading(true);
     try {
       const result = await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token, referralCode || undefined);
-      const colleagueNameGoogle = await processPendingInvite();
+      if (referralCode) localStorage.removeItem('referral_code');
+      const colleagueNameGoogle = result.colleague_name;
       const isNew = result.message.includes('Registro');
       toast({
         title: isNew ? `¡Bienvenido/a! Tienes ${trialDays} días Premium gratis` : "¡Bienvenido/a de nuevo!",
@@ -247,7 +231,8 @@ export default function SignupForm() {
       const token = result.credential?.idToken;
       if (!token) throw new Error('No se pudo obtener el token de Google');
       const resultNative = await loginWithGoogle(token, referralCode || undefined);
-      const colleagueNameNative = await processPendingInvite();
+      if (referralCode) localStorage.removeItem('referral_code');
+      const colleagueNameNative = resultNative.colleague_name;
       const isNewNative = resultNative.message.includes('Registro');
       toast({
         title: isNewNative ? `¡Bienvenido/a! Tienes ${trialDays} días Premium gratis` : "¡Bienvenido/a de nuevo!",
@@ -302,7 +287,8 @@ export default function SignupForm() {
         email,
         referral_code: referralCode || undefined,
       });
-      const colleagueNameApple = await processPendingInvite();
+      if (referralCode) localStorage.removeItem('referral_code');
+      const colleagueNameApple = resultApple.colleague_name;
       const isNewApple = resultApple.message.includes('Registro');
       toast({
         title: isNewApple ? `¡Bienvenido/a! Tienes ${trialDays} días Premium gratis` : "¡Bienvenido/a de nuevo!",

@@ -293,6 +293,109 @@ class ReferralCreditTest(TestCase):
         self.assertEqual(User.objects.filter(referred_by=referrer).count(), 1)
 
 
+class ProcessSignupReferralTest(TestCase):
+    """_process_signup_referral — la ruta única que usan registro/Google/Apple para
+    aplicar el código de invitación de un colega en el signup."""
+
+    def test_creates_friendship_and_returns_colleague_name(self):
+        from apps.medio_auth.models import Friendship
+        from apps.medio_auth.views import _process_signup_referral
+        referrer = _make_user(username='colega', email='colega@example.com', first_name='Ana', last_name='Pérez')
+        new_user = _make_user(username='nuevo', email='nuevo@example.com')
+
+        colleague_name = _process_signup_referral(new_user, referrer.friend_code)
+
+        self.assertEqual(colleague_name, 'Ana Pérez')
+        self.assertTrue(
+            Friendship.objects.filter(
+                user=min(referrer, new_user, key=lambda u: u.id),
+                friend=max(referrer, new_user, key=lambda u: u.id),
+            ).exists()
+        )
+        new_user.refresh_from_db()
+        self.assertEqual(new_user.referred_by_id, referrer.id)
+
+    def test_code_is_case_insensitive(self):
+        from apps.medio_auth.views import _process_signup_referral
+        referrer = _make_user(username='colega2', email='colega2@example.com')
+        new_user = _make_user(username='nuevo2', email='nuevo2@example.com')
+
+        colleague_name = _process_signup_referral(new_user, referrer.friend_code.lower())
+
+        self.assertIsNotNone(colleague_name)
+        new_user.refresh_from_db()
+        self.assertEqual(new_user.referred_by_id, referrer.id)
+
+    def test_grant_credit_false_connects_but_skips_credit(self):
+        """Cuenta EXISTENTE que vuelve a entrar con Google/Apple usando un link de
+        colega: se conecta como colega, pero no cuenta como referido nuevo."""
+        from apps.medio_auth.models import Friendship
+        from apps.medio_auth.views import _process_signup_referral
+        referrer = _make_user(username='colega3', email='colega3@example.com')
+        existing_user = _make_user(username='existente', email='existente@example.com')
+
+        colleague_name = _process_signup_referral(existing_user, referrer.friend_code, grant_credit=False)
+
+        self.assertIsNotNone(colleague_name)
+        self.assertTrue(
+            Friendship.objects.filter(
+                user=min(referrer, existing_user, key=lambda u: u.id),
+                friend=max(referrer, existing_user, key=lambda u: u.id),
+            ).exists()
+        )
+        existing_user.refresh_from_db()
+        self.assertIsNone(existing_user.referred_by_id)
+
+    def test_unknown_code_returns_none_without_raising(self):
+        from apps.medio_auth.views import _process_signup_referral
+        new_user = _make_user(username='nuevo3', email='nuevo3@example.com')
+
+        colleague_name = _process_signup_referral(new_user, 'NOEXISTE1')
+
+        self.assertIsNone(colleague_name)
+
+    def test_empty_code_returns_none(self):
+        from apps.medio_auth.views import _process_signup_referral
+        new_user = _make_user(username='nuevo4', email='nuevo4@example.com')
+
+        self.assertIsNone(_process_signup_referral(new_user, ''))
+        self.assertIsNone(_process_signup_referral(new_user, None))
+
+    def test_self_referral_returns_none_and_creates_no_friendship(self):
+        from apps.medio_auth.models import Friendship
+        from apps.medio_auth.views import _process_signup_referral
+        user = _make_user(username='solito', email='solito@example.com')
+
+        colleague_name = _process_signup_referral(user, user.friend_code)
+
+        self.assertIsNone(colleague_name)
+        self.assertEqual(Friendship.objects.count(), 0)
+
+
+class RegisterEndpointReferralTest(TestCase):
+    """POST /api/auth/register/ — el código de colega llega en la misma respuesta,
+    sin depender de una segunda llamada de red desde el frontend."""
+
+    def test_register_with_referral_code_returns_colleague_name(self):
+        from rest_framework.test import APIClient
+        referrer = _make_user(username='referrer_ep', email='referrer_ep@example.com', first_name='Luis', last_name='Gómez')
+        client = APIClient()
+
+        response = client.post('/api/auth/register/', {
+            'username': 'nuevo_ep',
+            'email': 'nuevo_ep@example.com',
+            'password': 'ContraseñaSegura123',
+            'password2': 'ContraseñaSegura123',
+            'first_name': 'Nuevo',
+            'last_name': 'Usuario',
+            'specialty': 'Cardiovascular',
+            'referral_code': referrer.friend_code,
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(response.data['colleague_name'], 'Luis Gómez')
+
+
 class FullScenarioTest(TestCase):
     """Escenarios completos end-to-end (sin llamadas a LS API)"""
 

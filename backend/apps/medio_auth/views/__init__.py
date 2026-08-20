@@ -147,19 +147,7 @@ class RegisterView(APIView):
                 logger.exception("Error enviando email de verificación al nuevo usuario")
 
             # Conectar como colegas y registrar referido si vino con referral_code
-            referral_code = request.data.get('referral_code', '').strip()
-            if referral_code:
-                try:
-                    referrer = User.objects.get(friend_code=referral_code)
-                    if referrer.id != user.id:
-                        from apps.medio_auth.models import Friendship
-                        Friendship.objects.get_or_create(
-                            user=min(referrer, user, key=lambda u: u.id),
-                            friend=max(referrer, user, key=lambda u: u.id),
-                        )
-                        _apply_referral(user, referrer)
-                except Exception:
-                    pass  # No bloquear el registro por ningún error de referral
+            colleague_name = _process_signup_referral(user, request.data.get('referral_code', ''))
 
             return Response({
                 'message': 'Usuario registrado exitosamente',
@@ -168,7 +156,8 @@ class RegisterView(APIView):
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                 },
-                'email_verification_sent': email_sent
+                'email_verification_sent': email_sent,
+                'colleague_name': colleague_name,
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1050,21 +1039,10 @@ class GoogleLoginView(APIView):
             user.last_login = timezone.now()
             user.save(update_fields=['last_login'])
 
-            # Referral solo para usuarios nuevos
-            if created:
-                referral_code = request.data.get('referral_code', '').strip()
-                if referral_code:
-                    try:
-                        referrer = User.objects.get(friend_code=referral_code)
-                        if referrer.id != user.id:
-                            from apps.medio_auth.models import Friendship
-                            Friendship.objects.get_or_create(
-                                user=min(referrer, user, key=lambda u: u.id),
-                                friend=max(referrer, user, key=lambda u: u.id),
-                            )
-                            _apply_referral(user, referrer)
-                    except Exception:
-                        pass
+            # Conectar como colegas siempre que venga un código — pero el crédito de
+            # referido solo aplica si la cuenta es nueva (created=False = alguien
+            # que ya tenía cuenta simplemente volvió a iniciar sesión con Google).
+            colleague_name = _process_signup_referral(user, request.data.get('referral_code', ''), grant_credit=created)
 
             # Generar tokens nativos
             refresh = RefreshToken.for_user(user)
@@ -1076,7 +1054,8 @@ class GoogleLoginView(APIView):
                 'tokens': {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
-                }
+                },
+                'colleague_name': colleague_name,
             }, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
             
         except Exception as e:
@@ -1134,26 +1113,16 @@ class AppleLoginView(APIView):
         user.last_login = timezone.now()
         user.save(update_fields=['last_login'])
 
-        if created:
-            referral_code = request.data.get('referral_code', '').strip()
-            if referral_code:
-                try:
-                    referrer = User.objects.get(friend_code=referral_code)
-                    if referrer.id != user.id:
-                        from apps.medio_auth.models import Friendship
-                        Friendship.objects.get_or_create(
-                            user=min(referrer, user, key=lambda u: u.id),
-                            friend=max(referrer, user, key=lambda u: u.id),
-                        )
-                        _apply_referral(user, referrer)
-                except Exception:
-                    pass
+        # Conectar como colegas siempre que venga un código — el crédito de
+        # referido solo aplica si la cuenta es nueva.
+        colleague_name = _process_signup_referral(user, request.data.get('referral_code', ''), grant_credit=created)
 
         refresh = RefreshToken.for_user(user)
         return Response({
             'message': 'Registro con Apple exitoso' if created else 'Login con Apple exitoso',
             'user': UserSerializer(user).data,
             'tokens': {'refresh': str(refresh), 'access': str(refresh.access_token)},
+            'colleague_name': colleague_name,
         }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
     @staticmethod
@@ -1544,6 +1513,52 @@ def _apply_referral(new_user, referrer):
     if referral_count > 0 and referral_count % 5 == 0:
         from django.db.models import F
         User.objects.filter(pk=referrer.pk).update(credit_days=F('credit_days') + 10)
+
+
+def _process_signup_referral(new_user, raw_code, grant_credit=True):
+    """
+    Connects new_user to whoever's colleague code they signed up with (or
+    logged back into an existing account with — Google/Apple double as both,
+    see below): creates the Friendship and, when grant_credit is True, gives
+    the referrer their credit-days via _apply_referral. Called once, right
+    after RegisterView/GoogleLoginView/AppleLoginView authenticate the user.
+
+    grant_credit must be False when Google/Apple resolved to an EXISTING
+    account (created=False) — e.g. someone taps a colleague's invite link
+    while logged out, lands on /signup?ref=..., and signs back in with an
+    already-linked Google account. They should still connect as colleagues,
+    but it isn't a new referral, so no credit-days for the referrer.
+
+    Never raises — a referral hiccup must not block login/registration — but
+    unlike the old inline try/except-pass copies of this logic, real failures
+    (unknown code, DB error) are actually logged instead of vanishing, so
+    they're diagnosable from Railway logs.
+
+    Returns the referrer's display name on success (used for the "you're now
+    colleagues" toast), or None if nothing was applied.
+    """
+    code = (raw_code or '').strip().upper()
+    if not code:
+        return None
+    try:
+        referrer = User.objects.get(friend_code=code)
+    except User.DoesNotExist:
+        logger.warning(f'[REFERRAL] Código no encontrado: {code!r} (usuario id={new_user.id})')
+        return None
+    if referrer.id == new_user.id:
+        return None
+    try:
+        from apps.medio_auth.models import Friendship
+        Friendship.objects.get_or_create(
+            user=min(referrer, new_user, key=lambda u: u.id),
+            friend=max(referrer, new_user, key=lambda u: u.id),
+        )
+        if grant_credit:
+            _apply_referral(new_user, referrer)
+    except Exception:
+        logger.exception(f'[REFERRAL] Error aplicando referral código={code!r} usuario id={new_user.id}')
+        return None
+    return f"{referrer.first_name} {referrer.last_name}".strip() or referrer.username
 
 
 @api_view(['GET'])

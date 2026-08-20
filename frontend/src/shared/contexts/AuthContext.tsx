@@ -23,7 +23,7 @@ interface AuthContextType {
     email?: string | null;
     referral_code?: string;
   }) => Promise<AuthResponse>;
-  register: (data: RegisterData) => Promise<void>;
+  register: (data: RegisterData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -161,7 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   /**
    * Registro de usuario
    */
-  const register = async (data: RegisterData) => {
+  const register = async (data: RegisterData): Promise<AuthResponse> => {
     try {
       const response = await authService.register(data);
       setUser(response.user);
@@ -171,6 +171,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Ir directo al dashboard para que aparezca el modal de bienvenida
       navigate('/dashboard');
+      return response;
     } catch (error) {
       throw error;
     }

@@ -85,6 +85,10 @@ export interface AuthResponse {
   user: User;
   tokens: AuthTokens;
   email_verification_sent?: boolean;
+  // Set when this signup/first-login used a colleague's referral code and it
+  // was applied successfully — the referrer's display name, for the
+  // "you're now colleagues" toast. null/undefined otherwise.
+  colleague_name?: string | null;
 }
 
 export interface ChangePasswordData {

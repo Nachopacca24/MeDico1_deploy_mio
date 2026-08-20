@@ -11,7 +11,6 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 async function processPendingInvite(): Promise<string | null> {
   const code = localStorage.getItem('referral_code');
   if (!code) return null;
-  localStorage.removeItem('referral_code');
   try {
     const res = await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
       method: 'POST',
@@ -19,8 +18,14 @@ async function processPendingInvite(): Promise<string | null> {
       body: JSON.stringify({ friend_code: code }),
     });
     const data = await res.json();
+    // Only clear once we actually got an answer from the server — if the
+    // request itself fails below (network blip right after login), the code
+    // stays put so the next login retries instead of silently losing it.
+    localStorage.removeItem('referral_code');
     if (data.ok && data.colleague_name) return data.colleague_name;
-  } catch {}
+  } catch (err) {
+    console.error('[processPendingInvite] No se pudo conectar como colega:', err);
+  }
   return null;
 }
 import { Button } from "@/shared/components/ui/button";
