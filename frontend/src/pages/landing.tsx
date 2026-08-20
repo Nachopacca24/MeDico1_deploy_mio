@@ -51,7 +51,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="bg-white rounded-full p-1 flex items-center justify-center shrink-0">
+            <div className="bg-white rounded-full p-1 flex items-center justify-center shrink-0 overflow-hidden">
               <img src="/pwa-192x192.png" alt="MeDico App" className="h-8 w-8 sm:h-7 sm:w-7 object-contain" />
             </div>
             <div className="hidden sm:flex flex-col leading-tight border-l-2 border-primary pl-3">
