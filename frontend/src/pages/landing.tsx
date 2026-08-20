@@ -30,6 +30,15 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=app.medicoapp.medico";
+const APP_STORE_URL = "https://apps.apple.com/gt/app/medico-app/id6796186927";
+
+function isIOS(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
 export default function LandingPage() {
   const { user, loading } = useAuth();
   const { PREMIUM_PRICE, ANNUAL_PRICE, TRIAL_DAYS, FREE_FOR_ALL_PREMIUM } = useSiteSettings();
@@ -40,6 +49,7 @@ export default function LandingPage() {
   const annualSavingPct = Math.round((1 - annualPrice / (monthlyPrice * 12)) * 100);
   const isFreeForAllPromo = FREE_FOR_ALL_PREMIUM === '1';
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const preferApple = isIOS();
 
   if (loading) return null;
   if (user) return <Navigate to="/dashboard" replace />;
@@ -61,14 +71,16 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <a
-              href="https://play.google.com/store/apps/details?id=app.medicoapp.medico"
+              href={preferApple ? APP_STORE_URL : PLAY_STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0"
             >
               <img
-                src="https://play.google.com/intl/en_us/badges/static/images/badges/es-419_badge_web_generic.png"
-                alt="Google Play"
+                src={preferApple
+                  ? "https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg"
+                  : "https://play.google.com/intl/en_us/badges/static/images/badges/es-419_badge_web_generic.png"}
+                alt={preferApple ? "Descargar en App Store" : "Google Play"}
                 className="h-7 sm:h-9 w-auto"
               />
             </a>
@@ -163,7 +175,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
               <a
-                href="https://play.google.com/store/apps/details?id=app.medicoapp.medico"
+                href={PLAY_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -173,14 +185,17 @@ export default function LandingPage() {
                   className="h-14"
                 />
               </a>
-              <div className="relative opacity-50 cursor-not-allowed select-none">
+              <a
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
                   src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg"
-                  alt="App Store"
+                  alt="Descargar en App Store"
                   className="h-10"
                 />
-                <span className="absolute -top-2 -right-2 bg-amber-400 text-gray-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">Pronto</span>
-              </div>
+              </a>
             </div>
             <p className="mt-4 text-xs font-bold uppercase tracking-widest text-amber-400">Sin tarjeta de crédito. Sin compromiso.</p>
           </div>
