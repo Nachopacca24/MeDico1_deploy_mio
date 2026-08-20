@@ -73,26 +73,35 @@ const NewCase = () => {
   const { user } = useAuth();
   const isPremium = user?.has_premium_access;
 
-  // Pending images (uploaded after case creation)
-  const [pendingImages, setPendingImages] = useState<File[]>([]);
-  const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
+  // Pending images (uploaded after case creation). file+preview are kept
+  // paired in one entry — previously they lived in two separate arrays
+  // (files appended synchronously, previews appended as each FileReader
+  // resolved asynchronously, in whatever order that happened to finish).
+  // When more than one image was picked at once, those two orders weren't
+  // guaranteed to match, so the "X" on a given thumbnail could remove a
+  // different file than the one actually shown.
+  interface PendingImage { file: File; preview: string }
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const remaining = 5 - pendingImages.length;
     const toAdd = files.slice(0, remaining);
-    setPendingImages(prev => [...prev, ...toAdd]);
-    toAdd.forEach(f => {
+    const newEntries: PendingImage[] = toAdd.map(file => ({ file, preview: '' }));
+    setPendingImages(prev => [...prev, ...newEntries]);
+    newEntries.forEach(entry => {
       const reader = new FileReader();
-      reader.onload = ev => setPendingPreviews(prev => [...prev, ev.target?.result as string]);
-      reader.readAsDataURL(f);
+      reader.onload = ev => {
+        const preview = ev.target?.result as string;
+        setPendingImages(prev => prev.map(p => p.file === entry.file ? { ...p, preview } : p));
+      };
+      reader.readAsDataURL(entry.file);
     });
     e.target.value = '';
   };
 
   const removePendingImage = (idx: number) => {
     setPendingImages(prev => prev.filter((_, i) => i !== idx));
-    setPendingPreviews(prev => prev.filter((_, i) => i !== idx));
   };
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -461,7 +470,18 @@ const NewCase = () => {
           unit_value: 0,
           anesthesiologist: anesthesiologistId || null,
           anesthesiologist_name: !anesthesiologistId && manualAnesthesiologistName ? manualAnesthesiologistName : null,
-        }).catch(() => {/* silent — anesthesiologist can be set later from the case detail */});
+        }).catch((err) => {
+          // El caso ya se creó y el usuario puede haber navegado lejos de esta
+          // pantalla para cuando esto resuelve — antes se descartaba en
+          // silencio, así que el anestesiólogo elegido nunca quedaba
+          // conectado y nadie se enteraba. Avisamos igual que se hace con
+          // fallos de subida de imágenes más abajo.
+          console.error('[new case] No se pudo asignar el anestesiólogo:', err);
+          toast.error(
+            'No se pudo asignar el anestesiólogo',
+            'El caso se creó, pero el anestesiólogo no quedó conectado. Asignalo desde el detalle del caso.'
+          );
+        });
       }
 
       // Navigate immediately — images upload in the background
@@ -470,7 +490,7 @@ const NewCase = () => {
         navigate('/cases');
         uploadStore.add(newCase.id);
         const caseIdForUpload = newCase.id;
-        Promise.all(pendingImages.map(async (file) => {
+        Promise.all(pendingImages.map(async ({ file }) => {
           const formData = new FormData();
           formData.append('image', file);
           const resp = await authService.authenticatedFetch(
@@ -1168,7 +1188,7 @@ const NewCase = () => {
                   La carga de imágenes es exclusiva del <span className="text-amber-400 font-semibold">Plan Premium</span>
                 </p>
               </div>
-            ) : pendingPreviews.length === 0 ? (
+            ) : pendingImages.length === 0 ? (
               <label className="flex flex-col items-center justify-center py-8 cursor-pointer rounded-lg border border-dashed border-amber-400/30 hover:border-amber-400/60 hover:bg-amber-400/5 transition-colors">
                 <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
                 <ImagePlus className="w-10 h-10 text-amber-400/50 mb-2" />
@@ -1177,9 +1197,9 @@ const NewCase = () => {
               </label>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                {pendingPreviews.map((src, idx) => (
+                {pendingImages.map(({ preview }, idx) => (
                   <div key={idx} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square">
-                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <img src={preview} alt="" className="w-full h-full object-cover" />
                     <button type="button" onClick={() => removePendingImage(idx)}
                       className="absolute top-1.5 right-1.5 bg-black/70 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors">
                       <X className="w-4 h-4" />

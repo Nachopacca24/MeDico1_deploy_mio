@@ -99,8 +99,11 @@ const NewAnesthesiaCase = () => {
 
     setSubmitting(true);
 
+    // Separado del resto a propósito: si esto falla, no se creó nada en el
+    // servidor todavía, así que reintentar desde el mismo formulario es seguro.
+    let newCase;
     try {
-      const newCase = await surgicalCaseService.createCase({
+      newCase = await surgicalCaseService.createCase({
         patient_name: patientName,
         patient_id: patientId || undefined,
         patient_age: patientAge ? parseInt(patientAge) : undefined,
@@ -116,7 +119,14 @@ const NewAnesthesiaCase = () => {
         assistant_doctor_name: assistantName.trim() || undefined,
         procedures: [],
       });
+    } catch (error: any) {
+      const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';
+      toast.error('Error al crear caso', msg);
+      setSubmitting(false);
+      return;
+    }
 
+    try {
       // Create the anesthesia session assigned to the current user (auto-accepted on backend)
       await anesthesiaService.create(newCase.id, {
         unit_value: unitValue ? parseFloat(unitValue) : 0,
@@ -137,8 +147,18 @@ const NewAnesthesiaCase = () => {
       toast.success('¡Caso creado!', `El caso de ${patientName} fue registrado.`);
       navigate('/cases');
     } catch (error: any) {
-      const msg = error?.response?.data?.error || error?.message || 'Por favor intenta de nuevo.';
-      toast.error('Error al crear caso', msg);
+      // El caso YA existe en el servidor a esta altura — si dejáramos al
+      // usuario en este mismo formulario y reintentara, createCase() se
+      // volvería a llamar y duplicaría el paciente. En vez de eso lo llevamos
+      // a completar ESE caso desde su edición.
+      const msg = error?.response?.data?.error || error?.message;
+      toast.error(
+        'Caso creado con datos incompletos',
+        msg
+          ? `El caso se guardó, pero: ${msg}. Completalo desde la edición del caso.`
+          : 'El caso se guardó, pero no se pudo terminar de configurar la anestesia. Completalo desde la edición del caso.'
+      );
+      navigate(`/cases/${newCase.id}/edit/anesthesia`);
     } finally {
       setSubmitting(false);
     }

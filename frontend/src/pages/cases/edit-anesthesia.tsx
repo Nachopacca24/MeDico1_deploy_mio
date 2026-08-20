@@ -82,11 +82,15 @@ const EditAnesthesiaCase = () => {
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [caseData, anesthesiaData, hospitalsData, insurancesData] = await Promise.all([
+        // El caso y su sesión de anestesia son indispensables — si fallan, no hay
+        // nada que editar. Hospitales/seguros son datos auxiliares para los
+        // dropdowns; antes iban en el mismo Promise.all, y un fallo ahí (p. ej.
+        // getHospitals, que no tenía su propio catch) sacaba al usuario de esta
+        // pantalla de vuelta al detalle del caso aunque el caso en sí se hubiera
+        // cargado perfectamente.
+        const [caseData, anesthesiaData] = await Promise.all([
           surgicalCaseService.getCase(caseId),
           anesthesiaService.get(caseId),
-          hospitalService.getHospitals(),
-          insuranceService.getInsurances().catch(() => [] as InsuranceCompany[]),
         ]);
 
         setLoadedCase(caseData);
@@ -113,8 +117,21 @@ const EditAnesthesiaCase = () => {
           setCodeItems(anesthesiaData.items);
         }
 
-        setHospitals(hospitalsData);
-        setInsurances(insurancesData);
+        const [hospitalsResult, insurancesResult] = await Promise.allSettled([
+          hospitalService.getHospitals(),
+          insuranceService.getInsurances(),
+        ]);
+        if (hospitalsResult.status === 'fulfilled') {
+          setHospitals(hospitalsResult.value);
+        } else {
+          console.error('[edit-anesthesia] No se pudo cargar la lista de hospitales:', hospitalsResult.reason);
+          toast.warning('Aviso', 'No se pudo cargar la lista de hospitales. Podés seguir editando el resto del caso.');
+        }
+        if (insurancesResult.status === 'fulfilled') {
+          setInsurances(insurancesResult.value);
+        } else {
+          console.error('[edit-anesthesia] No se pudo cargar la lista de seguros:', insurancesResult.reason);
+        }
       } catch {
         toast.error('Error', 'No se pudo cargar el caso');
         navigate(`/cases/${caseId}`);

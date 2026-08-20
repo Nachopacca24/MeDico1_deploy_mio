@@ -58,8 +58,14 @@ const EditCase = () => {
 
   const [existingImages, setExistingImages] = useState<{ id: number; cloudinary_url: string }[]>([]);
   const [deletingImageId, setDeletingImageId] = useState<number | null>(null);
-  const [pendingImages, setPendingImages] = useState<File[]>([]);
-  const [pendingPreviews, setPendingPreviews] = useState<string[]>([]);
+  // file+preview kept paired in one entry — previously in two separate arrays
+  // (files appended synchronously, previews appended as each FileReader
+  // resolved asynchronously, in whatever order that happened to finish).
+  // Picking more than one image at once could desync those two orders, so
+  // the "X" on a given thumbnail could remove a different file than the one
+  // actually shown.
+  interface PendingImage { file: File; preview: string }
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
 
   const handleDeleteExistingImage = async (imageId: number) => {
     setDeletingImageId(imageId);
@@ -77,18 +83,21 @@ const EditCase = () => {
     const files = Array.from(e.target.files || []);
     const remaining = 5 - existingImages.length - pendingImages.length;
     const toAdd = files.slice(0, remaining);
-    setPendingImages(prev => [...prev, ...toAdd]);
-    toAdd.forEach(f => {
+    const newEntries: PendingImage[] = toAdd.map(file => ({ file, preview: '' }));
+    setPendingImages(prev => [...prev, ...newEntries]);
+    newEntries.forEach(entry => {
       const reader = new FileReader();
-      reader.onload = ev => setPendingPreviews(prev => [...prev, ev.target?.result as string]);
-      reader.readAsDataURL(f);
+      reader.onload = ev => {
+        const preview = ev.target?.result as string;
+        setPendingImages(prev => prev.map(p => p.file === entry.file ? { ...p, preview } : p));
+      };
+      reader.readAsDataURL(entry.file);
     });
     e.target.value = '';
   };
 
   const removePendingImage = (idx: number) => {
     setPendingImages(prev => prev.filter((_, i) => i !== idx));
-    setPendingPreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
   // Form state
@@ -151,24 +160,52 @@ const EditCase = () => {
       try {
         setLoading(true);
 
-        // Cargar hospitales, colegas, favoritos, seguros, caso e imágenes en paralelo
-        const [hospitalsData, colleaguesData, favoritesData, insurancesData, caseData, imagesResp, anesthesiaResp] = await Promise.all([
-          hospitalService.getHospitals(),
-          colleaguesService.getColleagues(),
-          favoritesService.getFavorites(),
-          insuranceService.getInsurances(),
-          surgicalCaseService.getCase(parseInt(id)),
-          authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/images/`),
-          authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/anesthesia/`),
-        ]);
+        // El caso es lo único indispensable — si falla, no hay nada que editar.
+        // Antes esto iba en el mismo Promise.all que hospitales/colegas/favoritos/
+        // seguros/imágenes/anestesia: si CUALQUIERA de esos 6 datos auxiliares
+        // fallaba (timeout, blip de red), Promise.all rechazaba entero y la
+        // pantalla mostraba "Error al cargar caso" — aunque el caso en sí se
+        // hubiera podido cargar bien. Separarlo evita que un dato secundario
+        // tumbe la edición del caso.
+        const caseData = await surgicalCaseService.getCase(parseInt(id));
 
-        setHospitals(hospitalsData);
-        setColleagues(colleaguesData.colleagues);
-        setInsurances(insurancesData);
-        if (imagesResp.ok) setExistingImages(await imagesResp.json());
+        const [hospitalsResult, colleaguesResult, favoritesResult, insurancesResult, imagesResult, anesthesiaResult] =
+          await Promise.allSettled([
+            hospitalService.getHospitals(),
+            colleaguesService.getColleagues(),
+            favoritesService.getFavorites(),
+            insuranceService.getInsurances(),
+            authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/images/`),
+            authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/${id}/anesthesia/`),
+          ]);
 
-        if (anesthesiaResp.ok) {
-          const anestData = await anesthesiaResp.json();
+        if (hospitalsResult.status === 'fulfilled') {
+          setHospitals(hospitalsResult.value);
+        } else {
+          console.error('[edit] No se pudo cargar la lista de hospitales:', hospitalsResult.reason);
+          toast.warning('Aviso', 'No se pudo cargar la lista de hospitales. Podés seguir editando el resto del caso.');
+        }
+
+        if (colleaguesResult.status === 'fulfilled') {
+          setColleagues(colleaguesResult.value.colleagues);
+        } else {
+          console.error('[edit] No se pudo cargar la lista de colegas:', colleaguesResult.reason);
+        }
+
+        if (insurancesResult.status === 'fulfilled') {
+          setInsurances(insurancesResult.value);
+        } else {
+          console.error('[edit] No se pudo cargar la lista de seguros:', insurancesResult.reason);
+        }
+
+        if (imagesResult.status === 'fulfilled' && imagesResult.value.ok) {
+          setExistingImages(await imagesResult.value.json());
+        } else if (imagesResult.status === 'rejected') {
+          console.error('[edit] No se pudieron cargar las imágenes del caso:', imagesResult.reason);
+        }
+
+        if (anesthesiaResult.status === 'fulfilled' && anesthesiaResult.value.ok) {
+          const anestData = await anesthesiaResult.value.json();
           if (anestData) {
             setAnesthesiaSession(anestData);
             if (anestData.anesthesiologist) {
@@ -179,6 +216,9 @@ const EditCase = () => {
               setManualAnesthesiologistName(anestData.anesthesiologist_name);
             }
           }
+        } else if (anesthesiaResult.status === 'rejected') {
+          console.error('[edit] No se pudo cargar la información de anestesia:', anesthesiaResult.reason);
+          toast.warning('Aviso', 'No se pudo cargar la información de anestesia de este caso.');
         }
 
         setLoadedCase(caseData);
@@ -186,14 +226,19 @@ const EditCase = () => {
         setEquipmentCost(caseData.equipment_cost != null ? String(caseData.equipment_cost) : '');
 
         // Convertir favoritos a formato de procedimientos
-        const favProcs: ProcedureData[] = favoritesData.map(fav => ({
-          codigo: fav.surgery_code,
-          cirugia: fav.surgery_name || fav.surgery_code,
-          especialidad: fav.specialty || 'General',
-          subespecialidad: undefined,
-          grupo: '',
-          rvu: 0 // Se cargará on-demand
-        }));
+        const favProcs: ProcedureData[] = favoritesResult.status === 'fulfilled'
+          ? favoritesResult.value.map(fav => ({
+              codigo: fav.surgery_code,
+              cirugia: fav.surgery_name || fav.surgery_code,
+              especialidad: fav.specialty || 'General',
+              subespecialidad: undefined,
+              grupo: '',
+              rvu: 0 // Se cargará on-demand
+            }))
+          : [];
+        if (favoritesResult.status === 'rejected') {
+          console.error('[edit] No se pudieron cargar los favoritos:', favoritesResult.reason);
+        }
 
         setFavoriteProcedures(favProcs);
         setPatientName(caseData.patient_name);
@@ -699,7 +744,7 @@ const EditCase = () => {
 
       // Upload new images in parallel
       if (isPremium && pendingImages.length > 0) {
-        const results = await Promise.allSettled(pendingImages.map(async file => {
+        const results = await Promise.allSettled(pendingImages.map(async ({ file }) => {
           const formData = new FormData();
           formData.append('image', file);
           const resp = await authService.authenticatedFetch(
@@ -1435,7 +1480,7 @@ const EditCase = () => {
                       La carga de imágenes es exclusiva del <span className="text-amber-400 font-semibold">Plan Premium</span>
                     </p>
                   </div>
-                ) : existingImages.length === 0 && pendingPreviews.length === 0 ? (
+                ) : existingImages.length === 0 && pendingImages.length === 0 ? (
                   <label className="flex flex-col items-center justify-center py-8 cursor-pointer rounded-lg border border-dashed border-amber-400/30 hover:border-amber-400/60 hover:bg-amber-400/5 transition-colors">
                     <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple className="hidden" onChange={handleImageSelect} />
                     <ImagePlus className="w-10 h-10 text-amber-400/50 mb-2" />
@@ -1454,9 +1499,9 @@ const EditCase = () => {
                         </button>
                       </div>
                     ))}
-                    {pendingPreviews.map((src, idx) => (
+                    {pendingImages.map(({ preview }, idx) => (
                       <div key={`pending-${idx}`} className="relative rounded-lg overflow-hidden border border-amber-400/30 aspect-square opacity-75">
-                        <img src={src} alt="" className="w-full h-full object-cover" />
+                        <img src={preview} alt="" className="w-full h-full object-cover" />
                         <button type="button" onClick={() => removePendingImage(idx)}
                           className="absolute top-1.5 right-1.5 bg-black/70 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors">
                           <X className="w-4 h-4" />

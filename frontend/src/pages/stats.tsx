@@ -59,17 +59,31 @@ type ChartMode = "cirugias" | "rvu" | "ambos";
 export default function StatsPage() {
   const [stats, setStats] = useState<CaseStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [chartMode, setChartMode] = useState<ChartMode>("ambos");
   const [procedureSort, setProcedureSort] = useState<"count" | "rvu">("count");
   const [pipelinePeriod, setPipelinePeriod] = useState<"all" | "month" | "week">("all");
   const { user } = useAuth();
   const isPremium = user?.has_premium_access;
 
-  useEffect(() => {
-    if (!isPremium) return; // don't fetch for free users
+  const loadStats = () => {
+    setLoading(true);
+    setLoadError(false);
     surgicalCaseService.getStats()
       .then(setStats)
+      .catch(err => {
+        // Without this, a network failure fell through to the same "Aún no
+        // hay datos" screen as a genuinely empty account — misleading for a
+        // Premium user who does have cases but hit a transient error.
+        console.error('[stats] No se pudieron cargar las estadísticas:', err);
+        setLoadError(true);
+      })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (!isPremium) return; // don't fetch for free users
+    loadStats();
   }, [isPremium]);
 
   // ── Paywall for free users ───────────────────────────────────
@@ -134,6 +148,26 @@ export default function StatsPage() {
       <AppLayout>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center h-64 text-center gap-4">
+          <BarChart2 className="h-16 w-16 text-muted-foreground/30" />
+          <h2 className="text-xl font-bold">No se pudieron cargar las estadísticas</h2>
+          <p className="text-muted-foreground max-w-sm">
+            Hubo un problema de conexión. Intentá de nuevo.
+          </p>
+          <button
+            onClick={loadStats}
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Reintentar
+          </button>
         </div>
       </AppLayout>
     );

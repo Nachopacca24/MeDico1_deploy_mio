@@ -96,23 +96,50 @@ const AnesthesiaEditorPage = () => {
   // PDF
   const [exportingPdf, setExportingPdf] = useState(false);
 
+  // Fetched separately (not Promise.all) so a failure loading the anesthesia
+  // session alone can't also leave surgicalCase stuck at null forever — that
+  // combination used to make the loading guard below (`!surgicalCase`) never
+  // clear, spinning indefinitely with no error shown.
   useEffect(() => {
-    Promise.all([
-      surgicalCaseService.getCase(caseId),
-      anesthesiaService.get(caseId),
-    ]).then(([sc, an]) => {
-      setSurgicalCase(sc);
-      setSession(an);
-      if (an) {
-        setEditUnitValue(String(an.unit_value));
-        setEditNotes(an.notes ?? "");
-        setTimeMinutes(an.time_minutes != null ? String(an.time_minutes) : "");
-        setEquipmentName(an.equipment_name ?? "");
-        setEquipmentCost(an.equipment_cost != null ? String(an.equipment_cost) : "");
-        setEquipmentEnabled(!!an.equipment_name);
-      }
-    }).catch(() => setSession(null));
+    surgicalCaseService.getCase(caseId)
+      .then(setSurgicalCase)
+      .catch(() => {
+        toast.error('Error', 'No se pudo cargar el caso');
+        navigate(`/cases/${caseId}`);
+      });
   }, [caseId]);
+
+  useEffect(() => {
+    anesthesiaService.get(caseId)
+      .then(an => {
+        setSession(an);
+        if (an) {
+          setEditUnitValue(String(an.unit_value));
+          setEditNotes(an.notes ?? "");
+          setTimeMinutes(an.time_minutes != null ? String(an.time_minutes) : "");
+          setEquipmentName(an.equipment_name ?? "");
+          setEquipmentCost(an.equipment_cost != null ? String(an.equipment_cost) : "");
+          setEquipmentEnabled(!!an.equipment_name);
+        }
+      })
+      .catch(() => setSession(null));
+  }, [caseId]);
+
+  const isAnesthesiologist = !!(
+    session &&
+    session.anesthesiologist === user?.id &&
+    session.anesthesiologist_accepted === true
+  );
+
+  // Redirecting from inside render (as this used to do) triggers React's
+  // "Cannot update a component while rendering a different component"
+  // warning and can produce inconsistent commits — do it as a side effect
+  // once the data has actually settled instead.
+  useEffect(() => {
+    if (surgicalCase && session !== undefined && !isAnesthesiologist) {
+      navigate(`/cases/${caseId}`);
+    }
+  }, [surgicalCase, session, isAnesthesiologist, caseId, navigate]);
 
   useEffect(() => {
     if (window.location.hash === '#time' && surgicalCase?.is_operated) {
@@ -288,7 +315,7 @@ const AnesthesiaEditorPage = () => {
     }
   };
 
-  if (session === undefined || !surgicalCase) {
+  if (session === undefined || !surgicalCase || !isAnesthesiologist) {
     return (
       <AppLayout>
         <div className="flex justify-center py-12">
@@ -296,17 +323,6 @@ const AnesthesiaEditorPage = () => {
         </div>
       </AppLayout>
     );
-  }
-
-  const isAnesthesiologist = !!(
-    session &&
-    session.anesthesiologist === user?.id &&
-    session.anesthesiologist_accepted === true
-  );
-
-  if (!isAnesthesiologist) {
-    navigate(`/cases/${caseId}`);
-    return null;
   }
 
   const isOperated = session.is_operated ?? false;
