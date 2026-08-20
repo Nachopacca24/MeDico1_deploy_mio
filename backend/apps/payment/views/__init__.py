@@ -253,7 +253,7 @@ def lemonsqueezy_webhook(request):
         if not user_id:
             email = attrs.get('user_email') or attrs.get('customer_email', '')
             logger.info('[LS webhook] no user_id in custom_data, trying email=%s', email)
-            user  = User.objects.filter(email=email).first() if email else None
+            user  = User.objects.filter(email__iexact=email).first() if email else None
         else:
             user = User.objects.filter(id=user_id).first()
             logger.info('[LS webhook] lookup user_id=%s found=%s', user_id, bool(user))

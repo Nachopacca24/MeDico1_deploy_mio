@@ -154,6 +154,29 @@ def test_apple_login_links_to_existing_email_account(client, User):
     assert User.objects.filter(email=FAKE_EMAIL).count() == 1
 
 
+@pytest.mark.django_db
+def test_apple_login_links_to_existing_email_account_case_insensitive(client, User):
+    """A password account registered as Test@iCloud.com signing in with Apple
+    (which may report different casing) must link to the same account, not
+    create a duplicate that collides with the unique email constraint."""
+    existing = User.objects.create(
+        email='Test@iCloud.com',
+        username='testuser_link_case',
+        plan='free',
+        is_email_verified=False,
+    )
+    existing.set_unusable_password()
+    existing.save()
+
+    with _mock_verify(sub=FAKE_SUB, email=FAKE_EMAIL):
+        resp = client.post(APPLE_URL, {'identity_token': FAKE_TOKEN}, format='json')
+
+    assert resp.status_code == 200
+    existing.refresh_from_db()
+    assert existing.apple_user_id == FAKE_SUB
+    assert User.objects.filter(email__iexact=FAKE_EMAIL).count() == 1
+
+
 # ──────────────────────────────────────────────
 # PRIVATE RELAY EMAIL (Apple hides real email)
 # ──────────────────────────────────────────────

@@ -54,7 +54,7 @@ class RegisterView(APIView):
         email = request.data.get('email', '').strip().lower()
 
         # Reactivación: email conocido, cuenta inactiva, ya usó trial → plan free sin trial
-        returning = User.objects.filter(email=email, is_active=False, had_trial=True).first()
+        returning = User.objects.filter(email__iexact=email, is_active=False, had_trial=True).first()
         if returning:
             password = request.data.get('password', '')
             from django.contrib.auth.password_validation import validate_password as _vp
@@ -342,11 +342,11 @@ class SendVerificationEmailView(APIView):
             )
         
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             # Por seguridad, no revelar si el email existe
             return Response(
-                {'message': 'Si el email existe, se enviará un código de verificación'}, 
+                {'message': 'Si el email existe, se enviará un código de verificación'},
                 status=status.HTTP_200_OK
             )
         
@@ -977,7 +977,7 @@ class GoogleLoginView(APIView):
         
         try:
             # Buscar o crear el usuario
-            user = User.objects.filter(email=email).first()
+            user = User.objects.filter(email__iexact=email).first()
             created = False
             
             if not user:
@@ -1183,7 +1183,7 @@ class AppleLoginView(APIView):
 
         # 2. Cuenta existente con ese email → vincular Apple
         if email:
-            user = User.objects.filter(email=email).first()
+            user = User.objects.filter(email__iexact=email).first()
             if user:
                 user.apple_user_id = apple_sub
                 if not user.is_email_verified:
@@ -1372,7 +1372,7 @@ class ForgotPasswordView(APIView):
             )
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email__iexact=email)
             token = user.generate_password_reset_token()
             reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}&email={user.email}"
             display_name = escape(user.first_name or user.username)

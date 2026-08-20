@@ -8,11 +8,11 @@ class EmailBackend(ModelBackend):
         try:
             # Intentar buscar por email
             if email:
-                user = User.objects.get(email=email)
+                user = User.objects.get(email__iexact=email)
             elif username:
                 # Si viene username, intentar buscar por email primero
                 if '@' in username:
-                    user = User.objects.get(email=username)
+                    user = User.objects.get(email__iexact=username)
                 else:
                     user = User.objects.get(username=username)
             else:

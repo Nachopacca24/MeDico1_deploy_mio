@@ -627,4 +627,37 @@ class ExpireTrialsOverdueSafetyNetTest(TestCase):
         call_command('expire_trials')
         user.refresh_from_db()
         self.assertEqual(user.plan, 'premium')
+
+
+class WebhookEmailFallbackTest(TestCase):
+    """Cuando el webhook de Lemon Squeezy no trae custom_data.user_id, cae al
+    email del checkout — que debe matchear sin importar mayúsculas/minúsculas,
+    o un webhook de pago real queda sin aplicarse (usuario pagó pero nunca se
+    activa Premium)."""
+
+    def _post_webhook(self, payload):
+        body = json.dumps(payload).encode()
+        with patch('apps.payment.views._verify_signature', return_value=True):
+            return self.client.post(
+                '/api/v1/payment/webhook/', data=body, content_type='application/json',
+            )
+
+    def test_subscription_created_matches_email_case_insensitively(self):
+        user = _make_user(plan='free', email='Doctor@Example.com')
+        payload = {
+            'meta': {'event_name': 'subscription_created', 'webhook_id': 'wh_1', 'custom_data': {}},
+            'data': {
+                'type': 'subscriptions',
+                'id': 'sub_case_1',
+                'attributes': {
+                    'customer_email': 'doctor@example.com',
+                    'renews_at': (timezone.now() + timedelta(days=30)).isoformat(),
+                },
+            },
+        }
+        response = self._post_webhook(payload)
+        self.assertEqual(response.status_code, 200)
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'premium')
+        self.assertEqual(user.ls_subscription_id, 'sub_case_1')
         self.assertIsNone(user.ls_payment_overdue_since)

@@ -76,9 +76,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "password": "Las contraseñas no coinciden."
             })
-        
+
+        attrs['email'] = attrs['email'].strip().lower()
+
         # Validar email único — permitir si el usuario está inactivo con had_trial (reactivación, la vista lo maneja)
-        existing = User.objects.filter(email=attrs['email']).first()
+        existing = User.objects.filter(email__iexact=attrs['email']).first()
         if existing:
             if existing.is_active or not existing.had_trial:
                 raise serializers.ValidationError(
@@ -139,7 +141,7 @@ class LoginSerializer(serializers.Serializer):
         
         # Buscar usuario por email
         try:
-            user_obj = User.objects.get(email=email)
+            user_obj = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             pass
         

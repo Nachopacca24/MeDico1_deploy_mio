@@ -52,13 +52,15 @@ LOGGING = {
 # ============================================
 # DJANGO REST FRAMEWORK
 # ============================================
+# Extends base.py's REST_FRAMEWORK rather than replacing it — a full replace
+# here previously dropped DEFAULT_PAGINATION_CLASS/PAGE_SIZE/DEFAULT_FILTER_BACKENDS
+# entirely and, worse, silently deleted 5 of the 10 throttle scopes
+# (login_email, password_reset_email, colleague_search, token_refresh,
+# webhook) that views actually reference via throttle_classes — any request
+# to /api/auth/login/ or /api/auth/forgot-password/ under dev settings
+# crashed with ImproperlyConfigured instead of a normal response.
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    **REST_FRAMEWORK,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
@@ -67,11 +69,8 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.FormParser',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
-    ],
     'DEFAULT_THROTTLE_RATES': {
+        **REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'],
         'anon': '10000/day',
         'user': '100000/day',
         'login': '20/min',

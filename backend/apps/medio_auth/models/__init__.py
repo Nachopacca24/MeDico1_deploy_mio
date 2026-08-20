@@ -365,6 +365,14 @@ class CustomUser(AbstractUser):
         return raw_token
     
     def save(self, *args, **kwargs):
+        # Normalize so login/password-reset lookups (which match case-sensitively
+        # at the DB level) always find the account regardless of how the email
+        # was capitalized when typed/autocapitalized — a mismatch here used to
+        # mean a permanently unrecoverable account (no password-reset email ever
+        # matched). Lookups additionally use __iexact as a second layer for rows
+        # written before this normalization existed.
+        if self.email:
+            self.email = self.email.strip().lower()
         if not self.friend_code:
             self.friend_code = self._generate_unique_friend_code()
         while True:
