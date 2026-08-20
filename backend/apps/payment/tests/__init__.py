@@ -223,6 +223,38 @@ class ApplyCreditsOnPromoEndTest(TestCase):
         self.assertGreater(user.trial_ends_at, renewal)
 
 
+class FreeForAllDeactivationEndpointTest(TestCase):
+    """PUT /api/admin/settings/ — el bono al desactivar FREE_FOR_ALL usa TRIAL_DAYS, no un número fijo"""
+
+    def setUp(self):
+        from rest_framework.test import APIClient
+        self.client = APIClient()
+        self.admin = User.objects.create_user(
+            username='admin', email='admin@example.com', password='x', is_staff=True,
+        )
+        self.client.force_authenticate(user=self.admin)
+
+    def test_deactivation_grants_configured_trial_days(self):
+        SiteSetting.set('TRIAL_DAYS', '65')
+        SiteSetting.set('FREE_FOR_ALL_PREMIUM', '1')
+        user = _make_user(plan='free')
+
+        response = self.client.put('/api/admin/settings/', {'FREE_FOR_ALL_PREMIUM': '0'}, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['granted_days'], 65)
+        user.refresh_from_db()
+        self.assertEqual(user.plan, 'premium')
+        self.assertGreater(user.trial_ends_at, timezone.now() + timedelta(days=64))
+
+    def test_deactivation_falls_back_to_30_when_trial_days_unset(self):
+        SiteSetting.set('FREE_FOR_ALL_PREMIUM', '1')
+
+        response = self.client.put('/api/admin/settings/', {'FREE_FOR_ALL_PREMIUM': '0'}, format='json')
+
+        self.assertEqual(response.data['granted_days'], 30)
+
+
 class ReferralCreditTest(TestCase):
     """_apply_referral — créditos de colegas"""
 
