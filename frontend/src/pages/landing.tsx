@@ -54,28 +54,28 @@ export default function LandingPage() {
             <div className="bg-white rounded-xl p-1">
               <img src="/MEDICO-BAJA-01-solo-logo.JPG" alt="" className="h-7 w-7 object-contain" />
             </div>
-            <div className="flex flex-col leading-tight border-l-2 border-primary pl-3">
-              <span className="text-base font-bold tracking-tight text-white">MeDico App</span>
-              <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
+            <div className="flex flex-col leading-tight border-l-2 border-primary pl-2 sm:pl-3">
+              <span className="text-sm sm:text-base font-bold tracking-tight text-white whitespace-nowrap">MeDico App</span>
+              <span className="hidden sm:block text-[10px] font-semibold tracking-widest text-gray-400 uppercase">Gestión Quirúrgica · Guatemala</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <a
               href="https://play.google.com/store/apps/details?id=app.medicoapp.medico"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:block"
+              className="shrink-0"
             >
               <img
                 src="https://play.google.com/intl/en_us/badges/static/images/badges/es-419_badge_web_generic.png"
                 alt="Google Play"
-                className="h-9"
+                className="h-7 sm:h-9 w-auto"
               />
             </a>
-            <Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">
+            <Link to="/login" className="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors px-1.5 sm:px-3 py-1.5">
               Iniciar sesión
             </Link>
-            <Link to="/signup" className="text-sm font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+            <Link to="/signup" className="text-xs sm:text-sm font-semibold bg-primary text-primary-foreground px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap">
               Empezar gratis
             </Link>
           </div>
