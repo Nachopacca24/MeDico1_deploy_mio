@@ -6,6 +6,7 @@ import { useTutorial } from '@/core/contexts/TutorialContext';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { emailVerificationService } from '@/shared/services/emailVerificationService';
 import { useToast } from '@/shared/hooks/use-toast';
+import { useSiteSettings } from '@/shared/hooks/useSiteSettings';
 
 const ONBOARDING_KEY = 'medico_onboarding_step';
 
@@ -19,6 +20,7 @@ export function WelcomeModal() {
   const { tutorialState, startTutorial, dismissWelcome } = useTutorial();
   const { user, accessToken } = useAuth();
   const { toast } = useToast();
+  const { TRIAL_DAYS } = useSiteSettings();
   const [isResending, setIsResending] = useState(false);
 
   const step = getOnboardingStep();
@@ -183,7 +185,7 @@ export function WelcomeModal() {
             <div>
               <h2 className="text-xl font-black leading-tight">¡Tu cuenta está lista!</h2>
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-amber-400">30 días Premium gratis</span> para explorar todo.
+                <span className="font-semibold text-amber-400">{TRIAL_DAYS} días Premium gratis</span> para explorar todo.
               </p>
             </div>
           </div>

@@ -59,7 +59,7 @@ const TAB_OPTIONS = [
 ];
 
 const Settings = () => {
-  const { PREMIUM_PRICE, ANNUAL_PRICE, FREE_FOR_ALL_PREMIUM } = useSiteSettings();
+  const { PREMIUM_PRICE, ANNUAL_PRICE, FREE_FOR_ALL_PREMIUM, TRIAL_DAYS } = useSiteSettings();
   const isFreeForAllPromo = FREE_FOR_ALL_PREMIUM === '1';
   const monthlyPrice = Number(PREMIUM_PRICE);
   const annualPrice = Number(ANNUAL_PRICE);
@@ -643,7 +643,7 @@ const Settings = () => {
                     <strong>🎉 Por tiempo limitado, MeDico App es 100% gratis para todos.</strong> Ya tenés acceso a todas las funciones Premium sin costo.
                     {creditDays > 0 && (
                       <span className="block mt-1">
-                        Además, tenés <strong>{creditDays} días de crédito acumulado</strong> por referidos — cuando la promo termine, se te sumarán a 30 días extra de regalo.
+                        Además, tenés <strong>{creditDays} días de crédito acumulado</strong> por referidos — cuando la promo termine, se te sumarán a {TRIAL_DAYS} días extra de regalo.
                       </span>
                     )}
                   </AlertDescription>

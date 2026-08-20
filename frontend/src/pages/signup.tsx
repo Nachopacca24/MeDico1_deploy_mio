@@ -56,8 +56,9 @@ const SPECIALTIES = [
 ];
 
 export default function SignupForm() {
-  const { FREE_FOR_ALL_PREMIUM } = useSiteSettings();
+  const { FREE_FOR_ALL_PREMIUM, TRIAL_DAYS } = useSiteSettings();
   const isFreeForAllPromo = FREE_FOR_ALL_PREMIUM === '1';
+  const trialDays = Number(TRIAL_DAYS);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -173,7 +174,7 @@ export default function SignupForm() {
       const colleagueName = await processPendingInvite();
 
       toast({
-        title: "¡Cuenta creada! Tienes 30 días Premium gratis",
+        title: `¡Cuenta creada! Tienes ${trialDays} días Premium gratis`,
         description: "Bienvenido/a a MeDico App. Disfruta de acceso completo durante tu período de prueba.",
       });
 
@@ -216,7 +217,7 @@ export default function SignupForm() {
       const colleagueNameGoogle = await processPendingInvite();
       const isNew = result.message.includes('Registro');
       toast({
-        title: isNew ? "¡Bienvenido/a! Tienes 30 días Premium gratis" : "¡Bienvenido/a de nuevo!",
+        title: isNew ? `¡Bienvenido/a! Tienes ${trialDays} días Premium gratis` : "¡Bienvenido/a de nuevo!",
         description: isNew
           ? "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba."
           : "Iniciaste sesión con Google correctamente.",
@@ -249,7 +250,7 @@ export default function SignupForm() {
       const colleagueNameNative = await processPendingInvite();
       const isNewNative = resultNative.message.includes('Registro');
       toast({
-        title: isNewNative ? "¡Bienvenido/a! Tienes 30 días Premium gratis" : "¡Bienvenido/a de nuevo!",
+        title: isNewNative ? `¡Bienvenido/a! Tienes ${trialDays} días Premium gratis` : "¡Bienvenido/a de nuevo!",
         description: isNewNative
           ? "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba."
           : "Iniciaste sesión con Google correctamente.",
@@ -304,7 +305,7 @@ export default function SignupForm() {
       const colleagueNameApple = await processPendingInvite();
       const isNewApple = resultApple.message.includes('Registro');
       toast({
-        title: isNewApple ? "¡Bienvenido/a! Tienes 30 días Premium gratis" : "¡Bienvenido/a de nuevo!",
+        title: isNewApple ? `¡Bienvenido/a! Tienes ${trialDays} días Premium gratis` : "¡Bienvenido/a de nuevo!",
         description: isNewApple
           ? "Tu cuenta fue registrada. Disfrutá acceso completo durante tu período de prueba."
           : "Iniciaste sesión con Apple correctamente.",
@@ -377,7 +378,7 @@ export default function SignupForm() {
             <img src="/favicon.png" alt="MeDico App" className="h-9 w-9 object-contain drop-shadow-sm" />
             <span className='text-2xl font-bold tracking-tight'>MeDico App</span>
           </div>
-          <p className='relative text-sky-800/70 text-sm'>Únete y obtén 30 días Premium gratis.</p>
+          <p className='relative text-sky-800/70 text-sm'>Únete y obtén {trialDays} días Premium gratis.</p>
         </div>
 
         {/* Contenido del formulario */}
@@ -393,7 +394,7 @@ export default function SignupForm() {
             {/* Badge Premium */}
             <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-400 rounded-lg">
               <Crown className="h-4 w-4 text-amber-900 shrink-0" />
-              <span className="text-sm font-bold text-amber-900">{isFreeForAllPromo ? 'Gratis durante el período de desarrollo — Premium sin costo' : '30 días de acceso Premium gratis al registrarte'}</span>
+              <span className="text-sm font-bold text-amber-900">{isFreeForAllPromo ? 'Gratis durante el período de desarrollo — Premium sin costo' : `${trialDays} días de acceso Premium gratis al registrarte`}</span>
             </div>
 
             {/* Apple — solo en iOS (requerido por App Store) */}
