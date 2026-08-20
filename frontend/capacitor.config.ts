@@ -16,6 +16,10 @@ const config: CapacitorConfig = {
     cleartext: false,
   },
   plugins: {
+    Badge: {
+      persist: true,
+      autoClear: true,
+    },
     Keyboard: {
       resize: 'native',
       resizeOnFullScreen: true,
