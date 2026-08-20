@@ -33,6 +33,11 @@ class Command(BaseCommand):
             anesthesia = getattr(case, 'anesthesia', None)
             if anesthesia and anesthesia.anesthesiologist_id and anesthesia.anesthesiologist_accepted is True:
                 relevant_users.append(anesthesia.anesthesiologist)
+            # A surgeon who is also their own anesthesiologist (a supported,
+            # auto-accepted flow) would otherwise appear twice here and get
+            # this one case counted twice in their lifetime totals below —
+            # permanently, since the source case row is gone once this runs.
+            relevant_users = list(dict.fromkeys(relevant_users))
 
             procedures = list(case.procedures.all())
             case_rvu = sum((p.rvu or Decimal('0') for p in procedures), Decimal('0'))

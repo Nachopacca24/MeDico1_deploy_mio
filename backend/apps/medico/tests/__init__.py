@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from apps.medico.models import AnesthesiaCase, Hospital, SurgicalCase
+from apps.medico.models.stats import UserStatsTotals
 from apps.medico.services.firebase import notify_team
 
 User = get_user_model()
@@ -166,3 +167,130 @@ class NotifyTeamTest(TestCase):
         notify_team(case, exclude_user=actor, title='t', body='b')
         notified = {call.args[0] for call in mock_notify.call_args_list}
         self.assertEqual(notified, {principal})
+
+
+class PurgeArchivedCasesTest(TestCase):
+    """purge_archived_cases no debe contar el mismo caso dos veces en las
+    estadísticas históricas cuando el cirujano es también su propio
+    anestesiólogo (un flujo real y soportado)."""
+
+    def test_self_anesthesiologist_case_counted_once(self):
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        doctor = User.objects.create(username='solo_doc', email='solo_doc@example.com')
+        old_date = timezone.now() - timedelta(days=200)
+        case = SurgicalCase.objects.create(
+            patient_name='Paciente', hospital=hospital, created_by=doctor,
+            surgery_date=date.today(), status='paid', is_operated=True,
+            archived_at=old_date,
+        )
+        AnesthesiaCase.objects.create(
+            case=case, anesthesiologist=doctor, anesthesiologist_accepted=True,
+        )
+
+        call_command('purge_archived_cases')
+
+        totals = UserStatsTotals.objects.get(user=doctor)
+        self.assertEqual(totals.total_cases, 1)
+        self.assertFalse(SurgicalCase.objects.filter(pk=case.pk).exists())
+
+
+class ProcedureOrderTest(TestCase):
+    """add-procedure debe seguir asignando order correlativos incluso después
+    de borrar uno del medio — Count() repetía el último order usado."""
+
+    def test_order_continues_after_deleting_middle_procedure(self):
+        from rest_framework.test import APIClient
+        from apps.medico.models.surgical_case import CaseProcedure
+
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        doctor = User.objects.create(username='proc_doc', email='proc_doc@example.com', is_email_verified=True)
+        case = SurgicalCase.objects.create(
+            patient_name='Paciente', hospital=hospital, created_by=doctor,
+            surgery_date=date.today(), status='scheduled',
+        )
+        procs = [
+            CaseProcedure.objects.create(
+                case=case, surgery_code=f'C{i}', surgery_name=f'Cirugia {i}',
+                specialty='General', rvu=1, hospital_factor=1, order=i,
+            )
+            for i in range(3)
+        ]
+        procs[1].delete()  # queda order=[0, 2]
+
+        client = APIClient()
+        client.force_authenticate(user=doctor)
+        response = client.post(f'/api/v1/medico/cases/{case.pk}/add-procedure/', {
+            'surgery_code': 'C3', 'surgery_name': 'Cirugia 3',
+            'specialty': 'General', 'rvu': '1', 'hospital_factor': '1',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(response.data['order'], 3)
+        self.assertEqual(
+            sorted(case.procedures.values_list('order', flat=True)), [0, 2, 3],
+        )
+
+    def test_anesthesia_item_order_continues_after_deleting_middle_item(self):
+        from rest_framework.test import APIClient
+        from apps.medico.models.anesthesia import AnesthesiaItem
+
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        surgeon = User.objects.create(username='an_surgeon', email='an_surgeon@example.com')
+        anesthesiologist = User.objects.create(
+            username='an_doc', email='an_doc@example.com', is_email_verified=True,
+        )
+        case = SurgicalCase.objects.create(
+            patient_name='Paciente', hospital=hospital, created_by=surgeon,
+            surgery_date=date.today(), status='scheduled',
+        )
+        anesthesia = AnesthesiaCase.objects.create(
+            case=case, anesthesiologist=anesthesiologist, anesthesiologist_accepted=True,
+        )
+        items = [
+            AnesthesiaItem.objects.create(
+                anesthesia_case=anesthesia, surgery_code=f'A{i}', surgery_name=f'Anestesia {i}',
+                base_units=1, order=i,
+            )
+            for i in range(3)
+        ]
+        items[1].delete()  # queda order=[0, 2]
+
+        client = APIClient()
+        client.force_authenticate(user=anesthesiologist)
+        response = client.post(f'/api/v1/medico/cases/{case.pk}/anesthesia/items/', {
+            'surgery_code': 'A3', 'surgery_name': 'Anestesia 3', 'base_units': '1',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(
+            sorted(anesthesia.items.values_list('order', flat=True)), [0, 2, 3],
+        )
+
+
+class GlobalExceptionHandlerTest(TestCase):
+    """Un ValidationError de full_clean() (llamado incondicionalmente desde
+    SurgicalCase.save()) debía llegar como un 500 crudo sin manejar — el
+    endpoint de assistant-status setea campos con setattr() directo desde
+    request.data, sin pasar por un serializer que valide antes."""
+
+    def test_invalid_field_value_returns_clean_400_not_500(self):
+        from rest_framework.test import APIClient
+
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        surgeon = User.objects.create(username='exc_surgeon', email='exc_surgeon@example.com')
+        assistant = User.objects.create(
+            username='exc_assistant', email='exc_assistant@example.com', is_email_verified=True,
+        )
+        case = SurgicalCase.objects.create(
+            patient_name='Paciente', hospital=hospital, created_by=surgeon,
+            surgery_date=date.today(), status='scheduled',
+            assistant_doctor=assistant, assistant_accepted=True,
+        )
+
+        client = APIClient()
+        client.force_authenticate(user=assistant)
+        response = client.patch(f'/api/v1/medico/cases/{case.pk}/assistant-status/', {
+            'assistant_invoice_number': 'X' * 200,  # max_length=100 en el modelo
+        }, format='json')
+
+        self.assertEqual(response.status_code, 400, response.data)

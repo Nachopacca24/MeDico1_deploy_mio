@@ -899,14 +899,16 @@ class SurgicalCaseViewSet(viewsets.ModelViewSet):
         serializer = CaseProcedureSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Determinar orden (último + 1)
-        last_order = case.procedures.aggregate(
-            max_order=Count('order')
-        )['max_order'] or 0
+        # Determinar orden (último + 1) — usar Max, no Count: si se borró un
+        # procedimiento del medio (ej. orders [0,1,2] -> borra el 1 -> [0,2]),
+        # Count devuelve 2 igual que antes de borrar, así que el siguiente
+        # agregado repetía order=2 en vez de continuar en 3.
+        last_order = case.procedures.aggregate(max_order=Max('order'))['max_order']
+        next_order = (last_order + 1) if last_order is not None else 0
 
         procedure = serializer.save(
             case=case,
-            order=last_order
+            order=next_order
         )
 
         return Response(

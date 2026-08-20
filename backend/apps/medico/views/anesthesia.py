@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.utils import timezone
+from django.db.models import Max
 
 from apps.medico.models.surgical_case import SurgicalCase
 from apps.medico.models.anesthesia import AnesthesiaCase, AnesthesiaItem
@@ -230,8 +231,11 @@ def add_anesthesia_item(request, case_id):
 
     serializer = AnesthesiaItemSerializer(data=request.data)
     if serializer.is_valid():
-        last_order = anesthesia.items.count()
-        item = serializer.save(anesthesia_case=anesthesia, order=last_order)
+        # Max, not count() — if an item was deleted from the middle,
+        # count() repeats an already-used order value for the next add.
+        last_order = anesthesia.items.aggregate(max_order=Max('order'))['max_order']
+        next_order = (last_order + 1) if last_order is not None else 0
+        item = serializer.save(anesthesia_case=anesthesia, order=next_order)
         # Bump the parent case's updated_at so the calendar sync (which only
         # looks at SurgicalCase.updated_at) notices the new code and re-syncs.
         case.save(update_fields=['updated_at'])
