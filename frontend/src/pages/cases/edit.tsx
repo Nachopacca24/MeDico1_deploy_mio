@@ -199,22 +199,33 @@ const EditCase = () => {
         }
 
         if (imagesResult.status === 'fulfilled' && imagesResult.value.ok) {
-          setExistingImages(await imagesResult.value.json());
+          try {
+            setExistingImages(await imagesResult.value.json());
+          } catch (err) {
+            // .ok era true pero el body vino vacío/corrupto — no debe tumbar
+            // toda la pantalla de edición por esto, solo esta parte.
+            console.error('[edit] Respuesta de imágenes inválida:', err);
+          }
         } else if (imagesResult.status === 'rejected') {
           console.error('[edit] No se pudieron cargar las imágenes del caso:', imagesResult.reason);
         }
 
         if (anesthesiaResult.status === 'fulfilled' && anesthesiaResult.value.ok) {
-          const anestData = await anesthesiaResult.value.json();
-          if (anestData) {
-            setAnesthesiaSession(anestData);
-            if (anestData.anesthesiologist) {
-              setAnesthesiologistType('colleague');
-              setSelectedAnesthesiologistId(anestData.anesthesiologist);
-            } else if (anestData.anesthesiologist_name) {
-              setAnesthesiologistType('manual');
-              setManualAnesthesiologistName(anestData.anesthesiologist_name);
+          try {
+            const anestData = await anesthesiaResult.value.json();
+            if (anestData) {
+              setAnesthesiaSession(anestData);
+              if (anestData.anesthesiologist) {
+                setAnesthesiologistType('colleague');
+                setSelectedAnesthesiologistId(anestData.anesthesiologist);
+              } else if (anestData.anesthesiologist_name) {
+                setAnesthesiologistType('manual');
+                setManualAnesthesiologistName(anestData.anesthesiologist_name);
+              }
             }
+          } catch (err) {
+            console.error('[edit] Respuesta de anestesia inválida:', err);
+            toast.warning('Aviso', 'No se pudo cargar la información de anestesia de este caso.');
           }
         } else if (anesthesiaResult.status === 'rejected') {
           console.error('[edit] No se pudo cargar la información de anestesia:', anesthesiaResult.reason);

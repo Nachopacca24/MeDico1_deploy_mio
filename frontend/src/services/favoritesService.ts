@@ -35,9 +35,14 @@ class FavoritesService {
       if (!response.ok) {
         throw new Error(`Error al obtener favoritos: ${response.status}`);
       }
-      
-      const data = await response.json();
-      
+
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('El servidor no devolvió una respuesta válida. Intentá de nuevo en unos segundos.');
+      }
+
       // Verificar si es array
       if (!Array.isArray(data)) {
         return [];

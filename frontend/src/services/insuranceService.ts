@@ -13,7 +13,12 @@ class InsuranceService {
     try {
       const response = await authService.authenticatedFetch(`${API_BASE_URL}/`);
       if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('El servidor no devolvió una respuesta válida. Intentá de nuevo en unos segundos.');
+      }
       if (Array.isArray(data)) return data;
       if (data && Array.isArray((data as any).results)) return (data as any).results;
       return [];

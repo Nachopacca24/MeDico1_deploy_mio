@@ -40,10 +40,26 @@ class AnesthesiaService {
     return `${API_URL}/api/v1/medico/cases/${caseId}/anesthesia/`;
   }
 
+  // Every method below did `return res.json()` unguarded on the success path
+  // — if res.ok was true but the body came back empty/truncated (e.g. the
+  // backend restarting mid-response during a deploy), that threw a raw
+  // "Unexpected end of JSON input" straight up to the caller. For
+  // edit-anesthesia.tsx, which awaits get() as part of its critical load,
+  // that surfaced as "no se pudo cargar el caso" and bounced the user back
+  // to the case detail — so a case could be viewable but never editable.
+  private async safeJson<T>(res: Response, context: string): Promise<T> {
+    try {
+      return await res.json();
+    } catch (err) {
+      console.error(`[anesthesiaService] Respuesta inválida (${context}):`, err);
+      throw new Error('El servidor no devolvió una respuesta válida. Intentá de nuevo en unos segundos.');
+    }
+  }
+
   async get(caseId: number): Promise<AnesthesiaCase | null> {
     const res = await authService.authenticatedFetch(this.url(caseId));
     if (!res.ok) return null;
-    const data = await res.json();
+    const data = await this.safeJson<AnesthesiaCase | null>(res, 'get');
     return data ?? null;
   }
 
@@ -63,7 +79,7 @@ class AnesthesiaService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al crear la sesión de anestesia');
     }
-    return res.json();
+    return this.safeJson(res, 'create');
   }
 
   async update(caseId: number, data: {
@@ -82,7 +98,7 @@ class AnesthesiaService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al actualizar la sesión de anestesia');
     }
-    return res.json();
+    return this.safeJson(res, 'update');
   }
 
   async addItem(caseId: number, item: {
@@ -98,7 +114,7 @@ class AnesthesiaService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al agregar código');
     }
-    return res.json();
+    return this.safeJson(res, 'addItem');
   }
 
   async removeItem(caseId: number, itemId: number): Promise<AnesthesiaCase> {
@@ -109,7 +125,7 @@ class AnesthesiaService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al eliminar código');
     }
-    return res.json();
+    return this.safeJson(res, 'removeItem');
   }
 
   async updateStatus(caseId: number, data: {
@@ -126,13 +142,13 @@ class AnesthesiaService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al actualizar estado de anestesia');
     }
-    return res.json();
+    return this.safeJson(res, 'updateStatus');
   }
 
   async getPendingInvitations(): Promise<{ pending_invitations: import('@/types/surgical-case').SurgicalCase[]; total_pending: number }> {
     const res = await authService.authenticatedFetch(`${API_URL}/api/v1/medico/cases/anesthesia-invitations/`);
     if (!res.ok) return { pending_invitations: [], total_pending: 0 };
-    return res.json();
+    return this.safeJson(res, 'getPendingInvitations');
   }
 
   async respond(caseId: number, accepted: boolean): Promise<AnesthesiaCase> {
@@ -144,7 +160,7 @@ class AnesthesiaService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Error al responder la invitación');
     }
-    return res.json();
+    return this.safeJson(res, 'respond');
   }
 }
 

@@ -26,7 +26,15 @@ class HospitalService {
         throw new Error(`Error al obtener hospitales: ${response.status}`);
       }
 
-      const data = await response.json();
+      // response.ok can be true with an empty/truncated body (e.g. the
+      // backend restarting mid-response) — response.json() throws a raw,
+      // unfriendly error in that case rather than a normal failure.
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('El servidor no devolvió una respuesta válida. Intentá de nuevo en unos segundos.');
+      }
       if (Array.isArray(data)) return data;
       if (data && Array.isArray((data as any).results)) return (data as any).results;
       return [];
