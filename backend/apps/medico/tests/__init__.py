@@ -294,3 +294,33 @@ class GlobalExceptionHandlerTest(TestCase):
         }, format='json')
 
         self.assertEqual(response.status_code, 400, response.data)
+
+
+class AnesthesiaEndpointNoSessionResponseTest(TestCase):
+    """GET .../anesthesia/ para un caso SIN sesión de anestesia debía devolver
+    un body completamente vacío (Response(None) en DRF renderiza a b'', no al
+    literal JSON `null`) — el frontend siempre tronaba con "Unexpected end of
+    JSON input" al intentar parsearlo, para CUALQUIER caso regular sin
+    anestesia (la mayoría de los casos quirúrgicos comunes)."""
+
+    def test_returns_parseable_null_body_not_empty(self):
+        from rest_framework.test import APIClient
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        user = User.objects.create_user(
+            username='no_anest_doc', email='no_anest_doc@example.com',
+            password='x', is_email_verified=True,
+        )
+        case = SurgicalCase.objects.create(
+            patient_name='Sin Anestesia', hospital=hospital, created_by=user,
+            surgery_date=date.today(), status='scheduled',
+        )
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get(f'/api/v1/medico/cases/{case.pk}/anesthesia/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.content, b'', 'el body no debe venir vacío')
+        # Debe ser JSON válido y parsear a None — exactamente como espera el frontend.
+        import json as _json
+        self.assertIsNone(_json.loads(response.content))

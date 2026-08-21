@@ -5,6 +5,7 @@ from rest_framework import status
 
 from django.utils import timezone
 from django.db.models import Max
+from django.http import JsonResponse
 
 from apps.medico.models.surgical_case import SurgicalCase
 from apps.medico.models.anesthesia import AnesthesiaCase, AnesthesiaItem
@@ -71,7 +72,14 @@ def anesthesia_case(request, case_id):
         try:
             anesthesia = AnesthesiaCase.objects.prefetch_related('items').get(case=case)
         except AnesthesiaCase.DoesNotExist:
-            return Response(None, status=status.HTTP_200_OK)
+            # NOT Response(None, ...) — DRF's JSONRenderer special-cases `None`
+            # to return an empty body (b''), not the JSON literal `null`. Every
+            # case without an anesthesia session hit this: 200 OK with a
+            # genuinely empty body, so the frontend's response.json() always
+            # threw "Unexpected end of JSON input" trying to parse it.
+            # JsonResponse doesn't have that shortcut — it always calls
+            # json.dumps(), so None correctly becomes the 4-byte body "null".
+            return JsonResponse(None, safe=False, status=200)
         return Response(AnesthesiaCaseSerializer(anesthesia).data)
 
     if request.method == 'POST':
