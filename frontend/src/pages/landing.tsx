@@ -136,7 +136,7 @@ export default function LandingPage() {
 
           {/* Qué es la app */}
           <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            MeDico App es la plataforma que gestioná tu práctica quirúrgica desde un solo lugar. Registrá cirugías y estas se sincronizan automáticamente con Google Calendar, calculá honorarios con la Tabla de California, generá reportes en PDF, subí imágenes de cada cirugía y mantené toda tu información organizada y siempre disponible.
+            MeDico App es la plataforma que gestioná tu práctica quirúrgica desde un solo lugar. Registrá cirugías y estas se sincronizan automáticamente con Google Calendar, calculá honorarios con la Tabla de Códigos Quirúrgicos, generá reportes en PDF, subí imágenes de cada cirugía y mantené toda tu información organizada y siempre disponible.
           </p>
 
           {/* Por qué existe */}
@@ -209,7 +209,7 @@ export default function LandingPage() {
             {[
               { num: "+4,000", label: "procedimientos quirúrgicos" },
               { num: "2 min",  label: "para registrar una cirugía" },
-              { num: "100%",   label: "basada en Tabla de California" },
+              { num: "100%",   label: "basada en Tabla de Códigos Quirúrgicos" },
               { num: "0",      label: "Excel necesarios" },
             ].map(({ num, label }) => (
               <div key={label} className="bg-gray-900 border border-white/5 rounded-2xl p-5">
@@ -244,7 +244,7 @@ export default function LandingPage() {
               {
                 icon: Calculator,
                 title: "Calculadora de honorarios",
-                desc: "Ingresá el procedimiento, elegí el hospital y MeDico App calcula automáticamente el honorario usando la Tabla de California y tu multiplicador configurado.",
+                desc: "Ingresá el procedimiento, elegí el hospital y MeDico App calcula automáticamente el honorario usando la Tabla de Códigos Quirúrgicos y tu multiplicador configurado.",
                 color: "text-green-400",
                 bg: "bg-green-400/10",
               },
@@ -337,12 +337,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TABLA DE CALIFORNIA ─────────────────────────────────── */}
+      {/* ── TABLA DE CÓDIGOS QUIRÚRGICOS ────────────────────────── */}
       <section className="py-20 px-4 bg-gray-900/50">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Tabla de California</p>
+              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Tabla de Códigos Quirúrgicos</p>
               <h2 className="text-4xl font-black mb-4 leading-tight">
                 Ya está incluida.
                 <br />Lista para usar.
@@ -413,7 +413,7 @@ export default function LandingPage() {
               {
                 step: "02",
                 title: "MeDico App calcula",
-                desc: "El sistema cruza los procedimientos con la Tabla de California, aplica tu multiplicador por hospital y te muestra el honorario total al instante.",
+                desc: "El sistema cruza los procedimientos con la Tabla de Códigos Quirúrgicos, aplica tu multiplicador por hospital y te muestra el honorario total al instante.",
               },
               {
                 step: "03",
@@ -620,7 +620,7 @@ export default function LandingPage() {
                 <p className="text-gray-400 leading-relaxed mb-4">
                   MeDico App no es una app genérica de gestión adaptada a medicina.
                   Fue diseñada entendiendo cómo funciona la práctica quirúrgica privada
-                  en Latinoamérica: la Tabla de California, los multiplicadores por hospital,
+                  en Latinoamérica: la Tabla de Códigos Quirúrgicos, los multiplicadores por hospital,
                   los ayudantes, los honorarios por procedimiento.
                 </p>
                 <p className="text-gray-400 leading-relaxed">
@@ -631,7 +631,7 @@ export default function LandingPage() {
                 {[
                   {
                     title: "La tabla construida por médicos",
-                    desc: "La Tabla de California está centralizada, actualizada y disponible para todos. Si falta un procedimiento, la comunidad lo reporta y lo incorporamos.",
+                    desc: "La Tabla de Códigos Quirúrgicos está centralizada, actualizada y disponible para todos. Si falta un procedimiento, la comunidad lo reporta y lo incorporamos.",
                   },
                   {
                     title: "Devolverte el tiempo",
