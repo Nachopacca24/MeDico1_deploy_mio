@@ -65,7 +65,12 @@ _require_env('ENCRYPTION_KEY')
 _require_env('LEMONSQUEEZY_API_KEY')
 _require_env('LEMONSQUEEZY_WEBHOOK_SECRET')
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    **STORAGES,
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # Servir el frontend de Vite compilado
 _FRONTEND_DIST = BASE_DIR.parent / 'frontend' / 'dist'

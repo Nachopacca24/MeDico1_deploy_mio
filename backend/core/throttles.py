@@ -45,3 +45,12 @@ class ColleagueSearchThrottle(UserRateThrottle):
 
 class RefreshTokenThrottle(AnonRateThrottle):
     scope = 'token_refresh'
+
+
+class WebhookThrottle(AnonRateThrottle):
+    """The 'webhook' rate in DEFAULT_THROTTLE_RATES had no class using this
+    scope, so lemonsqueezy_webhook silently fell back to the much tighter
+    default 'anon' rate instead. Not exploitable (HMAC verification already
+    rejects forged requests before this ever matters), but the config should
+    say what it actually does."""
+    scope = 'webhook'

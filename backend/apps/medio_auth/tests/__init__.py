@@ -155,3 +155,95 @@ class EmailCaseInsensitivityTest(TestCase):
         self.assertEqual(response.status_code, 200, response.data)
         self.assertEqual(response.data['user']['id'], existing.id)
         self.assertEqual(User.objects.filter(email__iexact='mixed@case.com').count(), 1)
+
+
+class SendVerificationEmailEnumerationTest(TestCase):
+    """POST /api/auth/send-verification/ must respond identically regardless
+    of whether the email is registered, already verified, or was just used —
+    otherwise the response itself lets an attacker enumerate which doctor/
+    anesthesiologist emails exist in the app (a real phishing setup risk)."""
+
+    def _post(self, email):
+        client = APIClient()
+        return client.post('/api/auth/send-verification/', {'email': email}, format='json')
+
+    def test_unknown_and_known_unverified_email_get_the_same_response(self):
+        User.objects.create_user(
+            username='unverified_enum', email='unverified_enum@example.com',
+            password='x', is_email_verified=False,
+        )
+        known = self._post('unverified_enum@example.com')
+        unknown = self._post('definitely_not_registered@example.com')
+
+        self.assertEqual(known.status_code, unknown.status_code)
+        self.assertEqual(known.data, unknown.data)
+
+    def test_already_verified_email_gets_the_same_response(self):
+        User.objects.create_user(
+            username='verified_enum', email='verified_enum@example.com',
+            password='x', is_email_verified=True,
+        )
+        verified = self._post('verified_enum@example.com')
+        unknown = self._post('also_not_registered@example.com')
+
+        self.assertEqual(verified.status_code, unknown.status_code)
+        self.assertEqual(verified.data, unknown.data)
+
+    def test_recently_sent_email_does_not_return_429(self):
+        from django.utils import timezone
+        user = User.objects.create_user(
+            username='recent_enum', email='recent_enum@example.com',
+            password='x', is_email_verified=False,
+        )
+        user.email_verification_sent_at = timezone.now()
+        user.save(update_fields=['email_verification_sent_at'])
+
+        response = self._post('recent_enum@example.com')
+
+        self.assertEqual(response.status_code, 200)
+
+
+class RefreshTokenRotationTest(TestCase):
+    """POST /api/auth/refresh/ must actually rotate — the old refresh token
+    becomes single-use (blacklisted) and a new one is issued — matching what
+    SIMPLE_JWT's ROTATE_REFRESH_TOKENS/BLACKLIST_AFTER_ROTATION already claim
+    to do. Without this, a stolen refresh token stays valid and reusable for
+    its full 7-day lifetime instead of being invalidated after one use."""
+
+    def test_refresh_response_includes_a_new_rotated_refresh_token(self):
+        from rest_framework_simplejwt.tokens import RefreshToken
+        user = User.objects.create_user(username='rot_user', email='rot_user@example.com', password='x')
+        original = str(RefreshToken.for_user(user))
+
+        client = APIClient()
+        response = client.post('/api/auth/refresh/', {'refresh': original}, format='json')
+
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertIn('refresh', response.data)
+        self.assertNotEqual(response.data['refresh'], original)
+
+    def test_used_refresh_token_cannot_be_reused(self):
+        from rest_framework_simplejwt.tokens import RefreshToken
+        user = User.objects.create_user(username='rot_user2', email='rot_user2@example.com', password='x')
+        original = str(RefreshToken.for_user(user))
+
+        client = APIClient()
+        first = client.post('/api/auth/refresh/', {'refresh': original}, format='json')
+        self.assertEqual(first.status_code, 200, first.data)
+
+        second = client.post('/api/auth/refresh/', {'refresh': original}, format='json')
+        self.assertEqual(second.status_code, 401)
+
+    def test_new_rotated_refresh_token_works(self):
+        from rest_framework_simplejwt.tokens import RefreshToken
+        user = User.objects.create_user(username='rot_user3', email='rot_user3@example.com', password='x')
+        original = str(RefreshToken.for_user(user))
+
+        client = APIClient()
+        first = client.post('/api/auth/refresh/', {'refresh': original}, format='json')
+        new_refresh = first.data['refresh']
+
+        second = client.post('/api/auth/refresh/', {'refresh': new_refresh}, format='json')
+
+        self.assertEqual(second.status_code, 200, second.data)
+        self.assertIn('access', second.data)

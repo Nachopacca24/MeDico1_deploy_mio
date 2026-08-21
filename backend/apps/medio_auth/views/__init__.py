@@ -23,6 +23,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.settings import api_settings as jwt_settings
 from rest_framework.decorators import throttle_classes, api_view, permission_classes
 from core.throttles import LoginRateThrottle, LoginEmailThrottle, RegisterRateThrottle, PasswordResetThrottle, PasswordResetEmailThrottle, ColleagueSearchThrottle, RefreshTokenThrottle
 
@@ -242,10 +243,28 @@ class RefreshTokenView(APIView):
                 )
             
             token = RefreshToken(refresh_token)
-            
-            return Response({
-                'access': str(token.access_token),
-            }, status=status.HTTP_200_OK)
+            data = {'access': str(token.access_token)}
+
+            # Rotar el refresh token — antes esta vista instanciaba RefreshToken
+            # directamente y nunca rotaba, pese a que SIMPLE_JWT ya declaraba
+            # ROTATE_REFRESH_TOKENS=True/BLACKLIST_AFTER_ROTATION=True (esas
+            # settings solo las respeta la lógica interna de simplejwt, que
+            # esta vista custom no ejecutaba). Un refresh token robado seguía
+            # siendo válido y reutilizable por sus 7 días completos en vez de
+            # un solo uso. Misma lógica que TokenRefreshSerializer.validate().
+            if jwt_settings.ROTATE_REFRESH_TOKENS:
+                if jwt_settings.BLACKLIST_AFTER_ROTATION:
+                    try:
+                        token.blacklist()
+                    except AttributeError:
+                        pass  # app de blacklist no instalada
+                token.set_jti()
+                token.set_exp()
+                token.set_iat()
+                token.outstand()
+                data['refresh'] = str(token)
+
+            return Response(data, status=status.HTTP_200_OK)
         except TokenError:
             return Response(
                 {'error': 'Token inválido o expirado'},
@@ -330,52 +349,39 @@ class SendVerificationEmailView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []
-    throttle_classes = [PasswordResetThrottle]
+    throttle_classes = [PasswordResetThrottle, PasswordResetEmailThrottle]
 
     def post(self, request):
-        email = request.data.get('email')
-        
+        email = request.data.get('email', '').strip()
+
         if not email:
             return Response(
-                {'error': 'Email es requerido'}, 
+                {'error': 'Email es requerido'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+        # Misma respuesta siempre, sin importar si el email existe, ya está
+        # verificado, o se pidió hace menos de 5 minutos — antes cada caso
+        # devolvía un mensaje distinto (incluyendo un 429 solo alcanzable si
+        # el email es real y ya se usó), lo que permitía enumerar qué
+        # cuentas de médicos/anestesiólogos están registradas en la app.
+        # Mismo patrón que ForgotPasswordView.
         try:
             user = User.objects.get(email__iexact=email)
-        except User.DoesNotExist:
-            # Por seguridad, no revelar si el email existe
-            return Response(
-                {'message': 'Si el email existe, se enviará un código de verificación'},
-                status=status.HTTP_200_OK
+            already_verified = user.is_email_verified
+            recently_sent = (
+                user.email_verification_sent_at is not None
+                and timezone.now() - user.email_verification_sent_at < timedelta(minutes=5)
             )
-        
-        if user.is_email_verified:
-            return Response(
-                {'message': 'Este email ya está verificado'}, 
-                status=status.HTTP_200_OK
-            )
-        
-        # Limitar reenvíos (no más de 1 cada 5 minutos)
-        if user.email_verification_sent_at:
-            time_since_last = timezone.now() - user.email_verification_sent_at
-            if time_since_last < timedelta(minutes=5):
-                minutes_left = 5 - (time_since_last.seconds // 60)
-                return Response(
-                    {'error': f'Debes esperar {minutes_left} minutos antes de solicitar otro email'}, 
-                    status=status.HTTP_429_TOO_MANY_REQUESTS
-                )
-        
-        # Generar token y enviar email
-        try:
-            token = user.generate_verification_token()
-            verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}&email={user.email}"
-            display_name = escape(user.first_name or user.username)
-
-            send_mail(
-                subject='Verifica tu email - MeDico App',
-                message=f'Hola {user.first_name or user.username}! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
-                html_message=f'''
+            if not already_verified and not recently_sent:
+                token = user.generate_verification_token()
+                verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}&email={user.email}"
+                display_name = escape(user.first_name or user.username)
+                try:
+                    send_mail(
+                        subject='Verifica tu email - MeDico App',
+                        message=f'Hola {user.first_name or user.username}! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
+                        html_message=f'''
 <div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
     <div style="background-color:#00BCD4;padding:28px;text-align:center;">
@@ -394,23 +400,20 @@ class SendVerificationEmailView(APIView):
     </div>
   </div>
 </div>
-                ''',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
+                        ''',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                    )
+                except Exception:
+                    logger.exception("Error enviando email de verificación a %s", user.email)
+        except User.DoesNotExist:
+            pass  # No revelar si el email existe
 
-            return Response({
-                'message': 'Email de verificación enviado correctamente',
-                'email': email
-            }, status=status.HTTP_200_OK)
-            
-        except Exception:
-            logger.exception("Error enviando email de verificación")
-            return Response(
-                {'error': 'Error al enviar el email de verificación'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        return Response(
+            {'message': 'Si el email está registrado y pendiente de verificación, recibirás un correo en breve.'},
+            status=status.HTTP_200_OK
+        )
 
 
 class VerifyEmailView(APIView):
@@ -1579,6 +1582,7 @@ def referral_stats(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([ColleagueSearchThrottle])
 def accept_invite(request):
     """Crea una amistad directa a partir de un friend_code de invitación."""
     friend_code = request.data.get('friend_code', '').strip().upper()

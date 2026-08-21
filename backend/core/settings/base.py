@@ -157,7 +157,18 @@ cloudinary.config(
 )
 
 # USAR CLOUDINARY PARA ARCHIVOS MEDIA
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# STORAGES (no el viejo DEFAULT_FILE_STORAGE/STATICFILES_STORAGE) — Django 5.1
+# quitó la conversión automática de esas settings antiguas a STORAGES, así que
+# quedaron sin efecto y Django caía a FileSystemStorage local (efímero en
+# Railway, se borra en cada deploy) sin ningún error visible.
+STORAGES = {
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
 
 # MEDIA_URL - Cloudinary manejará las URLs automáticamente
 MEDIA_URL = '/media/'
@@ -225,7 +236,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '500/day',
         'user': '5000/day',
-        'login': '20/min',
+        'login': '8/min',
         'register': '10/hour',
         'ad_tracking': '600/hour',
         'password_reset': '3/hour',

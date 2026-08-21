@@ -10,10 +10,12 @@ import requests
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+
+from core.throttles import WebhookThrottle
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -215,6 +217,7 @@ def _verify_signature(body: bytes, signature: str) -> bool:
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([WebhookThrottle])
 def lemonsqueezy_webhook(request):
     body      = request.body
     signature = request.headers.get('X-Signature', '')
