@@ -48,7 +48,17 @@ class SurgicalCaseService {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    try {
+      return await response.json();
+    } catch (err) {
+      // response.ok was true and content-type said JSON, but the body was
+      // empty/truncated — happens when a connection gets cut mid-response
+      // (e.g. the backend restarting during a deploy). Without this, the raw
+      // "Failed to execute 'json' on 'Response': Unexpected end of JSON
+      // input" was shown directly to the user instead of a clean message.
+      console.error('Empty/invalid JSON body on ok response:', { url: response.url, status: response.status, err });
+      throw new Error('El servidor no devolvió una respuesta válida. Intentá de nuevo en unos segundos.');
+    }
   }
 
   // ==================== CASOS PROPIOS ====================
