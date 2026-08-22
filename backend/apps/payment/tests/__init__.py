@@ -268,19 +268,19 @@ class ReferralCreditTest(TestCase):
             _apply_referral(new_user, referrer)
         referrer.refresh_from_db()
 
-    def test_5_referrals_gives_10_credit_days(self):
+    def test_3_referrals_gives_10_credit_days(self):
         referrer = _make_user(username='referrer', email='referrer@example.com')
-        self._register_referrals(referrer, 5)
+        self._register_referrals(referrer, 3)
         self.assertEqual(referrer.credit_days, 10)
 
-    def test_10_referrals_gives_20_credit_days(self):
+    def test_6_referrals_gives_20_credit_days(self):
         referrer = _make_user(username='referrer2', email='referrer2@example.com')
-        self._register_referrals(referrer, 10)
+        self._register_referrals(referrer, 6)
         self.assertEqual(referrer.credit_days, 20)
 
-    def test_4_referrals_gives_no_credit(self):
+    def test_2_referrals_gives_no_credit(self):
         referrer = _make_user(username='referrer3', email='referrer3@example.com')
-        self._register_referrals(referrer, 4)
+        self._register_referrals(referrer, 2)
         self.assertEqual(referrer.credit_days, 0)
 
     def test_referral_not_applied_twice_to_same_user(self):

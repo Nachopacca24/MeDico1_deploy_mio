@@ -1506,6 +1506,10 @@ def complete_tutorial(request):
     return Response({'ok': True})
 
 
+REFERRAL_THRESHOLD = 3
+REFERRAL_REWARD_DAYS = 10
+
+
 def _apply_referral(new_user, referrer):
     """Registra referred_by y aplica recompensa al referidor si corresponde."""
     if new_user.referred_by_id:
@@ -1513,9 +1517,9 @@ def _apply_referral(new_user, referrer):
     new_user.referred_by = referrer
     new_user.save(update_fields=['referred_by'])
     referral_count = User.objects.filter(referred_by=referrer, is_active=True).count()
-    if referral_count > 0 and referral_count % 5 == 0:
+    if referral_count > 0 and referral_count % REFERRAL_THRESHOLD == 0:
         from django.db.models import F
-        User.objects.filter(pk=referrer.pk).update(credit_days=F('credit_days') + 10)
+        User.objects.filter(pk=referrer.pk).update(credit_days=F('credit_days') + REFERRAL_REWARD_DAYS)
 
 
 def _process_signup_referral(new_user, raw_code, grant_credit=True):
@@ -1567,16 +1571,18 @@ def _process_signup_referral(new_user, raw_code, grant_credit=True):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def referral_stats(request):
-    count = User.objects.filter(referred_by=request.user).count()
-    threshold = 5
-    rewards_given = count // threshold
-    progress = count % threshold
+    # is_active=True to match _apply_referral's counting — otherwise a deleted/
+    # deactivated referred account would still count here, showing progress
+    # toward a reward that _apply_referral would never actually grant.
+    count = User.objects.filter(referred_by=request.user, is_active=True).count()
+    rewards_given = count // REFERRAL_THRESHOLD
+    progress = count % REFERRAL_THRESHOLD
     return Response({
         'count': count,
         'progress': progress,
-        'threshold': threshold,
+        'threshold': REFERRAL_THRESHOLD,
         'rewards_given': rewards_given,
-        'reward_days': 10,
+        'reward_days': REFERRAL_REWARD_DAYS,
     })
 
 
