@@ -1,4 +1,4 @@
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -37,20 +37,33 @@ class SendOperatedRemindersOvernightTest(TestCase):
 
     def test_overnight_surgery_not_reminded_before_it_ends(self):
         """Cirugía empieza 23:31 hoy, termina 00:45 (mañana). No debe avisar todavía."""
-        case = _make_case(surgery_time=time(23, 31), surgery_end_time=time(0, 45))
-        call_command('send_operated_reminders')
+        # "Hoy"/"ahora" anclados a un instante fijo, no al reloj real — este mismo
+        # test, tal como estaba antes con date.today() de por medio, falló en CI
+        # el 2026-08-22 porque corrió justo en la ventana de ~10-14 min por día
+        # donde "medianoche + buffer" todavía no había pasado según el reloj real.
+        fixed_now = timezone.make_aware(datetime(2026, 6, 15, 12, 0, 0))
+        with patch('django.utils.timezone.now', return_value=fixed_now):
+            case = _make_case(
+                surgery_date=fixed_now.date(),
+                surgery_time=time(23, 31), surgery_end_time=time(0, 45),
+            )
+            call_command('send_operated_reminders')
         case.refresh_from_db()
         self.assertIsNone(case.operated_reminder_sent_at)
 
     def test_overnight_surgery_reminded_after_real_end_time(self):
         """Si ya pasaron los 10 min desde la hora de fin real (al día siguiente), sí debe avisar."""
-        yesterday = date.today() - timedelta(days=1)
-        case = _make_case(
-            surgery_date=yesterday,
-            surgery_time=time(23, 31),
-            surgery_end_time=time(0, 45),  # = yesterday + 1 day = today, ya pasó
-        )
-        call_command('send_operated_reminders')
+        # Mismo motivo que arriba: instante fijo en vez de date.today()/timezone.now()
+        # reales, para que el resultado no dependa de a qué hora exacta corre CI.
+        fixed_now = timezone.make_aware(datetime(2026, 6, 15, 12, 0, 0))
+        with patch('django.utils.timezone.now', return_value=fixed_now):
+            yesterday = fixed_now.date() - timedelta(days=1)
+            case = _make_case(
+                surgery_date=yesterday,
+                surgery_time=time(23, 31),
+                surgery_end_time=time(0, 45),  # = yesterday + 1 day, bien antes del mediodía fijo
+            )
+            call_command('send_operated_reminders')
         case.refresh_from_db()
         self.assertIsNotNone(case.operated_reminder_sent_at)
 
