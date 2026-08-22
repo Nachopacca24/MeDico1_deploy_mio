@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { authService } from '@/shared/services/authService';
-import { Loader2, UserCheck, AlertCircle, Share2 } from 'lucide-react';
+import { Loader2, UserCheck, AlertCircle, Share2, Download } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
+import { isMobileWeb, storeUrlForDevice } from '@/shared/utils/platform';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -17,7 +19,7 @@ export default function InvitePage() {
   // InvitePage instance mounted across /invite?ref=A -> /invite?ref=B, it doesn't
   // remount, so a captured-once ref would get stuck showing the first one forever.
   const ref = (searchParams.get('ref') || '').toUpperCase();
-  const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'self' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'done' | 'already' | 'self' | 'error' | 'store'>('loading');
   // Which ref we've already processed (or are processing) — lets us tell "the
   // query string was cleared after a successful add" (ignore) apart from "a new
   // ref showed up" (process it), and stops a redelivered app-link event from
@@ -37,6 +39,17 @@ export default function InvitePage() {
     if (loading) return; // esperar a que AuthContext termine de cargar
 
     if (!isAuthenticated) {
+      // Tapped from a phone's browser, not from inside the app — the OS only lands
+      // here (instead of opening the app directly via App/Universal Links) when the
+      // app isn't installed. Send them to install it first instead of signing up on
+      // mobile web: once installed, re-tapping this same link/QR opens the app
+      // directly (App Links are verified) and connects them automatically, no
+      // native deep-link plumbing needed. Desktop and in-app native views are
+      // unaffected — this only fires for a bare mobile browser.
+      if (!Capacitor.isNativePlatform() && isMobileWeb()) {
+        setStatus('store');
+        return;
+      }
       navigate(`/signup?ref=${ref}`);
       return;
     }
@@ -65,6 +78,39 @@ export default function InvitePage() {
         setSearchParams({}, { replace: true });
       });
   }, [loading, isAuthenticated, ref]);
+
+  // Auto-redirect to the store — the screen below still renders as a fallback
+  // (and keeps a manual button) in case the browser blocks a programmatic
+  // top-level navigation right on mount.
+  useEffect(() => {
+    if (status !== 'store') return;
+    window.location.href = storeUrlForDevice();
+  }, [status]);
+
+  if (status === 'store') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="max-w-sm w-full bg-card border rounded-2xl p-8 text-center shadow-lg space-y-4">
+          <div className="p-4 bg-primary/10 rounded-full w-fit mx-auto">
+            <Download className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-xl font-bold">Descargá la app para conectarte</h1>
+          <p className="text-muted-foreground text-sm">
+            Te estamos llevando a la tienda para instalar MeDico App. Una vez instalada, volvé a abrir este mismo link o QR y quedarás conectado con tu colega automáticamente.
+          </p>
+          <Button className="w-full" onClick={() => { window.location.href = storeUrlForDevice(); }}>
+            Ir a la tienda
+          </Button>
+          <button
+            onClick={() => navigate(`/signup?ref=${ref}`)}
+            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+          >
+            Prefiero registrarme desde el navegador
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (status === 'loading') {
     return (

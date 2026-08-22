@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useSiteSettings } from "@/shared/hooks/useSiteSettings";
+import { PLAY_STORE_URL, APP_STORE_URL, isIOS } from "@/shared/utils/platform";
 import {
   Clock,
   Calculator,
@@ -29,15 +30,6 @@ import {
   BarChart2,
   ShieldCheck,
 } from "lucide-react";
-
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=app.medicoapp.medico";
-const APP_STORE_URL = "https://apps.apple.com/gt/app/medico-app/id6796186927";
-
-function isIOS(): boolean {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent;
-  return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-}
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
