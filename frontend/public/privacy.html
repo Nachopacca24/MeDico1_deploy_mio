@@ -169,14 +169,14 @@
 
     <!-- 5 -->
     <h2>5. Compartición de datos con terceros</h2>
-    <p>Utilizamos los siguientes proveedores de confianza para operar el servicio:</p>
+    <p>Utilizamos proveedores externos certificados, con estándares de seguridad de nivel empresarial, para operar el servicio:</p>
     <ul>
-      <li><strong>Supabase</strong> — base de datos en la nube (PostgreSQL)</li>
-      <li><strong>Railway</strong> — infraestructura del servidor backend</li>
-      <li><strong>Vercel</strong> — hosting del frontend</li>
+      <li><strong>Base de datos en la nube</strong> — almacenamiento de la información de la plataforma</li>
+      <li><strong>Infraestructura de servidor</strong> — alojamiento del backend de la aplicación</li>
+      <li><strong>Hosting web</strong> — alojamiento de la interfaz de la aplicación</li>
       <li><strong>Lemon Squeezy</strong> — procesamiento de pagos y suscripciones</li>
       <li><strong>Google Calendar API</strong> — sincronización de eventos quirúrgicos (solo si el médico lo autoriza)</li>
-      <li><strong>Cloudinary</strong> — almacenamiento de imágenes quirúrgicas subidas por el médico e imágenes publicitarias</li>
+      <li><strong>Almacenamiento de imágenes en la nube</strong> — imágenes quirúrgicas subidas por el médico e imágenes publicitarias</li>
     </ul>
     <p>Cada uno de estos proveedores tiene sus propias políticas de privacidad y estándares de seguridad. No compartimos tus datos personales con anunciantes.</p>
 
@@ -220,14 +220,14 @@
     </div>
 
     <p><strong>Imágenes quirúrgicas:</strong></p>
-    <p>Las imágenes de cirugías que el médico sube se almacenan en Cloudinary, un proveedor externo de almacenamiento en la nube. MéDico App:</p>
+    <p>Las imágenes de cirugías que el médico sube se almacenan en un proveedor externo de almacenamiento en la nube certificado. MéDico App:</p>
     <ul>
       <li>No analiza, procesa ni revisa el contenido de las imágenes</li>
       <li>No utiliza las imágenes para entrenar modelos de inteligencia artificial</li>
       <li>No comparte las imágenes con terceros</li>
       <li>Solo el médico que las subió puede verlas, dentro de su sesión autenticada</li>
     </ul>
-    <p><strong>Eliminación automática:</strong> cuando un caso quirúrgico es marcado como cobrado y archivado, las imágenes asociadas se eliminan automáticamente de Cloudinary transcurridos <strong>3 meses</strong> desde la fecha de archivado. Esta eliminación es definitiva e irreversible.</p>
+    <p><strong>Eliminación automática:</strong> cuando un caso quirúrgico es marcado como cobrado y archivado, las imágenes asociadas se eliminan automáticamente del almacenamiento en la nube transcurridos <strong>3 meses</strong> desde la fecha de archivado. Esta eliminación es definitiva e irreversible.</p>
 
     <p><strong>PDFs de reportes:</strong></p>
     <p>Cuando el médico genera un reporte PDF (resumen de cirugía, detalle de caso, etc.), el archivo es producido en el momento de la solicitud y transmitido directamente al dispositivo del médico. <strong>MéDico App no guarda, archiva ni retiene ninguna copia de los PDFs generados</strong> en sus servidores. El PDF se elimina del servidor inmediatamente después de ser entregado. No existe ningún repositorio o historial de PDFs del lado del servicio.
