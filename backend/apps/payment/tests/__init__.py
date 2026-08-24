@@ -585,6 +585,81 @@ class PaymentOverdueTest(TestCase):
         self.assertIsNone(user.ls_payment_overdue_since)
 
 
+class SendTrialEndingRemindersTest(TestCase):
+    """Comando send_trial_ending_reminders — email de 'tu prueba termina en 3 días'."""
+
+    def test_sends_reminder_for_trial_user_within_window(self):
+        from django.core import mail
+        user = _make_user(
+            username='trial1', email='trial1@example.com', plan='premium',
+            trial_ends_at=timezone.now() + timedelta(days=2), ls_subscription_id=None,
+        )
+        call_command('send_trial_ending_reminders')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['trial1@example.com'])
+        user.refresh_from_db()
+        self.assertEqual(user.trial_ending_reminder_sent_at, user.trial_ends_at)
+
+    def test_does_not_send_outside_the_3_day_window(self):
+        from django.core import mail
+        _make_user(
+            username='trial2', email='trial2@example.com', plan='premium',
+            trial_ends_at=timezone.now() + timedelta(days=10), ls_subscription_id=None,
+        )
+        call_command('send_trial_ending_reminders')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_does_not_send_for_already_expired_trial(self):
+        """expire_trials ya se encarga de bajarlo — no tiene sentido recordarle que se suscriba."""
+        from django.core import mail
+        _make_user(
+            username='trial3', email='trial3@example.com', plan='premium',
+            trial_ends_at=timezone.now() - timedelta(hours=1), ls_subscription_id=None,
+        )
+        call_command('send_trial_ending_reminders')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_does_not_send_to_a_paying_subscriber(self):
+        """Ya tiene suscripción de Lemon Squeezy — no necesita que le recuerden suscribirse."""
+        from django.core import mail
+        _make_user(
+            username='paying1', email='paying1@example.com', plan='premium',
+            trial_ends_at=timezone.now() + timedelta(days=2), ls_subscription_id='sub_paying',
+        )
+        call_command('send_trial_ending_reminders')
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_does_not_resend_for_the_same_trial_ends_at(self):
+        from django.core import mail
+        trial_end = timezone.now() + timedelta(days=1)
+        user = _make_user(
+            username='trial4', email='trial4@example.com', plan='premium',
+            trial_ends_at=trial_end, ls_subscription_id=None,
+        )
+        call_command('send_trial_ending_reminders')
+        self.assertEqual(len(mail.outbox), 1)
+
+        call_command('send_trial_ending_reminders')  # segunda corrida del cron, misma fecha
+        self.assertEqual(len(mail.outbox), 1)  # no se duplica
+
+    def test_resends_when_trial_ends_at_moves_further_out(self):
+        """Si el usuario suma días de crédito y trial_ends_at se corre, debe volver a avisar."""
+        from django.core import mail
+        user = _make_user(
+            username='trial5', email='trial5@example.com', plan='premium',
+            trial_ends_at=timezone.now() + timedelta(days=1), ls_subscription_id=None,
+        )
+        call_command('send_trial_ending_reminders')
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Se le suman días de crédito (ej. referidos) — nueva fecha, todavía dentro de la ventana
+        user.trial_ends_at = timezone.now() + timedelta(days=2)
+        user.save(update_fields=['trial_ends_at'])
+
+        call_command('send_trial_ending_reminders')
+        self.assertEqual(len(mail.outbox), 2)
+
+
 class ExpireTrialsOverdueSafetyNetTest(TestCase):
     """Comando expire_trials — pasos 3 y 4: red de seguridad para webhooks perdidos"""
 

@@ -99,6 +99,15 @@ class CustomUser(AbstractUser):
         help_text="Fecha en que termina el período de prueba de 14 días"
     )
 
+    trial_ending_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de fin de prueba enviado para",
+        help_text="Guarda el trial_ends_at vigente cuando se mandó el email de 'tu prueba termina en 3 días' "
+                   "(no el momento del envío) — así, si trial_ends_at se corre más adelante (referidos, fin de "
+                   "promo), deja de coincidir y el recordatorio se vuelve a enviar automáticamente para la nueva fecha."
+    )
+
     is_permanent_premium = models.BooleanField(
         default=False,
         verbose_name="Premium Permanente",

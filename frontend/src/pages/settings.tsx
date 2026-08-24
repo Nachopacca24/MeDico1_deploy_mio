@@ -121,6 +121,16 @@ const Settings = () => {
   // Credit days accumulated from referrals (shown during FREE_FOR_ALL promo)
   const creditDays = user?.credit_days ?? 0;
 
+  // Mirrors the backend's own create_checkout gate (payment/views/__init__.py): only a
+  // real active paid subscription (or permanent premium) blocks a new checkout.
+  // plan === 'premium' alone is NOT enough — that's also true during an active free
+  // trial, where there's nothing to "block" and the doctor should be able to
+  // subscribe early instead of only finding out they need to pay the day the trial
+  // actually runs out. ls_subscription_id itself isn't exposed to the frontend;
+  // ls_renews_at is only ever set once a real LS subscription exists (same signal
+  // already used for "hasPaidSub" in the status card below), so it works as the proxy.
+  const isPayingActiveSubscriber = !!user?.is_permanent_premium || (!!user?.ls_renews_at && !user?.ls_cancelled);
+
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
@@ -804,7 +814,7 @@ const Settings = () => {
                       ))}
                     </div>
                     <div className="mt-6">
-                      {user?.plan === 'premium' ? (
+                      {isPayingActiveSubscriber ? (
                         <Button disabled className="w-full rounded-xl bg-amber-400/10 text-amber-400 font-bold border border-amber-400/30 cursor-not-allowed">
                           <Star className="h-4 w-4 mr-2 fill-amber-400" /> Plan Activo
                         </Button>
