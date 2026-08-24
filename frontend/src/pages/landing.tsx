@@ -733,6 +733,62 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── PREGUNTAS FRECUENTES ────────────────────────────────── */}
+      <section className="py-20 px-4 bg-gray-900/50">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Preguntas frecuentes</p>
+            <h2 className="text-4xl font-black mb-4">Dudas comunes, respuestas directas</h2>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              {
+                q: "¿Necesito tarjeta de crédito para probarla?",
+                a: isFreeForAllPromo
+                  ? "No. Por tiempo limitado, MeDico App es 100% gratis para todos — accedés a todo Premium sin tarjeta ni compromiso."
+                  : `No. Te registrás y arrancás con ${trialDays} días de Premium gratis, sin pedirte tarjeta.`,
+              },
+              {
+                q: "¿Qué pasa cuando termina la prueba gratis?",
+                a: "Tu cuenta pasa automáticamente al plan gratuito — no perdés ningún dato. Podés suscribirte cuando quieras, incluso antes de que termine la prueba, desde Configuración.",
+              },
+              {
+                q: "¿Mis datos y los de mis pacientes están seguros?",
+                a: "Sí. El nombre, la identificación, el diagnóstico y las notas del paciente se cifran con Fernet (AES-128-CBC + HMAC-SHA256) antes de guardarse. Ni siquiera nosotros podemos leerlos.",
+              },
+              {
+                q: "¿Sirve también para anestesiólogos?",
+                a: "Sí — tiene su propio sistema, no una adaptación del de cirugía: su propia Tabla de Códigos, su propio flujo de invitaciones y su propio cálculo de honorarios.",
+              },
+              {
+                q: "¿La Tabla de Códigos está actualizada?",
+                a: "Tiene más de 4,000 procedimientos con código, nombre y valor RVU. Si falta alguno, lo reportás y lo incorporamos — crece con la comunidad médica.",
+              },
+              {
+                q: "¿Puedo invitar a mis colegas?",
+                a: "Sí, y te conviene: compartís tu link o QR, y por cada 3 médicos que se registren con tu código ganás 10 días de Premium gratis — repetible e ilimitado.",
+              },
+            ].map(({ q, a }) => (
+              <details key={q} className="group bg-gray-900 border border-white/5 rounded-2xl px-6 py-1 open:pb-4 transition-colors">
+                <summary className="flex items-center justify-between gap-4 py-4 cursor-pointer list-none font-semibold text-white">
+                  {q}
+                  <ChevronRight className="h-4 w-4 text-primary shrink-0 transition-transform group-open:rotate-90" />
+                </summary>
+                <p className="text-gray-400 text-sm leading-relaxed">{a}</p>
+              </details>
+            ))}
+          </div>
+
+          <p className="text-center text-gray-500 text-sm mt-8">
+            ¿Tenés otra duda?{" "}
+            <a href="/faq.html" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+              Mirá todas las preguntas frecuentes
+            </a>
+          </p>
+        </div>
+      </section>
+
       {/* ── CIERRE CTA ──────────────────────────────────────────── */}
       <section className="py-24 px-4 text-center">
         <div className="max-w-2xl mx-auto">

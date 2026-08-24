@@ -115,7 +115,18 @@ def _send_batch(messaging, tokens, title, body, data):
                 payload=messaging.APNSPayload(
                     aps=messaging.Aps(
                         sound='default',
-                        badge=1,
+                        # Every notification hardcoded badge=1 and nothing on the
+                        # client ever clears it (no navigator.clearAppBadge / no
+                        # Capacitor Badge plugin) — so the very first push a user
+                        # ever got left the app icon stuck showing "1" forever,
+                        # regardless of how many notifications came after or
+                        # whether they were read. badge=0 explicitly tells iOS to
+                        # clear the badge instead, so nothing lingers. Real
+                        # per-user unread counts would need a read-tracking model
+                        # and batches split by user (today's batches mix tokens
+                        # from many users) — worth doing later, not before this
+                        # submission.
+                        badge=0,
                     ),
                 ),
             ),
