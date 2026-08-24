@@ -189,6 +189,12 @@ class ApplyCreditsOnPromoEndTest(TestCase):
         # Debe tener al menos 40 días desde ahora
         self.assertGreater(user.trial_ends_at, timezone.now() + timedelta(days=39))
 
+    def test_credit_days_reset_after_applying_so_a_later_promo_cycle_cant_double_apply(self):
+        user = _make_user(plan='free', credit_days=10)
+        User.apply_credits_on_promo_end(default_days=30)
+        user.refresh_from_db()
+        self.assertEqual(user.credit_days, 0)
+
     def test_no_double_counting_when_trial_ends_at_was_null(self):
         """Usuario registrado durante FREE_FOR_ALL (trial_ends_at=None) recibe exactamente 30 días."""
         user = _make_user(plan='premium', trial_ends_at=None)

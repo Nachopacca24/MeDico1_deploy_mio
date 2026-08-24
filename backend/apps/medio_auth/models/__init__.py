@@ -336,7 +336,10 @@ class CustomUser(AbstractUser):
             user.trial_ends_at = base + timedelta(days=total_days)
             if user.plan == 'free' and not user.ls_cancelled:
                 user.plan = 'premium'
-        cls.objects.bulk_update(users, ['trial_ends_at', 'plan'])
+            # Zero it out — otherwise a later promo cycle (off -> on -> off again)
+            # would re-apply these same already-spent days a second time.
+            user.credit_days = 0
+        cls.objects.bulk_update(users, ['trial_ends_at', 'plan', 'credit_days'])
         return len(users)
 
     def check_trial_expiry(self):
