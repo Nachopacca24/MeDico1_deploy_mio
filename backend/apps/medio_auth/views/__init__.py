@@ -38,6 +38,7 @@ from ..serializers import (
     FriendRequestSerializer,
 )
 from ..models import Friendship, FriendRequest
+from ..services.email import send_welcome_email
 
 User = get_user_model()
 
@@ -107,45 +108,15 @@ class RegisterView(APIView):
             refresh = RefreshToken.for_user(user)
             user_data = UserSerializer(user).data
 
-            # Generar token de verificación y enviar email
+            # Generar token de verificación y enviar email de bienvenida (con
+            # el CTA de verificación incluido, ya que este path no llega verificado)
             email_sent = False
             try:
                 verification_token = user.generate_verification_token()
                 verification_url = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}&email={user.email}"
-                display_name = escape(user.first_name or user.username)
-
-                send_mail(
-                    subject='¡Bienvenido a MeDico App! - Verifica tu email',
-                    message=f'¡Bienvenido a MeDico App! Verifica tu email: {verification_url}\n\nEste enlace expira en 24 horas.',
-                    html_message=f'''
-<div style="background-color:#111827;padding:40px 20px;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <div style="max-width:600px;margin:0 auto;background-color:#1f2937;border-radius:12px;overflow:hidden;border:1px solid #374151;">
-    <div style="background-color:#00BCD4;padding:28px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">MeDico App</h1>
-    </div>
-    <div style="padding:36px;">
-      <h2 style="color:#00BCD4;font-size:20px;font-weight:700;margin:0 0 16px;">¡Bienvenido, {display_name}!</h2>
-      <p style="color:#f9fafb;margin:0 0 12px;line-height:1.6;">Estamos encantados de tenerte con nosotros. Para activar todas las funciones de tu cuenta, verifica tu dirección de correo electrónico.</p>
-      <div style="text-align:center;margin:32px 0;">
-        <a href="{verification_url}" style="background-color:#00BCD4;color:#ffffff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:700;display:inline-block;font-size:15px;">Verificar mi email</a>
-      </div>
-      <p style="color:#9ca3af;font-size:13px;margin:0 0 6px;">O copia y pega esta URL en tu navegador:</p>
-      <p style="font-size:12px;word-break:break-all;"><a href="{verification_url}" style="color:#00BCD4;">{verification_url}</a></p>
-      <p style="color:#6b7280;font-size:12px;margin-top:24px;">Este enlace expirará en 24 horas.</p>
-    </div>
-    <div style="padding:20px 36px;border-top:1px solid #374151;text-align:center;">
-      <p style="color:#6b7280;font-size:12px;margin:0;">El equipo de MeDico App</p>
-    </div>
-  </div>
-</div>
-                    ''',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=True,
-                )
-                email_sent = True
+                email_sent = send_welcome_email(user, verification_url=verification_url)
             except Exception:
-                logger.exception("Error enviando email de verificación al nuevo usuario")
+                logger.exception("Error enviando email de bienvenida al nuevo usuario")
 
             # Conectar como colegas y registrar referido si vino con referral_code
             colleague_name = _process_signup_referral(user, request.data.get('referral_code', ''))
@@ -1002,6 +973,7 @@ class GoogleLoginView(APIView):
                 user.set_unusable_password()
                 user.save(update_fields=['password'])
                 created = True
+                send_welcome_email(user)
             else:
                 # Verificar si la cuenta está pendiente de eliminación
                 if user.deletion_requested_at:
@@ -1219,6 +1191,7 @@ class AppleLoginView(APIView):
         )
         user.set_unusable_password()
         user.save(update_fields=['password'])
+        send_welcome_email(user)
         return user, True
 
 
