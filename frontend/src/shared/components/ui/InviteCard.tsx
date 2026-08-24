@@ -79,9 +79,10 @@ export function InviteCard({ friendCode, stats, isFreeForAllPromo, creditDays }:
 
       {/* Aviso de requisito para acreditar el crédito */}
       {stats && (
-        <div className="rounded-lg border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3">
-          <p className="text-xs text-amber-900 dark:text-amber-200">
-            <strong>Importante:</strong> para participar en la promoción, el médico invitado debe registrarse inmediatamente después de escanear el QR o abrir el link, para que cuente para tus días de crédito.
+        <div className="relative overflow-hidden rounded-lg border-2 border-red-400 dark:border-red-600 bg-white dark:bg-background px-4 py-3">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-red-100/70 dark:via-red-900/30 to-transparent pointer-events-none" />
+          <p className="relative text-xs text-foreground">
+            <strong className="text-red-600 dark:text-red-400">Importante:</strong> para participar en la promoción, el médico invitado debe registrarse inmediatamente después de escanear el QR o abrir el link, para que cuente para tus días de crédito.
           </p>
         </div>
       )}
