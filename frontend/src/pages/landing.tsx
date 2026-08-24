@@ -29,6 +29,8 @@ import {
   Zap,
   BarChart2,
   ShieldCheck,
+  Stethoscope,
+  BellRing,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -383,6 +385,89 @@ export default function LandingPage() {
                 </div>
               ))}
               <p className="text-center text-xs text-gray-600 pt-1">+4,000 procedimientos disponibles</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ANESTESIÓLOGOS ──────────────────────────────────────── */}
+      <section id="anestesiologos" className="py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="relative rounded-3xl border border-teal-500/20 bg-gradient-to-b from-teal-500/[0.07] to-transparent p-8 md:p-14 overflow-hidden">
+            <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+
+            <div className="relative text-center mb-14">
+              <div className="inline-flex items-center gap-2 bg-teal-400/10 border border-teal-400/20 rounded-full px-4 py-1.5 text-sm text-teal-400 font-semibold mb-6">
+                <Stethoscope className="h-4 w-4" />
+                Para anestesiólogos
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight mb-5">
+                No hay cirugía sin anestesiólogo.
+                <br />
+                <span className="text-teal-400">La mayoría del software los trata como una nota al pie.</span>
+              </h2>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+                Esto no es "la parte de anestesia" pegada a la app de un cirujano.
+                Es su propio sistema — con su propia Tabla de Códigos, su propio flujo
+                de invitaciones y su propio cálculo de honorarios — construido para
+                cómo realmente trabaja un anestesiólogo.
+              </p>
+            </div>
+
+            <div className="relative grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[
+                {
+                  icon: Stethoscope,
+                  title: "Su propia Tabla de Códigos",
+                  desc: "Códigos de anestesia organizados por región del cuerpo — cabeza, tórax, abdomen, columna — no una versión recortada de la tabla quirúrgica.",
+                },
+                {
+                  icon: Users,
+                  title: "Dos formas de trabajar",
+                  desc: "Aceptá invitaciones de cirujanos a sus cirugías, o registrá tus propios casos de anestesia sin depender de que nadie te invite.",
+                },
+                {
+                  icon: Clock,
+                  title: "El tiempo, calculado solo",
+                  desc: "Cuando la cirugía se marca como operada, un botón te avisa para cargar el tiempo — se convierte automáticamente a unidades para tu honorario.",
+                },
+                {
+                  icon: FileText,
+                  title: "Honorario y PDF propios",
+                  desc: "Tu cálculo de honorario y tu reporte en PDF son independientes de los del cirujano, aunque sea la misma cirugía.",
+                },
+                {
+                  icon: BellRing,
+                  title: "Nunca te quedás esperando",
+                  desc: "Si un cirujano te invita y no respondés, te lo recordamos — cada vez más seguido a medida que se acerca la fecha de la cirugía.",
+                },
+                {
+                  icon: Image,
+                  title: "Ves lo que necesitás ver",
+                  desc: "Accedé a las imágenes que subió el cirujano en un caso al que te invitaron, sin tener que pedirlas aparte.",
+                },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="bg-gray-950/60 border border-teal-500/10 rounded-2xl p-6 hover:border-teal-400/30 transition-colors">
+                  <div className="inline-flex p-2.5 rounded-xl bg-teal-400/10 mb-4">
+                    <Icon className="h-5 w-5 text-teal-400" />
+                  </div>
+                  <h3 className="font-bold text-white mb-2">{title}</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="relative text-center mt-12">
+              <p className="text-white font-semibold text-lg mb-5">
+                Si sos anestesiólogo, esto no es una función más. Es tu sistema.
+              </p>
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center gap-2 font-bold text-lg px-8 py-4 rounded-xl active:scale-95 transition-all shadow-lg bg-teal-400 hover:bg-teal-300 text-gray-900 shadow-teal-400/20"
+              >
+                Registrate gratis
+                <ChevronRight className="h-5 w-5" />
+              </Link>
             </div>
           </div>
         </div>
