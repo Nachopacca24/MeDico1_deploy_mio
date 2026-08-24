@@ -9,8 +9,7 @@ import { resolvePendingReferralCode } from '@/shared/utils/referralClipboard';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
-async function processPendingInvite(): Promise<string | null> {
-  const code = localStorage.getItem('referral_code');
+async function processPendingInvite(code: string | null): Promise<string | null> {
   if (!code) return null;
   try {
     const res = await authService.authenticatedFetch(`${API_URL}/api/auth/accept-invite/`, {
@@ -92,6 +91,13 @@ export default function Login() {
 
     if (!validateForm()) return;
 
+    // First await in this handler — stays inside the button-tap gesture
+    // window the clipboard read needs (see resolvePendingReferralCode).
+    // Covers e.g. an existing doctor who scanned a colleague's QR without
+    // the app, installed it fresh, and logs in with email/password instead
+    // of registering — localStorage alone would miss that case.
+    const ref = await resolvePendingReferralCode();
+
     setIsLoading(true);
 
     try {
@@ -100,7 +106,7 @@ export default function Login() {
         password: formData.password,
       });
 
-      const colleagueName = await processPendingInvite();
+      const colleagueName = await processPendingInvite(ref);
 
       toast({
         title: "¡Bienvenido!",

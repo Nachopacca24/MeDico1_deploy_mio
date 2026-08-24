@@ -12,11 +12,19 @@
 // — every call here is try/catch-wrapped and resolves to void/null on error.
 
 const CLIPBOARD_MARKER = 'MEDICO-REF:';
+// Someone can tap an invite link, get sent to the store, and never actually
+// install — the marker just sits in their clipboard. If they later register
+// organically through a totally unrelated path (weeks later, nothing to do
+// with that invite) and happen not to have copied anything else since, a
+// marker with no expiry would still get silently applied. 48h comfortably
+// covers "install today, actually open/register tomorrow" while cutting off
+// stale, unrelated clipboard content from a long-abandoned attempt.
+const MAX_AGE_MS = 48 * 60 * 60 * 1000;
 
 /** Called right before redirecting to the App/Play Store. */
 export async function writeReferralToClipboard(code: string): Promise<void> {
   try {
-    await navigator.clipboard?.writeText(`${CLIPBOARD_MARKER}${code}`);
+    await navigator.clipboard?.writeText(`${CLIPBOARD_MARKER}${code}:${Date.now()}`);
   } catch {
     // Clipboard write can be denied or unavailable — the store redirect
     // still has to happen either way, so this failure is silent.
@@ -34,10 +42,17 @@ export async function writeReferralToClipboard(code: string): Promise<void> {
 export async function readReferralFromClipboard(): Promise<string | null> {
   try {
     const text = await navigator.clipboard?.readText();
-    if (text?.startsWith(CLIPBOARD_MARKER)) {
-      const code = text.slice(CLIPBOARD_MARKER.length).trim().toUpperCase();
-      return code || null;
-    }
+    if (!text?.startsWith(CLIPBOARD_MARKER)) return null;
+
+    const [code, timestampRaw] = text.slice(CLIPBOARD_MARKER.length).split(':');
+    if (!code) return null;
+
+    const timestamp = Number(timestampRaw);
+    // Markers written before this field existed have no timestamp — treat
+    // those as expired rather than trusting them indefinitely.
+    if (!Number.isFinite(timestamp) || Date.now() - timestamp > MAX_AGE_MS) return null;
+
+    return code.trim().toUpperCase() || null;
   } catch {
     // Denied, unsupported, or the clipboard just has something else in it
     // (the user copied a verification code, a WiFi password, etc. in the
