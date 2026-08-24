@@ -370,12 +370,14 @@ class ProcessSignupReferralTest(TestCase):
     def test_self_referral_returns_none_and_creates_no_friendship(self):
         from apps.medio_auth.models import Friendship
         from apps.medio_auth.views import _process_signup_referral
-        user = _make_user(username='solito', email='solito@example.com')
+        user = _make_user(username='solito', email='solito@example.com', credit_days=0)
 
         colleague_name = _process_signup_referral(user, user.friend_code)
 
         self.assertIsNone(colleague_name)
         self.assertEqual(Friendship.objects.count(), 0)
+        user.refresh_from_db()
+        self.assertEqual(user.credit_days, 0)
 
 
 class RegisterEndpointReferralTest(TestCase):
@@ -400,6 +402,49 @@ class RegisterEndpointReferralTest(TestCase):
 
         self.assertEqual(response.status_code, 201, response.data)
         self.assertEqual(response.data['colleague_name'], 'Luis Gómez')
+
+
+class AcceptInviteEndpointTest(TestCase):
+    """POST /api/auth/accept-invite/ — la llamada que hace InvitePage.tsx cuando
+    alguien YA autenticado (típicamente ya con la app instalada) toca un link o
+    QR de colega. Cubre los dos escenarios pedidos explícitamente: no podés ser
+    tu propio colega, y esa conexión nunca debe sumar días de crédito (el
+    crédito solo se otorga en el signup vía _process_signup_referral, no acá)."""
+
+    def _post(self, user, friend_code):
+        from rest_framework.test import APIClient
+        client = APIClient()
+        client.force_authenticate(user=user)
+        return client.post('/api/auth/accept-invite/', {'friend_code': friend_code}, format='json')
+
+    def test_tapping_your_own_link_returns_self_creates_no_friendship_grants_no_credit(self):
+        from apps.medio_auth.models import Friendship
+        user = _make_user(username='solo_tap', email='solo_tap@example.com', credit_days=0)
+
+        response = self._post(user, user.friend_code)
+
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertTrue(response.data.get('self'))
+        self.assertEqual(Friendship.objects.count(), 0)
+        user.refresh_from_db()
+        self.assertEqual(user.credit_days, 0)
+
+    def test_tapping_a_colleagues_link_connects_but_grants_no_credit(self):
+        from apps.medio_auth.models import Friendship
+        colega_a = _make_user(username='colega_a', email='colega_a@example.com', credit_days=0)
+        colega_b = _make_user(username='colega_b', email='colega_b@example.com', credit_days=0)
+
+        response = self._post(colega_a, colega_b.friend_code)
+
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertTrue(response.data.get('created'))
+        self.assertEqual(Friendship.objects.count(), 1)
+        colega_a.refresh_from_db()
+        colega_b.refresh_from_db()
+        # Connecting two already-existing accounts is not a "new referral" —
+        # only signing up through someone's link/QR grants credit_days.
+        self.assertEqual(colega_a.credit_days, 0)
+        self.assertEqual(colega_b.credit_days, 0)
 
 
 class FullScenarioTest(TestCase):
