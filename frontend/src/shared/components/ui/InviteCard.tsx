@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Copy, Check, Gift } from 'lucide-react';
+import { Copy, Check, Gift, Sparkles } from 'lucide-react';
 import { Button } from './button';
 
 export interface ReferralStats {
@@ -15,9 +15,15 @@ interface InviteCardProps {
   friendCode: string;
   stats?: ReferralStats | null;
   isFreeForAllPromo?: boolean;
+  // Read straight from the user's credit_days column — not derived from
+  // stats.rewards_given * stats.reward_days — so this always reflects the
+  // actual banked balance even if the threshold/reward-days config ever
+  // changes after some of it was already earned. It's also what gets
+  // zeroed out server-side once the promo ends and the days get applied.
+  creditDays?: number;
 }
 
-export function InviteCard({ friendCode, stats, isFreeForAllPromo }: InviteCardProps) {
+export function InviteCard({ friendCode, stats, isFreeForAllPromo, creditDays }: InviteCardProps) {
   const [copied, setCopied] = useState(false);
   const inviteUrl = `https://medicoapp.app/invite?ref=${friendCode}`;
 
@@ -40,8 +46,16 @@ export function InviteCard({ friendCode, stats, isFreeForAllPromo }: InviteCardP
           </div>
           <p className="text-xs text-amber-900 mb-3">
             Por cada {stats.threshold} médicos que se registren con tu link, te sumamos <strong>{stats.reward_days} días Premium</strong> gratis — repetible e ilimitado. Seguí invitando y seguís ganando días.
-            {stats.rewards_given > 0 && ` Ya ganaste ${stats.rewards_given * stats.reward_days} días extra.`}
           </p>
+          {/* Contador de días acumulados — crece de a stats.reward_days por vez */}
+          {!!creditDays && creditDays > 0 && (
+            <div className="flex items-center gap-2 mb-3 bg-amber-900/10 rounded-md px-3 py-2">
+              <Sparkles className="h-4 w-4 text-amber-900 shrink-0" />
+              <span className="text-sm font-bold text-amber-900">
+                Ya tenés {creditDays} días Premium acumulados
+              </span>
+            </div>
+          )}
           {/* Barra de progreso */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-amber-900/80">

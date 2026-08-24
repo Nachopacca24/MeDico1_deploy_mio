@@ -155,7 +155,7 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-sm font-semibold truncate text-sidebar-foreground">MeDico App</span>
-            <span className="text-xs truncate text-sidebar-foreground/70">Medical Manager</span>
+            <span className="text-xs truncate text-sidebar-foreground/70">Administrador médico</span>
           </div>
         </div>
       </SidebarHeader>

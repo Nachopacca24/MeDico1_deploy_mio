@@ -213,7 +213,7 @@ export default function ColleaguesPage() {
 
         {/* Invitar por link / QR */}
         {user?.friend_code && (
-          <InviteCard friendCode={user.friend_code} stats={referralStats} isFreeForAllPromo={isFreeForAllPromo} />
+          <InviteCard friendCode={user.friend_code} stats={referralStats} isFreeForAllPromo={isFreeForAllPromo} creditDays={user.credit_days} />
         )}
 
         {/* Buscar colega */}
