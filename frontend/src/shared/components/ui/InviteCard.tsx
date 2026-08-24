@@ -74,7 +74,13 @@ export function InviteCard({ friendCode, stats, isFreeForAllPromo, creditDays }:
               Los días que ganés ahora se acumulan. Cuando la promo gratuita termine, tu crédito se aplica automáticamente y seguís con Premium sin interrupciones.
             </p>
           )}
-          <p className="text-xs text-amber-900/80 mt-2 border-t border-amber-900/20 pt-2">
+        </div>
+      )}
+
+      {/* Aviso de requisito para acreditar el crédito */}
+      {stats && (
+        <div className="rounded-lg border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3">
+          <p className="text-xs text-amber-900 dark:text-amber-200">
             <strong>Importante:</strong> para participar en la promoción, el médico invitado debe registrarse inmediatamente después de escanear el QR o abrir el link, para que cuente para tus días de crédito.
           </p>
         </div>
