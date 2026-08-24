@@ -46,7 +46,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 5, route: '/colleagues', emoji: '👥', target: 'colleague-code',
     title: 'Colegas y ayudantes',
-    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".\n\nSi invitás a un colega y no responde, le llegan recordatorios automáticos y a vos te avisamos si no confirmó a tiempo. Si te rechaza la invitación, podés cambiarlo por otro colega desde "Editar" en el caso (no desde "Ver").',
+    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".\n\nSi invitás a un colega y no responde, le llegan recordatorios automáticos y a vos te avisamos si no confirmó a tiempo. Si el ayudante o el anestesiólogo te rechaza la invitación, desde "Editar" podés cambiarlo por otro colega, escribir el nombre manualmente, o dejar el caso sin anestesiólogo/ayudante.',
     hint: 'Copiá tu código (aparece arriba de la pantalla) y enviáselo a un colega por WhatsApp o mensaje.',
   },
   {
@@ -148,7 +148,7 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 5, route: '/colleagues', emoji: '👥', target: 'colleague-code',
     title: 'Colegas y ayudantes',
-    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".\n\nSi invitás a un colega y no responde, le llegan recordatorios automáticos y a vos te avisamos si no confirmó a tiempo. Si te rechaza la invitación, podés cambiarlo por otro colega desde "Editar" en el caso (no desde "Ver").',
+    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".\n\nSi invitás a un colega y no responde, le llegan recordatorios automáticos y a vos te avisamos si no confirmó a tiempo. Si el ayudante o el anestesiólogo te rechaza la invitación, desde "Editar" podés cambiarlo por otro colega, escribir el nombre manualmente, o dejar el caso sin anestesiólogo/ayudante.',
     hint: 'Copiá tu código (aparece arriba de la pantalla) y enviáselo a un colega por WhatsApp o mensaje.',
   },
   {
