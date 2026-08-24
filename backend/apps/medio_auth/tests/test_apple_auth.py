@@ -230,3 +230,79 @@ def test_apple_login_response_has_access_and_refresh(client):
     assert 'refresh' in data['tokens']
     assert len(data['tokens']['access']) > 20
     assert len(data['tokens']['refresh']) > 20
+
+
+# ──────────────────────────────────────────────
+# REFERRAL CODE — same rule as Google login: only credits the referrer when
+# this Apple sign-in actually creates a new account (grant_credit=created).
+# An existing account logging back in still connects as a colleague if a
+# code is present, but is never charged as a "new referral".
+# ──────────────────────────────────────────────
+
+@pytest.mark.django_db
+def test_apple_login_new_user_with_referral_connects_as_colleague(client, User):
+    from apps.medio_auth.models import Friendship
+    # colleague_name in the response is the REFERRER's display name (for the
+    # "you're now colleagues with X" toast) — not the name of the person who
+    # just registered — hence setting it here explicitly.
+    referrer = User.objects.create_user(
+        username='a_ref1', email='a_ref1@example.com',
+        first_name='Colega', last_name='Referidor',
+    )
+
+    with _mock_verify(sub='apple_sub_new1', email='a_new1@example.com'):
+        resp = client.post(APPLE_URL, {
+            'identity_token': FAKE_TOKEN,
+            'given_name': 'Nombre',
+            'family_name': 'Apellido',
+            'email': 'a_new1@example.com',
+            'referral_code': referrer.friend_code,
+        }, format='json')
+
+    assert resp.status_code == 201  # new account
+    assert resp.json()['colleague_name'] == 'Colega Referidor'
+    new_user = User.objects.get(email='a_new1@example.com')
+    assert (
+        Friendship.objects.filter(user=referrer, friend=new_user).exists()
+        or Friendship.objects.filter(user=new_user, friend=referrer).exists()
+    )
+
+
+@pytest.mark.django_db
+def test_apple_login_new_user_grants_credit_at_referral_threshold(client, User):
+    referrer = User.objects.create_user(username='a_ref2', email='a_ref2@example.com')
+    for i in range(2):
+        other = User.objects.create_user(username=f'a_prev{i}', email=f'a_prev{i}@example.com')
+        other.referred_by = referrer
+        other.save(update_fields=['referred_by'])
+
+    with _mock_verify(sub='apple_sub_new2', email='a_new2@example.com'):
+        client.post(APPLE_URL, {
+            'identity_token': FAKE_TOKEN,
+            'email': 'a_new2@example.com',
+            'referral_code': referrer.friend_code,
+        }, format='json')
+
+    referrer.refresh_from_db()
+    assert referrer.credit_days == 10  # 3rd active referral hits the threshold
+
+
+@pytest.mark.django_db
+def test_apple_login_existing_user_does_not_grant_credit(client, User):
+    referrer = User.objects.create_user(username='a_ref3', email='a_ref3@example.com')
+    User.objects.create(
+        email='a_already@example.com',
+        username='a_already',
+        apple_user_id='apple_sub_already',
+    )
+
+    with _mock_verify(sub='apple_sub_already', email='a_already@example.com'):
+        resp = client.post(APPLE_URL, {
+            'identity_token': FAKE_TOKEN,
+            'email': 'a_already@example.com',
+            'referral_code': referrer.friend_code,
+        }, format='json')
+
+    assert resp.status_code == 200  # existing account, just logged in
+    referrer.refresh_from_db()
+    assert referrer.credit_days == 0

@@ -247,3 +247,75 @@ class RefreshTokenRotationTest(TestCase):
 
         self.assertEqual(second.status_code, 200, second.data)
         self.assertIn('access', second.data)
+
+
+class GoogleLoginReferralTest(TestCase):
+    """POST /api/auth/google/ — a referral_code must only ever *credit* the
+    referrer when this Google sign-in genuinely creates a new account
+    (grant_credit=created in the view). An existing account just logging
+    back in via Google must still connect as a colleague if a code is
+    present (matches accept_invite / email-login's processPendingInvite
+    behavior) but must never trigger a "new referral" credit — this is what
+    makes it safe for the frontend to always send whatever referral code it
+    has, on both the login and signup pages, without needing to know in
+    advance whether the account already exists."""
+
+    def _google_post(self, email, referral_code=None, given_name='Nombre', family_name='Apellido'):
+        from unittest.mock import patch
+        from django.test import override_settings
+        fake_idinfo = {
+            'iss': 'accounts.google.com',
+            'aud': 'test-client-id',
+            'email': email,
+            'given_name': given_name,
+            'family_name': family_name,
+        }
+        payload = {'token': 'fake-token'}
+        if referral_code:
+            payload['referral_code'] = referral_code
+        client = APIClient()
+        with override_settings(GOOGLE_OAUTH_CLIENT_IDS=['test-client-id']), \
+             patch('apps.medio_auth.views.id_token.verify_oauth2_token', return_value=fake_idinfo):
+            return client.post('/api/auth/google/', payload, format='json')
+
+    def test_new_account_via_google_connects_as_colleague(self):
+        from apps.medio_auth.models import Friendship
+        # colleague_name in the response is the REFERRER's display name (used
+        # for the "you're now colleagues with X" toast) — not the name of the
+        # person who just registered — hence setting it here explicitly.
+        referrer = User.objects.create_user(
+            username='g_ref1', email='g_ref1@example.com',
+            first_name='Colega', last_name='Referidor',
+        )
+
+        response = self._google_post('g_new1@example.com', referral_code=referrer.friend_code)
+
+        self.assertEqual(response.status_code, 201, response.data)  # 201 = new account
+        self.assertEqual(response.data['colleague_name'], 'Colega Referidor')
+        new_user = User.objects.get(email='g_new1@example.com')
+        self.assertTrue(
+            Friendship.objects.filter(user=referrer, friend=new_user).exists()
+            or Friendship.objects.filter(user=new_user, friend=referrer).exists()
+        )
+
+    def test_new_account_via_google_grants_credit_at_referral_threshold(self):
+        referrer = User.objects.create_user(username='g_ref2', email='g_ref2@example.com')
+        for i in range(2):
+            other = User.objects.create_user(username=f'g_prev{i}', email=f'g_prev{i}@example.com')
+            other.referred_by = referrer
+            other.save(update_fields=['referred_by'])
+
+        self._google_post('g_new2@example.com', referral_code=referrer.friend_code)
+
+        referrer.refresh_from_db()
+        self.assertEqual(referrer.credit_days, 10)  # 3rd active referral hits the threshold
+
+    def test_existing_account_login_via_google_does_not_grant_credit(self):
+        referrer = User.objects.create_user(username='g_ref3', email='g_ref3@example.com')
+        User.objects.create_user(username='g_already', email='g_already@example.com')
+
+        response = self._google_post('g_already@example.com', referral_code=referrer.friend_code)
+
+        self.assertEqual(response.status_code, 200, response.data)  # 200 = existing account, just logged in
+        referrer.refresh_from_db()
+        self.assertEqual(referrer.credit_days, 0)

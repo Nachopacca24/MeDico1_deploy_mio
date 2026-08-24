@@ -45,3 +45,29 @@ export async function readReferralFromClipboard(): Promise<string | null> {
   }
   return null;
 }
+
+/**
+ * Shared resolution used by both signup.tsx and login.tsx: whatever code is
+ * already known (set by InvitePage/signup's own ?ref= handling) wins, no
+ * clipboard read needed. Otherwise falls back to the clipboard — call this
+ * as the first async step of a real user-gesture handler (see
+ * readReferralFromClipboard). Persists whatever it finds back to
+ * localStorage so the rest of the app's existing ?ref=/localStorage flow
+ * keeps working unchanged.
+ *
+ * Safe to call from a login handler, not just signup: the backend only ever
+ * grants referral credit when the auth attempt actually creates a new
+ * account (see GoogleLoginView/AppleLoginView's grant_credit=created) — an
+ * existing user logging back in still gets connected as a colleague if a
+ * code is present, but never credited. So this can't accidentally award
+ * days for a plain login.
+ */
+export async function resolvePendingReferralCode(): Promise<string | null> {
+  const known = localStorage.getItem('referral_code');
+  if (known) return known;
+  const fromClipboard = await readReferralFromClipboard();
+  if (fromClipboard) {
+    localStorage.setItem('referral_code', fromClipboard);
+  }
+  return fromClipboard;
+}

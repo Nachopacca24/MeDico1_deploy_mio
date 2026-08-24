@@ -5,7 +5,7 @@ import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
 import { openLegalDoc } from '@/shared/utils/openLegalDoc';
-import { readReferralFromClipboard } from '@/shared/utils/referralClipboard';
+import { resolvePendingReferralCode } from '@/shared/utils/referralClipboard';
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -80,13 +80,9 @@ export default function SignupForm() {
    */
   const resolveReferralCode = async (): Promise<string | null> => {
     if (referralCode) return referralCode;
-    const fromClipboard = await readReferralFromClipboard();
-    if (fromClipboard) {
-      setReferralCode(fromClipboard);
-      localStorage.setItem('referral_code', fromClipboard);
-      return fromClipboard;
-    }
-    return null;
+    const resolved = await resolvePendingReferralCode();
+    if (resolved) setReferralCode(resolved);
+    return resolved;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

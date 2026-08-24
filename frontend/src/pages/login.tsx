@@ -5,6 +5,7 @@ import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
 import { authService } from '@/shared/services/authService';
 import { openLegalDoc } from '@/shared/utils/openLegalDoc';
+import { resolvePendingReferralCode } from '@/shared/utils/referralClipboard';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -166,10 +167,23 @@ export default function Login() {
   };
 
   const handleGoogleSuccess = async (tokenResponse: any) => {
+    // Almost always resolves instantly from localStorage — either it was
+    // already there, or handleGoogleClick's fire-and-forget clipboard check
+    // (below) already wrote it there by the time this fires (it's called
+    // once the OAuth popup round-trip completes, always well after that).
+    // Harmless either way: the backend only *credits* a referral when this
+    // Google account turns out to be genuinely new (grant_credit=created) —
+    // an existing account logging back in just connects as a colleague if a
+    // code is present, never gets charged a "new referral".
+    const ref = await resolvePendingReferralCode();
     setIsLoading(true);
     try {
-      await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token);
+      const result = await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token, ref || undefined);
+      if (ref) localStorage.removeItem('referral_code');
       toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
+      if (result.colleague_name) {
+        setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${result.colleague_name} automáticamente.` }), 800);
+      }
       navigate(location.state?.from ?? "/dashboard");
     } catch (error: unknown) {
       const msg = extractErrorMessage(error);
@@ -185,13 +199,20 @@ export default function Login() {
   });
 
   const handleGoogleNative = async () => {
+    // Safe to await here (native plugin call, not a web popup) — see
+    // handleGoogleClick for why the web path can't do the same.
+    const ref = await resolvePendingReferralCode();
     setIsLoading(true);
     try {
       const result = await FirebaseAuthentication.signInWithGoogle();
       const token = result.credential?.idToken;
       if (!token) throw new Error('No se pudo obtener el token de Google');
-      await loginWithGoogle(token);
+      const loginResult = await loginWithGoogle(token, ref || undefined);
+      if (ref) localStorage.removeItem('referral_code');
       toast({ title: "¡Bienvenido/a!", description: "Has iniciado sesión con Google exitosamente." });
+      if (loginResult.colleague_name) {
+        setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${loginResult.colleague_name} automáticamente.` }), 800);
+      }
       navigate(location.state?.from ?? "/dashboard");
     } catch (error: unknown) {
       const cancelled =
@@ -209,13 +230,22 @@ export default function Login() {
 
   const handleGoogleClick = () => {
     if (Capacitor.isNativePlatform()) {
-      handleGoogleNative();
+      handleGoogleNative(); // resolves the referral code itself, safely (see above)
     } else {
+      // loginGoogle() opens a real browser popup — has to fire synchronously
+      // off this click or most browsers block it as not user-initiated, so
+      // this can't await first. handleGoogleSuccess reads the result from
+      // localStorage once the OAuth round-trip completes (always well after
+      // this resolves).
+      resolvePendingReferralCode();
       loginGoogle();
     }
   };
 
   const handleAppleSignIn = async () => {
+    // Same reasoning as handleGoogleNative — safe to await here (native
+    // plugin call, not a web popup).
+    const ref = await resolvePendingReferralCode();
     setIsLoading(true);
     try {
       const result = await FirebaseAuthentication.signInWithApple();
@@ -228,13 +258,18 @@ export default function Login() {
       const givenName = nameParts[0] ?? null;
       const familyName = nameParts.slice(1).join(' ') || null;
 
-      await loginWithApple({
+      const loginResult = await loginWithApple({
         identity_token: idToken,
         given_name: givenName,
         family_name: familyName,
         email,
+        referral_code: ref || undefined,
       });
+      if (ref) localStorage.removeItem('referral_code');
       toast({ title: '¡Bienvenido/a!', description: 'Has iniciado sesión con Apple exitosamente.' });
+      if (loginResult.colleague_name) {
+        setTimeout(() => toast({ title: "¡Ya son colegas!", description: `Quedaste conectado con ${loginResult.colleague_name} automáticamente.` }), 800);
+      }
       navigate(location.state?.from ?? '/dashboard');
     } catch (error: any) {
       const cancelled = error?.message?.includes('cancel') || error?.code === 'popup-closed-by-user';
