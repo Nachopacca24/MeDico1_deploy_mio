@@ -5,6 +5,7 @@ import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { AuthError, NetworkError } from '@/shared/services/authErrors';
 import { openLegalDoc } from '@/shared/utils/openLegalDoc';
+import { readReferralFromClipboard } from '@/shared/utils/referralClipboard';
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -63,6 +64,30 @@ export default function SignupForm() {
       localStorage.setItem('referral_code', ref);
     }
   }, []);
+
+  /**
+   * Best-effort recovery for someone who scanned a colleague's QR without
+   * the app installed, went through the App/Play Store, and is now
+   * registering from a completely fresh install — no ?ref= in the URL, and
+   * nothing in this app's own localStorage (it's a separate storage
+   * container from whatever browser they used before installing). See
+   * shared/utils/referralClipboard.ts.
+   *
+   * Must be called as the first async step of a real user-gesture handler
+   * (form submit, button tap) — reading the clipboard without one is denied
+   * by most mobile browsers/WebViews. If we already know the code (URL or
+   * localStorage), skips the clipboard entirely.
+   */
+  const resolveReferralCode = async (): Promise<string | null> => {
+    if (referralCode) return referralCode;
+    const fromClipboard = await readReferralFromClipboard();
+    if (fromClipboard) {
+      setReferralCode(fromClipboard);
+      localStorage.setItem('referral_code', fromClipboard);
+      return fromClipboard;
+    }
+    return null;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -137,6 +162,10 @@ export default function SignupForm() {
 
     if (!validateForm()) return;
 
+    // First await in this handler — stays inside the button-tap gesture window
+    // the clipboard read needs (see resolveReferralCode).
+    const ref = await resolveReferralCode();
+
     setIsLoading(true);
 
     try {
@@ -148,9 +177,9 @@ export default function SignupForm() {
         first_name: formData.first_name,
         last_name: formData.last_name,
         specialty: formData.specialty,
-        ...(referralCode ? { referral_code: referralCode } : {}),
+        ...(ref ? { referral_code: ref } : {}),
       });
-      if (referralCode) localStorage.removeItem('referral_code');
+      if (ref) localStorage.removeItem('referral_code');
 
       // El backend ya conectó al colega y devuelve su nombre en la misma respuesta —
       // no depende de una segunda llamada de red que podía fallar en silencio.
@@ -194,6 +223,9 @@ export default function SignupForm() {
   };
 
   const handleGoogleSuccess = async (tokenResponse: any) => {
+    // referralCode here reflects whatever resolveReferralCode() found in
+    // handleGoogleClick — by the time this fires (after the OAuth popup
+    // round-trip), that resolution has long since finished.
     setIsLoading(true);
     try {
       const result = await loginWithGoogle(tokenResponse.access_token || tokenResponse.credential || tokenResponse.id_token, referralCode || undefined);
@@ -225,13 +257,17 @@ export default function SignupForm() {
   });
 
   const handleGoogleNative = async () => {
+    // First await — still inside the button-tap gesture window the clipboard
+    // read needs (native plugin calls aren't subject to popup-blocking, so
+    // this await is safe here unlike the web OAuth popup path below).
+    const ref = await resolveReferralCode();
     setIsLoading(true);
     try {
       const result = await FirebaseAuthentication.signInWithGoogle();
       const token = result.credential?.idToken;
       if (!token) throw new Error('No se pudo obtener el token de Google');
-      const resultNative = await loginWithGoogle(token, referralCode || undefined);
-      if (referralCode) localStorage.removeItem('referral_code');
+      const resultNative = await loginWithGoogle(token, ref || undefined);
+      if (ref) localStorage.removeItem('referral_code');
       const colleagueNameNative = resultNative.colleague_name;
       const isNewNative = resultNative.message.includes('Registro');
       toast({
@@ -261,13 +297,22 @@ export default function SignupForm() {
 
   const handleGoogleClick = () => {
     if (Capacitor.isNativePlatform()) {
-      handleGoogleNative();
+      handleGoogleNative(); // resolves the referral code itself, safely (see above)
     } else {
+      // loginGoogle() opens a real browser popup — it has to be called
+      // synchronously off this click, or most browsers treat the popup as
+      // not user-initiated and block it. So this fires without awaiting;
+      // handleGoogleSuccess reads the resolved referralCode from state once
+      // the OAuth round-trip completes (always well after this resolves).
+      resolveReferralCode();
       loginGoogle();
     }
   };
 
   const handleAppleSignIn = async () => {
+    // Same reasoning as handleGoogleNative — safe to await here (native plugin
+    // call, not a web popup).
+    const ref = await resolveReferralCode();
     setIsLoading(true);
     try {
       const result = await FirebaseAuthentication.signInWithApple();
@@ -285,9 +330,9 @@ export default function SignupForm() {
         given_name: givenName,
         family_name: familyName,
         email,
-        referral_code: referralCode || undefined,
+        referral_code: ref || undefined,
       });
-      if (referralCode) localStorage.removeItem('referral_code');
+      if (ref) localStorage.removeItem('referral_code');
       const colleagueNameApple = resultApple.colleague_name;
       const isNewApple = resultApple.message.includes('Registro');
       toast({

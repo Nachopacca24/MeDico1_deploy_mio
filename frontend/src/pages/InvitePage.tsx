@@ -6,6 +6,7 @@ import { authService } from '@/shared/services/authService';
 import { Loader2, UserCheck, AlertCircle, Share2, Download } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { isMobileWeb, storeUrlForDevice } from '@/shared/utils/platform';
+import { writeReferralToClipboard } from '@/shared/utils/referralClipboard';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -79,12 +80,21 @@ export default function InvitePage() {
       });
   }, [loading, isAuthenticated, ref]);
 
+  // Best-effort: copy the code to the clipboard so the app can pick it up
+  // silently once installed (see referralClipboard.ts) — then redirect.
+  // Always redirects even if the clipboard write fails/is denied.
+  const goToStore = () => {
+    writeReferralToClipboard(ref).finally(() => {
+      window.location.href = storeUrlForDevice();
+    });
+  };
+
   // Auto-redirect to the store — the screen below still renders as a fallback
   // (and keeps a manual button) in case the browser blocks a programmatic
   // top-level navigation right on mount.
   useEffect(() => {
     if (status !== 'store') return;
-    window.location.href = storeUrlForDevice();
+    goToStore();
   }, [status]);
 
   if (status === 'store') {
@@ -98,7 +108,7 @@ export default function InvitePage() {
           <p className="text-muted-foreground text-sm">
             Te estamos llevando a la tienda para instalar MeDico App. Una vez instalada, volvé a abrir este mismo link o QR y quedarás conectado con tu colega automáticamente.
           </p>
-          <Button className="w-full" onClick={() => { window.location.href = storeUrlForDevice(); }}>
+          <Button className="w-full" onClick={goToStore}>
             Ir a la tienda
           </Button>
           <button
