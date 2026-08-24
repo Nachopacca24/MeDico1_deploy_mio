@@ -147,7 +147,7 @@ export function TutorialCard() {
           </button>
         </div>
 
-        <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+        <p className="text-sm text-muted-foreground leading-relaxed mb-2 whitespace-pre-line">
           {currentStepData.description}
         </p>
 

@@ -46,7 +46,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 5, route: '/colleagues', emoji: '👥', target: 'colleague-code',
     title: 'Colegas y ayudantes',
-    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".',
+    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".\n\nSi invitás a un colega y no responde, le llegan recordatorios automáticos y a vos te avisamos si no confirmó a tiempo. Si te rechaza la invitación, podés cambiarlo por otro colega desde "Editar" en el caso (no desde "Ver").',
     hint: 'Copiá tu código (aparece arriba de la pantalla) y enviáselo a un colega por WhatsApp o mensaje.',
   },
   {
@@ -148,7 +148,7 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 5, route: '/colleagues', emoji: '👥', target: 'colleague-code',
     title: 'Colegas y ayudantes',
-    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".',
+    description: 'Tu código de colega es único. Compartilo con otros médicos para colaborar. Si alguien te invita a una cirugía como ayudante, la verás en la sección "Cirugías".\n\nSi invitás a un colega y no responde, le llegan recordatorios automáticos y a vos te avisamos si no confirmó a tiempo. Si te rechaza la invitación, podés cambiarlo por otro colega desde "Editar" en el caso (no desde "Ver").',
     hint: 'Copiá tu código (aparece arriba de la pantalla) y enviáselo a un colega por WhatsApp o mensaje.',
   },
   {
@@ -160,7 +160,7 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 7, route: '/cases', emoji: '📨', target: 'anesthesia-invitations',
     title: 'Cuando te invitan a una cirugía',
-    description: 'Un cirujano puede invitarte a un caso como anestesiólogo. La invitación aparece acá arriba, en "Mis Cirugías", con los datos del paciente y el hospital — tocás Aceptar o Rechazar. Al aceptar: el caso pasa a tu lista, se agrega solo a tu Google Calendar, y ya podés entrar a completar tu formulario de anestesia (códigos, equipo y, si ya operaron, el tiempo) igual que en un caso propio.',
+    description: 'Un cirujano puede invitarte a un caso como anestesiólogo. La invitación aparece acá arriba, en "Mis Cirugías", con los datos del paciente y el hospital — tocás Aceptar o Rechazar. Al aceptar: el caso pasa a tu lista, se agrega solo a tu Google Calendar, y ya podés entrar a completar tu formulario de anestesia (códigos, equipo y, si ya operaron, el tiempo) igual que en un caso propio.\n\nSi te olvidás de responder, te vamos a recordar — más seguido cuanto más cerca esté la fecha de la cirugía.',
     hint: 'Si ahora no tenés ninguna invitación pendiente, no hay problema — esta sección solo aparece cuando alguien te invita.',
   },
   {
