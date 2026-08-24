@@ -174,7 +174,7 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 7, route: '/cases', emoji: '📨', target: 'anesthesia-invitations',
     title: 'Cuando te invitan a una cirugía',
-    description: 'Un cirujano puede invitarte a un caso como anestesiólogo. La invitación aparece acá arriba, en "Mis Cirugías", con los datos del paciente y el hospital — tocás Aceptar o Rechazar. Al aceptar: el caso pasa a tu lista, se agrega solo a tu Google Calendar, y ya podés entrar a agregar tus propios códigos de anestesia (equipo y, una vez que marquen la cirugía como operada, el tiempo) igual que en un caso propio. Si el cirujano subió fotos del caso, también las vas a poder ver — no subir las tuyas, pero sí verlas.\n\nSi te olvidás de responder, te vamos a recordar — más seguido cuanto más cerca esté la fecha de la cirugía.',
+    description: 'Un cirujano puede invitarte a un caso como anestesiólogo. La invitación aparece acá arriba, en "Mis Cirugías", con los datos del paciente y el hospital — tocás Aceptar o Rechazar. Al aceptar: el caso pasa a tu lista, se agrega solo a tu Google Calendar, y ya podés entrar a agregar tus propios códigos de anestesia y equipo, igual que en un caso propio. Si el cirujano subió fotos del caso, también las vas a poder ver — no subir las tuyas, pero sí verlas.\n\nUna vez que la cirugía queda marcada como operada, te va a aparecer en la tarjeta del caso el botón "Agregar tiempos" — brilla mientras no cargues el tiempo, así no se te pasa. Funciona igual sea un caso al que te invitaron o uno que creaste vos mismo.\n\nSi te olvidás de responder la invitación, te vamos a recordar — más seguido cuanto más cerca esté la fecha de la cirugía.',
     hint: 'Si ahora no tenés ninguna invitación pendiente, no hay problema — esta sección solo aparece cuando alguien te invita.',
   },
   {
@@ -216,7 +216,7 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 14, route: '/cases', emoji: '🔄', target: 'case-status',
     title: 'Los 3 estados de tu anestesia',
-    description: 'Cada caso tiene sus propios estados independientes del cirujano: ① Operado: se habilita el campo de Tiempo (elegís una duración de la lista o ingresás los minutos a mano — se convierte a 1 unidad cada 15 minutos, necesario para calcular bien el honorario). ② Facturado: ingresás tu número de factura de anestesia. ③ Cobrado: honorario recibido — el caso pasa a "Cobrados" y suma a tus estadísticas.\n\n🗑️ Eliminar es diferente: si querés borrar un caso sin que cuente en estadísticas, entrá al detalle ("Ver") y usá el botón Eliminar. Cobrado archiva y suma; Eliminar borra sin registrar.',
+    description: 'Cada caso tiene sus propios estados independientes del cirujano: ① Operado: aparece el botón "Agregar tiempos" en la tarjeta (elegís una duración de la lista o ingresás los minutos a mano — se convierte a 1 unidad cada 15 minutos, necesario para calcular bien el honorario). ② Facturado: ingresás tu número de factura de anestesia. ③ Cobrado: honorario recibido — el caso pasa a "Cobrados" y suma a tus estadísticas.\n\n🗑️ Eliminar es diferente: si querés borrar un caso sin que cuente en estadísticas, entrá al detalle ("Ver") y usá el botón Eliminar. Cobrado archiva y suma; Eliminar borra sin registrar.',
     hint: 'Cobrado → suma a tus estadísticas. Eliminar (desde "Ver") → borra sin afectar estadísticas.',
   },
   {
