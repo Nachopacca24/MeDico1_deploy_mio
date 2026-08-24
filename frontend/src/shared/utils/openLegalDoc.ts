@@ -7,6 +7,6 @@ const APP_ORIGIN = 'https://medicoapp.app';
  * delegate to), so terms/privacy links need Browser.open with an absolute URL.
  * Browser.open falls back to a normal new-tab window.open on the web build.
  */
-export async function openLegalDoc(path: '/terms.html' | '/privacy.html'): Promise<void> {
+export async function openLegalDoc(path: '/terms.html' | '/privacy.html' | '/faq.html'): Promise<void> {
   await Browser.open({ url: `${APP_ORIGIN}${path}` });
 }

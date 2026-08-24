@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Preguntas frecuentes — MeDico App</title>
+<style>
+  :root {
+    --background: 210 25% 96%;
+    --foreground: 215 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 12%;
+    --primary: 198 90% 35%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 210 25% 91%;
+    --muted-foreground: 215 16% 40%;
+    --accent: 210 25% 91%;
+    --border: 210 20% 87%;
+    --success: 142 71% 32%;
+    --warning: 32 92% 38%;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 217 33% 11%;
+      --card-foreground: 210 40% 98%;
+      --primary: 190 90% 55%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --muted: 217.2 32.6% 17.5%;
+      --muted-foreground: 215 20.2% 68%;
+      --accent: 217.2 32.6% 17.5%;
+      --border: 217.2 32.6% 20%;
+      --success: 142 60% 55%;
+      --warning: 38 92% 60%;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 48px 20px 90px; }
+
+  header { margin-bottom: 8px; }
+  .brand {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.02em;
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.12);
+    padding: 6px 14px; border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .brand .dot { width: 6px; height: 6px; border-radius: 50%; background: hsl(var(--primary)); }
+
+  h1 {
+    font-size: clamp(1.7rem, 5vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+  }
+  .subtitle { color: hsl(var(--muted-foreground)); font-size: 15px; margin-bottom: 32px; max-width: 46ch; }
+
+  /* Quick nav pills */
+  nav.toc {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 40px;
+  }
+  nav.toc a {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13.5px; font-weight: 600;
+    color: hsl(var(--foreground));
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    padding: 8px 14px; border-radius: 999px;
+    text-decoration: none;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  nav.toc a:hover { border-color: hsl(var(--primary) / 0.6); transform: translateY(-1px); }
+
+  section.category { margin-bottom: 36px; scroll-margin-top: 20px; }
+  .category-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .category-head .emoji {
+    width: 36px; height: 36px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; border-radius: 10px;
+    background: hsl(var(--primary) / 0.14);
+  }
+  .category-head h2 { font-size: 1.15rem; font-weight: 750; margin: 0; }
+
+  details.qa {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  details.qa + details.qa { margin-top: 10px; }
+  details.qa summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 16px 20px;
+    font-weight: 650;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    color: hsl(var(--card-foreground));
+  }
+  details.qa summary::-webkit-details-marker { display: none; }
+  details.qa summary .chev {
+    flex-shrink: 0;
+    width: 20px; height: 20px;
+    color: hsl(var(--primary));
+    transition: transform .2s ease;
+  }
+  details.qa[open] summary .chev { transform: rotate(180deg); }
+  details.qa .a {
+    padding: 0 20px 18px;
+    color: hsl(var(--muted-foreground));
+    font-size: 14.5px;
+  }
+  details.qa .a p { margin: 0 0 10px; }
+  details.qa .a p:last-child { margin-bottom: 0; }
+  details.qa .a strong { color: hsl(var(--card-foreground)); }
+  details.qa .a ul { margin: 8px 0 10px 18px; padding: 0; }
+  details.qa .a li { margin-bottom: 4px; }
+  details.qa .a a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
+
+  .pill-good, .pill-warn {
+    display: inline-block;
+    font-size: 12px; font-weight: 700;
+    padding: 2px 9px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .pill-good { color: hsl(var(--success)); background: hsl(var(--success) / 0.14); }
+  .pill-warn { color: hsl(var(--warning)); background: hsl(var(--warning) / 0.16); }
+
+  .compare {
+    width: 100%; border-collapse: collapse;
+    font-size: 13.5px; margin-top: 4px;
+  }
+  .compare th, .compare td {
+    text-align: left; padding: 7px 8px;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .compare th { color: hsl(var(--card-foreground)); font-weight: 700; }
+  .compare td:nth-child(2), .compare th:nth-child(2),
+  .compare td:nth-child(3), .compare th:nth-child(3) { text-align: center; white-space: nowrap; }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid hsl(var(--border));
+    font-size: 13px;
+    color: hsl(var(--muted-foreground));
+  }
+  footer a { color: hsl(var(--primary)); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="brand"><span class="dot"></span>MeDico App</span>
+      <h1>Preguntas frecuentes</h1>
+      <p class="subtitle">Respuestas directas sobre suscripción, referidos, privacidad y colaboración con colegas.</p>
+    </header>
+
+    <nav class="toc">
+      <a href="#suscripcion">💳 Suscripción</a>
+      <a href="#referidos">🎁 Referidos</a>
+      <a href="#privacidad">🔒 Privacidad</a>
+      <a href="#colegas">👥 Colegas</a>
+      <a href="#cuenta">⚙️ Cuenta</a>
+    </nav>
+
+    <section class="category" id="suscripcion">
+      <div class="category-head">
+        <span class="emoji">💳</span>
+        <h2>Suscripción y facturación</h2>
+      </div>
+
+      <details class="qa" open>
+        <summary>¿Qué pasa cuando termina mi período de prueba?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Tu cuenta pasa automáticamente al plan gratuito — <strong>no perdés ningún dato</strong>, solo dejás de tener las funciones Premium. Podés suscribirte en cualquier momento, incluso antes de que termine la prueba, desde <strong>Configuración → Mi Plan</strong>.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Me avisan antes de que se acabe la prueba?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Sí. Te mandamos un email unos días antes con un link directo para suscribirte, para que no te agarre de sorpresa el día que se corta.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Cómo cancelo mi suscripción?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Desde <strong>Configuración → Mi Plan → Cancelar suscripción</strong>. Seguís con acceso Premium hasta el final del período que ya pagaste — no se corta al toque.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Se rechazó mi pago, ¿pierdo el acceso de inmediato?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>No. Tenés <strong>3 días de gracia</strong> mientras el sistema reintenta el cobro automáticamente. Si no se recupera en ese tiempo, la cuenta pasa a Free — no se elimina nada.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Qué diferencia hay entre el plan Free y Premium?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <table class="compare">
+            <tr><th>Función</th><th>Free</th><th>Premium</th></tr>
+            <tr><td>Cirugías activas</td><td>Hasta 5</td><td>Ilimitadas</td></tr>
+            <tr><td>Colegas</td><td>Hasta 3</td><td>Ilimitados</td></tr>
+            <tr><td>Procedimientos favoritos</td><td>Hasta 5</td><td>Ilimitados</td></tr>
+            <tr><td>Hospitales favoritos</td><td>Hasta 2</td><td>Ilimitados</td></tr>
+            <tr><td>Estadísticas personales</td><td>—</td><td>✓</td></tr>
+            <tr><td>Exportar PDF</td><td>—</td><td>✓</td></tr>
+            <tr><td>Imágenes por cirugía</td><td>—</td><td>Hasta 5</td></tr>
+            <tr><td>Anuncios</td><td>Sí</td><td>Sin anuncios</td></tr>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="category" id="referidos">
+      <div class="category-head">
+        <span class="emoji">🎁</span>
+        <h2>Programa de referidos</h2>
+      </div>
+
+      <details class="qa" open>
+        <summary>¿Cómo invito a un colega y gano días gratis?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Desde <strong>Colegas</strong>, compartí tu link o mostrá tu código QR. Por cada <strong>3 médicos</strong> que se registren con tu código, ganás <strong>10 días de Premium gratis</strong> — repetible e ilimitado, seguís invitando y seguís ganando.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Ya tengo Premium pago, ¿de qué me sirven esos días?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Se guardan como respaldo. Si en algún momento tu suscripción no se renueva (cancelás o falla un pago), esos días te mantienen con acceso Premium automáticamente antes de pasarte a Free — no se pierden, quedan acumulados esperando.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Puedo usar mi propio link para ganar días?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>No — el sistema detecta y bloquea los códigos propios automáticamente. El crédito es solo por invitar médicos reales que todavía no usaban MeDico App.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Un colega tocó mi link pero no tiene la app instalada, ¿qué pasa?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Se lo lleva directo a la App Store o Google Play para instalarla. Una vez instalada, con volver a tocar el mismo link o QR queda conectado con vos automáticamente — sin tener que hacer nada más.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="category" id="privacidad">
+      <div class="category-head">
+        <span class="emoji">🔒</span>
+        <h2>Privacidad y seguridad de datos</h2>
+      </div>
+
+      <details class="qa" open>
+        <summary>¿Están seguros los datos de mis pacientes?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <span class="pill-good">Cifrado en el servidor</span>
+          <p>Los datos sensibles del paciente (nombre, ID de expediente, diagnóstico, notas) se guardan cifrados con <strong>Fernet (AES-128-CBC + HMAC-SHA256)</strong>. Viajan siempre por HTTPS y ni siquiera con acceso directo a la base de datos se pueden leer sin la clave de la aplicación.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Quién puede ver los casos que registro?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Solo vos, salvo que invites explícitamente a un colega (ayudante o anestesiólogo) a un caso puntual — y en ese caso ve únicamente ese caso, no el resto de tu historial.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Dónde leo la política completa?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>El detalle completo está en la <a href="/privacy.html">Política de Privacidad</a> y los <a href="/terms.html">Términos de Uso</a>. Para cualquier consulta puntual, escribinos a <a href="mailto:contacto@medicoapp.app">contacto@medicoapp.app</a>.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="category" id="colegas">
+      <div class="category-head">
+        <span class="emoji">👥</span>
+        <h2>Colegas y colaboración</h2>
+      </div>
+
+      <details class="qa" open>
+        <summary>¿Cómo agrego un colega?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Compartiendo tu link o QR desde <strong>Colegas</strong>, o buscando su código ahí mismo. Quedan conectados de inmediato, sin esperar aprobación.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>Invité a un ayudante o anestesiólogo a un caso, ¿qué ve?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Recibe una notificación con los datos del caso y puede aceptar o rechazar. Si acepta, el caso aparece en su lista de "Mis Cirugías" y puede completar su propia parte (formulario de anestesia, u honorarios si es ayudante) de forma independiente.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Puedo sacar a alguien de un caso?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Sí, desde el detalle del caso ("Ver") podés quitar a un colaborador en cualquier momento.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="category" id="cuenta">
+      <div class="category-head">
+        <span class="emoji">⚙️</span>
+        <h2>Cuenta</h2>
+      </div>
+
+      <details class="qa" open>
+        <summary>Olvidé mi contraseña, ¿qué hago?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <p>Tocá "¿Olvidaste tu contraseña?" en la pantalla de inicio de sesión — te llega un email para restablecerla.</p>
+        </div>
+      </details>
+
+      <details class="qa">
+        <summary>¿Cómo borro mi cuenta?<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="a">
+          <span class="pill-warn">Irreversible</span>
+          <p>Desde <strong>Configuración → Legal y Cuenta → Zona de Peligro → Eliminar cuenta</strong>. Elimina permanentemente tus cirugías, hospitales, favoritos e imágenes — no se puede deshacer.</p>
+        </div>
+      </details>
+    </section>
+
+    <footer>
+      ¿No encontraste tu respuesta? Escribinos a <a href="mailto:contacto@medicoapp.app">contacto@medicoapp.app</a>
+    </footer>
+  </div>
+</body>
+</html>

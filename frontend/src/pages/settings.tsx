@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { useToast } from "@/shared/hooks/use-toast";
 import { useAuth } from "@/shared/contexts/AuthContext";
 import { useGoogleCalendar } from "@/shared/hooks/useGoogleCalendar";
-import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen, Trash2, AlertTriangle } from "lucide-react";
+import { Calendar, CheckCircle2, XCircle, Loader2, Star, Zap, Eye, MessageSquare, FileText, Shield, ExternalLink, CreditCard, BarChart2, Heart, Building2, Users, Infinity, Sparkles, ImagePlus, ShieldCheck, Calculator, BookOpen, Trash2, AlertTriangle, HelpCircle } from "lucide-react";
 import { InviteCard } from '@/shared/components/ui/InviteCard';
 import { openLegalDoc } from '@/shared/utils/openLegalDoc';
 import { Browser } from '@capacitor/browser';
@@ -1076,6 +1076,40 @@ const Settings = () => {
                   <BookOpen className="h-4 w-4" />
                   {tutorialState.completed || tutorialState.active ? 'Reiniciar tutorial' : 'Empezar tutorial'}
                 </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-4">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <HelpCircle className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Preguntas frecuentes</CardTitle>
+                    <CardDescription>
+                      Suscripción, referidos, privacidad y otras dudas comunes
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <a
+                  href="/faq.html"
+                  onClick={(e) => { e.preventDefault(); openLegalDoc('/faq.html'); }}
+                  className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <HelpCircle className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">Ver preguntas frecuentes</p>
+                      <p className="text-xs text-muted-foreground">Qué pasa cuando termina tu prueba, cómo funcionan los referidos y más</p>
+                    </div>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </a>
               </CardContent>
             </Card>
           </TabsContent>
