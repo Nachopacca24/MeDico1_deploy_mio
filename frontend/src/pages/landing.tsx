@@ -331,67 +331,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TABLA DE CÓDIGOS QUIRÚRGICOS ────────────────────────── */}
-      <section className="py-20 px-4 bg-gray-900/50">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Tabla de Códigos Quirúrgicos</p>
-              <h2 className="text-4xl font-black mb-4 leading-tight">
-                Ya está incluida.
-                <br />Lista para usar.
-              </h2>
-              <p className="text-gray-400 text-lg mb-5 leading-relaxed">
-                Más de 4,000 procedimientos quirúrgicos con código CPT, nombre y valor RVU.
-                Configurás tu multiplicador por hospital una sola vez y MeDico App
-                calcula el honorario exacto al instante.
-              </p>
-              <p className="text-gray-500 text-sm mb-6">
-                ¿No encontrás un procedimiento? Lo reportás y lo incorporamos.
-                La tabla crece con la comunidad médica.
-              </p>
-              <div className="bg-gray-950 border border-white/10 rounded-xl p-4 font-mono text-sm">
-                <div className="text-gray-500 mb-2 text-xs uppercase tracking-wider">Fórmula de honorario</div>
-                <div className="text-white text-base">
-                  RVU <span className="text-gray-600">×</span>{" "}
-                  <span className="text-primary">multiplicador_hospital</span>{" "}
-                  <span className="text-gray-600">=</span>{" "}
-                  <span className="text-green-400 font-bold">honorario</span>
-                </div>
-                <div className="text-gray-600 text-xs mt-2">
-                  Ej: 9.70 × Q700 = <span className="text-green-400 font-semibold">Q 6,790.00</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { code: "60240", name: "Tiroidectomía total",                    rvu: "9.70",  esp: "Endocrino" },
-                { code: "27132", name: "Artroplastia total de cadera",            rvu: "22.10", esp: "Ortopedia" },
-                { code: "44140", name: "Colectomía parcial con anastomosis",      rvu: "9.80",  esp: "Digestivo" },
-                { code: "47480", name: "Colecistotomía con exploración",          rvu: "7.40",  esp: "Digestivo" },
-                { code: "33030", name: "Pericardiectomía sin bypass",             rvu: "17.50", esp: "Cardiovascular" },
-                { code: "19303", name: "Mastectomía simple total",               rvu: "7.30",  esp: "Mama" },
-              ].map((p) => (
-                <div key={p.code} className="flex items-center justify-between bg-gray-900 border border-white/5 rounded-xl px-4 py-3 hover:border-primary/30 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-600 font-mono">{p.code}</span>
-                      <span className="text-[10px] text-gray-700 bg-gray-800 px-1.5 py-0.5 rounded">{p.esp}</span>
-                    </div>
-                    <p className="text-sm font-medium text-white mt-0.5">{p.name}</p>
-                  </div>
-                  <span className="text-primary font-black shrink-0 ml-3">{p.rvu} RVU</span>
-                </div>
-              ))}
-              <p className="text-center text-xs text-gray-600 pt-1">+4,000 procedimientos disponibles</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── ANESTESIÓLOGOS ──────────────────────────────────────── */}
-      <section id="anestesiologos" className="py-20 px-4">
+      <section id="anestesiologos" className="py-20 px-4 bg-gray-900/50">
         <div className="max-w-5xl mx-auto">
           <div className="relative rounded-3xl border border-teal-500/20 bg-gradient-to-b from-teal-500/[0.07] to-transparent p-8 md:p-14 overflow-hidden">
             <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
@@ -468,6 +409,65 @@ export default function LandingPage() {
                 Registrate gratis
                 <ChevronRight className="h-5 w-5" />
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TABLA DE CÓDIGOS QUIRÚRGICOS ────────────────────────── */}
+      <section className="py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Tabla de Códigos Quirúrgicos</p>
+              <h2 className="text-4xl font-black mb-4 leading-tight">
+                Ya está incluida.
+                <br />Lista para usar.
+              </h2>
+              <p className="text-gray-400 text-lg mb-5 leading-relaxed">
+                Más de 4,000 procedimientos quirúrgicos con código CPT, nombre y valor RVU.
+                Configurás tu multiplicador por hospital una sola vez y MeDico App
+                calcula el honorario exacto al instante.
+              </p>
+              <p className="text-gray-500 text-sm mb-6">
+                ¿No encontrás un procedimiento? Lo reportás y lo incorporamos.
+                La tabla crece con la comunidad médica.
+              </p>
+              <div className="bg-gray-950 border border-white/10 rounded-xl p-4 font-mono text-sm">
+                <div className="text-gray-500 mb-2 text-xs uppercase tracking-wider">Fórmula de honorario</div>
+                <div className="text-white text-base">
+                  RVU <span className="text-gray-600">×</span>{" "}
+                  <span className="text-primary">multiplicador_hospital</span>{" "}
+                  <span className="text-gray-600">=</span>{" "}
+                  <span className="text-green-400 font-bold">honorario</span>
+                </div>
+                <div className="text-gray-600 text-xs mt-2">
+                  Ej: 9.70 × Q700 = <span className="text-green-400 font-semibold">Q 6,790.00</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                { code: "60240", name: "Tiroidectomía total",                    rvu: "9.70",  esp: "Endocrino" },
+                { code: "27132", name: "Artroplastia total de cadera",            rvu: "22.10", esp: "Ortopedia" },
+                { code: "44140", name: "Colectomía parcial con anastomosis",      rvu: "9.80",  esp: "Digestivo" },
+                { code: "47480", name: "Colecistotomía con exploración",          rvu: "7.40",  esp: "Digestivo" },
+                { code: "33030", name: "Pericardiectomía sin bypass",             rvu: "17.50", esp: "Cardiovascular" },
+                { code: "19303", name: "Mastectomía simple total",               rvu: "7.30",  esp: "Mama" },
+              ].map((p) => (
+                <div key={p.code} className="flex items-center justify-between bg-gray-900 border border-white/5 rounded-xl px-4 py-3 hover:border-primary/30 transition-colors">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 font-mono">{p.code}</span>
+                      <span className="text-[10px] text-gray-700 bg-gray-800 px-1.5 py-0.5 rounded">{p.esp}</span>
+                    </div>
+                    <p className="text-sm font-medium text-white mt-0.5">{p.name}</p>
+                  </div>
+                  <span className="text-primary font-black shrink-0 ml-3">{p.rvu} RVU</span>
+                </div>
+              ))}
+              <p className="text-center text-xs text-gray-600 pt-1">+4,000 procedimientos disponibles</p>
             </div>
           </div>
         </div>
