@@ -47,7 +47,10 @@ export default function AnnouncementsPage() {
       const created = await announcementService.adminCreate(form.title, form.body);
       setAnnouncements(prev => [created, ...prev.map(a => ({ ...a, is_active: false }))]);
       setForm({ title: '', body: '' });
-      toast.success('Anuncio enviado', 'Todos los usuarios verán el mensaje en el inicio.');
+      toast.success(
+        'Anuncio enviado',
+        `Notificación push enviada a ${created.pushed_to ?? 0} dispositivos. También queda visible en el inicio de todos los usuarios.`,
+      );
     } catch (e: any) {
       toast.error('Error', e.message);
     } finally {
@@ -96,7 +99,7 @@ export default function AnnouncementsPage() {
             Nuevo anuncio
           </CardTitle>
           <CardDescription>
-            El botón "Novedades del sistema" brillará para usuarios que no lo hayan visto.
+            Se manda como notificación push a todos los usuarios y, además, el botón "Novedades del sistema" brilla para quien no lo haya visto todavía.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

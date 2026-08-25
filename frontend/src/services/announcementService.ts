@@ -9,6 +9,7 @@ export interface Announcement {
   body: string;
   is_active?: boolean;
   created_at: string;
+  pushed_to?: number;
 }
 
 export const announcementService = {
