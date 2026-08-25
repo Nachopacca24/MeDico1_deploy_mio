@@ -186,8 +186,8 @@ class NotifyUserOptOutTest(TestCase):
     """
     notify_user (y por lo tanto notify_team, que llama a notify_user por cada
     destinatario) es el único canal para cirugías/invitaciones/colegas —
-    receives_reminders debe gatearlo, y receives_announcements (el toggle de
-    Anuncios/publicidad, que vive en un sistema completamente aparte:
+    receives_reminders debe gatearlo, y receives_advertising (el toggle de
+    publicidad, que vive en un sistema completamente aparte:
     apps.communication.services.promo_push) no debe tener ningún efecto acá.
     """
 
@@ -215,11 +215,11 @@ class NotifyUserOptOutTest(TestCase):
         mock_send.assert_not_called()
 
     @patch('apps.medico.services.firebase.send_push_notification')
-    def test_receives_announcements_has_no_effect_on_reminders(self, mock_send):
-        """El toggle de Anuncios/publicidad es un canal aparte — apagarlo no debe
-        tocar cirugías/invitaciones/colegas, que dependen solo de receives_reminders."""
+    def test_receives_advertising_has_no_effect_on_reminders(self, mock_send):
+        """El toggle de publicidad es un canal aparte — apagarlo no debe tocar
+        cirugías/invitaciones/colegas, que dependen solo de receives_reminders."""
         mock_send.return_value = {'success': ['token-doc'], 'failed_tokens': []}
-        doc = self._user_with_token('doc', receives_reminders=True, receives_announcements=False)
+        doc = self._user_with_token('doc', receives_reminders=True, receives_advertising=False)
 
         notify_user(doc, title='Recordatorio', body='Tenés una cirugía mañana')
 

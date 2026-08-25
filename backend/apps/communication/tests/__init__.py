@@ -126,18 +126,33 @@ class PromoPushServiceTest(TestCase):
 
     @patch(SEND_PUSH_PATH)
     @patch('apps.communication.services.promo_push.timezone.now')
-    def test_excludes_users_who_opted_out(self, mock_now, mock_send):
+    def test_advertisement_excludes_users_who_opted_out(self, mock_now, mock_send):
         mock_now.return_value = _utc_for_local(11)
-        self.recipient.receives_announcements = False
-        self.recipient.save(update_fields=['receives_announcements'])
+        self.recipient.receives_advertising = False
+        self.recipient.save(update_fields=['receives_advertising'])
         other = User.objects.create_user(username='other', email='other@example.com', password='x')
         FCMToken.objects.create(user=other, token='tok-other', platform='android')
         mock_send.return_value = {'success': ['tok-other'], 'failed_tokens': []}
 
-        promo_push.enqueue(title='t', body='b')
+        promo_push.enqueue(title='t', body='b', kind='advertisement')
 
         sent_tokens = set(mock_send.call_args.args[0])
         self.assertEqual(sent_tokens, {'tok-other'})
+
+    @patch(SEND_PUSH_PATH)
+    @patch('apps.communication.services.promo_push.timezone.now')
+    def test_announcement_kind_reaches_users_who_opted_out_of_advertising(self, mock_now, mock_send):
+        """kind='announcement' (Anuncios del sistema) ignora receives_advertising —
+        siempre llega a todos, como un recordatorio de cirugía."""
+        mock_now.return_value = _utc_for_local(11)
+        self.recipient.receives_advertising = False
+        self.recipient.save(update_fields=['receives_advertising'])
+        mock_send.return_value = {'success': ['tok-1'], 'failed_tokens': []}
+
+        promo_push.enqueue(title='t', body='b', kind='announcement')
+
+        sent_tokens = set(mock_send.call_args.args[0])
+        self.assertIn('tok-1', sent_tokens)
 
 
 class AdminAnnouncementPushTest(TestCase):
@@ -179,6 +194,24 @@ class AdminAnnouncementPushTest(TestCase):
         self.assertTrue(response.data['queued'])
         mock_send.assert_not_called()
         self.assertEqual(QueuedPromoPush.objects.filter(sent_at__isnull=True).count(), 1)
+
+    @patch(SEND_PUSH_PATH)
+    @patch('apps.communication.services.promo_push.timezone.now')
+    def test_create_reaches_users_who_opted_out_of_advertising(self, mock_now, mock_send):
+        mock_now.return_value = _utc_for_local(11)
+        recipient = User.objects.create_user(
+            username='doc', email='doc@example.com', password='x', receives_advertising=False,
+        )
+        FCMToken.objects.create(user=recipient, token='tok-1', platform='android')
+        mock_send.return_value = {'success': ['tok-1'], 'failed_tokens': []}
+
+        response = self.client.post('/api/admin/announcements/', {
+            'title': 'Nueva versión', 'body': 'Actualizá la app.',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(response.data['pushed_to'], 1)
+        self.assertEqual(QueuedPromoPush.objects.get().kind, 'announcement')
 
     def test_non_admin_cannot_create_announcements(self):
         regular = User.objects.create_user(username='regular', email='regular@example.com', password='x')

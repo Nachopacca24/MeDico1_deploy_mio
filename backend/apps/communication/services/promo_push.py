@@ -1,8 +1,14 @@
 """
-Cola + horario para push promocionales (Anuncios del sistema y publicidad
-de clientes plan oro activada). Nada de esto aplica a notificaciones
-transaccionales (colegas, cirugías, referidos) — esas siguen yendo directo
-por apps.medico.services.firebase.notify_user/notify_team, sin pasar por acá.
+Cola + horario compartida por Anuncios del sistema y publicidad de clientes
+plan oro. Nada de esto aplica a notificaciones transaccionales (colegas,
+cirugías, referidos) — esas siguen yendo directo por
+apps.medico.services.firebase.notify_user/notify_team, sin pasar por acá.
+
+Los Anuncios del sistema (kind='announcement' — versión nueva, avisos
+importantes) siempre llegan a todos: comparten el mismo horario/cupo que la
+publicidad para no saturar, pero ningún usuario puede silenciarlos — igual
+que un recordatorio de cirugía. Solo la publicidad (kind='advertisement',
+default) respeta el toggle receives_advertising de cada usuario.
 
 Como mucho 2 por día, hora de Guatemala (TIME_ZONE del proyecto):
   - Primer turno: sale entre las 10:00 y las 16:59.
@@ -30,12 +36,20 @@ SLOT_WINDOWS = [(10, 17), (17, 21)]
 MAX_PER_DAY = len(SLOT_WINDOWS)
 
 
-def enqueue(title: str, body: str, target_specialties=None, route: str = '/', label: str = '') -> QueuedPromoPush:
-    """Encola un push promocional y lo intenta mandar de una si ya le tocaba el turno."""
+def enqueue(
+    title: str, body: str, target_specialties=None, route: str = '/', label: str = '',
+    kind: str = 'advertisement',
+) -> QueuedPromoPush:
+    """
+    Encola un push promocional y lo intenta mandar de una si ya le tocaba el
+    turno. kind='announcement' (Anuncios del sistema) ignora el opt-out de
+    publicidad de cada usuario — siempre llega a todos, igual que un
+    recordatorio de cirugía. kind='advertisement' (default) sí lo respeta.
+    """
     push = QueuedPromoPush.objects.create(
         title=title, body=body,
         target_specialties=target_specialties or [],
-        route=route, label=label,
+        route=route, label=label, kind=kind,
     )
     try_send_next()
     push.refresh_from_db()
@@ -79,7 +93,9 @@ def try_send_next() -> None:
     if not pending:
         return
 
-    tokens_qs = FCMToken.objects.exclude(user__receives_announcements=False)
+    tokens_qs = FCMToken.objects.all()
+    if pending.kind == 'advertisement':
+        tokens_qs = tokens_qs.exclude(user__receives_advertising=False)
     if pending.target_specialties:
         tokens_qs = tokens_qs.filter(user__specialty__in=pending.target_specialties)
     tokens = list(tokens_qs.values_list('token', flat=True))

@@ -221,7 +221,7 @@ const Settings = () => {
     email: "",
     darkMode: false,
     receivesReminders: true,
-    receivesAnnouncements: true,
+    receivesAdvertising: true,
     defaultCurrency: "GTQ",
     defaultHospitalId: "",
   });
@@ -241,7 +241,7 @@ const Settings = () => {
         email: user.email || "",
         darkMode: user.theme_preference === 'dark',
         receivesReminders: user.receives_reminders,
-        receivesAnnouncements: user.receives_announcements,
+        receivesAdvertising: user.receives_advertising,
       }));
       setSurgeryReminderHours(user.surgery_reminder_hours ?? 2);
       // Theme is applied by AuthContext — calling setTheme here too causes an
@@ -312,7 +312,7 @@ const Settings = () => {
         surgery_reminder_hours: surgeryReminderHours,
         theme_preference: theme,
         receives_reminders: settings.receivesReminders,
-        receives_announcements: settings.receivesAnnouncements,
+        receives_advertising: settings.receivesAdvertising,
       });
       await refreshUser();
       toast({ title: "Preferencias guardadas", description: "Tus preferencias fueron actualizadas." });
@@ -471,17 +471,17 @@ const Settings = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="receivesAnnouncements">Novedades y anuncios</Label>
+                    <Label htmlFor="receivesAdvertising">Publicidad</Label>
                     <p className="text-sm text-muted-foreground">
-                      Anuncios del sistema y publicidad de clientes — separado de arriba, así que lo podés apagar sin perderte lo importante.
+                      Solo publicidad de clientes — separado de arriba, así que lo podés apagar sin perderte lo importante. Los avisos del sistema (versión nueva, etc.) siempre llegan igual.
                       {!user?.has_premium_access && ' Solo disponible para Premium.'}
                     </p>
                   </div>
                   <Switch
-                    id="receivesAnnouncements"
-                    checked={settings.receivesAnnouncements}
+                    id="receivesAdvertising"
+                    checked={settings.receivesAdvertising}
                     disabled={!user?.has_premium_access}
-                    onCheckedChange={(checked) => handleSwitchChange("receivesAnnouncements", checked)}
+                    onCheckedChange={(checked) => handleSwitchChange("receivesAdvertising", checked)}
                   />
                 </div>
 
@@ -821,7 +821,7 @@ const Settings = () => {
                         { icon: <Users className="h-4 w-4 text-violet-400" />,     text: 'Colegas ilimitados + colaboración' },
                         { icon: <Calendar className="h-4 w-4 text-emerald-400" />, text: 'Google Calendar integrado' },
                         { icon: <BarChart2 className="h-4 w-4 text-blue-400" />,   text: 'Estadísticas personales avanzadas' },
-                        { icon: <Shield className="h-4 w-4 text-emerald-400" />,   text: 'Elegís si recibís anuncios y novedades' },
+                        { icon: <Shield className="h-4 w-4 text-emerald-400" />,   text: 'Elegís si recibís publicidad' },
                         { icon: <FileText className="h-4 w-4 text-sky-400" />,     text: 'Exportar cirugías como PDF' },
                         { icon: <ImagePlus className="h-4 w-4 text-amber-300" />,  text: 'Subir imágenes a tus cirugías (hasta 5 por cirugía)' },
                         { icon: <ShieldCheck className="h-4 w-4 text-emerald-400" />, text: 'Seguros médicos de Guatemala' },

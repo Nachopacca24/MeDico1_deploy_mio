@@ -313,13 +313,14 @@ class CustomUser(AbstractUser):
         verbose_name="Fecha de Envío del Token de Reset",
     )
 
-    receives_announcements = models.BooleanField(
+    receives_advertising = models.BooleanField(
         default=True,
-        verbose_name="Recibe novedades y anuncios",
-        help_text="Push promocionales (Anuncios del sistema, publicidad de clientes plan oro) — ver "
-                   "apps/communication/services/promo_push.py. Solo un usuario con acceso Premium puede "
-                   "desactivarlo — se valida en el serializer, no solo en el frontend. Totalmente "
-                   "independiente de receives_reminders: son dos canales distintos."
+        verbose_name="Recibe publicidad",
+        help_text="Solo publicidad de clientes plan oro (ver apps/communication/services/promo_push.py, "
+                   "kind='advertisement'). Los Anuncios del sistema (kind='announcement' — versión nueva, "
+                   "avisos importantes) NO pasan por este campo, siempre llegan a todos igual que las "
+                   "notificaciones de cirugías/colegas. Solo un usuario con acceso Premium puede "
+                   "desactivarlo — se valida en el serializer, no solo en el frontend."
     )
     receives_reminders = models.BooleanField(
         default=True,
@@ -327,7 +328,7 @@ class CustomUser(AbstractUser):
         help_text="Push de cirugías próximas, casos marcados como operados, invitaciones de colegas/"
                    "casos sin responder, y acciones del equipo en un caso — todo lo que pasa por "
                    "notify_user/notify_team (apps/medico/services/firebase.py). Libre para cualquier "
-                   "plan, a diferencia de receives_announcements."
+                   "plan, a diferencia de receives_advertising."
     )
 
     credit_days = models.IntegerField(

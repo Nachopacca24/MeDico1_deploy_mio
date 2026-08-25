@@ -167,7 +167,7 @@ def notify_user(user, title: str, body: str, data: dict | None = None):
     channel used for cirugías/invitaciones/colegas — never for Anuncios or
     publicidad, which go through apps.communication.services.promo_push
     instead. So gating here on receives_reminders is independent from (and
-    doesn't touch) receives_announcements.
+    doesn't touch) receives_advertising.
     """
     from apps.medico.models import FCMToken
 

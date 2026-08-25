@@ -470,6 +470,7 @@ def notify_users_on_advertisement_activated(sender, instance, created, **kwargs)
             title=title, body=body,
             target_specialties=instance.target_specialties,
             route='/', label=f'Publicidad: {instance.client.company_name}',
+            kind='advertisement',
         )
     except Exception:
         logger.exception('[AD] Error encolando notificación para anuncio id=%s', instance.pk)

@@ -50,7 +50,7 @@ export interface User {
   is_email_verified: boolean;
   theme_preference: 'light' | 'dark' | 'system';
   surgery_reminder_hours: number;
-  receives_announcements: boolean;
+  receives_advertising: boolean;
   receives_reminders: boolean;
   is_profile_complete: boolean;
   has_usable_password: boolean;

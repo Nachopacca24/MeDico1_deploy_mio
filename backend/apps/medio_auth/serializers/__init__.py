@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             'phone', 'specialty', 'license_number', 'hospital_default',
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
-            'theme_preference', 'surgery_reminder_hours', 'receives_announcements', 'receives_reminders',
+            'theme_preference', 'surgery_reminder_hours', 'receives_advertising', 'receives_reminders',
             'is_profile_complete', 'has_usable_password', 'created_at', 'updated_at'
         ]
         read_only_fields = [
@@ -242,16 +242,18 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'phone', 'specialty',
             'license_number', 'hospital_default', 'avatar',
             'signature_image', 'theme_preference', 'surgery_reminder_hours',
-            'receives_announcements', 'receives_reminders',
+            'receives_advertising', 'receives_reminders',
         ]
 
-    def validate_receives_announcements(self, value):
-        # Solo Premium puede silenciar novedades/anuncios — validado acá, no solo
-        # en el frontend, para que no se pueda forzar a False vía API directa.
+    def validate_receives_advertising(self, value):
+        # Solo Premium puede silenciar publicidad — validado acá, no solo en el
+        # frontend, para que no se pueda forzar a False vía API directa. Los
+        # Anuncios del sistema no pasan por este campo, así que esto nunca
+        # afecta si le llegan o no.
         user = self.context['request'].user
         if value is False and not user.has_premium_access:
             raise serializers.ValidationError(
-                "Solo los usuarios Premium pueden desactivar las novedades y anuncios."
+                "Solo los usuarios Premium pueden desactivar la publicidad."
             )
         return value
 

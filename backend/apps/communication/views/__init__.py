@@ -55,11 +55,13 @@ def admin_announcements(request):
         created_by=request.user,
     )
 
-    # Sin target_specialties — un Anuncio de sistema (versión nueva, aviso
-    # importante) le corresponde a todos sin importar especialidad.
+    # kind='announcement': sin target_specialties (le corresponde a todos sin
+    # importar especialidad) y sin respetar receives_advertising — un Anuncio
+    # de sistema (versión nueva, aviso importante) siempre llega, como un
+    # recordatorio de cirugía.
     queued_push = promo_push.enqueue(
         title=title, body=body, route='/news',
-        label=f'Anuncio: {title}',
+        label=f'Anuncio: {title}', kind='announcement',
     )
     queued = queued_push.sent_at is None
 

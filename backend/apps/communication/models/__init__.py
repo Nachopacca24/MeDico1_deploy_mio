@@ -34,9 +34,20 @@ class QueuedPromoPush(models.Model):
     viejo primero (orden de llegada, nadie elige) apenas el horario/cupo lo
     permitan — ver apps/communication/services/promo_push.py.
     """
+    KIND_CHOICES = [
+        ('announcement', 'Anuncio del sistema'),
+        ('advertisement', 'Publicidad'),
+    ]
+
     title = models.CharField(max_length=200, verbose_name='Título')
     body = models.TextField(verbose_name='Mensaje')
     route = models.CharField(max_length=100, default='/', verbose_name='Ruta al abrir')
+    kind = models.CharField(
+        max_length=20, choices=KIND_CHOICES, default='advertisement',
+        verbose_name='Tipo',
+        help_text='announcement = siempre llega a todos, sin importar receives_advertising. '
+                   'advertisement = respeta el opt-out de publicidad de cada usuario.'
+    )
     target_specialties = models.JSONField(
         default=list, blank=True,
         verbose_name='Especialidades objetivo',
