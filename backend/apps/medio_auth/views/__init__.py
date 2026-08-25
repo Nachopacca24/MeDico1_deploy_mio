@@ -248,6 +248,10 @@ class UserProfileView(APIView):
 
     def get(self, request):
         request.user.check_trial_expiry()
+        # Se llama en cada apertura de la app (loadUser en AuthContext) — es el
+        # heartbeat más confiable que tenemos, ya que last_login no se actualiza
+        # de nuevo mientras el refresh token siga vivo.
+        User.objects.filter(pk=request.user.pk).update(last_active_at=timezone.now())
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

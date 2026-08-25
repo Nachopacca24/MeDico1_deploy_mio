@@ -108,6 +108,23 @@ class CustomUser(AbstractUser):
                    "promo), deja de coincidir y el recordatorio se vuelve a enviar automáticamente para la nueva fecha."
     )
 
+    last_active_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Última actividad",
+        help_text="Se actualiza cada vez que la app carga el perfil del usuario (GET /profile), "
+                   "es decir, cada apertura de la app — no solo el login, ya que la sesión se mantiene "
+                   "activa por tiempo indefinido vía refresh token."
+    )
+    inactivity_reminder_sent_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Recordatorio de inactividad enviado para",
+        help_text="Guarda el last_active_at vigente cuando se mandó el push de 'volvé a la app' — así, "
+                   "si el usuario vuelve a abrir la app, last_active_at avanza y deja de coincidir, "
+                   "permitiendo que se le mande otro recordatorio la próxima vez que esté inactivo."
+    )
+
     is_permanent_premium = models.BooleanField(
         default=False,
         verbose_name="Premium Permanente",
