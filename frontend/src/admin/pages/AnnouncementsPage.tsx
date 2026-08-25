@@ -8,11 +8,13 @@ import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Badge } from '@/shared/components/ui/badge';
 import { useToast } from '@/shared/hooks/useToast';
+import { useConfirm } from '@/admin/hooks/useConfirm';
 import { announcementService, type Announcement } from '@/services/announcementService';
 import { Megaphone, Trash2, Loader2, Plus, Users } from 'lucide-react';
 
 export default function AnnouncementsPage() {
   const { toast } = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -61,7 +63,13 @@ export default function AnnouncementsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Eliminar este anuncio? Los usuarios dejarán de verlo.')) return;
+    const ok = await confirm({
+      title: 'Eliminar anuncio',
+      description: 'Los usuarios dejarán de verlo. Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     setDeletingId(id);
     try {
       await announcementService.adminDelete(id);
@@ -83,6 +91,7 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="space-y-6">
+      {ConfirmDialog}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight flex items-center gap-2">
           <Megaphone className="h-7 w-7" />

@@ -4,7 +4,9 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Badge } from '@/shared/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { useToast } from '@/shared/hooks/useToast';
+import { useConfirm } from '@/admin/hooks/useConfirm';
 import { authService } from '@/shared/services/authService';
 import { Building2, Shield, Trash2, Loader2, Plus, Pencil, X, Check } from 'lucide-react';
 
@@ -38,6 +40,7 @@ const PLACE_COLORS: Record<PlaceType, string> = {
 
 export default function DirectoriesPage() {
   const { toast } = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   // ── Hospitals ──────────────────────────────────────────────
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -88,7 +91,13 @@ export default function DirectoriesPage() {
   };
 
   const handleDeleteH = async (h: Hospital) => {
-    if (!window.confirm(`¿Eliminar "${h.name}"? Los casos existentes no se verán afectados.`)) return;
+    const ok = await confirm({
+      title: 'Eliminar centro médico',
+      description: `¿Eliminar "${h.name}"? Los casos existentes no se verán afectados.`,
+      confirmText: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     setDeletingH(h.id);
     try {
       await authService.authenticatedFetch(`${API}/api/v1/medico/admin/hospitals/${h.id}/`, { method: 'DELETE' });
@@ -141,7 +150,13 @@ export default function DirectoriesPage() {
   };
 
   const handleDeleteI = async (ins: Insurance) => {
-    if (!window.confirm(`¿Eliminar "${ins.name}"?`)) return;
+    const ok = await confirm({
+      title: 'Eliminar aseguradora',
+      description: `¿Eliminar "${ins.name}"?`,
+      confirmText: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     setDeletingI(ins.id);
     try {
       await authService.authenticatedFetch(`${API}/api/v1/medico/admin/insurances/${ins.id}/`, { method: 'DELETE' });
@@ -175,6 +190,7 @@ export default function DirectoriesPage() {
 
   return (
     <div className="space-y-8">
+      {ConfirmDialog}
       <div>
         <h1 className="text-2xl font-bold">Centros médicos y Seguros</h1>
         <p className="text-muted-foreground text-sm mt-1">Gestiona los hospitales, clínicas, consultorios y aseguradoras disponibles en la app.</p>
@@ -204,15 +220,16 @@ export default function DirectoriesPage() {
             </div>
             <div>
               <Label className="text-xs mb-1 block">Tipo</Label>
-              <select
-                value={newH.place_type}
-                onChange={e => setNewH(p => ({ ...p, place_type: e.target.value as PlaceType }))}
-                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
-              >
-                <option value="hospital">Hospital</option>
-                <option value="clinica">Clínica</option>
-                <option value="consultorio">Consultorio</option>
-              </select>
+              <Select value={newH.place_type} onValueChange={(v) => setNewH(p => ({ ...p, place_type: v as PlaceType }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hospital">Hospital</SelectItem>
+                  <SelectItem value="clinica">Clínica</SelectItem>
+                  <SelectItem value="consultorio">Consultorio</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="sm:col-span-4 flex justify-end">
               <Button onClick={handleCreateH} disabled={savingH} size="sm">
@@ -238,11 +255,16 @@ export default function DirectoriesPage() {
                     <>
                       <Input className="h-7 text-sm flex-1" value={editingH.name} onChange={e => setEditingH(p => p ? { ...p, name: e.target.value } : p)} />
                       <Input className="h-7 text-sm w-32" placeholder="Ubicación" value={editingH.location || ''} onChange={e => setEditingH(p => p ? { ...p, location: e.target.value } : p)} />
-                      <select className="h-7 text-sm border rounded px-1 bg-background" value={editingH.place_type} onChange={e => setEditingH(p => p ? { ...p, place_type: e.target.value as PlaceType } : p)}>
-                        <option value="hospital">Hospital</option>
-                        <option value="clinica">Clínica</option>
-                        <option value="consultorio">Consultorio</option>
-                      </select>
+                      <Select value={editingH.place_type} onValueChange={(v) => setEditingH(p => p ? { ...p, place_type: v as PlaceType } : p)}>
+                        <SelectTrigger className="h-7 text-sm w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="hospital">Hospital</SelectItem>
+                          <SelectItem value="clinica">Clínica</SelectItem>
+                          <SelectItem value="consultorio">Consultorio</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={handleSaveEditH} disabled={savingEditH}>
                         {savingEditH ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                       </Button>

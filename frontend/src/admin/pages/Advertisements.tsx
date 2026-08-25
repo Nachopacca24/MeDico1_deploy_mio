@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { useToast } from '@/shared/hooks/useToast';
+import { useConfirm } from '@/admin/hooks/useConfirm';
 import {
   Plus, Search, Loader2, AlertCircle, Megaphone,
   Eye, Pencil, Trash2, ExternalLink, TrendingUp, Info,
@@ -15,20 +18,20 @@ import { AdvertisementFormDialog } from '@/admin/components/AdvertisementFormDia
 type Tab = 'active' | 'expiring' | 'expired' | 'all';
 
 const CATEGORY_BADGE: Record<string, { label: string; emoji: string; cls: string }> = {
-  congreso:     { label: 'Congreso',       emoji: '🎓', cls: 'bg-purple-100 text-purple-700' },
-  casa_medica:  { label: 'Casa Médica',    emoji: '🏥', cls: 'bg-blue-100 text-blue-700' },
-  hospital:     { label: 'Hospital',       emoji: '🏨', cls: 'bg-teal-100 text-teal-700' },
-  tecnologia:   { label: 'Tecnología',     emoji: '💡', cls: 'bg-yellow-100 text-yellow-700' },
-  farmaceutica: { label: 'Farmacéutica',   emoji: '💊', cls: 'bg-green-100 text-green-700' },
-  educacion:    { label: 'Educación',      emoji: '📚', cls: 'bg-orange-100 text-orange-700' },
-  clinica:      { label: 'Clínica',        emoji: '🩺', cls: 'bg-pink-100 text-pink-700' },
-  general:      { label: 'General',        emoji: '📋', cls: 'bg-slate-100 text-slate-600' },
+  congreso:     { label: 'Congreso',       emoji: '🎓', cls: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300' },
+  casa_medica:  { label: 'Casa Médica',    emoji: '🏥', cls: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' },
+  hospital:     { label: 'Hospital',       emoji: '🏨', cls: 'bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300' },
+  tecnologia:   { label: 'Tecnología',     emoji: '💡', cls: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300' },
+  farmaceutica: { label: 'Farmacéutica',   emoji: '💊', cls: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300' },
+  educacion:    { label: 'Educación',      emoji: '📚', cls: 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300' },
+  clinica:      { label: 'Clínica',        emoji: '🩺', cls: 'bg-pink-100 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300' },
+  general:      { label: 'General',        emoji: '📋', cls: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' },
 };
 
 const PLAN_BADGE: Record<string, { label: string; cls: string }> = {
-  gold:   { label: 'Oro',    cls: 'bg-yellow-100 text-yellow-800 border border-yellow-300' },
-  silver: { label: 'Plata',  cls: 'bg-gray-100 text-gray-700 border border-gray-300' },
-  bronze: { label: 'Bronce', cls: 'bg-orange-100 text-orange-800 border border-orange-300' },
+  gold:   { label: 'Oro',    cls: 'bg-yellow-100 text-yellow-800 border border-yellow-300 dark:bg-yellow-950/40 dark:text-yellow-300 dark:border-yellow-800' },
+  silver: { label: 'Plata',  cls: 'bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600' },
+  bronze: { label: 'Bronce', cls: 'bg-orange-100 text-orange-800 border border-orange-300 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800' },
 };
 
 function getDaysRemaining(endDate: string): number {
@@ -42,19 +45,19 @@ function getDaysRemaining(endDate: string): number {
 function ExpiryBadge({ endDate }: { endDate: string }) {
   const days = getDaysRemaining(endDate);
   if (days < 0) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300">
       <AlertTriangle className="h-3 w-3" />
       Expirado hace {Math.abs(days)}d
     </span>
   );
   if (days <= 7) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300">
       <Clock className="h-3 w-3" />
       {days === 0 ? 'Expira hoy' : `${days}d restantes`}
     </span>
   );
   if (days <= 14) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-950/40 dark:text-orange-300">
       <Clock className="h-3 w-3" />
       {days}d restantes
     </span>
@@ -63,6 +66,8 @@ function ExpiryBadge({ endDate }: { endDate: string }) {
 }
 
 const Advertisements = () => {
+  const { toast } = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,32 +133,39 @@ const Advertisements = () => {
   const handleEditAd = (ad: Advertisement) => { setSelectedAd(ad); setDialogMode('edit'); setDialogOpen(true); };
 
   const handleDeleteAd = async (ad: Advertisement) => {
-    if (!confirm(`¿Estás seguro de eliminar "${ad.campaign_name}"?`)) return;
+    const ok = await confirm({
+      title: 'Eliminar anuncio',
+      description: `¿Estás seguro de eliminar "${ad.campaign_name}"? Esta acción no se puede deshacer.`,
+      confirmText: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await advertisementService.deleteAdvertisement(ad.id);
       fetchAds();
+      toast.success('Anuncio eliminado', `"${ad.campaign_name}" fue eliminado.`);
     } catch (err: any) {
-      alert(err.message || 'Error al eliminar anuncio');
+      toast.error('Error', err.message || 'Error al eliminar anuncio');
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':    return 'bg-green-100 text-green-800';
-      case 'paused':    return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      default:          return 'bg-gray-100 text-gray-800';
+      case 'active':    return 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300';
+      case 'paused':    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300';
+      case 'completed': return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300';
+      default:          return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
   const getPlacementColor = (placement: string) => {
     switch (placement) {
-      case 'home_banner':     return 'bg-purple-100 text-purple-800';
-      case 'sidebar':         return 'bg-blue-100 text-blue-800';
-      case 'footer':          return 'bg-gray-100 text-gray-800';
-      case 'popup':           return 'bg-orange-100 text-orange-800';
-      case 'between_content': return 'bg-teal-100 text-teal-800';
-      default:                return 'bg-gray-100 text-gray-800';
+      case 'home_banner':     return 'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300';
+      case 'sidebar':         return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300';
+      case 'footer':          return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      case 'popup':           return 'bg-orange-100 text-orange-800 dark:bg-orange-950/40 dark:text-orange-300';
+      case 'between_content': return 'bg-teal-100 text-teal-800 dark:bg-teal-950/40 dark:text-teal-300';
+      default:                return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
@@ -197,6 +209,7 @@ const Advertisements = () => {
 
   return (
     <div className="space-y-6">
+      {ConfirmDialog}
       <AdvertisementFormDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -306,40 +319,42 @@ const Advertisements = () => {
                 <Search className="h-4 w-4" />
               </Button>
             </div>
-            <select
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={placementFilter}
-              onChange={(e) => setPlacementFilter(e.target.value)}
-            >
-              <option value="">Todas las ubicaciones</option>
-              <option value="home_banner">Banner Principal</option>
-              <option value="popup">Popup</option>
-              <option value="sidebar">Barra Lateral</option>
-              <option value="between_content">Entre Contenido</option>
-              <option value="footer">Footer / Sticky</option>
-            </select>
-            <select
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-            >
-              <option value="">Todas las categorías</option>
-              <option value="congreso">🎓 Congreso</option>
-              <option value="casa_medica">🏥 Casa Médica</option>
-              <option value="hospital">🏨 Hospital</option>
-              <option value="tecnologia">💡 Tecnología</option>
-              <option value="farmaceutica">💊 Farmacéutica</option>
-              <option value="educacion">📚 Educación</option>
-              <option value="clinica">🩺 Clínica</option>
-              <option value="general">📋 General</option>
-            </select>
+            <Select value={placementFilter || 'all'} onValueChange={(v) => setPlacementFilter(v === 'all' ? '' : v)}>
+              <SelectTrigger className="sm:w-56">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las ubicaciones</SelectItem>
+                <SelectItem value="home_banner">Banner Principal</SelectItem>
+                <SelectItem value="popup">Popup</SelectItem>
+                <SelectItem value="sidebar">Barra Lateral</SelectItem>
+                <SelectItem value="between_content">Entre Contenido</SelectItem>
+                <SelectItem value="footer">Footer / Sticky</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={categoryFilter || 'all'} onValueChange={(v) => setCategoryFilter(v === 'all' ? '' : v)}>
+              <SelectTrigger className="sm:w-56">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                <SelectItem value="congreso">🎓 Congreso</SelectItem>
+                <SelectItem value="casa_medica">🏥 Casa Médica</SelectItem>
+                <SelectItem value="hospital">🏨 Hospital</SelectItem>
+                <SelectItem value="tecnologia">💡 Tecnología</SelectItem>
+                <SelectItem value="farmaceutica">💊 Farmacéutica</SelectItem>
+                <SelectItem value="educacion">📚 Educación</SelectItem>
+                <SelectItem value="clinica">🩺 Clínica</SelectItem>
+                <SelectItem value="general">📋 General</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
       {/* Alert for expiring/expired tabs */}
       {activeTab === 'expiring' && expiringList.length > 0 && (
-        <div className="flex items-center gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg text-orange-800">
+        <div className="flex items-center gap-3 p-4 bg-orange-50 border border-orange-200 dark:bg-orange-950/40 dark:border-orange-800 rounded-lg text-orange-800 dark:text-orange-300">
           <Clock className="h-5 w-5 shrink-0" />
           <p className="text-sm">
             <strong>{expiringList.length} anuncio{expiringList.length > 1 ? 's' : ''}</strong> expira{expiringList.length === 1 ? '' : 'n'} en los próximos 14 días.
@@ -348,7 +363,7 @@ const Advertisements = () => {
         </div>
       )}
       {activeTab === 'expired' && expiredList.length > 0 && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 dark:bg-red-950/40 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300">
           <AlertTriangle className="h-5 w-5 shrink-0" />
           <p className="text-sm">
             <strong>{expiredList.length} anuncio{expiredList.length > 1 ? 's' : ''}</strong> ya expiró{expiredList.length === 1 ? '' : 'aron'}.
@@ -399,7 +414,7 @@ const Advertisements = () => {
                         </span>
                       </div>
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs font-medium shrink-0 ${days < 0 ? 'bg-red-100 text-red-800' : getStatusColor(ad.status)}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-medium shrink-0 ${days < 0 ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300' : getStatusColor(ad.status)}`}>
                       {days < 0 ? 'Expirado' : ad.status_display}
                     </span>
                   </div>
@@ -504,7 +519,7 @@ const Advertisements = () => {
                     </div>
 
                     {imageLoadingStates[ad.id] === 'error' && (
-                      <p className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded p-2">
+                      <p className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 dark:text-yellow-300 dark:bg-yellow-950/40 dark:border-yellow-800 rounded p-2">
                         Haz clic en "Editar" para subir una nueva imagen.
                       </p>
                     )}

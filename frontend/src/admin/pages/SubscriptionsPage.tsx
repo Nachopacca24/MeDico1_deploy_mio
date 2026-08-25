@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Badge } from '@/shared/components/ui/badge';
 import { useToast } from '@/shared/hooks/useToast';
+import { useConfirm } from '@/admin/hooks/useConfirm';
 import { useAuth } from '@/shared/contexts/AuthContext';
 import { adminService } from '@/admin/services/adminService';
 import {
@@ -48,6 +49,7 @@ type FilterTab = 'all' | 'trial' | 'premium' | 'free' | 'admins';
 
 const SubscriptionsPage = () => {
   const { toast } = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<SubscriptionUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,10 +101,14 @@ const SubscriptionsPage = () => {
 
   const handleDeleteUser = async (user: SubscriptionUser) => {
     const isAdmin = user.is_staff || user.role === 0;
-    const confirmed = window.confirm(
-      `¿Eliminar ${isAdmin ? 'al administrador' : 'al usuario'} "${user.full_name || user.username}"?\n\n` +
-      `Esto eliminará PERMANENTEMENTE toda su información y casos.\n\nEsta acción NO se puede deshacer.`
-    );
+    const confirmed = await confirm({
+      title: 'Eliminar usuario',
+      description:
+        `¿Eliminar ${isAdmin ? 'al administrador' : 'al usuario'} "${user.full_name || user.username}"?\n\n` +
+        `Esto eliminará PERMANENTEMENTE toda su información y casos.\n\nEsta acción NO se puede deshacer.`,
+      confirmText: 'Eliminar',
+      destructive: true,
+    });
     if (!confirmed) return;
 
     setDeletingId(user.id);
@@ -180,6 +186,7 @@ const SubscriptionsPage = () => {
 
   return (
     <div className="space-y-6">
+      {ConfirmDialog}
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Suscripciones y Pruebas</h1>
@@ -380,7 +387,7 @@ const SubscriptionsPage = () => {
                         onClick={() => handleTogglePermanentPremium(user)}
                         disabled={updatingId === user.id || user.is_superuser}
                         className={user.is_permanent_premium
-                          ? 'border-yellow-300 text-yellow-600 hover:bg-yellow-50'
+                          ? 'border-yellow-300 text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:bg-yellow-950/40'
                           : 'bg-yellow-500 hover:bg-yellow-600 text-white'
                         }
                         title={user.is_superuser ? 'Los superusuarios siempre tienen acceso completo' : ''}

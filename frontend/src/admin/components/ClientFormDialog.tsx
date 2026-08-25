@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { X, Loader2, Save, Package, Info } from 'lucide-react';
 import { clientService, type Client, type ClientCreateUpdate } from '@/admin/services/clientService';
 
@@ -103,8 +104,8 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
 
   // When the plan dropdown changes, auto-fill quotas with suggested defaults
   // (only for new clients, or if user explicitly chose to reset)
-  const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newPlan = e.target.value as 'bronze' | 'silver' | 'gold';
+  const handlePlanChange = (value: string) => {
+    const newPlan = value as 'bronze' | 'silver' | 'gold';
     const defaults = PLAN_QUOTA_DEFAULTS[newPlan];
     setFormData(prev => ({ ...prev, plan: newPlan, ...defaults }));
   };
@@ -218,35 +219,33 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-medium">Plan *</label>
-                    <select
-                      name="plan"
-                      value={formData.plan}
-                      onChange={handlePlanChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      required
-                    >
-                      <option value="bronze">Bronce</option>
-                      <option value="silver">Plata</option>
-                      <option value="gold">Oro</option>
-                    </select>
+                    <Select value={formData.plan} onValueChange={handlePlanChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bronze">Bronce</SelectItem>
+                        <SelectItem value="silver">Plata</SelectItem>
+                        <SelectItem value="gold">Oro</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <p className="text-xs text-muted-foreground mt-1">
                       Cambiar el plan actualiza los cupos sugeridos abajo
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium">Estado *</label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      required
-                    >
-                      <option value="active">Activo</option>
-                      <option value="inactive">Inactivo</option>
-                      <option value="pending">Pendiente</option>
-                      <option value="expired">Expirado</option>
-                    </select>
+                    <Select value={formData.status} onValueChange={(v) => setFormData(prev => ({ ...prev, status: v as typeof prev.status }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Activo</SelectItem>
+                        <SelectItem value="inactive">Inactivo</SelectItem>
+                        <SelectItem value="pending">Pendiente</SelectItem>
+                        <SelectItem value="expired">Expirado</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -283,7 +282,7 @@ export function ClientFormDialog({ open, onClose, onSuccess, client }: ClientFor
                   <h3 className="font-semibold text-lg">Cupos de Anuncios</h3>
                 </div>
 
-                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 dark:bg-blue-950/40 dark:border-blue-800 rounded-lg text-sm text-blue-800 dark:text-blue-200">
                   <Info className="h-4 w-4 mt-0.5 shrink-0" />
                   <p>
                     Define cuántos anuncios tiene derecho a publicar este cliente en cada ubicación.

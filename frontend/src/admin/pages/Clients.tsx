@@ -4,6 +4,9 @@ import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { useToast } from '@/shared/hooks/useToast';
+import { useConfirm } from '@/admin/hooks/useConfirm';
 import {
   Plus, Search, Loader2, AlertCircle, Briefcase,
   Calendar, DollarSign, Pencil, Trash2, Package,
@@ -68,6 +71,8 @@ function QuotaRow({ placement, used, quota }: QuotaRowProps) {
 }
 
 const Clients = () => {
+  const { toast } = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [clients, setClients] = useState<Client[]>([]);
   const [allAds, setAllAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,31 +124,38 @@ const Clients = () => {
   const handleEditClient = (client: Client) => { setSelectedClient(client); setDialogOpen(true); };
 
   const handleDeleteClient = async (client: Client) => {
-    if (!confirm(`¿Estás seguro de eliminar a ${client.company_name}?`)) return;
+    const ok = await confirm({
+      title: 'Eliminar cliente',
+      description: `¿Estás seguro de eliminar a ${client.company_name}? Esta acción no se puede deshacer.`,
+      confirmText: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await clientService.deleteClient(client.id);
       fetchData();
+      toast.success('Cliente eliminado', `${client.company_name} fue eliminado.`);
     } catch (err: any) {
-      alert(err.message || 'Error al eliminar cliente');
+      toast.error('Error', err.message || 'Error al eliminar cliente');
     }
   };
 
   const getPlanColor = (plan: string) => {
     switch (plan) {
-      case 'gold':   return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'silver': return 'bg-gray-100 text-gray-800 border-gray-300';
-      case 'bronze': return 'bg-orange-100 text-orange-800 border-orange-300';
-      default:       return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'gold':   return 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-950/40 dark:text-yellow-300 dark:border-yellow-800';
+      case 'silver': return 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600';
+      case 'bronze': return 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800';
+      default:       return 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':   return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'expired':  return 'bg-red-100 text-red-800';
-      case 'pending':  return 'bg-yellow-100 text-yellow-800';
-      default:         return 'bg-gray-100 text-gray-800';
+      case 'active':   return 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300';
+      case 'inactive': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      case 'expired':  return 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300';
+      case 'pending':  return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300';
+      default:         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
@@ -178,6 +190,7 @@ const Clients = () => {
 
   return (
     <div className="space-y-6">
+      {ConfirmDialog}
       <ClientFormDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -214,27 +227,29 @@ const Clients = () => {
                 </Button>
               </div>
             </div>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">Todos los estados</option>
-              <option value="active">Activo</option>
-              <option value="inactive">Inactivo</option>
-              <option value="pending">Pendiente</option>
-              <option value="expired">Expirado</option>
-            </select>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={planFilter}
-              onChange={(e) => setPlanFilter(e.target.value)}
-            >
-              <option value="">Todos los planes</option>
-              <option value="gold">Oro</option>
-              <option value="silver">Plata</option>
-              <option value="bronze">Bronce</option>
-            </select>
+            <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="active">Activo</SelectItem>
+                <SelectItem value="inactive">Inactivo</SelectItem>
+                <SelectItem value="pending">Pendiente</SelectItem>
+                <SelectItem value="expired">Expirado</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={planFilter || 'all'} onValueChange={(v) => setPlanFilter(v === 'all' ? '' : v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los planes</SelectItem>
+                <SelectItem value="gold">Oro</SelectItem>
+                <SelectItem value="silver">Plata</SelectItem>
+                <SelectItem value="bronze">Bronce</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

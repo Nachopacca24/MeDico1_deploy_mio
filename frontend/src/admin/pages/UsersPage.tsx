@@ -6,11 +6,13 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Badge } from '@/shared/components/ui/badge';
 import { useToast } from '@/shared/hooks/useToast';
+import { useConfirm } from '@/admin/hooks/useConfirm';
 import { adminService } from '@/admin/services/adminService';
 import {
   Search, Trash2, Briefcase, Calendar, Mail, Phone,
   Loader2, AlertCircle, Shield, Award, Star, StarOff,
   RotateCcw, Clock, Activity, UserCheck, UserX,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 interface User {
@@ -62,6 +64,7 @@ function isRecentlyActive(lastLogin: string | null): boolean {
 
 const UsersPage = () => {
   const { toast } = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,8 +73,11 @@ const UsersPage = () => {
   const [updatingPlanId, setUpdatingPlanId] = useState<number | null>(null);
   const [cancellingDeletionId, setCancellingDeletionId] = useState<number | null>(null);
   const [extendingTrialId, setExtendingTrialId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { setPage(1); }, [activeTab, searchQuery]);
 
   const fetchUsers = async () => {
     try {
@@ -107,9 +113,12 @@ const UsersPage = () => {
   };
 
   const handleDeleteUser = async (userId: number, userName: string) => {
-    const confirmed = window.confirm(
-      `¿Estás seguro de eliminar al usuario "${userName}"?\n\nEsto eliminará PERMANENTEMENTE todos sus datos.\n\nEsta acción NO se puede deshacer.`
-    );
+    const confirmed = await confirm({
+      title: 'Eliminar usuario',
+      description: `¿Estás seguro de eliminar al usuario "${userName}"?\n\nEsto eliminará PERMANENTEMENTE todos sus datos.\n\nEsta acción NO se puede deshacer.`,
+      confirmText: 'Eliminar',
+      destructive: true,
+    });
     if (!confirmed) return;
     setDeletingId(userId);
     try {
@@ -124,7 +133,11 @@ const UsersPage = () => {
   };
 
   const handleCancelDeletion = async (userId: number, userEmail: string) => {
-    const confirmed = window.confirm(`¿Cancelar la eliminación de "${userEmail}"? Esto reactivará la cuenta.`);
+    const confirmed = await confirm({
+      title: 'Cancelar eliminación',
+      description: `¿Cancelar la eliminación de "${userEmail}"? Esto reactivará la cuenta.`,
+      confirmText: 'Reactivar',
+    });
     if (!confirmed) return;
     setCancellingDeletionId(userId);
     try {
@@ -176,6 +189,9 @@ const UsersPage = () => {
     );
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const pagedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const getPlanBadge = (plan: string) => {
     const isPremium = plan === 'premium' || plan === 'gold';
     return isPremium
@@ -201,6 +217,7 @@ const UsersPage = () => {
 
   return (
     <div className="space-y-6">
+      {ConfirmDialog}
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Usuarios</h1>
@@ -227,9 +244,9 @@ const UsersPage = () => {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total casos</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{users.reduce((s, u) => s + (u.total_cases || 0), 0)}</div></CardContent>
         </Card>
-        <Card className="border-red-200">
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-red-600 flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Pend. eliminación</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-red-600">{users.filter(u => !u.is_active && !u.is_superuser && !u.is_staff).length}</div></CardContent>
+        <Card className="border-red-200 dark:border-red-900">
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Pend. eliminación</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold text-red-600 dark:text-red-400">{users.filter(u => !u.is_active && !u.is_superuser && !u.is_staff).length}</div></CardContent>
         </Card>
       </div>
 
@@ -279,7 +296,7 @@ const UsersPage = () => {
             </CardContent>
           </Card>
         ) : (
-          filteredUsers.map(user => {
+          pagedUsers.map(user => {
             const isPendingDeletion = !user.is_active && !user.is_superuser && !user.is_staff;
             const deletionDate = user.deletion_requested_at
               ? new Date(new Date(user.deletion_requested_at).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-GT')
@@ -289,7 +306,7 @@ const UsersPage = () => {
             return (
               <Card
                 key={user.id}
-                className={`transition-colors ${isPendingDeletion ? 'border-red-300 bg-red-50/30' : ''}`}
+                className={`transition-colors ${isPendingDeletion ? 'border-red-300 bg-red-50/30 dark:border-red-900 dark:bg-red-950/20' : ''}`}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2 flex-wrap">
@@ -302,7 +319,7 @@ const UsersPage = () => {
                           <Badge variant="destructive" className="gap-1"><Shield className="h-3 w-3" />Admin</Badge>
                         )}
                         {recentlyActive && (
-                          <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 gap-1">
+                          <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 gap-1">
                             <Activity className="h-3 w-3" /> Activo recientemente
                           </Badge>
                         )}
@@ -384,13 +401,13 @@ const UsersPage = () => {
 
                   {/* Feature adoption */}
                   <div className="flex gap-2 flex-wrap">
-                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.tutorial_completed ? 'bg-green-50 border-green-200 text-green-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.tutorial_completed ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300' : 'bg-muted border-border text-muted-foreground'}`}>
                       <span>{user.tutorial_completed ? '✓' : '○'}</span> Tutorial
                     </span>
-                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.has_google_calendar ? 'bg-green-50 border-green-200 text-green-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.has_google_calendar ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300' : 'bg-muted border-border text-muted-foreground'}`}>
                       <span>{user.has_google_calendar ? '✓' : '○'}</span> Google Calendar
                     </span>
-                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.has_colleagues ? 'bg-green-50 border-green-200 text-green-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${user.has_colleagues ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300' : 'bg-muted border-border text-muted-foreground'}`}>
                       <span>{user.has_colleagues ? '✓' : '○'}</span> Colegas
                     </span>
                   </div>
@@ -403,7 +420,7 @@ const UsersPage = () => {
                     if (user.trial_ends_at) {
                       const days = daysLeft(user.trial_ends_at);
                       return (
-                        <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700">
+                        <div className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300">
                           <Clock className="h-3.5 w-3.5 shrink-0" />
                           <span>Trial · vence <strong>{fmt(user.trial_ends_at)}</strong> · <strong>{days} días restantes</strong></span>
                         </div>
@@ -413,8 +430,8 @@ const UsersPage = () => {
                       const days = daysLeft(user.ls_renews_at);
                       const label = user.ls_cancelled ? 'Cancelado · acceso hasta' : 'Se renueva el';
                       const color = user.ls_cancelled
-                        ? 'bg-red-50 border-red-200 text-red-700'
-                        : 'bg-emerald-50 border-emerald-200 text-emerald-700';
+                        ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300'
+                        : 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300';
                       return (
                         <div className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg border ${color}`}>
                           <Clock className="h-3.5 w-3.5 shrink-0" />
@@ -430,7 +447,7 @@ const UsersPage = () => {
                     {isPendingDeletion && (
                       <Button variant="outline" size="sm" onClick={() => handleCancelDeletion(user.id, user.email)}
                         disabled={cancellingDeletionId === user.id}
-                        className="flex-1 border-green-500 text-green-600 hover:bg-green-50">
+                        className="flex-1 border-green-500 text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/40">
                         {cancellingDeletionId === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><RotateCcw className="h-4 w-4 mr-2" />Cancelar eliminación</>}
                       </Button>
                     )}
@@ -447,7 +464,7 @@ const UsersPage = () => {
                       <Button variant="outline" size="sm"
                         onClick={() => handleExtendTrial(user.id, 15)}
                         disabled={extendingTrialId === user.id}
-                        className="flex-1 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300">
+                        className="flex-1 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 dark:hover:bg-blue-950/40 dark:hover:text-blue-300">
                         {extendingTrialId === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Clock className="h-4 w-4 mr-2" />+15 días</>}
                       </Button>
                     )}
@@ -460,18 +477,18 @@ const UsersPage = () => {
                   </div>
 
                   {isPendingDeletion && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    <div className="p-3 bg-red-50 border border-red-200 dark:bg-red-950/40 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
                       <p className="font-medium flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
                         {user.deletion_requested_at
                           ? `Solicitud: ${new Date(user.deletion_requested_at).toLocaleString('es-GT')}`
                           : 'Cuenta desactivada — eliminación solicitada'}
                       </p>
-                      {deletionDate && <p className="text-xs mt-0.5 text-red-600">Se eliminará definitivamente el {deletionDate}.</p>}
+                      {deletionDate && <p className="text-xs mt-0.5 text-red-600 dark:text-red-400">Se eliminará definitivamente el {deletionDate}.</p>}
                     </div>
                   )}
                   {user.is_superuser && (
-                    <div className="text-xs text-muted-foreground text-center bg-blue-50 p-2 rounded">
+                    <div className="text-xs text-muted-foreground text-center bg-blue-50 dark:bg-blue-950/40 p-2 rounded">
                       🛡️ Los superusuarios no pueden ser eliminados desde el panel
                     </div>
                   )}
@@ -481,6 +498,23 @@ const UsersPage = () => {
           })
         )}
       </div>
+
+      {/* Pagination */}
+      {filteredUsers.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-sm text-muted-foreground">
+            Página {page} de {totalPages} · {filteredUsers.length} usuarios
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+              <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+              Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { X, Loader2, Save, Upload, Eye, TrendingUp } from 'lucide-react';
 import { advertisementService, type Advertisement } from '@/admin/services/advertisementService';
 import { clientService, type Client } from '@/admin/services/clientService';
@@ -184,6 +185,11 @@ export function AdvertisementFormDialog({
 
     setError(null);
 
+    if (!formData.client) {
+      setError('Debes seleccionar un cliente');
+      return;
+    }
+
     if (mode === 'create' && !formData.image) {
       setError('Debes seleccionar una imagen');
       return;
@@ -265,13 +271,13 @@ export function AdvertisementFormDialog({
   };
 
   // When the client changes, auto-fill ad dates with the client's contract dates
-  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleClientChange = (value: string) => {
     if (isReadOnly) return;
-    const clientId = parseInt(e.target.value);
+    const clientId = parseInt(value);
     const chosen = clients.find(c => c.id === clientId);
     setFormData(prev => ({
       ...prev,
-      client: e.target.value,
+      client: value,
       ...(chosen ? { start_date: chosen.start_date, end_date: chosen.end_date } : {}),
     }));
   };
@@ -585,20 +591,18 @@ export function AdvertisementFormDialog({
 
                 <div>
                   <label className="text-sm font-medium">Cliente *</label>
-                  <select
-                    name="client"
-                    value={formData.client}
-                    onChange={handleClientChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    required
-                  >
-                    <option value="">Selecciona un cliente</option>
-                    {Array.isArray(clients) && clients.map(client => (
-                      <option key={client.id} value={client.id}>
-                        {client.company_name} ({client.plan_display})
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={formData.client || undefined} onValueChange={handleClientChange} disabled={isReadOnly}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.isArray(clients) && clients.map(client => (
+                        <SelectItem key={client.id} value={String(client.id)}>
+                          {client.company_name} ({client.plan_display})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {selectedClient && (
                     <p className="text-xs text-muted-foreground mt-1">
                       Contrato vigente: {formatDate(selectedClient.start_date)} → {formatDate(selectedClient.end_date)}
@@ -728,17 +732,20 @@ export function AdvertisementFormDialog({
                         {clientPlan === 'bronze' && ' — solo Entre Contenido y Footer'}
                       </p>
                     )}
-                    <select
-                      name="placement"
+                    <Select
                       value={formData.placement}
-                      onChange={handleChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      required
+                      onValueChange={(v) => setFormData(prev => ({ ...prev, placement: v }))}
+                      disabled={isReadOnly}
                     >
-                      {availablePlacements.map(p => (
-                        <option key={p.value} value={p.value}>{p.label}</option>
-                      ))}
-                    </select>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availablePlacements.map(p => (
+                          <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {(() => {
                       const current = availablePlacements.find(p => p.value === formData.placement);
                       return current?.hint ? (
@@ -765,34 +772,41 @@ export function AdvertisementFormDialog({
 
                   <div>
                     <label className="text-sm font-medium">Estado *</label>
-                    <select
-                      name="status"
+                    <Select
                       value={formData.status}
-                      onChange={handleChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      required
+                      onValueChange={(v) => setFormData(prev => ({ ...prev, status: v as typeof prev.status }))}
+                      disabled={isReadOnly}
                     >
-                      <option value="draft">Borrador</option>
-                      <option value="active">Activo</option>
-                      <option value="paused">Pausado</option>
-                      <option value="completed">Finalizado</option>
-                    </select>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Borrador</SelectItem>
+                        <SelectItem value="active">Activo</SelectItem>
+                        <SelectItem value="paused">Pausado</SelectItem>
+                        <SelectItem value="completed">Finalizado</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
 
               <div>
                 <label className="text-sm font-medium">Categoría (feed Novedades)</label>
-                <select
-                  name="category"
+                <Select
                   value={formData.category}
-                  onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, category: v as typeof prev.category }))}
+                  disabled={isReadOnly}
                 >
-                  {CATEGORIES.map(c => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground mt-1">
                   Define cómo aparece este anuncio en la sección Novedades del médico
                 </p>
@@ -835,7 +849,7 @@ export function AdvertisementFormDialog({
                 <h3 className="font-semibold text-lg">Periodo de Visualización</h3>
 
                 {selectedClient && (
-                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 dark:bg-blue-950/40 dark:border-blue-800 rounded-lg text-xs text-blue-800 dark:text-blue-200">
                     <span>
                       Las fechas deben estar dentro del contrato del cliente
                       ({formatDate(selectedClient.start_date)} → {formatDate(selectedClient.end_date)}).
