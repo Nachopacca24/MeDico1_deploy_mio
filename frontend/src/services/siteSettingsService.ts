@@ -8,13 +8,14 @@ export interface SiteSettings {
   TRIAL_DAYS: string;
   ANDROID_TESTERS_COUNT: string;
   ANDROID_MIN_VERSION: string;
+  IOS_MIN_VERSION: string;
   FREE_FOR_ALL_PREMIUM: string;
 }
 
 export const siteSettingsService = {
   async getPublic(): Promise<SiteSettings> {
     const res = await fetch(`${API_URL}/api/v1/settings/`);
-    if (!res.ok) return { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0', FREE_FOR_ALL_PREMIUM: '0' };
+    if (!res.ok) return { PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0', IOS_MIN_VERSION: '1.0', FREE_FOR_ALL_PREMIUM: '0' };
     return res.json();
   },
 

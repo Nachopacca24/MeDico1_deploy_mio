@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [togglingFree, setTogglingFree] = useState(false);
-  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0', FREE_FOR_ALL_PREMIUM: '0' });
+  const [form, setForm] = useState<SiteSettings>({ PREMIUM_PRICE: '7', ANNUAL_PRICE: '84', TRIAL_DAYS: '30', ANDROID_TESTERS_COUNT: '12', ANDROID_MIN_VERSION: '1.0', IOS_MIN_VERSION: '1.0', FREE_FOR_ALL_PREMIUM: '0' });
 
   useEffect(() => {
     siteSettingsService.getAdmin()
@@ -197,6 +197,23 @@ export default function SettingsPage() {
             />
             <p className="text-xs text-muted-foreground">
               Si un usuario tiene una versión menor a esta, verá un aviso para actualizar desde Play Store. Actualizá este valor cada vez que subas una nueva versión.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="ios-min-version" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Versión mínima iOS
+            </Label>
+            <Input
+              id="ios-min-version"
+              type="text"
+              placeholder="ej: 1.2"
+              value={form.IOS_MIN_VERSION}
+              onChange={e => setForm(f => ({ ...f, IOS_MIN_VERSION: e.target.value }))}
+            />
+            <p className="text-xs text-muted-foreground">
+              Igual que la de Android pero independiente — las revisiones de Apple y Google no siempre terminan el mismo día. Si un usuario tiene una versión menor a esta, verá un aviso para actualizar desde el App Store.
             </p>
           </div>
 

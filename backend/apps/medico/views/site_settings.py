@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.medico.models.site_setting import SiteSetting
 
 
-ALLOWED_KEYS = {'PREMIUM_PRICE', 'ANNUAL_PRICE', 'TRIAL_DAYS', 'ANDROID_TESTERS_COUNT', 'ANDROID_MIN_VERSION', 'FREE_FOR_ALL_PREMIUM'}
+ALLOWED_KEYS = {'PREMIUM_PRICE', 'ANNUAL_PRICE', 'TRIAL_DAYS', 'ANDROID_TESTERS_COUNT', 'ANDROID_MIN_VERSION', 'IOS_MIN_VERSION', 'FREE_FOR_ALL_PREMIUM'}
 
 
 def _build_settings(raw):
@@ -19,6 +19,7 @@ def _build_settings(raw):
         'TRIAL_DAYS': raw.get('TRIAL_DAYS', '30'),
         'ANDROID_TESTERS_COUNT': raw.get('ANDROID_TESTERS_COUNT', '12'),
         'ANDROID_MIN_VERSION': raw.get('ANDROID_MIN_VERSION', '1.0'),
+        'IOS_MIN_VERSION': raw.get('IOS_MIN_VERSION', '1.0'),
         'FREE_FOR_ALL_PREMIUM': raw.get('FREE_FOR_ALL_PREMIUM', '0'),
     }
 
@@ -86,6 +87,13 @@ def site_settings_admin(request):
             return Response({'error': 'Versión inválida'}, status=400)
         SiteSetting.set('ANDROID_MIN_VERSION', v)
         updated['ANDROID_MIN_VERSION'] = v
+
+    if 'IOS_MIN_VERSION' in data:
+        v = str(data['IOS_MIN_VERSION']).strip()
+        if not v:
+            return Response({'error': 'Versión inválida'}, status=400)
+        SiteSetting.set('IOS_MIN_VERSION', v)
+        updated['IOS_MIN_VERSION'] = v
 
     granted_users = None
     if 'FREE_FOR_ALL_PREMIUM' in data:

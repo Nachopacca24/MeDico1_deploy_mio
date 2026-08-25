@@ -3,8 +3,7 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { siteSettingsService } from '@/services/siteSettingsService';
-
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=app.medicoapp.medico';
+import { PLAY_STORE_URL, APP_STORE_URL } from '@/shared/utils/platform';
 
 function compareVersions(installed: string, minimum: string): boolean {
   const toArr = (v: string) => v.split('.').map(n => parseInt(n, 10) || 0);
@@ -19,9 +18,10 @@ function compareVersions(installed: string, minimum: string): boolean {
 
 export function UpdateChecker() {
   const [showDialog, setShowDialog] = useState(false);
+  const platform = Capacitor.getPlatform();
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'android') return;
+    if (!Capacitor.isNativePlatform() || (platform !== 'android' && platform !== 'ios')) return;
 
     (async () => {
       try {
@@ -29,17 +29,18 @@ export function UpdateChecker() {
           App.getInfo(),
           siteSettingsService.getPublic(),
         ]);
-        if (compareVersions(info.version, settings.ANDROID_MIN_VERSION)) {
+        const minVersion = platform === 'ios' ? settings.IOS_MIN_VERSION : settings.ANDROID_MIN_VERSION;
+        if (compareVersions(info.version, minVersion)) {
           setShowDialog(true);
         }
       } catch {
         // silently ignore — no update check on failure
       }
     })();
-  }, []);
+  }, [platform]);
 
   const handleUpdate = async () => {
-    await Browser.open({ url: PLAY_STORE_URL });
+    await Browser.open({ url: platform === 'ios' ? APP_STORE_URL : PLAY_STORE_URL });
   };
 
   if (!showDialog) return null;
