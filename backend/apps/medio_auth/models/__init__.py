@@ -119,10 +119,17 @@ class CustomUser(AbstractUser):
     inactivity_reminder_sent_at = models.DateTimeField(
         blank=True,
         null=True,
-        verbose_name="Recordatorio de inactividad enviado para",
-        help_text="Guarda el last_active_at vigente cuando se mandó el push de 'volvé a la app' — así, "
-                   "si el usuario vuelve a abrir la app, last_active_at avanza y deja de coincidir, "
-                   "permitiendo que se le mande otro recordatorio la próxima vez que esté inactivo."
+        verbose_name="Último recordatorio de inactividad enviado",
+        help_text="Momento en que se mandó el último push de 'volvé a la app' de la racha de inactividad "
+                   "actual. Si last_active_at avanza más allá de este valor (el usuario volvió a abrir la "
+                   "app), la racha se considera terminada y el conteo/escalonado arrancan de cero."
+    )
+    inactivity_reminder_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Recordatorios de inactividad enviados en esta racha",
+        help_text="Cuántos push de inactividad lleva enviados sin que el usuario haya vuelto a abrir la "
+                   "app — define el próximo intervalo (20h, luego 3 días, luego cada 5 días). Se reinicia "
+                   "solo cuando el usuario vuelve a estar activo y luego vuelve a quedar inactivo."
     )
 
     is_permanent_premium = models.BooleanField(
