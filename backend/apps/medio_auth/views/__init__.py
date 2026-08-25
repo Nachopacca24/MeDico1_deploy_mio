@@ -788,7 +788,8 @@ class AcceptFriendRequestView(APIView):
             user=friend_request.from_user,
             friend=friend_request.to_user
         )
-        
+        logger.info(f'[COLLEAGUE] conectados vía solicitud de amistad: {friend_request.from_user.id} <-> {friend_request.to_user.id}')
+
         return Response({
             'message': 'Solicitud aceptada correctamente',
             'colleague': ColleagueSerializer(friend_request.from_user).data
@@ -1490,9 +1491,17 @@ def _apply_referral(new_user, referrer):
     new_user.referred_by = referrer
     new_user.save(update_fields=['referred_by'])
     referral_count = User.objects.filter(referred_by=referrer, is_active=True).count()
+    logger.info(
+        f'[REFERRAL] referido registrado: nuevo_usuario={new_user.id} referrer={referrer.id} '
+        f'(referido #{referral_count} de {referrer.id})'
+    )
     if referral_count > 0 and referral_count % REFERRAL_THRESHOLD == 0:
         from django.db.models import F
         User.objects.filter(pk=referrer.pk).update(credit_days=F('credit_days') + REFERRAL_REWARD_DAYS)
+        logger.info(
+            f'[REFERRAL] crédito otorgado: referrer={referrer.id} +{REFERRAL_REWARD_DAYS} días '
+            f'(total referidos activos={referral_count})'
+        )
 
 
 def _process_signup_referral(new_user, raw_code, grant_credit=True):
@@ -1529,10 +1538,12 @@ def _process_signup_referral(new_user, raw_code, grant_credit=True):
         return None
     try:
         from apps.medio_auth.models import Friendship
-        Friendship.objects.get_or_create(
+        _, friendship_created = Friendship.objects.get_or_create(
             user=min(referrer, new_user, key=lambda u: u.id),
             friend=max(referrer, new_user, key=lambda u: u.id),
         )
+        if friendship_created:
+            logger.info(f'[COLLEAGUE] conectados vía signup/login: {referrer.id} <-> {new_user.id} (code={code!r})')
         if grant_credit:
             _apply_referral(new_user, referrer)
     except Exception:
@@ -1592,6 +1603,8 @@ def accept_invite(request):
         user=min(other, request.user, key=lambda u: u.id),
         friend=max(other, request.user, key=lambda u: u.id),
     )
+    if created:
+        logger.info(f'[COLLEAGUE] conectados vía invite link: {other.id} <-> {request.user.id}')
     return Response({
         'ok': True,
         'created': created,
