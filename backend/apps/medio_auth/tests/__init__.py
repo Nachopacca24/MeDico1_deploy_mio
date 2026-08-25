@@ -298,7 +298,11 @@ class GoogleLoginReferralTest(TestCase):
             or Friendship.objects.filter(user=new_user, friend=referrer).exists()
         )
 
-    def test_new_account_via_google_grants_credit_at_referral_threshold(self):
+    def test_new_account_via_google_grants_credit_at_referral_threshold_during_promo(self):
+        """Con FREE_FOR_ALL_PREMIUM activo, todos ya tienen Premium gratis — el premio
+        se banca en credit_days para aplicarse cuando la promo termine."""
+        from apps.medico.models.site_setting import SiteSetting
+        SiteSetting.set('FREE_FOR_ALL_PREMIUM', '1')
         referrer = User.objects.create_user(username='g_ref2', email='g_ref2@example.com')
         for i in range(2):
             other = User.objects.create_user(username=f'g_prev{i}', email=f'g_prev{i}@example.com')
@@ -309,6 +313,25 @@ class GoogleLoginReferralTest(TestCase):
 
         referrer.refresh_from_db()
         self.assertEqual(referrer.credit_days, 10)  # 3rd active referral hits the threshold
+        self.assertIsNone(referrer.trial_ends_at)  # todavía no se aplicó — queda bancado
+
+    def test_new_account_via_google_grants_credit_immediately_without_promo(self):
+        """Sin la promo activa, nada consume credit_days más adelante — el premio se
+        aplica de una a trial_ends_at, no queda atrapado en un contador."""
+        referrer = User.objects.create_user(
+            username='g_ref2b', email='g_ref2b@example.com', plan='free',
+        )
+        for i in range(2):
+            other = User.objects.create_user(username=f'g_prev2_{i}', email=f'g_prev2_{i}@example.com')
+            other.referred_by = referrer
+            other.save(update_fields=['referred_by'])
+
+        self._google_post('g_new2b@example.com', referral_code=referrer.friend_code)
+
+        referrer.refresh_from_db()
+        self.assertEqual(referrer.credit_days, 0)  # no se banca, se aplica directo
+        self.assertIsNotNone(referrer.trial_ends_at)
+        self.assertEqual(referrer.plan, 'premium')
 
     def test_existing_account_login_via_google_does_not_grant_credit(self):
         referrer = User.objects.create_user(username='g_ref3', email='g_ref3@example.com')

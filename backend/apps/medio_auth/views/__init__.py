@@ -1500,8 +1500,18 @@ def _apply_referral(new_user, referrer):
         f'(referido #{referral_count} de {referrer.id})'
     )
     if referral_count > 0 and referral_count % REFERRAL_THRESHOLD == 0:
-        from django.db.models import F
-        User.objects.filter(pk=referrer.pk).update(credit_days=F('credit_days') + REFERRAL_REWARD_DAYS)
+        from apps.medico.models.site_setting import SiteSetting
+        if SiteSetting.get('FREE_FOR_ALL_PREMIUM', '0') == '1':
+            # Con la promo activa todos ya tienen Premium gratis — bancar el
+            # crédito para aplicarlo cuando la promo termine (lo consume y
+            # resetea User.apply_credits_on_promo_end).
+            from django.db.models import F
+            User.objects.filter(pk=referrer.pk).update(credit_days=F('credit_days') + REFERRAL_REWARD_DAYS)
+        else:
+            # Sin promo activa, nada va a leer credit_days más adelante —
+            # bancarlo ahí lo dejaría atrapado para siempre. Aplicarlo ya.
+            referrer.grant_bonus_days(REFERRAL_REWARD_DAYS)
+            referrer.save(update_fields=['trial_ends_at', 'plan'])
         logger.info(
             f'[REFERRAL] crédito otorgado: referrer={referrer.id} +{REFERRAL_REWARD_DAYS} días '
             f'(total referidos activos={referral_count})'

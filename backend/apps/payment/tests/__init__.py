@@ -264,6 +264,12 @@ class FreeForAllDeactivationEndpointTest(TestCase):
 class ReferralCreditTest(TestCase):
     """_apply_referral — créditos de colegas"""
 
+    def setUp(self):
+        # Estos tests son específicamente sobre el banco de credit_days, que solo
+        # se usa mientras la promo gratuita está activa (ver test_promo_off_...
+        # más abajo para el otro camino, donde se aplica de inmediato).
+        SiteSetting.set('FREE_FOR_ALL_PREMIUM', '1')
+
     def _register_referrals(self, referrer, count):
         from apps.medio_auth.views import _apply_referral
         for i in range(count):
@@ -297,6 +303,17 @@ class ReferralCreditTest(TestCase):
         _apply_referral(new_user, referrer)  # segunda vez — debe ignorarse
         referrer.refresh_from_db()
         self.assertEqual(User.objects.filter(referred_by=referrer).count(), 1)
+
+    def test_without_promo_active_credit_applies_immediately_instead_of_banking(self):
+        """Sin FREE_FOR_ALL_PREMIUM activo, nada más va a leer credit_days más
+        adelante — bancarlo ahí lo dejaría atrapado para siempre. Debe aplicarse
+        de una a trial_ends_at, igual que cualquier otro bono."""
+        SiteSetting.set('FREE_FOR_ALL_PREMIUM', '0')
+        referrer = _make_user(username='referrer5', email='referrer5@example.com', plan='free', trial_ends_at=None)
+        self._register_referrals(referrer, 3)
+        self.assertEqual(referrer.credit_days, 0)  # no se banca
+        self.assertIsNotNone(referrer.trial_ends_at)
+        self.assertEqual(referrer.plan, 'premium')
 
 
 class ProcessSignupReferralTest(TestCase):

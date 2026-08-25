@@ -269,7 +269,11 @@ def test_apple_login_new_user_with_referral_connects_as_colleague(client, User):
 
 
 @pytest.mark.django_db
-def test_apple_login_new_user_grants_credit_at_referral_threshold(client, User):
+def test_apple_login_new_user_grants_credit_at_referral_threshold_during_promo(client, User):
+    """Con FREE_FOR_ALL_PREMIUM activo, todos ya tienen Premium gratis — el premio
+    se banca en credit_days para aplicarse cuando la promo termine."""
+    from apps.medico.models.site_setting import SiteSetting
+    SiteSetting.set('FREE_FOR_ALL_PREMIUM', '1')
     referrer = User.objects.create_user(username='a_ref2', email='a_ref2@example.com')
     for i in range(2):
         other = User.objects.create_user(username=f'a_prev{i}', email=f'a_prev{i}@example.com')
@@ -285,6 +289,30 @@ def test_apple_login_new_user_grants_credit_at_referral_threshold(client, User):
 
     referrer.refresh_from_db()
     assert referrer.credit_days == 10  # 3rd active referral hits the threshold
+    assert referrer.trial_ends_at is None  # todavía no se aplicó — queda bancado
+
+
+@pytest.mark.django_db
+def test_apple_login_new_user_grants_credit_immediately_without_promo(client, User):
+    """Sin la promo activa, nada consume credit_days más adelante — el premio se
+    aplica de una a trial_ends_at, no queda atrapado en un contador."""
+    referrer = User.objects.create_user(username='a_ref2b', email='a_ref2b@example.com', plan='free')
+    for i in range(2):
+        other = User.objects.create_user(username=f'a_prev2_{i}', email=f'a_prev2_{i}@example.com')
+        other.referred_by = referrer
+        other.save(update_fields=['referred_by'])
+
+    with _mock_verify(sub='apple_sub_new2b', email='a_new2b@example.com'):
+        client.post(APPLE_URL, {
+            'identity_token': FAKE_TOKEN,
+            'email': 'a_new2b@example.com',
+            'referral_code': referrer.friend_code,
+        }, format='json')
+
+    referrer.refresh_from_db()
+    assert referrer.credit_days == 0  # no se banca, se aplica directo
+    assert referrer.trial_ends_at is not None
+    assert referrer.plan == 'premium'
 
 
 @pytest.mark.django_db
