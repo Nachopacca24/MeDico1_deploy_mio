@@ -1494,7 +1494,13 @@ def _apply_referral(new_user, referrer):
         return  # ya tiene referidor, no pisar
     new_user.referred_by = referrer
     new_user.save(update_fields=['referred_by'])
-    referral_count = User.objects.filter(referred_by=referrer, is_active=True).count()
+    # Sin filtrar por is_active: casi ninguna cuenta se borra de verdad (ver
+    # delete_pending_accounts — la mayoría se anonimiza pero la fila queda),
+    # así que contar solo activos permitiría "reciclar" el cupo borrando una
+    # cuenta referida y sumando una nueva para volver a cruzar el umbral.
+    # referred_by nunca se toca al anonimizar, así que este conteo es de por
+    # vida y solo puede subir.
+    referral_count = User.objects.filter(referred_by=referrer).count()
     logger.info(
         f'[REFERRAL] referido registrado: nuevo_usuario={new_user.id} referrer={referrer.id} '
         f'(referido #{referral_count} de {referrer.id})'
@@ -1569,10 +1575,10 @@ def _process_signup_referral(new_user, raw_code, grant_credit=True):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def referral_stats(request):
-    # is_active=True to match _apply_referral's counting — otherwise a deleted/
-    # deactivated referred account would still count here, showing progress
-    # toward a reward that _apply_referral would never actually grant.
-    count = User.objects.filter(referred_by=request.user, is_active=True).count()
+    # Sin filtrar por is_active — de por vida, para que coincida con lo que
+    # _apply_referral realmente cuenta (ver el comentario ahí sobre por qué
+    # filtrar por activos permitiría "reciclar" el cupo borrando cuentas).
+    count = User.objects.filter(referred_by=request.user).count()
     rewards_given = count // REFERRAL_THRESHOLD
     progress = count % REFERRAL_THRESHOLD
     return Response({

@@ -315,6 +315,28 @@ class ReferralCreditTest(TestCase):
         self.assertIsNotNone(referrer.trial_ends_at)
         self.assertEqual(referrer.plan, 'premium')
 
+    def test_deactivating_a_referred_account_does_not_free_up_the_slot(self):
+        """Borrar/desactivar una cuenta referida no debe permitir 'reciclar' el cupo
+        sumando una cuenta nueva para volver a cruzar el mismo umbral."""
+        from apps.medio_auth.views import _apply_referral
+        referrer = _make_user(username='referrer6', email='referrer6@example.com')
+        self._register_referrals(referrer, 3)
+        self.assertEqual(referrer.credit_days, 10)
+
+        # El primer referido borra su cuenta (is_active=False, la fila queda —
+        # ver delete_pending_accounts, la mayoría se anonimiza, no se borra).
+        first_referred = User.objects.get(username='ref_0_%s' % referrer.id)
+        first_referred.is_active = False
+        first_referred.save(update_fields=['is_active'])
+
+        # Un cuarto referido nuevo no debe volver a cruzar el umbral de 3 —
+        # ya lo habíamos cruzado, y el conteo de por vida sigue en 3+1=4.
+        fourth = User.objects.create(username='ref_farmed', email='ref_farmed@example.com')
+        _apply_referral(fourth, referrer)
+
+        referrer.refresh_from_db()
+        self.assertEqual(referrer.credit_days, 10)  # no se acreditó de nuevo
+
 
 class ProcessSignupReferralTest(TestCase):
     """_process_signup_referral — la ruta única que usan registro/Google/Apple para
