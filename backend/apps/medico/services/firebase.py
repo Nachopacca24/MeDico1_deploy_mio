@@ -162,8 +162,18 @@ def _send_batch(messaging, tokens, title, body, data):
 
 
 def notify_user(user, title: str, body: str, data: dict | None = None):
-    """Send push notification to all FCM tokens of a user."""
+    """
+    Send push notification to all FCM tokens of a user. This is the only
+    channel used for cirugías/invitaciones/colegas — never for Anuncios or
+    publicidad, which go through apps.communication.services.promo_push
+    instead. So gating here on receives_reminders is independent from (and
+    doesn't touch) receives_announcements.
+    """
     from apps.medico.models import FCMToken
+
+    if not user.receives_reminders:
+        logger.info('[NOTIFY] user=%s skipped (receives_reminders=False)', user.id)
+        return
 
     tokens = list(FCMToken.objects.filter(user=user).values_list('token', flat=True))
     logger.info('[NOTIFY] user=%s title=%r tokens=%d', user.id, title, len(tokens))

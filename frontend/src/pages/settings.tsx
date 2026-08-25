@@ -220,7 +220,7 @@ const Settings = () => {
     last_name: "",
     email: "",
     darkMode: false,
-    notifications: true,
+    receivesReminders: true,
     receivesAnnouncements: true,
     defaultCurrency: "GTQ",
     defaultHospitalId: "",
@@ -240,6 +240,7 @@ const Settings = () => {
         last_name: user.last_name || "",
         email: user.email || "",
         darkMode: user.theme_preference === 'dark',
+        receivesReminders: user.receives_reminders,
         receivesAnnouncements: user.receives_announcements,
       }));
       setSurgeryReminderHours(user.surgery_reminder_hours ?? 2);
@@ -310,6 +311,7 @@ const Settings = () => {
       await authService.updateProfile({
         surgery_reminder_hours: surgeryReminderHours,
         theme_preference: theme,
+        receives_reminders: settings.receivesReminders,
         receives_announcements: settings.receivesAnnouncements,
       });
       await refreshUser();
@@ -455,15 +457,15 @@ const Settings = () => {
                 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="notifications">Notificaciones</Label>
+                    <Label htmlFor="receivesReminders">Recordatorios y solicitudes</Label>
                     <p className="text-sm text-muted-foreground">
-                      Recibir notificaciones sobre actualizaciones
+                      Cirugías próximas, casos marcados como operados, invitaciones sin responder, y cuando un colega te agrega.
                     </p>
                   </div>
                   <Switch
-                    id="notifications"
-                    checked={settings.notifications}
-                    onCheckedChange={(checked) => handleSwitchChange("notifications", checked)}
+                    id="receivesReminders"
+                    checked={settings.receivesReminders}
+                    onCheckedChange={(checked) => handleSwitchChange("receivesReminders", checked)}
                   />
                 </div>
 
@@ -471,9 +473,8 @@ const Settings = () => {
                   <div className="space-y-0.5">
                     <Label htmlFor="receivesAnnouncements">Novedades y anuncios</Label>
                     <p className="text-sm text-muted-foreground">
-                      {user?.has_premium_access
-                        ? "Anuncios del sistema y publicidad de clientes. El resto (colegas, cirugías, referidos) siempre te llega, esto es lo único que podés apagar."
-                        : "Solo Premium puede desactivarlo. El resto de notificaciones (colegas, cirugías, referidos) no se ve afectado."}
+                      Anuncios del sistema y publicidad de clientes — separado de arriba, así que lo podés apagar sin perderte lo importante.
+                      {!user?.has_premium_access && ' Solo disponible para Premium.'}
                     </p>
                   </div>
                   <Switch

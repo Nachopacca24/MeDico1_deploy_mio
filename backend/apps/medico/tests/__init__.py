@@ -6,9 +6,9 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
-from apps.medico.models import AnesthesiaCase, Hospital, SurgicalCase
+from apps.medico.models import AnesthesiaCase, FCMToken, Hospital, SurgicalCase
 from apps.medico.models.stats import UserStatsTotals
-from apps.medico.services.firebase import notify_team
+from apps.medico.services.firebase import notify_team, notify_user
 
 User = get_user_model()
 
@@ -180,6 +180,70 @@ class NotifyTeamTest(TestCase):
         notify_team(case, exclude_user=actor, title='t', body='b')
         notified = {call.args[0] for call in mock_notify.call_args_list}
         self.assertEqual(notified, {principal})
+
+
+class NotifyUserOptOutTest(TestCase):
+    """
+    notify_user (y por lo tanto notify_team, que llama a notify_user por cada
+    destinatario) es el único canal para cirugías/invitaciones/colegas —
+    receives_reminders debe gatearlo, y receives_announcements (el toggle de
+    Anuncios/publicidad, que vive en un sistema completamente aparte:
+    apps.communication.services.promo_push) no debe tener ningún efecto acá.
+    """
+
+    def _user_with_token(self, username, **kwargs):
+        user = User.objects.create(username=username, email=f'{username}@example.com', **kwargs)
+        FCMToken.objects.create(user=user, token=f'token-{username}', platform='android')
+        return user
+
+    @patch('apps.medico.services.firebase.send_push_notification')
+    def test_reaches_user_when_reminders_enabled(self, mock_send):
+        mock_send.return_value = {'success': ['token-doc'], 'failed_tokens': []}
+        doc = self._user_with_token('doc', receives_reminders=True)
+
+        notify_user(doc, title='Recordatorio', body='Tenés una cirugía mañana')
+
+        mock_send.assert_called_once()
+        self.assertEqual(mock_send.call_args.args[0], ['token-doc'])
+
+    @patch('apps.medico.services.firebase.send_push_notification')
+    def test_does_not_reach_user_when_reminders_disabled(self, mock_send):
+        doc = self._user_with_token('doc', receives_reminders=False)
+
+        notify_user(doc, title='Recordatorio', body='Tenés una cirugía mañana')
+
+        mock_send.assert_not_called()
+
+    @patch('apps.medico.services.firebase.send_push_notification')
+    def test_receives_announcements_has_no_effect_on_reminders(self, mock_send):
+        """El toggle de Anuncios/publicidad es un canal aparte — apagarlo no debe
+        tocar cirugías/invitaciones/colegas, que dependen solo de receives_reminders."""
+        mock_send.return_value = {'success': ['token-doc'], 'failed_tokens': []}
+        doc = self._user_with_token('doc', receives_reminders=True, receives_announcements=False)
+
+        notify_user(doc, title='Recordatorio', body='Tenés una cirugía mañana')
+
+        mock_send.assert_called_once()
+
+    @patch('apps.medico.services.firebase.send_push_notification')
+    def test_notify_team_skips_only_the_recipient_who_opted_out(self, mock_send):
+        mock_send.return_value = {'success': [], 'failed_tokens': []}
+        principal = self._user_with_token('principal', receives_reminders=True)
+        assistant = self._user_with_token('assistant', receives_reminders=False)
+        hospital, _ = Hospital.objects.get_or_create(name='Hospital Test')
+        case = SurgicalCase.objects.create(
+            patient_name='Miguel', hospital=hospital, created_by=principal,
+            assistant_doctor=assistant, assistant_accepted=True,
+            surgery_date=date.today(), status='scheduled',
+        )
+        actor = User.objects.create(username='actor', email='actor@example.com')
+
+        notify_team(case, exclude_user=actor, title='t', body='b')
+
+        # send_push_notification solo se llama para principal — assistant se
+        # filtra adentro de notify_user antes de siquiera buscar sus tokens.
+        self.assertEqual(mock_send.call_count, 1)
+        self.assertEqual(mock_send.call_args.args[0], ['token-principal'])
 
 
 class PurgeArchivedCasesTest(TestCase):

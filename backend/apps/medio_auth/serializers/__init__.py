@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             'phone', 'specialty', 'license_number', 'hospital_default',
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
-            'theme_preference', 'surgery_reminder_hours', 'receives_announcements',
+            'theme_preference', 'surgery_reminder_hours', 'receives_announcements', 'receives_reminders',
             'is_profile_complete', 'has_usable_password', 'created_at', 'updated_at'
         ]
         read_only_fields = [
@@ -242,7 +242,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'phone', 'specialty',
             'license_number', 'hospital_default', 'avatar',
             'signature_image', 'theme_preference', 'surgery_reminder_hours',
-            'receives_announcements',
+            'receives_announcements', 'receives_reminders',
         ]
 
     def validate_receives_announcements(self, value):
