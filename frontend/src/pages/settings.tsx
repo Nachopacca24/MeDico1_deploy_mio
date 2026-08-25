@@ -473,7 +473,7 @@ const Settings = () => {
                   <div className="space-y-0.5">
                     <Label htmlFor="receivesAdvertising">Publicidad</Label>
                     <p className="text-sm text-muted-foreground">
-                      Solo publicidad de clientes — separado de arriba, así que lo podés apagar sin perderte lo importante. Los avisos del sistema (versión nueva, etc.) siempre llegan igual.
+                      Publicidad nueva de nuestros clientes, según tu especialidad o general para todos los médicos — separado de arriba, así que lo podés apagar sin perderte lo importante. Los avisos del sistema (versión nueva, etc.) siempre llegan igual.
                       {!user?.has_premium_access && ' Solo disponible para Premium.'}
                     </p>
                   </div>
