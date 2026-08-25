@@ -5,8 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from apps.communication.models import Announcement
-from apps.medico.models import FCMToken
-from apps.medico.services.firebase import send_push_notification
+from apps.communication.services import promo_push
 
 logger = logging.getLogger(__name__)
 
@@ -56,21 +55,23 @@ def admin_announcements(request):
         created_by=request.user,
     )
 
-    tokens = list(FCMToken.objects.values_list('token', flat=True))
-    push_result = {'success': [], 'failed_tokens': []}
-    if tokens:
-        push_result = send_push_notification(tokens, title=title, body=body, data={'route': '/news'})
-        if push_result['failed_tokens']:
-            FCMToken.objects.filter(token__in=push_result['failed_tokens']).delete()
+    # Sin target_specialties — un Anuncio de sistema (versión nueva, aviso
+    # importante) le corresponde a todos sin importar especialidad.
+    queued_push = promo_push.enqueue(
+        title=title, body=body, route='/news',
+        label=f'Anuncio: {title}',
+    )
+    queued = queued_push.sent_at is None
 
     logger.info(
-        '[ANNOUNCEMENT] created: id=%s title="%s" by=%s pushed_to=%d',
-        announcement.id, title, request.user.email, len(push_result['success']),
+        '[ANNOUNCEMENT] created: id=%s title="%s" by=%s %s',
+        announcement.id, title, request.user.email,
+        'queued (esperando cupo/horario)' if queued else f'pushed_to={queued_push.sent_to_count}',
     )
     return Response(
         {'id': announcement.id, 'title': announcement.title, 'body': announcement.body,
          'is_active': announcement.is_active, 'created_at': announcement.created_at.isoformat(),
-         'pushed_to': len(push_result['success'])},
+         'pushed_to': queued_push.sent_to_count, 'queued': queued},
         status=status.HTTP_201_CREATED
     )
 

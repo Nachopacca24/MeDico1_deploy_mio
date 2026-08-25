@@ -221,6 +221,7 @@ const Settings = () => {
     email: "",
     darkMode: false,
     notifications: true,
+    receivesAnnouncements: true,
     defaultCurrency: "GTQ",
     defaultHospitalId: "",
   });
@@ -239,6 +240,7 @@ const Settings = () => {
         last_name: user.last_name || "",
         email: user.email || "",
         darkMode: user.theme_preference === 'dark',
+        receivesAnnouncements: user.receives_announcements,
       }));
       setSurgeryReminderHours(user.surgery_reminder_hours ?? 2);
       // Theme is applied by AuthContext — calling setTheme here too causes an
@@ -308,6 +310,7 @@ const Settings = () => {
       await authService.updateProfile({
         surgery_reminder_hours: surgeryReminderHours,
         theme_preference: theme,
+        receives_announcements: settings.receivesAnnouncements,
       });
       await refreshUser();
       toast({ title: "Preferencias guardadas", description: "Tus preferencias fueron actualizadas." });
@@ -463,7 +466,24 @@ const Settings = () => {
                     onCheckedChange={(checked) => handleSwitchChange("notifications", checked)}
                   />
                 </div>
-                
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="receivesAnnouncements">Novedades y anuncios</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {user?.has_premium_access
+                        ? "Anuncios del sistema y publicidad de clientes. El resto (colegas, cirugías, referidos) siempre te llega, esto es lo único que podés apagar."
+                        : "Solo Premium puede desactivarlo. El resto de notificaciones (colegas, cirugías, referidos) no se ve afectado."}
+                    </p>
+                  </div>
+                  <Switch
+                    id="receivesAnnouncements"
+                    checked={settings.receivesAnnouncements}
+                    disabled={!user?.has_premium_access}
+                    onCheckedChange={(checked) => handleSwitchChange("receivesAnnouncements", checked)}
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="defaultCurrency">Moneda Predeterminada</Label>
                   <Input
@@ -800,7 +820,7 @@ const Settings = () => {
                         { icon: <Users className="h-4 w-4 text-violet-400" />,     text: 'Colegas ilimitados + colaboración' },
                         { icon: <Calendar className="h-4 w-4 text-emerald-400" />, text: 'Google Calendar integrado' },
                         { icon: <BarChart2 className="h-4 w-4 text-blue-400" />,   text: 'Estadísticas personales avanzadas' },
-                        { icon: <Shield className="h-4 w-4 text-emerald-400" />,   text: 'Sin anuncios ni interrupciones' },
+                        { icon: <Shield className="h-4 w-4 text-emerald-400" />,   text: 'Elegís si recibís anuncios y novedades' },
                         { icon: <FileText className="h-4 w-4 text-sky-400" />,     text: 'Exportar cirugías como PDF' },
                         { icon: <ImagePlus className="h-4 w-4 text-amber-300" />,  text: 'Subir imágenes a tus cirugías (hasta 5 por cirugía)' },
                         { icon: <ShieldCheck className="h-4 w-4 text-emerald-400" />, text: 'Seguros médicos de Guatemala' },

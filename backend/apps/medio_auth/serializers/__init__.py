@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             'phone', 'specialty', 'license_number', 'hospital_default',
             'avatar', 'signature_image',
             'is_verified', 'is_email_verified',
-            'theme_preference', 'surgery_reminder_hours',
+            'theme_preference', 'surgery_reminder_hours', 'receives_announcements',
             'is_profile_complete', 'has_usable_password', 'created_at', 'updated_at'
         ]
         read_only_fields = [
@@ -242,8 +242,19 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'phone', 'specialty',
             'license_number', 'hospital_default', 'avatar',
             'signature_image', 'theme_preference', 'surgery_reminder_hours',
+            'receives_announcements',
         ]
-    
+
+    def validate_receives_announcements(self, value):
+        # Solo Premium puede silenciar novedades/anuncios — validado acá, no solo
+        # en el frontend, para que no se pueda forzar a False vía API directa.
+        user = self.context['request'].user
+        if value is False and not user.has_premium_access:
+            raise serializers.ValidationError(
+                "Solo los usuarios Premium pueden desactivar las novedades y anuncios."
+            )
+        return value
+
     def validate_license_number(self, value):
         """Validar que el license_number sea único (excepto para el usuario actual)"""
         if value:

@@ -49,7 +49,9 @@ export default function AnnouncementsPage() {
       setForm({ title: '', body: '' });
       toast.success(
         'Anuncio enviado',
-        `Notificación push enviada a ${created.pushed_to ?? 0} dispositivos. También queda visible en el inicio de todos los usuarios.`,
+        created.queued
+          ? 'Ya está visible en el inicio. La notificación push saldrá en el próximo turno disponible (como mucho 2 por día, entre 10am y 9pm) — no se pierde, queda en cola.'
+          : `Notificación push enviada a ${created.pushed_to ?? 0} dispositivos ahora mismo. También queda visible en el inicio de todos los usuarios.`,
       );
     } catch (e: any) {
       toast.error('Error', e.message);
@@ -99,7 +101,7 @@ export default function AnnouncementsPage() {
             Nuevo anuncio
           </CardTitle>
           <CardDescription>
-            Se manda como notificación push a todos los usuarios y, además, el botón "Novedades del sistema" brilla para quien no lo haya visto todavía.
+            Se manda como notificación push (máximo 2 por día entre publicidad y anuncios, para no saturar) y, además, el botón "Novedades del sistema" brilla para quien no lo haya visto todavía.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

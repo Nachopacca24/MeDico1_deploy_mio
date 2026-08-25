@@ -437,10 +437,13 @@ def capture_previous_ad_status(sender, instance, **kwargs):
 @receiver(post_save, sender=Advertisement)
 def notify_users_on_advertisement_activated(sender, instance, created, **kwargs):
     """
-    Envía notificación push cuando un anuncio se activa (creado como active, o
-    cambia de draft/paused a active) — solo a los usuarios dentro del targeting
-    por especialidad del anuncio (target_specialties vacío = todos), igual que
-    el resto del sistema de ads (ver get_active_ads/get_feed en views.py).
+    Envía notificación push cuando un anuncio de un cliente plan oro se activa
+    (creado como active, o cambia de draft/paused a active) — solo a los
+    usuarios dentro del targeting por especialidad del anuncio
+    (target_specialties vacío = todos), igual que el resto del sistema de ads
+    (ver get_active_ads/get_feed en views.py). Plata y bronce siguen
+    mostrándose en la app (banner/feed) igual que siempre, simplemente no
+    generan push — el push es un beneficio exclusivo del plan oro.
     """
     if instance.status != 'active':
         return
@@ -450,24 +453,23 @@ def notify_users_on_advertisement_activated(sender, instance, created, **kwargs)
     if not created and prev_status == 'active':
         return
 
-    try:
-        from apps.medico.models import FCMToken
-        from apps.medico.services.firebase import send_push_notification
+    if instance.client.plan != 'gold':
+        return
 
-        tokens_qs = FCMToken.objects.all()
-        if instance.target_specialties:
-            tokens_qs = tokens_qs.filter(user__specialty__in=instance.target_specialties)
-        tokens = list(tokens_qs.values_list('token', flat=True))
-        if not tokens:
-            return
+    try:
+        from apps.communication.services import promo_push
 
         title = instance.title or instance.campaign_name
         body = instance.description or 'Mirá las novedades en MeDico'
 
-        send_push_notification(tokens, title=title, body=body, data={'route': '/'})
-        logger.info(
-            '[AD] Notificación enviada para anuncio id=%s a %d tokens (target_specialties=%s)',
-            instance.pk, len(tokens), instance.target_specialties or 'todos',
+        # Encolado, no envío directo: si otro cliente activó un anuncio hace
+        # poco, este espera su turno en vez de mandarse encima (ver
+        # apps/communication/services/promo_push.py — horario, cupo diario,
+        # espaciado mínimo, y orden de llegada, no elección manual).
+        promo_push.enqueue(
+            title=title, body=body,
+            target_specialties=instance.target_specialties,
+            route='/', label=f'Publicidad: {instance.client.company_name}',
         )
     except Exception:
-        logger.exception('[AD] Error enviando notificación para anuncio id=%s', instance.pk)
+        logger.exception('[AD] Error encolando notificación para anuncio id=%s', instance.pk)

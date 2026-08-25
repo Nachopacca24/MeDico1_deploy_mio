@@ -112,7 +112,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 16, route: '/settings', emoji: '⚙️', target: 'settings-plan-tab',
     title: '¡Listo! Configuración final',
-    description: 'Último paso: revisá Configuración. En "Perfil" guardás tu especialidad. En "Preferencias" elegís modo oscuro o claro y configurás el recordatorio de notificaciones para tus cirugías. Si te queda alguna duda — sobre suscripción, referidos o privacidad — encontrás las Preguntas frecuentes en esta misma pestaña "Tutorial".',
+    description: 'Último paso: revisá Configuración. En "Perfil" guardás tu especialidad. En "Preferencias" elegís modo oscuro o claro, configurás el recordatorio de notificaciones para tus cirugías (esas siempre te llegan), y si sos Premium podés apagar el toggle de "Novedades y anuncios" — el único que se puede desactivar, porque colegas, cirugías y referidos son demasiado importantes para tu trabajo como para dejarlos apagar. Si te queda alguna duda — sobre suscripción, referidos o privacidad — encontrás las Preguntas frecuentes en esta misma pestaña "Tutorial".',
     hint: 'El recordatorio de cirugía te avisa con anticipación — podés elegir cuántas horas antes querés recibirlo.',
   },
 ];
@@ -234,7 +234,7 @@ export const ANESTHESIA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     step: 17, route: '/settings', emoji: '⚙️', target: 'settings-plan-tab',
     title: '¡Listo! Configuración final',
-    description: 'Último paso: revisá Configuración. En "Perfil" guardás tu especialidad. En "Preferencias" elegís modo oscuro o claro y configurás el recordatorio de notificaciones para tus cirugías. Si te queda alguna duda — sobre suscripción, referidos o privacidad — encontrás las Preguntas frecuentes en esta misma pestaña "Tutorial".',
+    description: 'Último paso: revisá Configuración. En "Perfil" guardás tu especialidad. En "Preferencias" elegís modo oscuro o claro, configurás el recordatorio de notificaciones para tus cirugías (esas siempre te llegan), y si sos Premium podés apagar el toggle de "Novedades y anuncios" — el único que se puede desactivar, porque colegas, cirugías y referidos son demasiado importantes para tu trabajo como para dejarlos apagar. Si te queda alguna duda — sobre suscripción, referidos o privacidad — encontrás las Preguntas frecuentes en esta misma pestaña "Tutorial".',
     hint: 'El recordatorio de cirugía te avisa con anticipación — podés elegir cuántas horas antes querés recibirlo.',
   },
 ];

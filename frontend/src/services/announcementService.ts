@@ -10,6 +10,7 @@ export interface Announcement {
   is_active?: boolean;
   created_at: string;
   pushed_to?: number;
+  queued?: boolean;
 }
 
 export const announcementService = {

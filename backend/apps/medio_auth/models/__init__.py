@@ -313,6 +313,15 @@ class CustomUser(AbstractUser):
         verbose_name="Fecha de Envío del Token de Reset",
     )
 
+    receives_announcements = models.BooleanField(
+        default=True,
+        verbose_name="Recibe novedades y anuncios",
+        help_text="Push promocionales (Anuncios del sistema, publicidad de clientes). Solo un usuario "
+                   "con acceso Premium puede desactivarlo — se valida en el serializer, no solo en el "
+                   "frontend. El resto de las notificaciones (colegas, cirugías, referidos) no pasan "
+                   "por este campo y siempre se envían."
+    )
+
     credit_days = models.IntegerField(
         default=0,
         verbose_name="Días de crédito acumulados",

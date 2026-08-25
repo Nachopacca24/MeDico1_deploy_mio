@@ -653,7 +653,7 @@ export default function LandingPage() {
                     { icon: <Users      className="h-4 w-4 text-violet-400"   />, text: 'Colegas ilimitados + colaboración' },
                     { icon: <Calendar   className="h-4 w-4 text-emerald-400"  />, text: 'Google Calendar integrado' },
                     { icon: <BarChart2  className="h-4 w-4 text-blue-400"     />, text: 'Estadísticas personales avanzadas' },
-                    { icon: <Shield     className="h-4 w-4 text-emerald-400"  />, text: 'Sin anuncios ni interrupciones' },
+                    { icon: <Shield     className="h-4 w-4 text-emerald-400"  />, text: 'Elegís si recibís anuncios y novedades' },
                     { icon: <FileText   className="h-4 w-4 text-sky-400"      />, text: 'Exportar cirugías como PDF' },
                     { icon: <ImagePlus  className="h-4 w-4 text-amber-300"    />, text: 'Imágenes por cirugía (hasta 5 fotos)' },
                     { icon: <ShieldCheck className="h-4 w-4 text-emerald-400" />, text: 'Seguros médicos de Guatemala' },
