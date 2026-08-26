@@ -301,7 +301,7 @@ def get_feed(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 @throttle_classes([AdTrackingThrottle])
 def track_ad_impression(request, ad_id):
     try:
@@ -315,7 +315,7 @@ def track_ad_impression(request, ad_id):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 @throttle_classes([AdTrackingThrottle])
 def track_ad_click(request, ad_id):
     try:

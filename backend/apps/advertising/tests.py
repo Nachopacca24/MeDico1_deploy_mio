@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from rest_framework.test import APIClient
 
 from apps.medico.models import FCMToken
 from .models import Advertisement, Client
@@ -129,3 +130,49 @@ class NotifyOnAdvertisementActivatedTest(TestCase):
         bronze_client = _make_client(plan='bronze')
         self._make_ad(client=bronze_client, status='active', target_specialties=[])
         mock_send.assert_not_called()
+
+
+class AdTrackingRequiresAuthTest(TestCase):
+    """
+    track_ad_click/track_ad_impression were AllowAny with no verification the
+    caller ever actually saw or tapped the ad — every page that renders ads is
+    behind login, so anyone (a script, a bot enumerating ad ids) could inflate
+    counts by POSTing directly, with nothing to stop it beyond a generous
+    600/hour-per-IP throttle. Now IsAuthenticated.
+    """
+
+    def setUp(self):
+        client_obj = _make_client()
+        self.ad = Advertisement.objects.create(
+            client=client_obj,
+            campaign_name='Campaña Test',
+            image='test/image',
+            redirect_url='https://example.com',
+            placement='sidebar',
+            start_date=date.today() - timedelta(days=1),
+            end_date=date.today() + timedelta(days=30),
+            status='active',
+        )
+
+    def test_click_requires_authentication(self):
+        client = APIClient()
+        response = client.post(f'/api/v1/advertising/public/ads/{self.ad.id}/click/')
+        self.assertIn(response.status_code, (401, 403))
+        self.ad.refresh_from_db()
+        self.assertEqual(self.ad.clicks, 0)
+
+    def test_impression_requires_authentication(self):
+        client = APIClient()
+        response = client.post(f'/api/v1/advertising/public/ads/{self.ad.id}/impression/')
+        self.assertIn(response.status_code, (401, 403))
+        self.ad.refresh_from_db()
+        self.assertEqual(self.ad.impressions, 0)
+
+    def test_authenticated_click_still_counts(self):
+        user = User.objects.create_user(username='doc', email='doc@example.com', password='x')
+        client = APIClient()
+        client.force_authenticate(user)
+        response = client.post(f'/api/v1/advertising/public/ads/{self.ad.id}/click/')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.ad.refresh_from_db()
+        self.assertEqual(self.ad.clicks, 1)

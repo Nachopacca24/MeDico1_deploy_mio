@@ -9,7 +9,11 @@ class RegisterRateThrottle(AnonRateThrottle):
     scope = 'register'
 
 
-class AdTrackingThrottle(AnonRateThrottle):
+class AdTrackingThrottle(UserRateThrottle):
+    # UserRateThrottle, not Anon: track_ad_click/track_ad_impression now require
+    # IsAuthenticated, so an Anon-based throttle would never actually apply —
+    # AnonRateThrottle no-ops for authenticated requests. This still caps a
+    # single compromised/scripted account from inflating counts on its own.
     scope = 'ad_tracking'
 
 

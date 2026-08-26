@@ -296,7 +296,7 @@ class AdvertisementService {
     if (this._impressedIds.has(adId)) return;
     this._impressedIds.add(adId);
     try {
-      await fetch(
+      await authService.authenticatedFetch(
         `${API_URL}/api/v1/advertising/public/ads/${adId}/impression/`,
         { method: 'POST' }
       );
@@ -307,7 +307,7 @@ class AdvertisementService {
 
   async trackClick(adId: number): Promise<void> {
     try {
-      await fetch(
+      await authService.authenticatedFetch(
         `${API_URL}/api/v1/advertising/public/ads/${adId}/click/`,
         { method: 'POST' }
       );
