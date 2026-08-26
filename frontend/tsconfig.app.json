@@ -30,5 +30,6 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["react", "react-dom"]
   },
-  "include": ["src", "tailwind.config.js", "src/types"]
+  "include": ["src", "tailwind.config.js", "src/types"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }
