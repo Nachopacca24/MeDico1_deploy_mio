@@ -28,6 +28,7 @@ interface User {
   is_active: boolean;
   date_joined: string;
   last_login: string | null;
+  last_active_at: string | null;
   plan: 'free' | 'premium';
   is_permanent_premium: boolean;
   trial_ends_at: string | null;
@@ -57,9 +58,13 @@ function timeAgo(dateStr: string | null): string {
   return 'Ahora mismo';
 }
 
-function isRecentlyActive(lastLogin: string | null): boolean {
-  if (!lastLogin) return false;
-  return Date.now() - new Date(lastLogin).getTime() < 7 * 24 * 3600000;
+// last_active_at, not last_login — last_login only updates on an actual
+// (re-)authentication, which doesn't happen again while a refresh token
+// stays valid, so it goes stale for anyone who just reopens the app
+// normally. last_active_at updates on every app open (GET /profile).
+function isRecentlyActive(lastActiveAt: string | null): boolean {
+  if (!lastActiveAt) return false;
+  return Date.now() - new Date(lastActiveAt).getTime() < 7 * 24 * 3600000;
 }
 
 const UsersPage = () => {
@@ -83,12 +88,12 @@ const UsersPage = () => {
     try {
       setLoading(true);
       const data = await adminService.getUsers();
-      // Sort by last_login desc (most recently active first)
+      // Sort by last_active_at desc (most recently active first)
       data.sort((a: User, b: User) => {
-        if (!a.last_login && !b.last_login) return 0;
-        if (!a.last_login) return 1;
-        if (!b.last_login) return -1;
-        return new Date(b.last_login).getTime() - new Date(a.last_login).getTime();
+        if (!a.last_active_at && !b.last_active_at) return 0;
+        if (!a.last_active_at) return 1;
+        if (!b.last_active_at) return -1;
+        return new Date(b.last_active_at).getTime() - new Date(a.last_active_at).getTime();
       });
       setUsers(data);
     } catch {
@@ -169,7 +174,7 @@ const UsersPage = () => {
   const tabFiltered = users.filter(u => {
     const isPending = !u.is_active && !u.is_superuser && !u.is_staff;
     switch (activeTab) {
-      case 'week': return isRecentlyActive(u.last_login);
+      case 'week': return isRecentlyActive(u.last_active_at);
       case 'premium': return u.plan === 'premium';
       case 'free': return u.plan === 'free';
       case 'pending': return isPending;
@@ -201,7 +206,7 @@ const UsersPage = () => {
 
   const tabs: { id: TabFilter; label: string; count: number }[] = [
     { id: 'all', label: 'Todos', count: users.length },
-    { id: 'week', label: 'Activos esta semana', count: users.filter(u => isRecentlyActive(u.last_login)).length },
+    { id: 'week', label: 'Activos esta semana', count: users.filter(u => isRecentlyActive(u.last_active_at)).length },
     { id: 'premium', label: 'Premium', count: users.filter(u => u.plan === 'premium').length },
     { id: 'free', label: 'Free', count: users.filter(u => u.plan === 'free').length },
     { id: 'pending', label: 'Pendientes eliminación', count: users.filter(u => !u.is_active && !u.is_superuser && !u.is_staff).length },
@@ -234,7 +239,7 @@ const UsersPage = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Activos esta semana</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-emerald-600">{users.filter(u => isRecentlyActive(u.last_login)).length}</div></CardContent>
+          <CardContent><div className="text-2xl font-bold text-emerald-600">{users.filter(u => isRecentlyActive(u.last_active_at)).length}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Premium</CardTitle></CardHeader>
@@ -301,7 +306,7 @@ const UsersPage = () => {
             const deletionDate = user.deletion_requested_at
               ? new Date(new Date(user.deletion_requested_at).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-GT')
               : null;
-            const recentlyActive = isRecentlyActive(user.last_login);
+            const recentlyActive = isRecentlyActive(user.last_active_at);
 
             return (
               <Card
@@ -339,7 +344,7 @@ const UsersPage = () => {
                     {/* Último acceso — destacado */}
                     <div className="text-right shrink-0">
                       <div className={`text-xs font-semibold ${recentlyActive ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                        {user.last_login ? timeAgo(user.last_login) : 'Sin accesos'}
+                        {user.last_active_at ? timeAgo(user.last_active_at) : 'Sin accesos'}
                       </div>
                       <div className="text-xs text-muted-foreground">último acceso</div>
                     </div>
@@ -369,16 +374,16 @@ const UsersPage = () => {
                       <Calendar className="h-4 w-4 shrink-0" />
                       <span>Registrado {timeAgo(user.date_joined)}</span>
                     </div>
-                    {user.last_login && (
+                    {user.last_active_at && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <UserCheck className="h-4 w-4 shrink-0" />
-                        <span>Último acceso: {new Date(user.last_login).toLocaleDateString('es-GT', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>Último acceso: {new Date(user.last_active_at).toLocaleDateString('es-GT', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     )}
-                    {!user.last_login && (
+                    {!user.last_active_at && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <UserX className="h-4 w-4 shrink-0" />
-                        <span>Nunca ha iniciado sesión</span>
+                        <span>Nunca abrió la app</span>
                       </div>
                     )}
                   </div>

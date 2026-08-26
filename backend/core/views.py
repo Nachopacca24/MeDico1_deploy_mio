@@ -164,7 +164,11 @@ def admin_stats(request):
     )
 
     week_ago = timezone.now() - timedelta(days=7)
-    active_this_week = User.objects.filter(last_login__gte=week_ago).count()
+    # last_active_at, not last_login — last_login only updates on an actual
+    # (re-)authentication, which doesn't happen again while a refresh token
+    # stays valid, so it goes stale for anyone who keeps the app installed
+    # and just reopens it. last_active_at updates on every app open.
+    active_this_week = User.objects.filter(last_active_at__gte=week_ago).count()
     new_this_week = User.objects.filter(date_joined__gte=week_ago).count()
 
     return Response({
@@ -251,7 +255,7 @@ def admin_users(request):
     base_fields = [
         'id', 'username', 'email', 'first_name', 'last_name',
         'is_staff', 'is_active', 'is_superuser', 'is_verified',
-        'date_joined', 'last_login', 'plan', 'specialty', 'phone',
+        'date_joined', 'last_login', 'last_active_at', 'plan', 'specialty', 'phone',
         'trial_ends_at', 'is_permanent_premium', 'role',
         'ls_renews_at', 'ls_cancelled', 'tutorial_completed',
     ]
@@ -293,6 +297,8 @@ def admin_users(request):
             user['date_joined'] = user['date_joined'].isoformat()
         if user['last_login']:
             user['last_login'] = user['last_login'].isoformat()
+        if user['last_active_at']:
+            user['last_active_at'] = user['last_active_at'].isoformat()
         if user['trial_ends_at']:
             user['trial_ends_at'] = user['trial_ends_at'].isoformat()
             user['trial_active'] = user['trial_ends_at'] > now.isoformat()
